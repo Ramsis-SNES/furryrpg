@@ -1,0 +1,291 @@
+FURRY RPG! (WORKING TITLE) -- CHANGES:
+--------------------------------------
+
+Build #00250:
+- comments cleanup
+- first source code release (via GitHub)
+
+
+
+Build #00249:
+- added placeholder strings for item names, each item name can be up to 16 bytes long
+
+
+
+Build #00248:
+- added preliminary BG scrolling routine, area tilemaps are now 64×32 tiles in size
+
+
+
+Build #00245:
+- changed VRAM layout for game areas, BG1 and BG2 now use the same tile set
+- tweaks to the text box routine (back up & restore tile maps, build text box tile maps properly, have selection bar disappear when pressing B)
+
+
+
+Build #00243:
+- DMA stuff during Vblank (tile map updates etc.) are now done as requested by the main program only
+- reduced hero sprite to 16×32px, allowing for more efficient sprite math
+- hero spritesheet doesn't need to be all in VRAM any more, plus there are more frames available for smoother animations (not used ATM)
+- hero can finally move in 8 directions
+
+
+
+Build #00240:
+- implemented a method to change altitude during Mode 7 flight, though still with slowdowns
+- started getting into Python to pre-calculate some Mode 7 tables, this allows for different pitch on the Mode 7 map (at compile time only)
+
+
+
+Build #00238:
+- added Mode 7 horizon blur effect using color math
+
+
+
+Build #00237:
+- devised an all-new scrolling/center coordinate handler for Mode 7, this finally allows the player to fly "forward", no matter the rotation angle :D
+
+
+
+Build #00236:
+- fixed horizontal scrolling in Mode 7, which was broken due to an 8-bit variable accidentally used as a 16-bit index
+- simplified Mode 7 scrolling/center coordinate register handling
+
+
+
+Build #00234:
+- added software error handlers for programming errors resulting in unintended BRK/COP instructions
+
+
+
+Build #00233:
+- added a small intro
+- added new music (river song, 2 short dances)
+- added selection support to text box routine
+- major VWF/HUD font changes
+- simplified debug menu
+- more dialog fixes & additions
+
+
+
+Build #00230:
+- reworked split in/out transition effects using simple loops that generate HDMA tables on-the-fly, saving ~16 KB of ROM space
+- dialog fixes & additions
+
+
+
+Build #00229:
+- added new music (fanfare #1)
+- more Mode 7 matrix calculation optimizations
+
+
+
+Build #00228:
+- added more dialog
+- wrote up the storyline
+
+
+
+Build #00227:
+- upgraded the text engine, which now features an 8×8 VWF
+
+
+
+Build #00223:
+- Mode 7 "sky" by means of a V-IRQ
+- Mode 7 matrix calculation improvements
+
+
+
+Build #00222:
+- proof-of-concept build of real-time calculation of Mode 7 matrix tables
+
+
+
+Build #00221:
+- Mode 7 scrolling fixes
+- added a function for sprite-based printing of hex numbers (mainly for Mode 7 debugging)
+
+
+
+Build #00220:
+- pre-computed 1024 HDMA tables making full Mode 7 rotation finally possible :D
+
+
+
+Build #00215:
+- slight changes to the dialog font to distinguish between characters a and o (and their respective umlauts) more easily
+
+
+
+Build #00214:
+- transparency tests
+
+
+
+Build #00213:
+- more work on the in-game menu
+- replaced my awful "Sandbox" graphics added in build #00210 with some placeholder artwork from SoM :-)
+
+
+
+Build #00212:
+- changed Mode 3 world map behavior (no text box)
+- added yet another 8×8 font for use on BG3 (e.g. in the in-game menu)
+- removed a lot of obsolete stuff
+
+
+
+Build #00210:
+- added first Mode 1 area ("Sandbox"), where you can walk around. Most of the work was related to the sprite animation ... ;-)
+
+
+
+Build #00203:
+- added two more mood-suggesting text box BG color gradients ("pissed", "evil")
+- some palette adjustments
+- some cleanups and refinements
+
+
+
+Build #00201:
+- added speed control to horizontal split in/out transition effect
+
+
+
+Build #00200:
+- rewrote/unified song loading routine
+
+
+
+Build #00199:
+- added a new music track ("Troubled Mind", a rather grave cutscene tune)
+- updated the track added for the last build, the buffoon is now a lot more gleeful towards the end ;)
+
+
+
+Build #00198:
+- updated SNESGSS to version 1.2, which supports panning, and re-did all music tracks in full stereo :D
+- added a new music track ("Three Buskers and One Buffoon", a funny cutscene tune)
+- simplified SNES boot/initialization process
+
+
+
+Build #00197:
+- compiled characteristics for 8 main (non-secret) characters
+- added a screen transition effect (horizontal split in/out)
+
+
+
+Build #00196:
+- added a preliminary sprite animation routine
+
+
+
+Build #00192:
+- worked out (in part) how the Mode 7 matrix really works, now I can create a HDMA table that makes the map look like a perfectly "flat" terrain :D
+
+
+
+Build #00190:
+- reorganized the codebase
+- added control codes to dialog strings to set the text box background color, and refined text box routines
+
+
+
+Build #00182:
+- added three SNESGSS-based music tracks to listen to ("Sun, Wind, and Rain", an epic worldmap theme; "Through Darkness", a claustrophobic cave theme; and "Theme of Despair", an upbeat 80s disco evergreen ... just kidding XD)
+- more work on Mode 7
+
+
+
+Build #00179:
+- added a frame counter/game timer (a prerequisite for the planned day-night cycle)
+- added SNESGSS v1.1 as music/sound engine, this is more lightweight, and flexible, than SNESMod
+- removed SNESMod-related code
+
+
+
+Build #00178:
+- added world map demo screen (with placeholder artwork from Suikoden II :p). The text box will only show up whenever there is dialog -- otherwise, the lower screen area will probably be used for character stats etc.
+- added a more flexible way to update graphics during Vblank (still needs work though)
+- added 3 more placeholder character portraits that can be switched with the d-pad in the dialog test
+- deactivated intro screen for now for faster testing ;-)
+
+
+
+Build #00177:
+- added IRQ routine to playfield, saving one HDMA channel previously used for changing the screen mode
+
+
+
+Build #00176:
+- added SRAM mapping for 4 saving slots
+- added SRAM integrity checks, any slot with an invalid checksum is zeroed out upon game start
+
+
+
+Build #00175:
+- relocated IRQ vector to WRAM, similar to the NMI vector in Build #00170
+- added H-IRQ routine that changes the screen mode mid-scanline (usable e.g. for menu ??)
+
+
+
+Build #00174:
+- Mode 7 scrolling changes: Devised a new scaling HDMA table, still doesn't look too great :-/
+
+
+
+Build #00173:
+- debug menu is fully implemented now (some more HDMA trickery needed for more entries in the future, though)
+- demo music is disabled for now
+
+
+
+Build #00170:
+- added preliminary Mode 3 titlescreen with real-fur texture :-)
+- started to work on a debug menu
+- relocated NMI vector to a special place in WRAM where there sits a "jml XXXXXX" instruction that can be changed at will, this ensures the highest Vblank flexibility :-)
+
+
+
+Build #00163:
+- fixed some text box-related bugs
+
+
+
+Build #00162:
+- added possibility to change text color mid-string via special command bytes
+
+
+
+Build #00159:
+- worked out an early Mode 7 "flight" HDMA table that looks promising :-)
+
+
+
+Build #00158:
+- added sprite-based VWF for demo screen messages
+
+
+
+Build #00157:
+- added more demo text, and another text box BG
+- fixed demo music controls
+
+
+
+Build #00153:
+- switched main playfield to Mode 3 for more colors (no GFX yet, though)
+- refined HDMA table for textbox color gradient, looks smoother now
+- added possibility to change text box background color depending on NPC's mood/attitude (think Tales of Destiny)
+
+
+
+Build #00152:
+- initial public pre-alpha build
+- Mode 1 playfield (empty yet)
+- Mode 5 text box with dynamic tile streaming, HDMA color gradient, and 40x48 character portrait
+- Mode 7 test screen (press Select)
+- 16x16 sprite font (for Mode 7 landmarks/"FIGHT!!", or whatever)
+- some SNESMod tune to go with it all, composed by myself :-)
