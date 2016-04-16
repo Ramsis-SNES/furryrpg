@@ -1,6 +1,11 @@
 FURRY RPG! (WORKING TITLE) -- CHANGES:
 --------------------------------------
 
+Build #00251:
+- fixed SRAM sanity check (write correct checksum complement after zeroing out any save slot)
+
+
+
 Build #00250:
 - comments cleanup
 - first source code release (via GitHub)

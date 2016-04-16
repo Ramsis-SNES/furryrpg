@@ -14,7 +14,10 @@
 CheckSRAM:
 	A16
 
-	lda ADDR_SRAM_SLOT1CHKSUM		; check slot 1 integrity
+
+
+; -------------------------- check slot 1 integrity
+	lda ADDR_SRAM_SLOT1CHKSUM
 	eor #$FFFF
 	cmp ADDR_SRAM_SLOT1CHKSUM+2
 	beq +
@@ -26,10 +29,16 @@ CheckSRAM:
 	inx
 	inx
 
-	cpx #2048
+	cpx #2046
 	bne -
 
-+	lda ADDR_SRAM_SLOT2CHKSUM		; check slot 2 integrity
+	lda #$FFFF				; checksum is now zero, store correct checksum complement
+	sta ADDR_SRAM_SLOT1, x
+
+
+
+; -------------------------- check slot 2 integrity
++	lda ADDR_SRAM_SLOT2CHKSUM
 	eor #$FFFF
 	cmp ADDR_SRAM_SLOT2CHKSUM+2
 	beq +
@@ -41,10 +50,16 @@ CheckSRAM:
 	inx
 	inx
 
-	cpx #2048
+	cpx #2046
 	bne -
 
-+	lda ADDR_SRAM_SLOT3CHKSUM		; check slot 3 integrity
+	lda #$FFFF
+	sta ADDR_SRAM_SLOT2, x
+
+
+
+; -------------------------- check slot 3 integrity
++	lda ADDR_SRAM_SLOT3CHKSUM
 	eor #$FFFF
 	cmp ADDR_SRAM_SLOT3CHKSUM+2
 	beq +
@@ -56,10 +71,16 @@ CheckSRAM:
 	inx
 	inx
 
-	cpx #2048
+	cpx #2046
 	bne -
 
-+	lda ADDR_SRAM_SLOT4CHKSUM		; check slot 4 integrity
+	lda #$FFFF
+	sta ADDR_SRAM_SLOT3, x
+
+
+
+; -------------------------- check slot 4 integrity
++	lda ADDR_SRAM_SLOT4CHKSUM
 	eor #$FFFF
 	cmp ADDR_SRAM_SLOT4CHKSUM+2
 	beq +
@@ -71,8 +92,11 @@ CheckSRAM:
 	inx
 	inx
 
-	cpx #2048
+	cpx #2046
 	bne -
+
+	lda #$FFFF
+	sta ADDR_SRAM_SLOT4, x
 
 +	A8
 rts
