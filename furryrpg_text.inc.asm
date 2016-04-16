@@ -1310,9 +1310,7 @@ rts
 
 ; ******************** String processing functions *********************
 ;
-;	Code in this part based on code written by:
-;	- bunnyboy (SNES PowerPak creator), (c) 2009
-;	- Neviksti (subroutines ??), (c) 2002
+; Code in this part based on code written by neviksti, (c) 2002
 
 .ACCU 8
 .INDEX 16
@@ -1479,7 +1477,7 @@ rts
 
 ; *********************** Sprite-based printing ************************
 
-; A very basic sprite-based font renderer.
+; A very basic sprite-based font renderer by yours truly.
 ; Caveat #1: Max. length of message(s) is 32 characters at a time.
 ; Caveat #2: No support for control characters.
 

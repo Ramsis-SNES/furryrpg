@@ -75,12 +75,9 @@ __ReturnAdress\@:
 ; Expects: A 8 bit
 
 .MACRO ldb
-	pha
-
+	xba
 	lda.b \1
 	xba
-
-	pla
 .ENDM
 
 

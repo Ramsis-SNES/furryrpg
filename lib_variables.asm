@@ -288,7 +288,7 @@
 
 	DP_EffectSpeed		db
 
-	DP_HDMAchannels		db		; yxrrcbsr [y = Mode7 ScaleY, x = Mode7 ScaleY, c = color math, b = background color gradient, s = screen mode, r = reserved]
+	DP_HDMAchannels		db		; DCBAcbsr [ABCD = M7A/M7B/M7C/M7D, c = color math, b = background color gradient, s = screen mode, r = reserved]
 						; Variable is transferred to $420C during Vblank
 
 	DP_GameMode		db		; 7rrrrrrr [7 = Mode7 on/off, r = reserved]
