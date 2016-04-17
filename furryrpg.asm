@@ -17,6 +17,7 @@
 ;.DEFINE NOMUSIC				; activate this to disable music // FIXME (make this actually work)
 ;.DEFINE QUICKTEST				; for quick tests (skipping intro)
 
+.DEFINE CurrentBank	0
 .DEFINE START_OFFSET	$F000			; start code offset in bank $C0
 
 .DEFINE SPC700_DRV	".\\music\\00-spc700-driver.bin"
@@ -80,7 +81,7 @@
 
 
 
-.BANK 0 SLOT 0
+.BANK CurrentBank SLOT 0
 .ORG START_OFFSET + $FB0
 
 	.DB		"00"			; new licensee code
@@ -112,7 +113,7 @@
 
 
 ; -------------------------- empty vectors
-.BANK 0 SLOT 0
+.BANK CurrentBank SLOT 0
 .ORG START_OFFSET
 
 .SECTION "Dummy/empty vectors" SEMIFREE
@@ -139,7 +140,7 @@ DummyCOP:
 
 ; ****************************** BANK $C0 ******************************
 
-.BANK 0 SLOT 0
+.BANK CurrentBank SLOT 0
 .ORG 0
 
 .SECTION "VersionStrings" FORCE
@@ -226,7 +227,7 @@ SRC_IRQJumpTable:
 
 
 
-.BANK 0 SLOT 0
+.BANK CurrentBank SLOT 0
 .ORG START_OFFSET + $FA0
 
 .SECTION "Startup" FORCE
@@ -242,9 +243,11 @@ Startup:
 
 
 
-; ****************************** BANK $C1 ******************************
+; ****************************** NEW BANK ******************************
 
-.BANK 1 SLOT 0
+.REDEFINE CurrentBank	CurrentBank+1
+
+.BANK CurrentBank SLOT 0
 .ORG 0
 
 .SECTION "CharacterData"
@@ -254,9 +257,11 @@ Startup:
 
 
 
-; ****************************** BANK $C2 ******************************
+; ****************************** NEW BANK ******************************
 
-.BANK 2 SLOT 0
+.REDEFINE CurrentBank	CurrentBank+1
+
+.BANK CurrentBank SLOT 0
 .ORG 0
 
 .SECTION "Dialog" FORCE
@@ -272,9 +277,11 @@ Startup:
 
 
 
-; ****************************** BANK $C3 ******************************
+; ****************************** NEW BANK ******************************
 
-.BANK 3 SLOT 0
+.REDEFINE CurrentBank	CurrentBank+1
+
+.BANK CurrentBank SLOT 0
 .ORG 0
 
 .SECTION "Source tables"
@@ -284,9 +291,11 @@ Startup:
 
 
 
-; ****************************** BANK $C4 ******************************
+; ****************************** NEW BANK ******************************
 
-.BANK 4 SLOT 0
+.REDEFINE CurrentBank	CurrentBank+1
+
+.BANK CurrentBank SLOT 0
 .ORG 0
 
 .SECTION "Intro GFX"
@@ -319,9 +328,11 @@ GFX_SoundEnginesPic:
 
 
 
-; ****************************** BANK $C5 ******************************
+; ****************************** NEW BANK ******************************
 
-.BANK 5 SLOT 0
+.REDEFINE CurrentBank	CurrentBank+1
+
+.BANK CurrentBank SLOT 0
 .ORG 0
 
 .SECTION "Intro GFX 2"
@@ -342,9 +353,11 @@ GFX_StartPic:
 
 
 
-; ****************************** BANK $C6 ******************************
+; ****************************** NEW BANK ******************************
 
-.BANK 6 SLOT 0
+.REDEFINE CurrentBank	CurrentBank+1
+
+.BANK CurrentBank SLOT 0
 .ORG 0
 
 .SECTION "Playfield GFX"
@@ -367,9 +380,11 @@ SRC_Playfield_001_MAP_END:
 
 
 
-; ****************************** BANK $C7 ******************************
+; ****************************** NEW BANK ******************************
 
-.BANK 7 SLOT 0
+.REDEFINE CurrentBank	CurrentBank+1
+
+.BANK CurrentBank SLOT 0
 .ORG 0
 
 .SECTION "Mode 7 GFX 2"
@@ -388,9 +403,11 @@ GFX_Sommappic_END:
 
 
 
-; ****************************** BANK $C8 ******************************
+; ****************************** NEW BANK ******************************
 
-.BANK 8 SLOT 0
+.REDEFINE CurrentBank	CurrentBank+1
+
+.BANK CurrentBank SLOT 0
 .ORG 0
 
 .SECTION ".roDataSoundDriver" SEMIFREE
@@ -402,9 +419,11 @@ SRC_spc700_driver:
 
 
 
-; ****************************** BANK $C9 ******************************
+; ****************************** NEW BANK ******************************
 
-.BANK 9 SLOT 0
+.REDEFINE CurrentBank	CurrentBank+1
+
+.BANK CurrentBank SLOT 0
 .ORG 0
 
 .SECTION ".roDataSoundCode02" SEMIFREE
@@ -430,9 +449,11 @@ SRC_track_00_notes:
 
 
 
-; ****************************** BANK $CA ******************************
+; ****************************** NEW BANK ******************************
 
-.BANK 10 SLOT 0
+.REDEFINE CurrentBank	CurrentBank+1
+
+.BANK CurrentBank SLOT 0
 .ORG 0
 
 .SECTION ".roDataSoundCode03" SEMIFREE
@@ -481,9 +502,11 @@ SRC_track_03_notes:
 
 
 
-; ****************************** BANK $CB ******************************
+; ****************************** NEW BANK ******************************
 
-.BANK 11 SLOT 0
+.REDEFINE CurrentBank	CurrentBank+1
+
+.BANK CurrentBank SLOT 0
 .ORG 0
 
 .SECTION ".roDataSoundCode04" SEMIFREE
@@ -509,9 +532,11 @@ SRC_track_02_notes:
 
 
 
-; ****************************** BANK $CC ******************************
+; ****************************** NEW BANK ******************************
 
-.BANK 12 SLOT 0
+.REDEFINE CurrentBank	CurrentBank+1
+
+.BANK CurrentBank SLOT 0
 .ORG 0
 
 .SECTION ".roDataSoundCode06" SEMIFREE
@@ -537,9 +562,11 @@ SRC_track_04_notes:
 
 
 
-; ****************************** BANK $CD ******************************
+; ****************************** NEW BANK ******************************
 
-.BANK 13 SLOT 0
+.REDEFINE CurrentBank	CurrentBank+1
+
+.BANK CurrentBank SLOT 0
 .ORG 0
 
 .SECTION ".roDataSoundCode07" SEMIFREE
@@ -565,9 +592,11 @@ SRC_track_05_notes:
 
 
 
-; ****************************** BANK $CE ******************************
+; ****************************** NEW BANK ******************************
 
-.BANK 14 SLOT 0
+.REDEFINE CurrentBank	CurrentBank+1
+
+.BANK CurrentBank SLOT 0
 .ORG 0
 
 .SECTION ".roDataSoundCode08" SEMIFREE
@@ -593,9 +622,11 @@ SRC_track_06_notes:
 
 
 
-; ****************************** BANK $CF ******************************
+; ****************************** NEW BANK ******************************
 
-.BANK 15 SLOT 0
+.REDEFINE CurrentBank	CurrentBank+1
+
+.BANK CurrentBank SLOT 0
 .ORG 0
 
 .SECTION ".roDataSoundCode09" SEMIFREE
@@ -621,9 +652,11 @@ SRC_track_07_notes:
 
 
 
-; ****************************** BANK $CE ******************************
+; ****************************** NEW BANK ******************************
 
-.BANK 16 SLOT 0
+.REDEFINE CurrentBank	CurrentBank+1
+
+.BANK CurrentBank SLOT 0
 .ORG 0
 
 .SECTION ".roDataSoundCode10" SEMIFREE
@@ -649,9 +682,11 @@ SRC_track_08_notes:
 
 
 
-; ****************************** BANK $CF ******************************
+; ****************************** NEW BANK ******************************
 
-.BANK 17 SLOT 0
+.REDEFINE CurrentBank	CurrentBank+1
+
+.BANK CurrentBank SLOT 0
 .ORG 0
 
 .SECTION ".roDataSoundCode11" SEMIFREE
@@ -674,6 +709,10 @@ SRC_track_09_notes:
 	.INCBIN TRACK09_NOTES
 
 .ENDS
+
+
+
+; *************************** 18 BANKS USED ****************************
 
 
 
