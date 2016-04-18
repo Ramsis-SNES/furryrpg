@@ -166,6 +166,21 @@
 
 
 
+; -------------------------- language constants
+.ENUM $00
+	TBL_Lang_Eng		db		; the order of the languages must match the order of dialog banks!
+;	TBL_Lang_Eng2		db
+;	TBL_Lang_Eng3		db
+	TBL_Lang_Ger		db
+;	TBL_Lang_Ger2		db
+;	TBL_Lang_Ger3		db
+;	TBL_Lang_XXX		db
+;	TBL_Lang_XXX		db
+;	TBL_Lang_XXX		db
+.ENDE
+
+
+
 ; -------------------------- text box control codes
 	.DEFINE CC_End			$FF	; end-of-string marker
 ;	.DEFINE CC_FONT_WHITE		0	; font color control codes = palette numbers (i.e., don't relocate these)
@@ -321,6 +336,7 @@
 	DP_TextBoxSelMax	db		; for HDMA selection bar
 	DP_TextBoxSelMin	db		; ditto
 	DP_TextBoxStatus	db		; cm4321ot [c = clear text box, m = there is more text to process, o = text box is open, r = reserved, 1-4 = text box contains selection on line no. 1-4, t = VWF buffer full, transfer to VRAM]
+	DP_TextLanguage		db		; holds language constant
 	DP_TextPointer		dw
 	DP_TextPointerBank	db
 	DP_TextPointerNo	dw

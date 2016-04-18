@@ -121,8 +121,13 @@ OpenTextBox:
 
 
 __ProcessNextDialog:
-	lda #:SRC_DiagPointer
+	lda #:SRC_DiagPointerEng
+	clc					; add language constant to get the correct text bank
+	adc DP_TextLanguage
 	sta DP_TextStringBank
+
+	lda DP_TextLanguage			; check language again for the right pointer table
+	bne +
 
 	A16
 
@@ -130,8 +135,21 @@ __ProcessNextDialog:
 	asl a
 	tax
 
-	lda.l SRC_DiagPointer, x
-	sta DP_TextString
+	lda.l SRC_DiagPointerEng, x		; DP_TextLanguage is 0 --> English
+
+	bra ++
+
++	;cmp #TBL_Lang_Ger			; German language selected?
+;	bne Somewhere				; for even more languages/text banks
+
+	A16
+
+	lda DP_TextPointerNo
+	asl a
+	tax
+
+	lda.l SRC_DiagPointerGer, x		; DP_TextLanguage is 1 --> German
+++	sta DP_TextString
 
 	A8
 
@@ -182,6 +200,46 @@ __DrawSelBarDone:
 	jmp __CloseTextBox
 
 __MainTextBoxLoopAButtonDone:
+
+
+
+; -------------------------- check for dpad up = next language
+	lda Joy1New+1
+	and #%00001000
+	beq __MainTextBoxLoopDpadUpDone
+
+	lda #%10000000				; set "clear text box" bit
+	sta DP_TextBoxStatus
+
+	WaitForFrames 1
+
+;	inc DP_TextLanguage
+	lda #TBL_Lang_Ger
+	sta DP_TextLanguage
+
+	jmp __ProcessNextDialog
+
+__MainTextBoxLoopDpadUpDone:
+
+
+
+; -------------------------- check for dpad down = previous language
+	lda Joy1New+1
+	and #%00000100
+	beq __MainTextBoxLoopDpadDownDone
+
+	lda #%10000000				; set "clear text box" bit
+	sta DP_TextBoxStatus
+
+	WaitForFrames 1
+
+;	dec DP_TextLanguage
+	lda #TBL_Lang_Eng
+	sta DP_TextLanguage
+
+	jmp __ProcessNextDialog
+
+__MainTextBoxLoopDpadDownDone:
 
 
 
@@ -245,9 +303,9 @@ __NextTextPointer:
 	lda DP_TextPointerNo			; increment text pointer
 	clc
 	adc #1
-	cmp #(SRC_DiagPointer_END-SRC_DiagPointer)/2
+	cmp #(SRC_DiagPointerEng_END-SRC_DiagPointerEng)/2
 	bcc +
-	lda #(SRC_DiagPointer_END-SRC_DiagPointer)/2-1
+	lda #(SRC_DiagPointerEng_END-SRC_DiagPointerEng)/2-1
 +	sta DP_TextPointerNo
 	
 	A8
@@ -301,9 +359,9 @@ __MainTextBoxLoopLButtonDone:
 	A16
 
 	lda DP_TextPointerNo			; increment text pointer
-	cmp #(SRC_DiagPointer_END-SRC_DiagPointer)/2-50
+	cmp #(SRC_DiagPointerEng_END-SRC_DiagPointerEng)/2-50
 	bcc +
-	lda #(SRC_DiagPointer_END-SRC_DiagPointer)/2-1
+	lda #(SRC_DiagPointerEng_END-SRC_DiagPointerEng)/2-1
 	bra ++
 
 +;	clc					; never mind, carry is already clear

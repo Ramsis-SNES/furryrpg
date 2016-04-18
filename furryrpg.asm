@@ -165,7 +165,7 @@ STR_SoftwareBuild:
 	.DB "Build #"
 
 STR_SoftwareBuildNo:
-	.DB "00251"
+	.DB "00252"
 	.DB 0
 
 ;STR_Software_BuildNo_END:
@@ -264,15 +264,35 @@ Startup:
 .BANK CurrentBank SLOT 0
 .ORG 0
 
-.SECTION "Dialog" FORCE
-	.INCLUDE "data_dialogpointers.inc.asm"	; pointers
-	.INCLUDE "data_dialog.inc.asm"		; dialog
+.SECTION "English dialog" FORCE
+	.INCLUDE "data_dialogpointers_eng.inc.asm"	; pointers to English dialog
+	.INCLUDE "data_dialog_eng.inc.asm"		; English dialog
 .ENDS
 
 .ORG $8000
 
-.SECTION "Items" FORCE
-	.INCLUDE "data_items.inc.asm"		; item names
+.SECTION "English items" FORCE
+	.INCLUDE "data_items_eng.inc.asm"		; English item names
+.ENDS
+
+
+
+; ****************************** NEW BANK ******************************
+
+.REDEFINE CurrentBank	CurrentBank+1
+
+.BANK CurrentBank SLOT 0
+.ORG 0
+
+.SECTION "German dialog" FORCE
+	.INCLUDE "data_dialogpointers_ger.inc.asm"	; pointers to German dialog
+	.INCLUDE "data_dialog_ger.inc.asm"		; German dialog
+.ENDS
+
+.ORG $8000
+
+.SECTION "German items" FORCE
+	.INCLUDE "data_items_ger.inc.asm"		; German item names
 .ENDS
 
 
@@ -712,7 +732,7 @@ SRC_track_09_notes:
 
 
 
-; *************************** 18 BANKS USED ****************************
+; *************************** 19 BANKS USED ****************************
 
 
 

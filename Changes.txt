@@ -1,6 +1,12 @@
 FURRY RPG! (WORKING TITLE) -- CHANGES:
 --------------------------------------
 
+Build #00252:
+- added multi-language support to the dialog text engine
+- started to work on the German localization (press up/down on the d-pad to change languages when the text box is open)
+
+
+
 Build #00251:
 - fixed SRAM sanity check (write correct checksum complement after zeroing out any save slot)
 

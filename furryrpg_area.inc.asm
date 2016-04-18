@@ -375,6 +375,11 @@ AreaEnter:
 ;	A8
 
 
+
+; -------------------------- reset language/text parameters
+	lda #TBL_Lang_Eng
+	sta DP_TextLanguage
+
 	A16
 
 ;	lda #0
