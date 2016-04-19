@@ -585,6 +585,9 @@ __ProcessTextLoop:
 	bcc +
 	jmp __ProcessTextNormal
 
+
+
+; -------------------------- control code encountered, check type (order: very likely > less likely)
 +	cmp #CC_Indent				; indention?
 	bne +
 
@@ -592,6 +595,10 @@ __ProcessTextLoop:
 
 +	cmp #CC_NewLine				; carriage return?
 	beq __CarriageReturn
+
+	cmp #CC_ClearTextBox
+	bne +
+	jmp __ClearTextBoxMidString
 
 +	cmp #CC_Selection			; selection?
 	bne __OtherControlCode
@@ -644,8 +651,6 @@ __OtherControlCode:
 +	jsr ChangeTextBoxBG
 	jmp __ProcessTextJumpOut
 
-
-
 __CarriageReturn:
 	lda #$01				; set "VWF buffer full" bit
 	tsb DP_TextBoxStatus
@@ -674,24 +679,65 @@ __CarriageReturn:
 +	cmp #92*8				; line 2?
 	bne +
 
-	bra __ProcessTextJumpOut		; do nothing if carriage return requested after exactly 92 chars
+	jmp __ProcessTextJumpOut		; do nothing if carriage return requested after exactly 92 chars
 
 +	bcs +
 
 	lda #92*8				; go to line 3
 	sta DP_TextTileDataCounter
 
-	bra __ProcessTextJumpOut
+	jmp __ProcessTextJumpOut
 
 .ACCU 16
 
 +	lda #138*8				; otherwise, go to line 4
 	sta DP_TextTileDataCounter
 
-	bra __ProcessTextJumpOut
+	jmp __ProcessTextJumpOut
+
+.ACCU 8
+
+__ClearTextBoxMidString:
+	A16
+
+	lda DP_VWFBitsUsed			; check if bit counter <> 0
+	bne +
+
+	lda DP_VWFBufferIndex			; check if VWF buffer index <> 0
+	beq ++
+
++	A8
+
+	lda #$01				; if either <> 0, set "VWF buffer full" bit
+	tsb DP_TextBoxStatus
+
+;	WaitForFrames 1				; never mind, see below
+
+++	A8
+
+-	WaitForFrames 1				; next, wait for player to press the A button
+
+	lda Joy1New
+	and #%10000000
+	beq -
+
+	lda #%10000000				; lastly, set "clear text box" bit
+	sta DP_TextBoxStatus
+
+	WaitForFrames 1
+
+	A16
+
+	inc DP_TextPointerNo			; increment to next text pointer
+	pla					; pull 16 bits of garbage off the stack as there's no rts from jsr ProcessNextText
+
+	A8
+
+	jmp __ProcessNextDialog
 
 
 
+; -------------------------- process normal text
 __ProcessTextNormal:
 	A16
 
@@ -1368,7 +1414,7 @@ rts
 
 ; ******************** String processing functions *********************
 ;
-; Code in this part based on code written by neviksti, (c) 2002
+; Code in this section based on code written by neviksti, (c) 2002
 
 .ACCU 8
 .INDEX 16

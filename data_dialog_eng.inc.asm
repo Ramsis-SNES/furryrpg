@@ -52,27 +52,29 @@ STR_DialogEng0000:
 STR_DialogEng0001:
 	.DB CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
-	.DB CC_Indent, "Whew, what a dream!", CC_End
+	.DB CC_Indent, "Whew, what a dream!", CC_ClearTextBox
 
 STR_DialogEng0002:
-	.DB "ALEC:", CC_NewLine
+;	.DB CC_BoxBlue
+;	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "I was following the track of an elusive maned", CC_NewLine
 	.DB CC_Indent, "snow leopard, and when I finally caught up", CC_NewLine
-	.DB CC_Indent, "with him, he turned around and spoke to me ...", CC_End
+	.DB CC_Indent, "with him, he turned around and spoke to me ...", CC_ClearTextBox
 
 STR_DialogEng0003:
-	.DB "ALEC:", CC_NewLine
+;	.DB CC_BoxBlue
+;	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "I can't remember what he said, only that it", CC_NewLine
 	.DB CC_Indent, "totally affected me.", CC_End
 
 STR_DialogEng0004:
 	.DB CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
-	.DB CC_Indent, "Phew! I'm glad it was just a dream.", CC_End
+	.DB CC_Indent, "Phew! I'm glad it was just a dream.", CC_ClearTextBox
 
 STR_DialogEng0005:
-	.DB CC_BoxBlue
-	.DB "ALEC:", CC_NewLine
+;	.DB CC_BoxBlue
+;	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "Why am I talking to myself, anyway?", CC_NewLine
 	.DB CC_Indent, "I'd better get to work!", CC_End
 
@@ -300,11 +302,11 @@ STR_DialogEng0047:
 	.DB CC_BoxBlue
 	.DB "WOLFEN SOLDIER:", CC_NewLine
 	.DB CC_Indent, "By the way, I've been ", SYM_quot, "cursed\" at many times", CC_NewLine
-	.DB CC_Indent, "before, myself, albeit for other reasons.", CC_End
+	.DB CC_Indent, "before, myself, albeit for other reasons.", CC_ClearTextBox
 
 STR_DialogEng0048:
-	.DB CC_BoxBlue
-	.DB "WOLFEN SOLDIER:", CC_NewLine
+;	.DB CC_BoxBlue
+;	.DB "WOLFEN SOLDIER:", CC_NewLine
 	.DB CC_Indent, "To be perfectly honest, I stopped bothering", CC_NewLine
 	.DB CC_Indent, "back when I was a puppy ...", CC_End
 
@@ -431,7 +433,7 @@ STR_DialogEng0069:
 STR_DialogEng0070:
 	.DB CC_BoxBlue
 	.DB "FOXLING:", CC_NewLine
-	.DB CC_Indent, "Yikes! Looks like I'm stuck!!", CC_End
+	.DB CC_Indent, "Yikes! I'm stuck!!", CC_End
 
 STR_DialogEng0071:
 	.DB CC_BoxBlue
@@ -443,11 +445,11 @@ STR_DialogEng0071:
 STR_DialogEng0072:
 	.DB CC_BoxBlue
 	.DB "BROWN BEAR:", CC_NewLine
-	.DB CC_Indent, "Allow me the honor. Ahem ...", CC_End
+	.DB CC_Indent, "Allow me the honor. Ahem ...", CC_ClearTextBox
 	
 STR_DialogEng0073:
-	.DB CC_BoxBlue
-	.DB "BROWN BEAR:", CC_NewLine
+;	.DB CC_BoxBlue
+;	.DB "BROWN BEAR:", CC_NewLine
 	.DB CC_Indent, "My name is Gregory Perpetuus Ebenezer Hrabanus", CC_NewLine
 	.DB CC_Indent, "Eindhoven Dubois Quaoar van der Muhlhausen", CC_NewLine
 	.DB CC_Indent, "Nido sulle Colline ... junior.", CC_End
@@ -456,12 +458,12 @@ STR_DialogEng0074:
 	.DB CC_BoxBlue
 	.DB "GORILLA 1:", CC_NewLine
 	.DB CC_Indent, "G'day, mate.", CC_NewLine
-	.DB CC_Indent, "Very pleased ter meetcha, me is ...", CC_End
+	.DB CC_Indent, "Very pleased ter meetcha, me is ...", CC_ClearTextBox
 
 STR_DialogEng0075:
 	.DB CC_BoxEvil
-	.DB "GORILLA 1:", CC_NewLine
-	.DB CC_Indent, "... 'cos me main hobby is turning lions into", CC_NewLine
+;	.DB "GORILLA 1:", CC_NewLine
+	.DB CC_Indent, "... 'cuz me main hobby is turning lions into", CC_NewLine
 	.DB CC_Indent, "sausage!", CC_NewLine
 	.DB CC_Indent, "Oh, me name's Joe. Joe Lion-Trapper ...", CC_End
 
@@ -470,11 +472,11 @@ STR_DialogEng0076:
 	.DB "GORILLA 2:", CC_NewLine
 	.DB CC_Indent, "Hello there, hunky mane-bearer. ", SYM_heart, CC_NewLine
 	.DB CC_Indent, "Your muscled appearance, coated in velvety", CC_NewLine
-	.DB CC_Indent, "golden fur, is indeed a feast for the eyes ...", CC_End
+	.DB CC_Indent, "golden fur, is indeed a feast for the eyes ...", CC_ClearTextBox
 
 STR_DialogEng0077:
 	.DB CC_BoxEvil
-	.DB "GORILLA 2:", CC_NewLine
+;	.DB "GORILLA 2:", CC_NewLine
 	.DB CC_Indent, "... as it'll be for my fangs. Too bad you can't live", CC_NewLine
 	.DB CC_Indent, "to witness our appreciation of your tasty flesh!", CC_NewLine
 	.DB CC_Indent, "By the way, they call me Jim. Jim Lion-Slayer ...", CC_End
@@ -484,12 +486,12 @@ STR_DialogEng0078:
 	.DB "GORILLA 3:", CC_NewLine
 	.DB CC_Indent, "Greetings, young Leonido.", CC_NewLine
 	.DB CC_Indent, "Never mind either of my brothers' uncouth", CC_NewLine
-	.DB CC_Indent, "talk ...", CC_End
+	.DB CC_Indent, "talk ...", CC_ClearTextBox
 
 STR_DialogEng0079:
 	.DB CC_BoxEvil
-	.DB "GORILLA 3:", CC_NewLine
-	.DB CC_Indent, "... just rest assured that it will be an honor,", CC_NewLine
+;	.DB "GORILLA 3:", CC_NewLine
+	.DB CC_Indent, "Just rest assured that it will be an honor,", CC_NewLine
 	.DB CC_Indent, "and a privilege, to take your precious hide.", CC_NewLine
 	.DB CC_Indent, "For I am known as Jack. Jack Lion-Flayer ...", CC_End
 
@@ -521,11 +523,11 @@ STR_DialogEng0083:
 STR_DialogEng0084:
 	.DB CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
-	.DB CC_Indent, "Yum! ", SYM_heart, CC_End
+	.DB CC_Indent, "Yum! ", SYM_heart, CC_ClearTextBox
 
 STR_DialogEng0085:
-	.DB CC_BoxBlue
-	.DB "ALEC:", CC_NewLine
+;	.DB CC_BoxBlue
+;	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "I never knew the taste of fresh primate liver", CC_NewLine
 	.DB CC_Indent, "actually resembled salted pork ...!", CC_End
 
@@ -597,9 +599,7 @@ STR_DialogEng0097:
 STR_DialogEng0098:
 	.DB CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
-	.DB CC_Indent, "Listen, uhm ... I was just joking.", CC_NewLine
-	.DB CC_Indent, "I'd NEVER kill and eat anyfur myself,", CC_NewLine
-	.DB CC_Indent, "let alone serve my friends with his flesh!", CC_End
+	.DB CC_Indent, "Listen, uhm ... I was just joking.", CC_End
 
 STR_DialogEng0099:
 	.DB CC_BoxBlue

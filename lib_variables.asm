@@ -192,10 +192,11 @@
 	.DEFINE CC_BoxPink		6
 	.DEFINE CC_BoxEvil		7
 	.DEFINE CC_BoxPissed		8
-	.DEFINE CC_Indent		9
-	.DEFINE CC_NewLine		10
-	.DEFINE CC_Selection		11
-	.DEFINE NO_CC			12	; this has to be greater than the last control code
+	.DEFINE CC_ClearTextBox		9
+	.DEFINE CC_Indent		10
+	.DEFINE CC_NewLine		11
+	.DEFINE CC_Selection		12
+	.DEFINE NO_CC			13	; this has to be greater than the last control code
 
 
 

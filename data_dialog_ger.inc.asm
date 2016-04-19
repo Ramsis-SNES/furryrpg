@@ -52,27 +52,29 @@ STR_DialogGer0000:
 STR_DialogGer0001:
 	.DB CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
-	.DB CC_Indent, "Uff, was f", uuml, "r ein Traum!", CC_End
+	.DB CC_Indent, "Uff, was f", uuml, "r ein Traum!", CC_ClearTextBox
 
 STR_DialogGer0002:
-	.DB "ALEC:", CC_NewLine
+;	.DB CC_BoxBlue
+;	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "Ich bin der F", auml, "hrte eines seltenen M", auml, "hnen-", CC_NewLine
 	.DB CC_Indent, "Schneeleoparden gefolgt. Als ich ihn stellte,", CC_NewLine
-	.DB CC_Indent, "hat er sich umgedreht und zu mir gesprochen ...", CC_End
+	.DB CC_Indent, "hat er sich umgedreht und zu mir gesprochen ...", CC_ClearTextBox
 
 STR_DialogGer0003:
-	.DB "ALEC:", CC_NewLine
+;	.DB CC_BoxBlue
+;	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "Ich wei", szlig, " nicht mehr, was er sagte, nur", CC_NewLine
 	.DB CC_Indent, "dass es mich total mitgenommen hat.", CC_End
 
 STR_DialogGer0004:
 	.DB CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
-	.DB CC_Indent, "Puh! Zum Gl", uuml, "ck war's nur ein Traum.", CC_End
+	.DB CC_Indent, "Puh! Zum Gl", uuml, "ck war's nur ein Traum.", CC_ClearTextBox
 
 STR_DialogGer0005:
-	.DB CC_BoxBlue
-	.DB "ALEC:", CC_NewLine
+;	.DB CC_BoxBlue
+;	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "Warum f", uuml, "hr' ich eigentlich Selbstgespr", auml, "che?", CC_NewLine
 	.DB CC_Indent, "Ich sollte mich an die Arbeit machen!", CC_End
 
@@ -314,11 +316,11 @@ STR_DialogGer0047:
 	.DB "WOLFENSOLDAT:", CC_NewLine
 	.DB CC_Indent, Uuml, "brigens bin ich selber schon oft genug", CC_NewLine
 	.DB CC_Indent, SYM_quot, "angeschnauzt\" worden, wenn auch aus anderen", CC_NewLine
-	.DB CC_Indent, "Gr", uuml, "nden.", CC_End
+	.DB CC_Indent, "Gr", uuml, "nden.", CC_ClearTextBox
 
 STR_DialogGer0048:
-	.DB CC_BoxBlue
-	.DB "WOLFENSOLDAT:", CC_NewLine
+;	.DB CC_BoxBlue
+;	.DB "WOLFENSOLDAT:", CC_NewLine
 	.DB CC_Indent, "Um ehrlich zu sein, ist mir das v", ouml, "llig schnuppe.", CC_NewLine
 	.DB CC_Indent, "Seit meiner Welpenzeit hab ich ein dickes Fell ...", CC_End
 
@@ -329,7 +331,7 @@ STR_DialogGer0049:
 
 STR_DialogGer0050:
 	.DB CC_BoxBlue
-	.DB "WOLFEN SOLDIER:", CC_NewLine
+	.DB "WOLFENSOLDAT:", CC_NewLine
 	.DB CC_Indent, "Nein, ich bin Primus Greyfur, zu deinen Diensten.", CC_End
 
 STR_DialogGer0051:
@@ -459,11 +461,11 @@ STR_DialogGer0071:
 STR_DialogGer0072:
 	.DB CC_BoxBlue
 	.DB "BRAUNB", Auml, "R:", CC_NewLine
-	.DB CC_Indent, "Habe die Ehre. ", Auml, "hem ...", CC_End
+	.DB CC_Indent, "Habe die Ehre. ", Auml, "hem ...", CC_ClearTextBox
 	
 STR_DialogGer0073:
-	.DB CC_BoxBlue
-	.DB "BRAUNB", Auml, "R:", CC_NewLine
+;	.DB CC_BoxBlue
+;	.DB "BRAUNB", Auml, "R:", CC_NewLine
 	.DB CC_Indent, "Mein Name ist Gregory Perpetuus Ebenezer", CC_NewLine
 	.DB CC_Indent, "Hrabanus Eindhoven Dubois Quaoar van der", CC_NewLine
 	.DB CC_Indent, "Muhlhausen Nido sulle Colline ... Junior.", CC_End
@@ -472,12 +474,12 @@ STR_DialogGer0074:
 	.DB CC_BoxBlue
 	.DB "GORILLA 1:", CC_NewLine
 	.DB CC_Indent, "G'day, mate.", CC_NewLine
-	.DB CC_Indent, "Very pleased ter meetcha, me is ...", CC_End
+	.DB CC_Indent, "Very pleased ter meetcha, me is ...", CC_ClearTextBox
 
 STR_DialogGer0075:
 	.DB CC_BoxEvil
-	.DB "GORILLA 1:", CC_NewLine
-	.DB CC_Indent, "... 'cos me main hobby is turning lions into", CC_NewLine
+;	.DB "GORILLA 1:", CC_NewLine
+	.DB CC_Indent, "... 'cuz me main hobby is turning lions into", CC_NewLine
 	.DB CC_Indent, "sausage!", CC_NewLine
 	.DB CC_Indent, "Oh, me name's Joe. Joe Lion-Trapper ...", CC_End
 
@@ -486,11 +488,11 @@ STR_DialogGer0076:
 	.DB "GORILLA 2:", CC_NewLine
 	.DB CC_Indent, "Hello there, hunky mane-bearer. ", SYM_heart, CC_NewLine
 	.DB CC_Indent, "Your muscled appearance, coated in velvety", CC_NewLine
-	.DB CC_Indent, "golden fur, is indeed a feast for the eyes ...", CC_End
+	.DB CC_Indent, "golden fur, is indeed a feast for the eyes ...", CC_ClearTextBox
 
 STR_DialogGer0077:
 	.DB CC_BoxEvil
-	.DB "GORILLA 2:", CC_NewLine
+;	.DB "GORILLA 2:", CC_NewLine
 	.DB CC_Indent, "... as it'll be for my fangs. Too bad you can't live", CC_NewLine
 	.DB CC_Indent, "to witness our appreciation of your tasty flesh!", CC_NewLine
 	.DB CC_Indent, "By the way, they call me Jim. Jim Lion-Slayer ...", CC_End
@@ -500,12 +502,12 @@ STR_DialogGer0078:
 	.DB "GORILLA 3:", CC_NewLine
 	.DB CC_Indent, "Greetings, young Leonido.", CC_NewLine
 	.DB CC_Indent, "Never mind either of my brothers' uncouth", CC_NewLine
-	.DB CC_Indent, "talk ...", CC_End
+	.DB CC_Indent, "talk ...", CC_ClearTextBox
 
 STR_DialogGer0079:
 	.DB CC_BoxEvil
-	.DB "GORILLA 3:", CC_NewLine
-	.DB CC_Indent, "... just rest assured that it will be an honor,", CC_NewLine
+;	.DB "GORILLA 3:", CC_NewLine
+	.DB CC_Indent, "Just rest assured that it will be an honor,", CC_NewLine
 	.DB CC_Indent, "and a privilege, to take your precious hide.", CC_NewLine
 	.DB CC_Indent, "For I am known as Jack. Jack Lion-Flayer ...", CC_End
 
@@ -537,11 +539,11 @@ STR_DialogGer0083:
 STR_DialogGer0084:
 	.DB CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
-	.DB CC_Indent, "Schleck! ", SYM_heart, CC_End
+	.DB CC_Indent, "Schleck! ", SYM_heart, CC_ClearTextBox
 
 STR_DialogGer0085:
-	.DB CC_BoxBlue
-	.DB "ALEC:", CC_NewLine
+;	.DB CC_BoxBlue
+;	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "Ich wusste gar nicht, dass frische Primatenleber", CC_NewLine
 	.DB CC_Indent, "ein bisschen wie R", auml, "ucherschinken schmeckt ...!", CC_End
 
@@ -614,9 +616,7 @@ STR_DialogGer0097:
 STR_DialogGer0098:
 	.DB CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
-	.DB CC_Indent, "H", ouml, "r mal, ", auml, "hm ... Ich hab nur Spa", szlig, " gemacht.", CC_NewLine
-	.DB CC_Indent, "I'd NEVER kill and eat anyfur myself,", CC_NewLine
-	.DB CC_Indent, "let alone serve my friends with his flesh!", CC_End
+	.DB CC_Indent, "H", ouml, "r mal, ", auml, "hm ... Ich hab nur Spa", szlig, " gemacht.", CC_End
 
 STR_DialogGer0099:
 	.DB CC_BoxBlue

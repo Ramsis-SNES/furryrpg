@@ -1,6 +1,11 @@
 FURRY RPG! (WORKING TITLE) -- CHANGES:
 --------------------------------------
 
+Build #00253:
+- enhanced dialog text engine with a new control code to clear the text box (mainly as a preparation for easier future cut-scene scripting)
+
+
+
 Build #00252:
 - added multi-language support to the dialog text engine
 - started to work on the German localization (press up/down on the d-pad to change languages when the text box is open)
