@@ -348,4 +348,256 @@ rtl
 
 
 
+; ***************************** MSU1 stuff *****************************
+
+.ACCU 8
+
+CheckForMSU:
+	lda MSU_ID				; check for "S-MSU1"
+	cmp #'S'
+	bne __NoMSU1
+
+	lda MSU_ID+1
+	cmp #'-'
+	bne __NoMSU1
+
+	lda MSU_ID+2
+	cmp #'M'
+	bne __NoMSU1
+
+	lda MSU_ID+3
+	cmp #'S'
+	bne __NoMSU1
+
+	lda MSU_ID+4
+	cmp #'U'
+	bne __NoMSU1
+
+	lda MSU_ID+5
+	cmp #'1'
+	beq __MSU1Found
+
+__NoMSU1:
+	stz DP_MSU1present
+	bra +
+
+__MSU1Found:
+	lda #$01
+	sta DP_MSU1present
++ rtl
+
+
+
+.ENDASM
+
+
+
+; SPC700 pass-through enabling needed, source: http://board.byuu.org/viewtopic.php?p=65217#p65217
+
+	php
+	sep #A_8BIT
+	rep #XY_8BIT
+
+	sei					; Disable NMI & IRQ
+	stz $4200
+
+; ---- Begin upload
+
+	ldy #$0002
+	jsr spc_begin_upload
+
+; ---- Upload SPC700 pass-through code
+
+	ldx #$0000
+-
+	lda.w spccode,x
+	jsr spc_upload_byte
+	inx
+	cpy #41					; size of spc code
+	bne -
+
+; ---- Execute loader
+
+	ldy #$0002
+	jsr spc_execute
+
+	lda #$81				; VBlank NMI + Auto Joypad Read
+	sta $4200				; re-enable VBlank NMI
+	cli
+	plp
+
+	SetCursorPos 0, 0
+	PrintString "Currently playing song #\n\n"
+	PrintString "Press A to toggle between songs.\n"
+	PrintString "Song #0 will be resumed if #1 has been playing."
+
+
+
+BackTo0:
+	ldx #$0000
+	stx MSU_TRACK
+
+-	bit MSU_STATUS				; wait for Audio Busy bit to clear
+	bvs -
+
+	lda #%00000011				; set play, repeat flags
+	sta MSU_CONTROL
+
+	SetCursorPos 0, 12
+	PrintString "0"
+
+	lda #$00
+-	inc a
+	inc a
+	inc a
+	wai
+	sta MSU_VOLUME
+	cmp #$FF
+	bne -
+
+MSUloop1:
+	wai
+
+	lda Joy1New
+	and #$80				; check for A button
+	beq MSUloop1
+
+	lda #$FF
+-	dec a
+	dec a
+	dec a
+	wai
+	sta MSU_VOLUME
+	bne -
+
+	lda #%00000100				; clear play/repeat flags, set resume flag --> very odd, but that's how it's designed ...
+	sta MSU_CONTROL
+
+	ldx #$0001
+	stx MSU_TRACK
+
+-	bit MSU_STATUS				; wait for Audio Busy bit to clear
+	bvs -
+
+	lda #%00000011				; set play, repeat flags
+	sta MSU_CONTROL
+
+	SetCursorPos 0, 12
+	PrintString "1"
+
+	lda #$00
+-	inc a
+	inc a
+	inc a
+	wai
+	sta MSU_VOLUME
+	cmp #$FF
+	bne -
+
+MSUloop2:
+	wai
+
+	lda Joy1New
+	and #$80				; check for A button
+	beq MSUloop2
+
+	lda #$FF
+-	dec a
+	dec a
+	dec a
+	wai
+	sta MSU_VOLUME
+	bne -
+
+	jmp BackTo0
+
+
+
+; -------------------------- SPC700 pass-through
+
+spc_begin_upload:
+	sty APUIO2				; Set address
+
+	ldy #$BBAA				; Wait for SPC
+-
+	cpy APUIO0
+	bne -
+
+	lda #$CC				; Send acknowledgement
+	sta APUIO1
+	sta APUIO0
+
+-       					; Wait for acknowledgement
+	cmp APUIO0
+	bne -
+
+	ldy #0					; Initialize index
+rts
+
+
+
+spc_upload_byte:
+	sta APUIO1
+
+	tya					; Signal it's ready
+	sta APUIO0
+-     						; Wait for acknowledgement
+	cmp APUIO0
+	bne -
+
+	iny
+
+rts
+
+
+
+spc_execute:
+	sty APUIO2
+
+	stz APUIO1
+
+	lda APUIO0
+	inc a
+	inc a
+	sta APUIO0
+
+; Wait for acknowledgement
+-
+	cmp APUIO0
+	bne -
+
+rts
+
+
+
+spccode:
+	.byt $e8, $6c		; - MOV A, #$6c ; FLG register
+	.byt $c4, $f2		; MOV $f2, A
+	.byt $e8, $20		; MOV A, #$20   ; unmute, disable echo
+	.byt $c4, $f3		; MOV $f3, A
+	.byt $78, $20, $f3	; CMP $f3, #$20
+	.byt $d0, $f3		; BNE -
+
+	.byt $e8, $2c		; - MOV A, #$2c ; Echo volume left
+	.byt $c4, $f2		; MOV $f2, A
+	.byt $e8, $00		; MOV A, #$00   ; silent
+	.byt $c4, $f3		; MOV $f3, A
+	.byt $78, $00, $f3	; CMP $f3, #$00
+	.byt $d0, $f3		; BNE -
+
+	.byt $e8, $3c		; - MOV A, #$3c ; Echo volume right
+	.byt $c4, $f2		; MOV $f2, A
+	.byt $e8, $00		; MOV A, #$00   ; silent
+	.byt $c4, $f3		; MOV $f3, A
+	.byt $78, $00, $f3	; CMP $f3, #$00
+	.byt $d0, $f3		; BNE -
+
+	.byt $2f, $fe		; - BRA -
+
+
+
+.ASM
+
+
+
 ; ******************************** EOF *********************************

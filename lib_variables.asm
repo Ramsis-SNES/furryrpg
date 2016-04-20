@@ -69,6 +69,18 @@
 
 
 
+; -------------------------- MSU1 registers
+
+	.DEFINE MSU_STATUS		$2000
+	.DEFINE MSU_READ		$2001
+	.DEFINE MSU_ID			$2002
+	.DEFINE MSU_SEEK		$2000
+	.DEFINE MSU_TRACK		$2004
+	.DEFINE MSU_VOLUME		$2006
+	.DEFINE MSU_CONTROL		$2007
+
+
+
 ; ************************ NMI/IRQ jump tables *************************
 
 ; -------------------------- IRQ routine table (for use with SetIRQRoutine macro)
@@ -321,6 +333,8 @@
 	DP_Mode7_CenterCoordX	dw
 	DP_Mode7_CenterCoordY	dw
 	DP_Mode7_FrameCounter	db
+
+	DP_MSU1present		db
 
 	DP_Multi5_Reg0lo	db
 	DP_Multi5_Reg0hi	db

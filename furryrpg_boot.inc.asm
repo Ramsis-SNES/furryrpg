@@ -206,6 +206,7 @@ Boot:
 
 	jsr JoyInit				; initialize joypads and enable NMI
 	jsl BootSPC700				; boot APU with SNESGSS sound driver
+	jsl CheckForMSU
 	jsr CheckSRAM
 
 	jml AreaEnter
@@ -245,6 +246,7 @@ Boot:
 
 	jsr JoyInit				; initialize joypads and enable NMI
 	jsl BootSPC700				; boot APU with SNESGSS sound driver
+	jsl CheckForMSU
 	jsr CheckSRAM
 
 	A16
