@@ -129,7 +129,8 @@ DebugMenu:
 	PrintString 13, 3, "Menu party test"
 	PrintString 14, 3, "Mode3 world map"
 	PrintString 15, 3, "Mode7 world map"
-	PrintString 16, 3, "SNESGSS music test:"
+	PrintString 16, 3, "Move sprite on circular path"
+	PrintString 17, 3, "SNESGSS music test:"
 ;	PrintString 16, 3, ""
 ;	PrintString 17, 3, ""
 
@@ -161,7 +162,7 @@ DebugMenuLoop:
 	lda #:SRC_TrackPointerTable
 	sta DP_SubStrAddr+2
 
-	PrintString 17, 4, "%s"			; print current SNESGSS song title
+	PrintString 18, 4, "%s"			; print current SNESGSS song title
 
 	lda #%01000100				; make sure BG3 lo/hi tilemaps get updated
 	tsb DP_DMAUpdates
@@ -182,7 +183,7 @@ DebugMenuLoop:
 
 	bra ++
 
-+	lda #126
++	lda #134
 	sta SpriteBuf1.Text+1
 
 ++
@@ -195,7 +196,7 @@ DebugMenuLoop:
 	beq ++
 
 	lda SpriteBuf1.Text+1
-	cmp #126
+	cmp #134
 	beq +
 	clc
 	adc #8
@@ -216,7 +217,7 @@ DebugMenuLoop:
 	beq ++
 
 	lda SpriteBuf1.Text+1			; only do anything if cursor is on music test
-	cmp #126
+	cmp #134
 	bne ++
 
 	lda DP_NextTrack			; go to previous track
@@ -235,7 +236,7 @@ DebugMenuLoop:
 	beq ++
 
 	lda SpriteBuf1.Text+1			; only do anything if cursor is on music test
-	cmp #126
+	cmp #134
 	bne ++
 
 	lda DP_NextTrack			; go to next track
@@ -284,12 +285,17 @@ DebugMenuLoop:
 +	cmp #110
 	bne +
 
-	bra WorldMode3
+	jmp WorldMode3
 
 +	cmp #118
 	bne +
 
 	jmp TestMode7
+
++	cmp #126
+	bne +
+
+	jmp MoveSpriteCircularTest
 
 +	jsl PlayTrack				; else, cursor must be on music test
 
@@ -310,7 +316,97 @@ DebugMenuLoop:
 
 
 
-; ******************************* Test *********************************
+; ******************************* Tests ********************************
+
+MoveSpriteCircularTest:
+	ldx #(TileMapBG3 & $FFFF)		; clear BG3 tilemap
+	stx $2181
+	stz $2183
+
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 2048
+
+	stz temp				; reset angle
+	stz temp+1
+
+	lda #70					; set radius
+	sta temp+2
+
+; X := CenterX + sin(angle)*radius
+; Y := CenterY + cos(angle)*radius
+
+	PrintString 2, 2, "Angle: $"
+
+
+
+__MSCTestLoop:
+	wai
+
+	SetTextPos 2, 10
+	PrintHexNum temp
+
+	ldx temp
+	lda.l SRC_Mode7Sin, x
+	sta $211B
+	stz $211B
+
+	lda temp+2				; radius
+	sta $211C
+
+	lda $2135
+	clc
+	adc #128
+	sta SpriteBuf1.Text			; X
+
+	lda temp
+	cmp #$81
+	bcc +
+	
+	lda SpriteBuf1.Text			; if angle > $80, subtract radius
+	sec
+	sbc temp+2
+	sta SpriteBuf1.Text			; X
+
++	ldx temp
+	lda.l SRC_Mode7Cos, x
+	sta $211B
+	stz $211B
+
+	lda temp+2				; radius
+	sta $211C
+
+	lda $2135
+	clc
+	adc #112
+	sta SpriteBuf1.Text+1			; Y
+
+	lda temp
+	cmp #$C0
+	bcs +
+	cmp #$41
+	bcc +
+
+	lda SpriteBuf1.Text+1			; if $40 < angle < $C0, subtract radius
+	sec
+	sbc temp+2
+	sta SpriteBuf1.Text+1			; Y
+
++	lda #%01000100				; make sure BG3 lo/hi tilemaps get updated
+	tsb DP_DMAUpdates
+
+	inc temp
+
+
+
+; -------------------------- check for Start
+	lda Joy1New+1
+	and #%00010000
+	bne +
+
+	bra __MSCTestLoop
+
++	jmp DebugMenu
+
+
 
 WorldMode3:
 	lda #$80				; INIDISP (Display Control 1): forced blank

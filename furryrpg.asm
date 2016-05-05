@@ -165,7 +165,7 @@ STR_SoftwareBuild:
 	.DB "Build #"
 
 STR_SoftwareBuildNo:
-	.DB "00253"
+	.DB "00254"
 	.DB 0
 
 ;STR_Software_BuildNo_END:
