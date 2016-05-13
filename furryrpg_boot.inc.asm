@@ -201,27 +201,86 @@ Boot:
 
 
 
-.IFDEF QUICKTEST
-	SetVblankRoutine TBL_NMI_Intro
-
-	jsr JoyInit				; initialize joypads and enable NMI
 ; -------------------------- more hardware checks/initialization
 	jsl BootSPC700				; boot APU with SNESGSS sound driver
 	jsl CheckForMSU1			; check if MSU1 present
 	jsr CheckSRAM				; check SRAM integrity
 
-	jml AreaEnter
 
-	lda #%00000011				; 8�8 (small) / 16�16 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
+
+; -------------------------- load gfx & palettes for debug screen
+	ldx #ADDR_VRAM_BG3_Tiles		; set VRAM address for BG3 tiles
+	stx $2116
+
+	DMA_CH0 $01, :GFX_FontHUD, GFX_FontHUD, $18, 2048
+
+	ldx #0
+
+	lda #$20				; priority bit
+-	sta TileMapBG3Hi, x			; set priority bit for BG3 HUD
+	inx
+	cpx #1024
+	bne -
+
+	ldx #ADDR_VRAM_SPR_Tiles		; set VRAM address for sprite tiles
+	stx $2116
+
+	DMA_CH0 $01, :GFX_Sprites_Smallfont, GFX_Sprites_Smallfont, $18, 4096
+
+	stz $2121				; reset CGRAM address
+
+	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
+
+	lda #$80				; set CGRAM address to #256 (word address) for sprites
+	sta $2121
+
+	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
+
+
+
+; -------------------------- set screen regs
+	lda #%00000011				; 8×8 (small) / 16×16 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
 	sta $2101
-	jml TestMode7
-.ENDIF
+
+	lda #$48|$01				; BG3 tile map VRAM offset: $4800, Tile Map size: 64×32 tiles
+	sta $2109
+
+	lda #$04				; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
+	sta $210C
+
+	lda #$01				; set BG mode 1
+	sta $2105
+
+	A16
+
+	lda #%0001010000010100			; turn on BG3 + sprites
+	sta $212C				; on mainscreen and subscreen
+	sta DP_Shadow_TSTM			; copy to shadow variable
+
+	A8
+
+	SetVblankRoutine TBL_NMI_DebugMenu
+
+	jsr JoyInit				; initialize joypads and enable NMI
+
+	lda ADDR_SRAM_ROMGOOD			; if byte is $01, then ROM integrity check was already passed
+	cmp #$01
+	beq +
+
+	lda #$0F				; turn on the screen
+	sta $2100
+
+	jsr VerifyROMIntegrity
++	jml DebugMenu
 
 
 
-; -------------------------- intro / title screen
-	lda #%00000011				; 8�8 (small) / 16�16 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
-	sta $2101
+; -------------------------- intro / title screen // FIXME, move to event handler
+AlphaIntro:
+	lda #$80				; enter forced blank
+	sta $2100
+
+	DisableInterrupts
 
 	lda #$03				; set BG Mode 3
 	sta $2105
@@ -239,16 +298,15 @@ Boot:
 	sta $210E
 	stz $210E
 
-	lda #%00010001				; turn on BG1 and sprites only
-	sta $212C				; on the mainscreen
-	sta $212D				; and on the subscreen
+	A16
+
+	lda #%0000000100000001			; turn on BG1 only
+	sta $212C				; on mainscreen and subscreen
+	sta DP_Shadow_TSTM			; copy to shadow variable
+
+	A8
 
 	SetVblankRoutine TBL_NMI_Intro
-
-	jsr JoyInit				; initialize joypads and enable NMI
-	jsl BootSPC700				; boot APU with SNESGSS sound driver
-	jsl CheckForMSU
-	jsr CheckSRAM
 
 	A16
 
@@ -443,6 +501,7 @@ Boot:
 	sta $2100
 
 	DisableInterrupts
+	SetVblankRoutine TBL_NMI_DebugMenu
 
 	A16
 
@@ -458,6 +517,7 @@ Boot:
 
 	lda #$81				; reenable interrupts
 	sta REG_NMITIMEN
+	sta DP_Shadow_NMITIMEN
 
 	cli
 
@@ -468,7 +528,7 @@ Boot:
 
 	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 0	; clear VRAM
 
-	jml AreaEnter
+	jml DebugMenu
 
 
 
@@ -577,6 +637,156 @@ Forever:
 
 -	wai					; wait for next frame
 	bra -
+
+
+
+; ************************* Testing functions **************************
+
+VerifyROMIntegrity:
+	stz $2121				; reset CGRAM address for mainscreen BG color
+	lda #$7E				; $077E = bright yellow
+	sta $2122
+	lda #$07
+	sta $2122
+
+	PrintString 2, 3, "ROM integrity check"
+	PrintString 3, 3, "-------------------"
+	PrintString 5, 3, "This is done only once to"
+	PrintString 6, 3, "ensure the ROM is valid."
+	PrintString 8, 3, "Please wait ..."
+
+.IFDEF DEBUG
+	PrintString 9, 3, "Reading bank $"
+.ENDIF
+
+	lda #%01000100				; make sure BG3 lo/hi tilemaps get updated
+	tsb DP_DMAUpdates
+
+	lda #$C0				; set start address to $C00000
+	sta temp+7
+
+.IFDEF DEBUG
+	SetTextPos 9, 17
+	PrintHexNum temp+7
+
+	lda #%01000100				; make sure BG3 lo/hi tilemaps get updated
+	tsb DP_DMAUpdates
+.ENDIF
+
+	A16
+
+	stz temp+5
+
+	lda #$01FE				; assume [$C0FFDC-F] = $FF, $FF, $00, $00, so add these right now
+	sta temp+3
+
+	ldy #0
+-	lda [temp+5], y
+	and #$00FF
+	clc
+	adc temp+3
+	sta temp+3
+
+	iny
+	cpy #$FFDC				; location of checksum complement & checksum reached?
+	bne -
+
+	ldy #$FFE0				; skip both
+-	lda [temp+5], y
+	and #$00FF
+	clc
+	adc temp+3
+	sta temp+3
+
+	iny
+	bne -
+
+	A8
+
+	inc temp+7				; increment bank byte
+
+--
+.IFDEF DEBUG
+	SetTextPos 9, 17
+	PrintHexNum temp+7
+
+	lda #%01000100				; make sure BG3 lo/hi tilemaps get updated
+	tsb DP_DMAUpdates
+.ENDIF
+
+	A16
+
+	ldy #0
+-	lda [temp+5], y				; from bank $C1 onwards, don't skip anything
+	and #$00FF
+	clc
+	adc temp+3
+	sta temp+3
+
+	iny
+	bne -
+
+	A8
+
+	lda temp+7				; increment bank byte
+	inc a
+	sta temp+7
+	cmp #$D3				; last bank + 1 reached?
+	bcc --
+
+	A16
+
+	lda temp+3				; compare sum to ROM checksum
+	cmp $C0FFDE
+	beq +
+	jmp __ROMIntegrityBad
+
++	eor #$FFFF				; compare (sum XOR $FFFF) to ROM checksum complement
+	cmp $C0FFDC
+	bne __ROMIntegrityBad
+
+	A8
+
+	stz $2121				; reset CGRAM address
+	lda #$E4				; $131A = light green
+	sta $2122
+	lda #$13
+	sta $2122
+
+	PrintString 11, 3, "ROM integrity check passed!"
+	PrintString 12, 3, "Press any button ..."
+
+	lda #%01000100				; make sure BG3 lo/hi tilemaps get updated
+	tsb DP_DMAUpdates
+
+	lda #$01				; remember that ROM integrity check was passed // FIXME, move all SRAM writing to SRAM handler
+	sta ADDR_SRAM_ROMGOOD
+
+	jsr FixSRAMChecksum
+
+	WaitForUserInput
+
+	bra __ROMIntegrityGood
+
+__ROMIntegrityBad:
+	A8
+
+	stz $2121				; reset CGRAM address
+	lda #$1C				; $001C = red
+	sta $2122
+	stz $2122
+
+	PrintString 11, 3, "Corrupt ROM, unable to"
+	PrintString 12, 3, "continue!"
+
+	lda #%01000100				; make sure BG3 lo/hi tilemaps get updated
+	tsb DP_DMAUpdates
+
+	jmp Forever
+
+__ROMIntegrityGood:
+
+rts
 
 
 

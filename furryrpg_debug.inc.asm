@@ -67,19 +67,40 @@ DebugMenu:
 	lda #$80				; VRAM address increment mode: increment address after high byte access
 	sta $2115
 
+	ldx #ADDR_VRAM_BG3_Tiles
+	stx $2116
+
+	DMA_CH0 $01, :GFX_FontHUD, GFX_FontHUD, $18, 2048
+
+	ldx #0
+
+	lda #$20				; priority bit
+-	sta TileMapBG3Hi, x			; set priority bit for BG3 HUD
+	inx
+	cpx #1024
+	bne -
+
 	ldx #ADDR_VRAM_SPR_Tiles		; set VRAM address for sprite tiles
 	stx $2116
 
 	DMA_CH0 $01, :GFX_Sprites_Smallfont, GFX_Sprites_Smallfont, $18, 4096
+
+	stz $2121				; reset CGRAM address
+
+	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
 
 	lda #$80				; set CGRAM address to #256 (word address) for sprites
 	sta $2121
 
 	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
 
-	lda #%00010111				; turn on BG1/2/3 and sprites
-	sta $212C				; on the mainscreen
-	sta $212D				; and on the subscreen
+	A16
+
+	lda #%0001011100010111			; turn on BG1/2/3 and sprites on mainscreen and subscreen
+	sta $212C
+	sta DP_Shadow_TSTM			; copy to shadow variable
+
+	A8
 
 	lda #$02
 	ldx #0
@@ -91,18 +112,25 @@ DebugMenu:
 	bne -
 
 	lda REG_RDNMI				; clear NMI flag
-
 	lda #$81				; re-enable Vblank NMI + Auto Joypad Read
 	sta DP_Shadow_NMITIMEN
 	sta REG_NMITIMEN
-
 	cli
 
 
 
-; -------------------------- set background color
+; -------------------------- update registers in case they've been messed with
+	lda #$48|$01				; BG3 tile map VRAM offset: $4800, Tile Map size: 64×32 tiles
+	sta $2109
+
+	lda #$04				; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
+	sta $210C
+
+	lda #$01				; set BG Mode 1
+	sta $2105
+
 	stz $2121				; reset CGRAM address
-	stz $2122				; $1C00 = dark blue
+	stz $2122				; $1C00 = dark blue as background color
 	lda #$1C
 	sta $2122
 
@@ -123,10 +151,10 @@ DebugMenu:
 
 ;	DrawFrame 0, 9, 31, 7
 
-	PrintString 10, 3, "Area/dialog test"
-	PrintString 11, 3, "Error test (BRK)"
-	PrintString 12, 3, "Error test (COP)"
-	PrintString 13, 3, "Menu party test"
+	PrintString 10, 3, "Alpha intro"
+	PrintString 11, 3, "Area/dialog test"
+	PrintString 12, 3, "Error test (BRK)"
+	PrintString 13, 3, "Error test (COP)"
 	PrintString 14, 3, "Mode3 world map"
 	PrintString 15, 3, "Mode7 world map"
 	PrintString 16, 3, "Move sprite on circular path"
@@ -259,6 +287,11 @@ DebugMenuLoop:
 	cmp #78
 	bne +
 
+	jmp AlphaIntro
+
++	cmp #86
+	bne +
+
 	ldx #(TileMapBG3 & $FFFF)		; clear text
 	stx $2181
 	stz $2183
@@ -267,20 +300,15 @@ DebugMenuLoop:
 
 	jmp AreaEnter
 
-+	cmp #86
++	cmp #94
 	bne +
 
 	brk $FF
 
-+	cmp #94
-	bne +
-
-	cop $FF
-
 +	cmp #102
 	bne +
 
-	jmp PartyMenu
+	cop $FF
 
 +	cmp #110
 	bne +

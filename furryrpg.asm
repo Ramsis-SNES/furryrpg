@@ -15,7 +15,6 @@
 
 .DEFINE DEBUG
 ;.DEFINE NOMUSIC				; activate this to disable music // FIXME (make this actually work)
-;.DEFINE QUICKTEST				; for quick tests (skipping intro)
 
 .DEFINE CurrentBank	0
 .DEFINE START_OFFSET	$F000			; start code offset in bank $C0
@@ -165,7 +164,7 @@ STR_SoftwareBuild:
 	.DB "Build #"
 
 STR_SoftwareBuildNo:
-	.DB "00254"
+	.DB "00255"
 	.DB 0
 
 ;STR_Software_BuildNo_END:
