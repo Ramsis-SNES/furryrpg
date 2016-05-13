@@ -1,7 +1,7 @@
 ;==========================================================================================
 ;
 ;   "FURRY RPG" (WORKING TITLE)
-;   (c) 2016 by Ramsis a.k.a. ManuLöwe (http://www.manuloewe.de/)
+;   (c) 2016 by Ramsis a.k.a. ManuLÃ¶we (http://www.manuloewe.de/)
 ;
 ;	*** MUSIC HANDLER ***
 ;

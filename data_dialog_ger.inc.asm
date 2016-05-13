@@ -1,7 +1,7 @@
 ;==========================================================================================
 ;
 ;   "FURRY RPG" (WORKING TITLE)
-;   (c) 2016 by Ramsis a.k.a. ManuLöwe (http://www.manuloewe.de/)
+;   (c) 2016 by Ramsis a.k.a. ManuLÃ¶we (http://www.manuloewe.de/)
 ;
 ;	*** DIALOG STRINGS (GERMAN) ***
 ;
@@ -11,13 +11,13 @@
 
 ; ****************************** Defines *******************************
 
-;	.DEFINE Auml		$80		; Ä
-;	.DEFINE Ouml		$81		; Ö
-;	.DEFINE Uuml		$82		; Ü
-;	.DEFINE auml		$83		; ä
-;	.DEFINE ouml		$84		; ö
-;	.DEFINE uuml		$85		; ü
-;	.DEFINE szlig		$86		; ß
+;	.DEFINE Auml		$80		; Ã„
+;	.DEFINE Ouml		$81		; Ã–
+;	.DEFINE Uuml		$82		; Ãœ
+;	.DEFINE auml		$83		; Ã¤
+;	.DEFINE ouml		$84		; Ã¶
+;	.DEFINE uuml		$85		; Ã¼
+;	.DEFINE szlig		$86		; ÃŸ
 ;	.DEFINE SYM_heart	$87, $88	; heart symbol
 ;	.DEFINE SYM_quot	$89		; quotation mark
 ;	.DEFINE SYM_mult	$8A		; multiplication sign
@@ -551,7 +551,7 @@ STR_DialogGer0086:
 	.DB CC_BoxPissed
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "W...was?", CC_NewLine
-	.DB CC_Indent, "Soll das heißen, ich esse hier gerade ...", CC_NewLine
+	.DB CC_Indent, "Soll das heiÃŸen, ich esse hier gerade ...", CC_NewLine
 	.DB CC_Indent, "... die sterblichen ", Uuml, "berreste ...", CC_End
 
 STR_DialogGer0087:

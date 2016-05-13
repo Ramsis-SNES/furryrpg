@@ -1,7 +1,7 @@
 ;==========================================================================================
 ;
 ;   "FURRY RPG" (WORKING TITLE)
-;   (c) 2016 by Ramsis a.k.a. ManuLöwe (http://www.manuloewe.de/)
+;   (c) 2016 by Ramsis a.k.a. ManuLÃ¶we (http://www.manuloewe.de/)
 ;
 ;	*** TEXT ENGINE ***
 ;
@@ -849,7 +849,7 @@ rts
 ;	ldx #ADDR_VRAM_BG2_TEXTBOXL1		; set VRAM address to beginning of line 1
 ;	stx $2116
 
-;	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 800	; 50 tiles × 16 bytes
+;	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 800	; 50 tiles Ã— 16 bytes
 ;rts
 
 
@@ -1034,7 +1034,7 @@ MakeTextBoxTilemapBG2:
 
 	lda #$20				; $20 = no. of 1st text string tile in VRAM, $22 = second tile etc.
 -	sta $2118
-	inc a					; tile no. += 2 (Mode 5 always shows two 8×8 tiles at once, resulting in a single 16×8 tile)
+	inc a					; tile no. += 2 (Mode 5 always shows two 8Ã—8 tiles at once, resulting in a single 16Ã—8 tile)
 	inc a
 	inx
 	cpx #PARAM_TextBox_Line1+PARAM_TEXTBOX_WIDTH-1
@@ -1069,7 +1069,7 @@ MakeTextBoxTilemapBG2:
 	pla					; restore no. of text string tile
 
 -	sta $2118
-	inc a					; tile no. += 2 (Mode 5 always shows two 8×8 tiles at once, resulting in a single 16×8 tile)
+	inc a					; tile no. += 2 (Mode 5 always shows two 8Ã—8 tiles at once, resulting in a single 16Ã—8 tile)
 	inc a
 	inx					; position in tilemap += 1
 	cpx #PARAM_TextBox_Line2+PARAM_TEXTBOX_WIDTH-1
@@ -1106,7 +1106,7 @@ MakeTextBoxTilemapBG2:
 	pla					; restore no. of text string tile
 
 -	sta $2118
-	inc a					; tile no. += 2 (Mode 5 always shows two 8×8 tiles at once, resulting in a single 16×8 tile)
+	inc a					; tile no. += 2 (Mode 5 always shows two 8Ã—8 tiles at once, resulting in a single 16Ã—8 tile)
 	inc a
 	inx					; position in tilemap += 1
 	cpx #PARAM_TextBox_Line3+PARAM_TEXTBOX_WIDTH-1

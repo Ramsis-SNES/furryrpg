@@ -1,7 +1,7 @@
 ;==========================================================================================
 ;
 ;   "FURRY RPG" (WORKING TITLE)
-;   (c) 2016 by Ramsis a.k.a. ManuLöwe (http://www.manuloewe.de/)
+;   (c) 2016 by Ramsis a.k.a. ManuLÃ¶we (http://www.manuloewe.de/)
 ;
 ;	*** AREA HANDLER ***
 ;
@@ -180,19 +180,19 @@ AreaEnter:
 
 
 ; -------------------------- screen registers
-	lda #%00000011				; 8×8 (small) / 16×16 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
+	lda #%00000011				; 8Ã—8 (small) / 16Ã—16 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
 	sta $2101
 
 ;	lda #$03				; set BG Mode 3
 ;	sta $2105
 
-	lda #$50|$01				; BG1 tile map VRAM offset: $5000, Tile Map size: 64×32 tiles
+	lda #$50|$01				; BG1 tile map VRAM offset: $5000, Tile Map size: 64Ã—32 tiles
 	sta $2107
 
-	lda #$58|$01				; BG2 tile map VRAM offset: $5800, Tile Map size: 64×32 tiles
+	lda #$58|$01				; BG2 tile map VRAM offset: $5800, Tile Map size: 64Ã—32 tiles
 	sta $2108
 
-	lda #$48|$01				; BG3 tile map VRAM offset: $4800, Tile Map size: 64×32 tiles
+	lda #$48|$01				; BG3 tile map VRAM offset: $4800, Tile Map size: 64Ã—32 tiles
 	sta $2109
 
 ;	lda #$00				; BG1/BG2 character data VRAM offset: $0000

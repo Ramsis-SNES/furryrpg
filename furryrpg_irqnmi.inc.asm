@@ -1,7 +1,7 @@
 ;==========================================================================================
 ;
 ;   "FURRY RPG" (WORKING TITLE)
-;   (c) 2016 by Ramsis a.k.a. ManuLöwe (http://www.manuloewe.de/)
+;   (c) 2016 by Ramsis a.k.a. ManuLÃ¶we (http://www.manuloewe.de/)
 ;
 ;	*** IRQ & NMI HANDLERS ***
 ;
@@ -129,7 +129,7 @@ __Char1Frame1:
 +	inc DP_Char1FrameCounter		; increment animation frame counter
 
 __Char1WalkingDone:
-	asl a					; frame no. × 2 for correct tile no. in spritesheet
+	asl a					; frame no. Ã— 2 for correct tile no. in spritesheet
 
 	A16
 
@@ -168,10 +168,10 @@ __SkipRefreshes3:
 	lda #$01|$08				; set BG Mode 1 for area, BG3 priority
 	sta $2105
 
-	lda #$50|$01				; BG1 tile map VRAM offset: $5000, Tile Map size: 64×32 tiles
+	lda #$50|$01				; BG1 tile map VRAM offset: $5000, Tile Map size: 64Ã—32 tiles
 	sta $2107
 
-	lda #$58|$01				; BG2 tile map VRAM offset: $5800, Tile Map size: 64×32 tiles
+	lda #$58|$01				; BG2 tile map VRAM offset: $5800, Tile Map size: 64Ã—32 tiles
 	sta $2108
 
 	A16
@@ -641,10 +641,10 @@ VIRQ_Area:
 	lda #$05				; switch to BG Mode 5 for text box
 	sta $2105
 
-	lda #$78				; BG1 tile map VRAM offset: $7800, Tile Map size: 32×32 tiles
+	lda #$78				; BG1 tile map VRAM offset: $7800, Tile Map size: 32Ã—32 tiles
 	sta $2107
 
-	lda #$7C				; BG2 tile map VRAM offset: $7C00, Tile Map size: 32×32 tiles
+	lda #$7C				; BG2 tile map VRAM offset: $7C00, Tile Map size: 32Ã—32 tiles
 	sta $2108
 
 ;	lda #$FF				; set BG1 vertical scroll = -1 (reminder: 0 would mean 1st scanline is invisible!)
@@ -1054,7 +1054,7 @@ ErrorHandlerBRK:
 	lda #$01				; set BG mode 1
 	sta $2105
 
-	lda #$48				; BG3 tile map VRAM offset: $4800, Tile Map size: 32×32 tiles
+	lda #$48				; BG3 tile map VRAM offset: $4800, Tile Map size: 32Ã—32 tiles
 	sta $2109
 
 	lda #$04				; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
@@ -1209,7 +1209,7 @@ ErrorHandlerCOP:
 	lda #$01				; set BG mode 1
 	sta $2105
 
-	lda #$48				; BG3 tile map VRAM offset: $4800, Tile Map size: 32×32 tiles
+	lda #$48				; BG3 tile map VRAM offset: $4800, Tile Map size: 32Ã—32 tiles
 	sta $2109
 
 	lda #$04				; BG3 character data VRAM offset: $4000 (ignore BG4 bits)

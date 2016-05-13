@@ -1,7 +1,7 @@
 ;==========================================================================================
 ;
 ;   "FURRY RPG" (WORKING TITLE)
-;   (c) 2016 by Ramsis a.k.a. ManuLöwe (http://www.manuloewe.de/)
+;   (c) 2016 by Ramsis a.k.a. ManuLÃ¶we (http://www.manuloewe.de/)
 ;
 ;	*** BOOT CODE ***
 ;
@@ -211,7 +211,7 @@ Boot:
 
 	jml AreaEnter
 
-	lda #%00000011				; 8×8 (small) / 16×16 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
+	lda #%00000011				; 8ï¿½8 (small) / 16ï¿½16 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
 	sta $2101
 	jml TestMode7
 .ENDIF
@@ -219,14 +219,14 @@ Boot:
 
 
 ; -------------------------- intro / title screen
-	lda #%00000011				; 8×8 (small) / 16×16 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
+	lda #%00000011				; 8ï¿½8 (small) / 16ï¿½16 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
 	sta $2101
 
 	lda #$03				; set BG Mode 3
 	sta $2105
 
 	lda #$50				; set BG1's Tile Map VRAM offset to $5000 (word address)
-	sta $2107				; and the Tile Map size to 32×32 tiles
+	sta $2107				; and the Tile Map size to 32Ã—32 tiles
 
 	lda #$20				; set BG1's Character VRAM offset to $0000 (word address)
 	sta $210B				; (ignore BG2 bits)

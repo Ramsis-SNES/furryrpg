@@ -1,7 +1,7 @@
 ;==========================================================================================
 ;
 ;   "FURRY RPG" (WORKING TITLE)
-;   (c) 2016 by Ramsis a.k.a. ManuLöwe (http://www.manuloewe.de/)
+;   (c) 2016 by Ramsis a.k.a. ManuLÃ¶we (http://www.manuloewe.de/)
 ;
 ;	*** MODE7 HANDLER ***
 ;
@@ -172,7 +172,7 @@ TestMode7:
 ; -------------------------- write cloud tilemap
 	A16
 
-	lda #$1870				; Y, X start values of upper left corner of 128×32 GFX
+	lda #$1870				; Y, X start values of upper left corner of 128Ã—32 GFX
 	sta temp
 
 	lda #$3480				; tile properties (highest priority, fixed), tile num (start value)
@@ -435,7 +435,7 @@ Mode7Loop:
 	lda DP_Mode7_RotAngle			; $00 < angle < $80 --> inc X
 	beq __M7FlightY				; don't change X if angle = 0
 	cmp #$80
-	beq __M7FlightY				; don't change X if angle = 128 (eq. 180°)
+	beq __M7FlightY				; don't change X if angle = 128 (eq. 180Â°)
 	bcs +
 	jsr M7FlightIncX
 	bra __M7FlightY
@@ -445,10 +445,10 @@ Mode7Loop:
 __M7FlightY:
 	lda DP_Mode7_RotAngle			; $40 < angle < $C0 --> inc Y
 	cmp #$40
-	beq ++					; don't change Y if angle = 64 (eq. 90°)
+	beq ++					; don't change Y if angle = 64 (eq. 90Â°)
 	bcc +
 	cmp #$C0
-	beq ++					; don't change Y if angle = 192 (eq. 270°)
+	beq ++					; don't change Y if angle = 192 (eq. 270Â°)
 	bcs +
 	jsr M7FlightIncY
 	bra ++
@@ -543,14 +543,14 @@ CalcMode7Matrix:
 
 
 
-; This is the algorithm to do signed 8×16 bit multiplication using CPU multiplication registers:
-; 1. do unsigned 8×8 bit multiplication for lower 8 bits of multiplicand, store 16-bit interim result in temp
-; 2. do unsigned 8×8 bit multiplication for upper 8 bits of multiplicand, store 16-bit interim result in temp+3 (it's crucial that temp+2 remains $00)
+; This is the algorithm to do signed 8Ã—16 bit multiplication using CPU multiplication registers:
+; 1. do unsigned 8Ã—8 bit multiplication for lower 8 bits of multiplicand, store 16-bit interim result in temp
+; 2. do unsigned 8Ã—8 bit multiplication for upper 8 bits of multiplicand, store 16-bit interim result in temp+3 (it's crucial that temp+2 remains $00)
 ; 3. combine interim results, keeping the upper 16 bits of the 24-bit result only (the lower 8 bits aren't needed by the Mode 7 matrix parameters)
 ;
 ; As CPU multiplication is unsigned, this is how the sign of the multiplier is accounted for:
-; 1. if multiplier is positive, simply do the two 8×8 bit multiplications one by one, and do (temp+3)+(temp+1) for the end result
-; 2. if multiplier is negative, make it positive first, then do the two 8×8 bit multiplications one by one, and do -(temp+3)-(temp+1) for the end result
+; 1. if multiplier is positive, simply do the two 8Ã—8 bit multiplications one by one, and do (temp+3)+(temp+1) for the end result
+; 2. if multiplier is negative, make it positive first, then do the two 8Ã—8 bit multiplications one by one, and do -(temp+3)-(temp+1) for the end result
 ;
 ; Proof of concept:
 ; Consider this multiplication:
@@ -564,7 +564,7 @@ CalcMode7Matrix:
 
 
 ; -------------------------- calculate M7A/M7D for next frame
-; 8×8 multiplication for lower 8 bits of multiplicand
+; 8Ã—8 multiplication for lower 8 bits of multiplicand
 	ldx #0
 
 -	stz temp+6
@@ -600,7 +600,7 @@ CalcMode7Matrix:
 
 	A8
 
-; 8×8 multiplication for upper 8 bits of multiplicand
+; 8Ã—8 multiplication for upper 8 bits of multiplicand
 	iny
 
 	lda [DP_Mode7_AltTabOffset], y
@@ -659,7 +659,7 @@ CalcMode7Matrix:
 
 
 ; -------------------------- calculate M7B/M7C for next frame
-; 8×8 multiplication for lower 8 bits of multiplicand
+; 8Ã—8 multiplication for lower 8 bits of multiplicand
 	ldx #0
 
 -	stz temp+6
@@ -695,7 +695,7 @@ CalcMode7Matrix:
 
 	A8
 
-; 8×8 multiplication for upper 8 bits of multiplicand
+; 8Ã—8 multiplication for upper 8 bits of multiplicand
 	iny
 
 	lda [DP_Mode7_AltTabOffset], y

@@ -1,7 +1,7 @@
 ;==========================================================================================
 ;
 ;   "FURRY RPG" (WORKING TITLE)
-;   (c) 2016 by Ramsis a.k.a. ManuLöwe (http://www.manuloewe.de/)
+;   (c) 2016 by Ramsis a.k.a. ManuLÃ¶we (http://www.manuloewe.de/)
 ;
 ;	*** VARIABLE DEFINITIONS ***
 ;
@@ -174,7 +174,7 @@
 	.DEFINE PARAM_TextBox_Line4	$0347	; tilemap entry for start of line 4 in text box
 
 	.DEFINE PARAM_TEXTBOX_UL	$02C6	; tilemap entry for upper left corner of text box
-	.DEFINE PARAM_TEXTBOX_WIDTH	24	; in "full" (i.e., 16×8) hi-res tiles
+	.DEFINE PARAM_TEXTBOX_WIDTH	24	; in "full" (i.e., 16Ã—8) hi-res tiles
 
 
 

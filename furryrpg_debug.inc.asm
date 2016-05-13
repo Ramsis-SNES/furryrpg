@@ -1,7 +1,7 @@
 ;==========================================================================================
 ;
 ;   "FURRY RPG" (WORKING TITLE)
-;   (c) 2016 by Ramsis a.k.a. ManuLöwe (http://www.manuloewe.de/)
+;   (c) 2016 by Ramsis a.k.a. ManuLÃ¶we (http://www.manuloewe.de/)
 ;
 ;	*** DEBUG MENU ***
 ;
@@ -457,7 +457,7 @@ WorldMode3:
 	SetVblankRoutine TBL_NMI_Playfield
 
 	lda #$7C				; set BG1's Tile Map VRAM offset to $7C00 (word address)
-	sta $2107				; and the Tile Map size to 32×32 tiles
+	sta $2107				; and the Tile Map size to 32Ã—32 tiles
 
 	lda #$81				; enable NMI and auto-joypad read
 	sta DP_Shadow_NMITIMEN
