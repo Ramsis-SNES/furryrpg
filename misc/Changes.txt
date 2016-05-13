@@ -29,7 +29,7 @@ Build #00249:
 
 
 Build #00248:
-- added preliminary BG scrolling routine, area tilemaps are now 64×32 tiles in size
+- added preliminary BG scrolling routine, area tilemaps are now 64Ã—32 tiles in size
 
 
 
@@ -41,7 +41,7 @@ Build #00245:
 
 Build #00243:
 - DMA stuff during Vblank (tile map updates etc.) are now done as requested by the main program only
-- reduced hero sprite to 16×32px, allowing for more efficient sprite math
+- reduced hero sprite to 16Ã—32px, allowing for more efficient sprite math
 - hero spritesheet doesn't need to be all in VRAM any more, plus there are more frames available for smoother animations (not used ATM)
 - hero can finally move in 8 directions
 
@@ -103,7 +103,7 @@ Build #00228:
 
 
 Build #00227:
-- upgraded the text engine, which now features an 8×8 VWF
+- upgraded the text engine, which now features an 8Ã—8 VWF
 
 
 
@@ -147,7 +147,7 @@ Build #00213:
 
 Build #00212:
 - changed Mode 3 world map behavior (no text box)
-- added yet another 8×8 font for use on BG3 (e.g. in the in-game menu)
+- added yet another 8Ã—8 font for use on BG3 (e.g. in the in-game menu)
 - removed a lot of obsolete stuff
 
 
