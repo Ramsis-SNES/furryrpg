@@ -10,7 +10,6 @@
 
 
 spc_load_data:
-
 	php
 	AXY16
 
@@ -21,7 +20,7 @@ spc_load_data:
 
 	A8
 
-;	sta.l REG_NMITIMEN		;disable NMI,interrupts has to be disabled to prevent possible lockup in the IPL transfer routine
+;	sta.l REG_NMITIMEN			;disable NMI,interrupts has to be disabled to prevent possible lockup in the IPL transfer routine
 ;	sei					;disable IRQ
 
 	A16

@@ -352,7 +352,7 @@ rtl
 
 .ACCU 8
 
-CheckForMSU:
+CheckForMSU1:
 	lda MSU_ID				; check for "S-MSU1"
 	cmp #'S'
 	bne __NoMSU1

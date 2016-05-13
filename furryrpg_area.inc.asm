@@ -110,7 +110,7 @@ AreaEnter:
 
 
 ; -------------------------- palettes --> CGRAM
-	stz $2121				; set CGRAM address to #0
+	stz $2121				; reset CGRAM address
 
 	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
 

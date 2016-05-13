@@ -3,8 +3,7 @@
 echo -- CONVERTING LOGO --
 gfx2snes -gs8 -pc256 -po256 -fpcx -m -n logo.pcx
 
-rem echo -- CONVERTING SPRITES --
-rem ****** Old command line for neviksti's tool:
+rem ****** Old command line syntax for neviksti's tool:
 rem ****** pcx2snes %filename% -n -s8 -c16 -o16
 
 echo -- CONVERTING PORTRAITS --
@@ -12,8 +11,6 @@ gfx2snes -gs8 -mR! -pc16 -po16 -fpcx -n portrait_kimahri.pcx
 gfx2snes -gs8 -mR! -pc16 -po16 -fpcx -n portrait_linkwolf.pcx
 gfx2snes -gs8 -mR! -pc16 -po16 -fpcx -n portrait_gengen.pcx
 gfx2snes -gs8 -mR! -pc16 -po16 -fpcx -n portrait_zakari.pcx
-rem gfx2snes -gs8 -mR! -pc16 -po16 -fpcx -n logo_simba.pcx
-rem gfx2snes -gs8 -mR! -pc16 -po16 -fpcx -n simba_new.pcx
 
 echo -- CONVERTING FONTS --
 gfx2snes -gs8 -mR! -p! -pc4 -fbmp -n font_mode5.bmp

@@ -205,9 +205,10 @@ Boot:
 	SetVblankRoutine TBL_NMI_Intro
 
 	jsr JoyInit				; initialize joypads and enable NMI
+; -------------------------- more hardware checks/initialization
 	jsl BootSPC700				; boot APU with SNESGSS sound driver
-	jsl CheckForMSU
-	jsr CheckSRAM
+	jsl CheckForMSU1			; check if MSU1 present
+	jsr CheckSRAM				; check SRAM integrity
 
 	jml AreaEnter
 

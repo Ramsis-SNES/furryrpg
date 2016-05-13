@@ -551,7 +551,7 @@ STR_DialogGer0086:
 	.DB CC_BoxPissed
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "W...was?", CC_NewLine
-	.DB CC_Indent, "Soll das heißen, ich esse hier gerade ...", CC_NewLine
+	.DB CC_Indent, "Soll das hei", szlig, "en, ich esse hier gerade ...", CC_NewLine
 	.DB CC_Indent, "... die sterblichen ", Uuml, "berreste ...", CC_End
 
 STR_DialogGer0087:
