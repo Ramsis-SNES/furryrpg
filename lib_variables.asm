@@ -402,14 +402,14 @@
 
 
 .STRUCT sram
-	Slot1			dsb 2044
-	Slot1Checksum		dsb 4
-	Slot2			dsb 2044
-	Slot2Checksum		dsb 4
-	Slot3			dsb 2044
-	Slot3Checksum		dsb 4
-	Slot4			dsb 2044
-	Slot4Checksum		dsb 4
+	Slot1			dsb 16		; 16 bytes per slot reserved
+	Slot1Data		dsb 2032
+	Slot2			dsb 16
+	Slot2Data		dsb 2032
+	Slot3			dsb 16
+	Slot3Data		dsb 2032
+	Slot4			dsb 16
+	Slot4Data		dsb 2032
 .ENDST
 
 
