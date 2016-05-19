@@ -179,10 +179,10 @@ __SkipRefreshes3:
 	lda DP_Shadow_TSTM			; copy mainscreen & subscreen shadow registers
 	sta $212C
 
+	A8
+
 	lda DP_Shadow_NMITIMEN
 	sta REG_NMITIMEN
-
-	A8
 
 ;	stz $2133
 
