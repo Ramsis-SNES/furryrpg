@@ -889,7 +889,7 @@ SpriteInit:
 	ldx #$0000
 
 __Init_OAM_lo:
-	lda #$F0F0
+	lda #$F0F8
 	sta SpriteBuf1, x			; initialize all sprites to be off the screen
 
 	inx
@@ -912,7 +912,7 @@ __Init_OAM_lo:
 __Init_OAM_hi1:
 	sta SpriteBuf2, x
 	inx
-	cpx #$0018				; see .STRUCT oam_high
+	cpx #24					; see .STRUCT oam_high
 	bne __Init_OAM_hi1
 
 	lda #%00000000				; small sprites
@@ -920,7 +920,7 @@ __Init_OAM_hi1:
 __Init_OAM_hi2:
 	sta SpriteBuf2, x
 	inx
-	cpx #$0020
+	cpx #32
 	bne __Init_OAM_hi2
 
 	;set the sprite to the highest priority

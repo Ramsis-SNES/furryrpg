@@ -362,7 +362,7 @@ MoveSpriteCircularTest:
 ; X := CenterX + sin(angle)*radius
 ; Y := CenterY + cos(angle)*radius
 
-	PrintString 2, 2, "Angle: $"
+	PrintString 2, 20, "Angle: $"
 
 
 

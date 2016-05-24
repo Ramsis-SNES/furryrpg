@@ -435,13 +435,13 @@ MainAreaLoop:
 
 
 ; -------------------------- check for Y button = open menu
-	lda Joy1Press+1
-	and #%01000000
-	beq __MainAreaLoopYButtonDone
+;	lda Joy1Press+1
+;	and #%01000000
+;	beq __MainAreaLoopYButtonDone
 
-	jmp MainMenu
+;	jmp MainMenu
 
-__MainAreaLoopYButtonDone:
+;__MainAreaLoopYButtonDone:
 
 
 
@@ -630,11 +630,13 @@ __MainAreaLoopAButtonDone:
 
 
 ; -------------------------- check for X button
-;	lda Joy1New
-;	and #%01000000
-;	beq __MainAreaLoopXButtonDone
+	lda Joy1New
+	and #%01000000
+	beq __MainAreaLoopXButtonDone
 
-;__MainAreaLoopXButtonDone:
+	jmp InGameMenu
+
+__MainAreaLoopXButtonDone:
 
 
 

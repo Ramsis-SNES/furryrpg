@@ -224,16 +224,13 @@ MainMenuLoop:
 
 
 
-; ***************************** Party menu *****************************
+; ***************************** Main menu ******************************
 
-PartyMenu:
+InGameMenu:
 	lda #$80				; INIDISP (Display Control 1): forced blank
 	sta $2100
 
 	stz DP_HDMAchannels			; disable HDMA
-
-;	lda #$FF				; never mind, VRAM gets cleared anyway down below
-;	sta SpriteBuf1.Text+1
 
 	wai					; wait
 
@@ -241,17 +238,14 @@ PartyMenu:
 
 
 
-; -------------------------- clear tilemap buffers
+; -------------------------- clear tilemap buffers, init sprites
 	ldx #(TileMapBG1 & $FFFF)
 	stx $2181
 	stz $2183
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024*6
 
-	lda #%01110111				; make sure BG1/2/3 lo/hi tilemaps get updated
-	tsb DP_DMAUpdates
-
-	jsr SpriteInit
+	jsr SpriteInit				; FIXME, sprite #0 isn't empty on menu sprites
 
 
 
@@ -267,14 +261,16 @@ PartyMenu:
 
 
 ; -------------------------- load menu GFX
-	ldx #ADDR_VRAM_BG1_Tiles
-	stx $2116				; BLA
+	ldx #ADDR_VRAM_BG1_Tiles		; set VRAM address for BG1 tiles
+	stx $2116
 
 	DMA_CH0 $01, :GFX_Logo, GFX_Logo, $18, 8544
 
 	ldx #(TileMapBG1 & $FFFF)
 	stx $2181
 	stz $2183
+
+;	DMA_CH0 $00, :SRC_Tilemap_Logo, SRC_Tilemap_Logo, $80, 2048
 
 	ldx #0
 
@@ -287,11 +283,11 @@ PartyMenu:
 
 
 
-; -------------------------- spritesheet --> VRAM
-;	ldx #ADDR_VRAM_SPR_TILES		; set VRAM address for sprite tiles
-;	stx $2116
+; -------------------------- menu sprites --> VRAM
+	ldx #ADDR_VRAM_SPR_Tiles		; set VRAM address for sprite tiles
+	stx $2116
 
-;	DMA_CH0 $01, :GFX_Spritesheet_Char1, GFX_Spritesheet_Char1, $18, 12288
+	DMA_CH0 $01, :GFX_Sprites_InGameMenu, GFX_Sprites_InGameMenu, $18, 8192
 
 ;	lda #TBL_Char1_frame00			; restore char sprite
 
@@ -339,14 +335,21 @@ PartyMenu:
 	lda #$80				; set CGRAM address to #256 (word address) for sprites
 	sta $2121
 
-	DMA_CH0 $02, :SRC_Palette_Spritesheet_Char1, SRC_Palette_Spritesheet_Char1, $22, 32
+	DMA_CH0 $02, :SRC_Palette_Sprites_InGameMenu, SRC_Palette_Sprites_InGameMenu, $22, 32
+
+	lda #%01110111				; make sure BG1/2/3 lo/hi tilemaps get updated once NMI is reenabled
+	tsb DP_DMAUpdates
+
+	SetVblankRoutine TBL_NMI_DebugMenu
 
 	lda REG_RDNMI				; clear NMI flag
 
-	lda #$81
+	lda #$81				; reenable NMI & IRQ
 	sta REG_NMITIMEN
 
 	cli
+
+	WaitForFrames 5				; wait for tilemaps to get updated
 
 	lda #%00010111				; turn on BG1/2/3 & sprites
 	sta $212C				; on the mainscreen
@@ -354,7 +357,7 @@ PartyMenu:
 
 
 
-; -------------------------- menu "window" color
+; -------------------------- menu BG color
 	ldx #0
 
 -	lda.l SRC_HDMA_ColMathMenuParty, x
@@ -368,7 +371,7 @@ PartyMenu:
 ;	sta $2130
 	stz $2130				; clear color math disable bits
 
-	lda #%00110111				; enable color math on BG1/2/3 + sprites (with palettes 4-7) + backdrop
+;	lda #%00110111				; enable color math on BG1/2/3 + sprites (with palettes 4-7) + backdrop
 	lda #%00100001				; enable color math on BG1 + backdrop
 	sta $2131
 
@@ -389,6 +392,85 @@ PartyMenu:
 	tsb DP_HDMAchannels
 
 
+
+; -------------------------- screen regs
+	lda #%01100011				; 16×16 (small) / 32×32 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
+	sta $2101
+
+
+
+; -------------------------- ring menu sprites
+	lda #PARAM_RingMenuCenterX-16		; X (subtract half of sprite width)
+	sta SpriteBuf1.RingMenuCursor
+
+	lda #PARAM_RingMenuCenterY-PARAM_RingMenuRadius	; Y (subtract radius)
+	sta SpriteBuf1.RingMenuCursor+1
+
+	lda #$80				; tile num (cursor sprite)
+	sta SpriteBuf1.RingMenuCursor+2
+
+	lda #%00110000				; attributes (tile num & priority bits only)
+	sta SpriteBuf1.RingMenuCursor+3
+
+	lda #$00				; tile num ("Inventory" sprite)
+	sta SpriteBuf1.RingMenuItem1+2
+
+	lda #%00110000				; attributes (tile num & priority bits only)
+	sta SpriteBuf1.RingMenuItem1+3
+
+	lda #$04				; tile num ("Talent" sprite)
+	sta SpriteBuf1.RingMenuItem2+2
+
+	lda #%00110000				; attributes (tile num & priority bits only)
+	sta SpriteBuf1.RingMenuItem2+3
+
+	lda #$08				; tile num ("Party" sprite)
+	sta SpriteBuf1.RingMenuItem3+2
+
+	lda #%00110000				; attributes (tile num & priority bits only)
+	sta SpriteBuf1.RingMenuItem3+3
+
+	lda #$0C				; tile num ("Lily's log" sprite)
+	sta SpriteBuf1.RingMenuItem4+2
+
+	lda #%00110000				; attributes (tile num & priority bits only)
+	sta SpriteBuf1.RingMenuItem4+3
+
+	lda #$40				; tile num ("Settings" sprite)
+	sta SpriteBuf1.RingMenuItem5+2
+
+	lda #%00110000				; attributes (tile num & priority bits only)
+	sta SpriteBuf1.RingMenuItem5+3
+
+	lda #$44				; tile num ("Quit Game" sprite)
+	sta SpriteBuf1.RingMenuItem6+2
+
+	lda #%00110000				; attributes (tile num & priority bits only)
+	sta SpriteBuf1.RingMenuItem6+3
+
+	lda #$48				; tile num (1st "??" sprite)
+	sta SpriteBuf1.RingMenuItem7+2
+
+	lda #%00110000				; attributes (tile num & priority bits only)
+	sta SpriteBuf1.RingMenuItem7+3
+
+	lda #$4C				; tile num (2nd "??" sprite)
+	sta SpriteBuf1.RingMenuItem8+2
+
+	lda #%00110000				; attributes (tile num & priority bits only)
+	sta SpriteBuf1.RingMenuItem8+3
+
+	lda #$80				; set angle for cursor & 1st item on ring menu ($80 = 12:00 o'clock)
+	sta DP_RingMenuAngle
+	stz DP_RingMenuAngle+1
+
+	jsr PutRingMenuItems
+
+	DrawFrame 7, 1, 17, 2
+
+
+
+.ENDASM
 
 ; -------------------------- menu "window" content
 	DrawFrame 1, 1, 13, 12
@@ -430,12 +512,264 @@ PartyMenu:
 
 ;	A8
 
-	wai
+.ASM
 
 	lda #$0F
 	sta $2100
 
-	jmp Forever
+RingMenuLoop:
+	wai
+
+
+
+; -------------------------- check for dpad left
+	lda Joy1Press+1
+	and #%00000010
+	beq __RingMenuLoopDpadLeftDone
+
+	ldy #$0020				; change angle 32 times
+
+-	wai
+
+	dec DP_RingMenuAngle			; dec angle --> rotate clockwise
+	dec DP_RingMenuAngle
+
+	jsr PutRingMenuItems
+
+	dey
+	dey
+	bne -
+
+__RingMenuLoopDpadLeftDone:
+
+
+
+; -------------------------- check for dpad right
+	lda Joy1Press+1
+	and #%00000001
+	beq __RingMenuLoopDpadRightDone
+
+	ldy #$0020
+
+-	wai
+
+	inc DP_RingMenuAngle			; inc angle --> rotate counter-clockwise
+	inc DP_RingMenuAngle
+
+	jsr PutRingMenuItems
+
+	dey
+	dey
+	bne -
+
+__RingMenuLoopDpadRightDone:
+
+
+
+; -------------------------- update headline based on angle
+	lda DP_RingMenuAngle
+	bne +
+
+	PrintString 2, 8, "    Settings    "
+
+	jmp ++
+
++	cmp #$20
+	bne +
+
+	PrintString 2, 8, "   Quit Game    "
+
+	jmp ++
+
++	cmp #$40
+	bne +
+
+	PrintString 2, 8, "      ???1      "
+
+	jmp ++
+
++	cmp #$60
+	bne +
+
+	PrintString 2, 8, "      ???2      "
+
+	bra ++
+
++	cmp #$80
+	bne +
+
+	PrintString 2, 8, "   Inventory    "
+
+	bra ++
+
++	cmp #$A0
+	bne +
+
+	PrintString 2, 8, "     Talent     "
+
+	bra ++
+
++	cmp #$C0
+	bne +
+
+	PrintString 2, 8, "     Party      "
+
+	bra ++
+
++	PrintString 2, 8, "   Lily's log   "
+++
+
+;.IFDEF DEBUG
+;	PrintString 23, 2, "Angle: $"
+;	PrintHexNum DP_RingMenuAngle
+;.ENDIF
+
+	lda #%00000100				; make sure BG3 lo tilemap gets updated
+	tsb DP_DMAUpdates
+
+	jmp RingMenuLoop
+
+
+
+PutRingMenuItems:
+	lda DP_RingMenuAngle			; take angle for 1st item on ring menu ($80 = 12:00 o'clock)
+	sta DP_RingMenuAngleOffset
+
+	ldx #SpriteBuf1.RingMenuItem1		; set WRAM address for 1st item on ring menu
+	stx $2181
+	stz $2183
+	jsr CalcRingMenuItemPos
+
+	lda DP_RingMenuAngle			; set angle for 2nd item on ring menu ($60 = 1:30 o'clock)
+	sec
+	sbc #$20
+	sta DP_RingMenuAngleOffset
+
+	ldx #SpriteBuf1.RingMenuItem2		; set WRAM address for 2nd item on ring menu
+	stx $2181
+	stz $2183
+	jsr CalcRingMenuItemPos
+
+	lda DP_RingMenuAngle			; set angle for 3rd item on ring menu ($40 = 3:00 o'clock)
+	sec
+	sbc #$40
+	sta DP_RingMenuAngleOffset
+
+	ldx #SpriteBuf1.RingMenuItem3		; set WRAM address for 3rd item on ring menu
+	stx $2181
+	stz $2183
+	jsr CalcRingMenuItemPos
+
+	lda DP_RingMenuAngle			; set angle for 4th item on ring menu ($20 = 4:30 o'clock)
+	sec
+	sbc #$60
+	sta DP_RingMenuAngleOffset
+
+	ldx #SpriteBuf1.RingMenuItem4		; set WRAM address for 4th item on ring menu
+	stx $2181
+	stz $2183
+	jsr CalcRingMenuItemPos
+
+	lda DP_RingMenuAngle			; set angle for 5th item on ring menu ($00 = 6:00 o'clock)
+	sec
+	sbc #$80
+	sta DP_RingMenuAngleOffset
+
+	ldx #SpriteBuf1.RingMenuItem5		; set WRAM address for 5th item on ring menu
+	stx $2181
+	stz $2183
+	jsr CalcRingMenuItemPos
+
+	lda DP_RingMenuAngle			; set angle for 6th item on ring menu ($E0 = 7:30 o'clock)
+	clc
+	adc #$60
+	sta DP_RingMenuAngleOffset
+
+	ldx #SpriteBuf1.RingMenuItem6		; set WRAM address for 6th item on ring menu
+	stx $2181
+	stz $2183
+	jsr CalcRingMenuItemPos
+
+	lda DP_RingMenuAngle			; set angle for 7th item on ring menu ($C0 = 9:00 o'clock)
+	clc
+	adc #$40
+	sta DP_RingMenuAngleOffset
+
+	ldx #SpriteBuf1.RingMenuItem7		; set WRAM address for 7th item on ring menu
+	stx $2181
+	stz $2183
+	jsr CalcRingMenuItemPos
+
+	lda DP_RingMenuAngle			; set angle for 8th item on ring menu ($A0 = 10:30 o'clock)
+	clc
+	adc #$20
+	sta DP_RingMenuAngleOffset
+
+	ldx #SpriteBuf1.RingMenuItem8		; set WRAM address for 8th item on ring menu
+	stx $2181
+	stz $2183
+	jsr CalcRingMenuItemPos
+rts
+
+
+
+CalcRingMenuItemPos:
+
+; X := CenterX + sin(angle)*radius
+; Y := CenterY + cos(angle)*radius
+
+	ldx DP_RingMenuAngleOffset
+	lda.l SRC_Mode7Sin, x
+	sta $211B
+	stz $211B
+
+	lda #PARAM_RingMenuRadius
+	sta $211C
+
+	lda $2135
+	clc
+	adc #PARAM_RingMenuCenterX-16		; subtract half of sprite width (as above)
+	pha
+
+	lda DP_RingMenuAngleOffset
+	cmp #$81
+	bcc +
+
+	pla					; if angle > $80, subtract radius
+	sec
+	sbc #PARAM_RingMenuRadius
+	pha
+
++	pla
+	sta $2180				; save X
+
+	ldx DP_RingMenuAngleOffset
+	lda.l SRC_Mode7Cos, x
+	sta $211B
+	stz $211B
+
+	lda #PARAM_RingMenuRadius
+	sta $211C
+
+	lda $2135
+	clc
+	adc #PARAM_RingMenuCenterY-(PARAM_RingMenuRadius/2)	; subtract radius/2 (as above)
+	pha
+
+	lda DP_RingMenuAngleOffset
+	cmp #$C0
+	bcs +
+	cmp #$41
+	bcc +
+
+	pla					; if $40 < angle < $C0, subtract radius
+	sec
+	sbc #PARAM_RingMenuRadius
+	pha
+
++	pla
+	sta $2180				; save Y
+rts
 
 
 

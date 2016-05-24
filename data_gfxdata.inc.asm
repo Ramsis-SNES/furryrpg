@@ -36,6 +36,9 @@
 ;.DEFINE MAINMENUBG_P_MAP	".\\gfx\\test\\menubg-party.map"
 ;.DEFINE MAINMENUBG_P_PAL	".\\gfx\\test\\menubg-party.pal"
 
+.DEFINE MENU_SPRITES		".\\gfx\\menu-sprites.pic"
+.DEFINE MENU_SPRITES_PAL	".\\gfx\\menu-sprites.pal"
+
 ;.DEFINE PLAYFIELD_001		".\\gfx\\playfield_001.pic"
 ;.DEFINE PLAYFIELD_001_MAP	".\\gfx\\playfield_001.map"
 
@@ -90,6 +93,9 @@ SRC_Palette_Portrait_Char4:
 SRC_Palette_Spritesheet_Char1:
 	.INCBIN SPRITESHEET_CHAR1_PAL		; 32 bytes
 
+SRC_Palette_Sprites_InGameMenu:
+	.INCBIN MENU_SPRITES_PAL		; 32 bytes
+
 
 
 ; ************************ Font character data *************************
@@ -128,6 +134,9 @@ GFX_Sprites_Smallfont:
 
 GFX_Spritesheet_Char1:
 	.INCBIN SPRITESHEET_CHAR1
+
+GFX_Sprites_InGameMenu:
+	.INCBIN MENU_SPRITES
 
 GFX_Sprites_Clouds:
 	.INCBIN ".\\gfx\\cloud1.pic"

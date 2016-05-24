@@ -172,6 +172,10 @@
 	.DEFINE ADDR_VRAM_BG1_Tilemap3	$7800	; only $7B60-$7BFF used for text box
 	.DEFINE ADDR_VRAM_BG2_Tilemap3	$7C00	; only $7F60-$7FFF used for text box
 
+	.DEFINE PARAM_RingMenuCenterX	128
+	.DEFINE PARAM_RingMenuCenterY	172
+	.DEFINE PARAM_RingMenuRadius	120
+
 	.DEFINE PARAM_MODE7_SKY_LINES	72	; number of scanlines for sky above Mode 7 landscape
 
 	.DEFINE PARAM_TextBox		$02C0	; tilemap entry for start of whole text box area
@@ -333,6 +337,9 @@
 	DP_GameTime_Minutes	db
 	DP_GameTime_Hours	db
 
+	DP_RingMenuAngle	dw
+	DP_RingMenuAngleOffset	dw
+
 	DP_Mode7_Altitude	db
 	DP_Mode7_AltTabOffset	dsb 3		; holds a 24-bit address
 	DP_Mode7_RotAngle	dw		; currently needs to be 16-bit as it's used as an index in CalcMode7Matrix
@@ -383,7 +390,9 @@
 
 .STRUCT oam_high
 	Cursor			db
-	Reserved		dsb 21
+	NPCs			dsb 10
+	RingMenu		dsb 4
+	Reserved		dsb 7
 	PlayableChar		dsb 2
 	Text			dsb 8
 .ENDST
@@ -393,7 +402,18 @@
 .STRUCT oam_low
 	Cursor			dsb 4
 	CursorReserved		dsb 12
-	Reserved		dsb 336
+	NPCs			dsb 160
+	RingMenuCursor		dsb 4
+	RingMenuItem1		dsb 4
+	RingMenuItem2		dsb 4
+	RingMenuItem3		dsb 4
+	RingMenuItem4		dsb 4
+	RingMenuItem5		dsb 4
+	RingMenuItem6		dsb 4
+	RingMenuItem7		dsb 4
+	RingMenuItem8		dsb 4
+	RingMenuMisc		dsb 28
+	Reserved		dsb 112
 	PlayableChar		dsb 24
 	PlayableCharReserved	dsb 8
 	Text			dsb 128		; for one line of text (32 chars)
