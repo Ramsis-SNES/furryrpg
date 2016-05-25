@@ -158,7 +158,22 @@ SRC_Palette_Logo:
 	.INCBIN LOGO_PAL			; 512 bytes
 
 SRC_Tilemap_Logo:
-	.INCBIN LOGO_MAP			; 2048 bytes
+;	.INCBIN LOGO_MAP			; 2048 bytes
+
+.DEFINE SkipTileNo -2				; "deinterleave" tile maps output by gfx2snes
+
+.REPEAT 1024
+	.REDEFINE SkipTileNo SkipTileNo+2	; SkipTileNo += 2
+	.INCBIN LOGO_MAP SKIP SkipTileNo READ 1	; read even (low) bytes of tilemap
+.ENDR
+
+;SRC_Tilemap_LogoHi:
+;.REDEFINE SkipTileNo -1
+
+;.REPEAT 1024
+;	.REDEFINE SkipTileNo SkipTileNo+2
+;	.INCBIN LOGO_MAP SKIP SkipTileNo READ 1	; read odd (high) bytes of tilemap
+;.ENDR
 
 
 
@@ -195,20 +210,20 @@ SRC_Palette_Area003:
 SRC_Tilemap_Area003:
 	.INCBIN ".\\gfx\\area-003-green.map"
 
-;	.DEFINE SkipTileNo -2			; "deinterleave" tile maps output by gfx2snes
+;.REDEFINE SkipTileNo -2			; "deinterleave" tile maps output by gfx2snes
 
-;	.REPEAT 2048
-;		.REDEFINE SkipTileNo SkipTileNo+2	; SkipTileNo += 2
-;		.INCBIN ".\\gfx\\area-003.map" SKIP SkipTileNo READ 1	; read even bytes
-;	.ENDR
+;.REPEAT 2048
+;	.REDEFINE SkipTileNo SkipTileNo+2	; SkipTileNo += 2
+;	.INCBIN ".\\gfx\\area-003.map" SKIP SkipTileNo READ 1	; read even bytes
+;.ENDR
 
 ;SRC_Tilemap_Area003Hi:
-;	.REDEFINE SkipTileNo 1
+;.REDEFINE SkipTileNo -1
 
-;	.REPEAT 2048
-;		.INCBIN ".\\gfx\\area-003.map" SKIP SkipTileNo READ 1	; read odd bytes
-;		.REDEFINE SkipTileNo SkipTileNo+2
-;	.ENDR
+;.REPEAT 2048
+;	.REDEFINE SkipTileNo SkipTileNo+2
+;	.INCBIN ".\\gfx\\area-003.map" SKIP SkipTileNo READ 1	; read odd bytes
+;.ENDR
 
 
 

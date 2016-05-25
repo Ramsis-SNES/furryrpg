@@ -121,17 +121,7 @@ SRC_HDMA_ColMathMenu_End:
 
 
 
-SRC_HDMA_ColMathMenuParty:
-;	.DB 13					; for 13 scanlines
-;	.DB $E0, $E0				; apply black (i.e., don't affect display)
-
-;	.DB 94					; for the menu "window",
-;	.DB $E0, %00101011			; apply color
-
-;	.DB 1					; for the remaining scanlines,
-;	.DB $E0, $E0				; don't affect display
-;	.DB 0
-
+SRC_HDMA_ColMathMainMenu:
 	.DB 7
 	.DB $E0, $80
 	.DB 7
@@ -197,7 +187,7 @@ SRC_HDMA_ColMathMenuParty:
 	.DB 7
 	.DB $E0, $9F
 
-SRC_HDMA_ColMathMenuParty_End:
+SRC_HDMA_ColMathMainMenu_End:
 
 
 

@@ -374,8 +374,6 @@ __MainTextBoxLoopLButtonDone:
 
 __MainTextBoxLoopRButtonDone:
 
-
-
 	jmp MainTextBoxLoop
 
 

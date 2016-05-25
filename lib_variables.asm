@@ -365,7 +365,7 @@
 	DP_TextBoxSelection	db		; holds selection option chosen by player
 	DP_TextBoxSelMax	db		; for HDMA selection bar
 	DP_TextBoxSelMin	db		; ditto
-	DP_TextBoxStatus	db		; cm4321ot [c = clear text box, m = there is more text to process, o = text box is open, r = reserved, 1-4 = text box contains selection on line no. 1-4, t = VWF buffer full, transfer to VRAM]
+	DP_TextBoxStatus	db		; cm4321ot [c = clear text box, m = there is more text to process, o = text box is open, 1-4 = text box contains selection on line no. 1-4, t = VWF buffer full, transfer to VRAM]
 	DP_TextLanguage		db		; holds language constant
 	DP_TextPointer		dw
 	DP_TextPointerBank	db

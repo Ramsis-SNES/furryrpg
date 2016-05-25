@@ -264,38 +264,19 @@ InGameMenu:
 	ldx #ADDR_VRAM_BG1_Tiles		; set VRAM address for BG1 tiles
 	stx $2116
 
-	DMA_CH0 $01, :GFX_Logo, GFX_Logo, $18, 8544
+	DMA_CH0 $01, :GFX_Logo, GFX_Logo, $18, 8000
 
 	ldx #(TileMapBG1 & $FFFF)
 	stx $2181
 	stz $2183
 
-;	DMA_CH0 $00, :SRC_Tilemap_Logo, SRC_Tilemap_Logo, $80, 2048
+	DMA_CH0 $00, :SRC_Tilemap_Logo, SRC_Tilemap_Logo, $80, 1024
 
-	ldx #0
-
--	lda.l SRC_Tilemap_Logo, x
-	sta $2180
-	inx
-	inx					; skip high byte
-	cpx #2048
-	bne -
-
-
-
-; -------------------------- menu sprites --> VRAM
 	ldx #ADDR_VRAM_SPR_Tiles		; set VRAM address for sprite tiles
 	stx $2116
 
 	DMA_CH0 $01, :GFX_Sprites_InGameMenu, GFX_Sprites_InGameMenu, $18, 8192
 
-;	lda #TBL_Char1_frame00			; restore char sprite
-
-;	jsr CharFrameToSpriteBuf
-
-
-
-; -------------------------- HUD font --> VRAM
 	ldx #ADDR_VRAM_BG3_Tiles
 	stx $2116
 
@@ -312,7 +293,7 @@ InGameMenu:
 
 
 ; -------------------------- palettes --> CGRAM
-	stz $2121				; set CGRAM address to #0
+	stz $2121				; reset CGRAM address
 
 	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
 
@@ -343,59 +324,42 @@ InGameMenu:
 	SetVblankRoutine TBL_NMI_DebugMenu
 
 	lda REG_RDNMI				; clear NMI flag
-
 	lda #$81				; reenable NMI & IRQ
 	sta REG_NMITIMEN
-
 	cli
 
 	WaitForFrames 5				; wait for tilemaps to get updated
 
-	lda #%00010111				; turn on BG1/2/3 & sprites
-	sta $212C				; on the mainscreen
-	sta $212D				; and on the subscreen
 
 
+; -------------------------- set up menu BG color & misc. screen registers
+	lda #%01100011				; 16×16 (small) / 32×32 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
+	sta $2101
 
-; -------------------------- menu BG color
+	A16
+
+	lda #%0001011100010111			; turn on BG1/2/3 & sprites on mainscreen and subscreen
+	sta $212C
+	sta DP_Shadow_TSTM			; copy to shadow variable (not yet used)
+
+	A8
+
 	ldx #0
 
--	lda.l SRC_HDMA_ColMathMenuParty, x
+-	lda.l SRC_HDMA_ColMathMainMenu, x
 	sta ARRAY_HDMA_ColorMath, x
 
 	inx
-	cpx #SRC_HDMA_ColMathMenuParty_End-SRC_HDMA_ColMathMenuParty
+	cpx #SRC_HDMA_ColMathMainMenu_End-SRC_HDMA_ColMathMainMenu
 	bne -
 
-	lda #%00010000				; set color math enable bits (4-5) to "MathWindow"
-;	sta $2130
 	stz $2130				; clear color math disable bits
 
-;	lda #%00110111				; enable color math on BG1/2/3 + sprites (with palettes 4-7) + backdrop
 	lda #%00100001				; enable color math on BG1 + backdrop
 	sta $2131
 
-;	lda #13					; color "window" left pos
-;	sta $2126
-
-;	lda #114				; color "window" right pos
-;	sta $2127
-
-;	lda #%00100000				; color math window 1 area = outside (why does this work??)
-;	sta $2125
-
-;	lda #%00010000				; disable sprites within window // maybe CHANGEME, use sprite palettes that support color math
-;	sta $212E
-;	sta $212F
-
 	lda #%00001000				; enable HDMA channels 3 (color math)
 	tsb DP_HDMAchannels
-
-
-
-; -------------------------- screen regs
-	lda #%01100011				; 16×16 (small) / 32×32 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
-	sta $2101
 
 
 
