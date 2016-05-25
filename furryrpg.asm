@@ -121,10 +121,10 @@ EmptyHandler:
 	rti
 
 DummyBRK:
-	jml ErrorHandlerBRK
+	jml	ErrorHandlerBRK
 
 DummyCOP:
-	jml ErrorHandlerCOP
+	jml	ErrorHandlerCOP
 
 .ENDS
 
@@ -185,19 +185,19 @@ CONST_Zeroes:
 
 
 SRC_VblankJumpTable:
-	jml Vblank_Area
-	jml Vblank_DebugMenu
-	jml Vblank_Error
-	jml Vblank_Mode7
-	jml Vblank_Playfield
-	jml Vblank_Intro
+	jml	Vblank_Area
+	jml	Vblank_DebugMenu
+	jml	Vblank_Error
+	jml	Vblank_Mode7
+	jml	Vblank_Playfield
+	jml	Vblank_Intro
 
 
 
 SRC_IRQJumpTable:
-	jml HIRQ_MainMenu
-	jml VIRQ_Area
-	jml VIRQ_Mode7
+	jml	HIRQ_MainMenu
+	jml	VIRQ_Area
+	jml	VIRQ_Mode7
 
 .ENDS
 
@@ -236,7 +236,7 @@ Startup:
 	clc
 	xce					; switch to native mode
 
-	jml Boot
+	jml	Boot
 
 .ENDS
 
