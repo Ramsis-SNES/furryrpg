@@ -81,13 +81,12 @@ _W1:	bit REG_HVBJOY
 
 ; ********** make sure Joypads 1, 2 are valid
 
-	AXY16
-
-	lda REG_JOYSER0
-	eor #$01
-	and #$01				; A = -bit0 of JoySer0
-	ora Joy1
-	sta Joy1				; joy state = (joy state) or A.... so bit0 of Joy1State = 0 only if it is a valid joypad
+	AXY8
+	lda	REG_JOYSER0
+	eor	#$01
+	and	#$01				; A = -bit0 of JoySer0
+	ora	Joy1
+	sta	Joy1				; joy state = (joy state) or A.... so bit0 of Joy1State = 0 only if it is a valid joypad
 
 	lda REG_JOYSER1
 	eor #$01
