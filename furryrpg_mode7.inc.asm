@@ -342,6 +342,9 @@ Mode7Loop:
 
 	WaitForFrames 1				; don't use WAI here as IRQ is enabled
 
+;-	lda REG_HVBJOY				; wait for start of Vblank
+;	bpl -
+
 
 
 ; -------------------------- check for dpad up
@@ -528,16 +531,29 @@ __M7FlightY:
 	jsr CalcMode7Matrix
 +
 
+
+
+; -------------------------- show CPU load
+	lda $2137				; latch H/V counter
+	lda $213F				; reset OPHCT/OPVCT flip-flops
+
+	lda $213D
+	sta DP_CurrentScanline
+
+	lda $213D
+	and #$01				; mask off 7 open bus bits
+	sta DP_CurrentScanline+1
+
+	PrintSpriteText 25, 21, "V-line: $", 1
+	PrintSpriteHexNum DP_CurrentScanline+1
+	PrintSpriteHexNum DP_CurrentScanline
+
 	jmp Mode7Loop
 
 
 
 ; -------------------------- calculate Mode 7 matrix parameters for next frame
 CalcMode7Matrix:
-;	lda $2137				; latch H/V counter values
-;	sta temp+7
-;	lda $213D				; read V-counter
-
 	lda #:SRC_Mode7Scaling
 	sta DP_Mode7_AltTabOffset+2
 

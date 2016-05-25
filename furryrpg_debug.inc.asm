@@ -176,6 +176,9 @@ DebugMenu:
 DebugMenuLoop:
 	wai
 
+-	lda REG_HVBJOY				; are we still on Vblank?
+	bmi -					; yes, wait
+
 	A16
 
 	lda DP_NextTrack
@@ -340,7 +343,31 @@ DebugMenuLoop:
 
 ;+
 
+	jsr ShowCPUload
 	jmp DebugMenuLoop
+
+
+
+; ************************ Debugging functions *************************
+
+; -------------------------- show CPU load (via scanline counter)
+ShowCPUload:
+	lda $2137				; latch H/V counter
+	lda $213F				; reset OPHCT/OPVCT flip-flops
+
+	lda $213D
+	sta DP_CurrentScanline
+
+	lda $213D
+	and #$01				; mask off 7 open bus bits
+	sta DP_CurrentScanline+1
+
+	SetTextPos 2, 2
+	PrintNum DP_CurrentScanline
+
+	jsr PrintF
+	.DB "  ", 0				; clear trailing numbers from old values
+rts
 
 
 
@@ -369,7 +396,10 @@ MoveSpriteCircularTest:
 __MSCTestLoop:
 	wai
 
-	SetTextPos 2, 10
+-	lda REG_HVBJOY				; are we still on Vblank?
+	bmi -					; yes, wait
+
+	SetTextPos 2, 28
 	PrintHexNum temp
 
 	ldx temp
@@ -428,11 +458,13 @@ __MSCTestLoop:
 ; -------------------------- check for Start
 	lda Joy1New+1
 	and #%00010000
-	bne +
+	beq +
 
-	bra __MSCTestLoop
+	jmp DebugMenu
++
 
-+	jmp DebugMenu
+	jsr ShowCPUload
+	jmp __MSCTestLoop
 
 
 

@@ -671,8 +671,7 @@ __MainAreaLoopXButtonDone:
 
 __MainAreaLoopStButtonDone:
 
-
-
+	jsr ShowCPUload
 	jmp MainAreaLoop
 
 
