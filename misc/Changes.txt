@@ -1,6 +1,22 @@
 FURRY RPG! (WORKING TITLE) -- CHANGES:
 --------------------------------------
 
+Build #00256:
+- started to work on a proper in-game main menu (ring-menu style)
+
+
+
+Build #00255:
+- added proper ROM/SRAM integrity checks (ROM is checked on initial startup only, SRAM is always checked during boot)
+- minor bugfixes
+
+
+
+Build #00254:
+- added a basic function which moves a sprite on a circular path (e.g. for a ring menu)
+
+
+
 Build #00253:
 - enhanced dialog text engine with a new control code to clear the text box (mainly as a preparation for easier future cut-scene scripting)
 
