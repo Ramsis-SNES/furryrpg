@@ -347,6 +347,84 @@ Mode7Loop:
 
 
 
+; -------------------------- check for dpad up+left
+	lda Joy1Press+1
+	and #%00001010
+	cmp #%00001010
+	bne ++
+
+	dec DP_Mode7_RotAngle
+	lda DP_Mode7_Altitude
+	inc a
+	cmp #128
+	bcc +
+	lda #127
++	sta DP_Mode7_Altitude
+
+	jsr CalcMode7Matrix
+	jmp __M7SkipDpad			; skip additional d-pad checks (no more than 2 directions allowed)
+++
+
+
+
+; -------------------------- check for dpad up+right
+	lda Joy1Press+1
+	and #%00001001
+	cmp #%00001001
+	bne ++
+
+	inc DP_Mode7_RotAngle
+	lda DP_Mode7_Altitude
+	inc a
+	cmp #128
+	bcc +
+	lda #127
++	sta DP_Mode7_Altitude
+
+	jsr CalcMode7Matrix
+	bra __M7SkipDpad
+++
+
+
+
+; -------------------------- check for dpad down+left
+	lda Joy1Press+1
+	and #%00000110
+	cmp #%00000110
+	bne ++
+
+	dec DP_Mode7_RotAngle
+	lda DP_Mode7_Altitude
+	dec a
+	bpl +
+	lda #0
++	sta DP_Mode7_Altitude
+
+	jsr CalcMode7Matrix
+	bra __M7SkipDpad
+++
+
+
+
+; -------------------------- check for dpad down+right
+	lda Joy1Press+1
+	and #%00000101
+	cmp #%00000101
+	bne ++
+
+	inc DP_Mode7_RotAngle
+	lda DP_Mode7_Altitude
+	dec a
+	bpl +
+	lda #0
++	sta DP_Mode7_Altitude
+
+	jsr CalcMode7Matrix
+	bra __M7SkipDpad
+++
+
+
+
 ; -------------------------- check for dpad up
 	lda Joy1Press+1
 	and #%00001000
@@ -401,6 +479,10 @@ Mode7Loop:
 
 	jsr CalcMode7Matrix
 +
+
+
+
+__M7SkipDpad:
 
 
 
