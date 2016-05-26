@@ -13,75 +13,75 @@
 .INDEX 16
 
 TestMode7:
-	lda	#$80				; INIDISP (Display Control 1): forced blank
+	lda	#$80							; INIDISP (Display Control 1): forced blank
 	sta	$2100
 
-	stz	DP_HDMAchannels			; disable HDMA
+	stz	DP_HDMAchannels						; disable HDMA
 
-	wai					; wait for OAM to refresh
+	wai								; wait for OAM to refresh
 
 	DisableInterrupts
 
 
 
 ; -------------------------- HDMA channel 4: Mode 7 A
-	lda	#$42				; transfer mode (2 bytes --> $211B), indirect table mode
+	lda	#$42							; transfer mode (2 bytes --> $211B), indirect table mode
 	sta	$4340
-	lda	#$1B				; PPU reg. $211B
+	lda	#$1B							; PPU reg. $211B
 	sta	$4341
 	ldx	#SRC_HDMA_M7A
 	stx	$4342
 	lda	#:SRC_HDMA_M7A
 	sta	$4344
-	lda	#$7E				; indirect HDMA CPU bus data address bank
+	lda	#$7E							; indirect HDMA CPU bus data address bank
 	sta	$4347
 
 
 
 ; -------------------------- HDMA channel 5: Mode 7 B
-	lda	#$42				; transfer mode (2 bytes --> $211C), indirect table mode
+	lda	#$42							; transfer mode (2 bytes --> $211C), indirect table mode
 	sta	$4350
-	lda	#$1C				; PPU reg. $211C
+	lda	#$1C							; PPU reg. $211C
 	sta	$4351
 	ldx	#SRC_HDMA_M7B
 	stx	$4352
 	lda	#:SRC_HDMA_M7B
 	sta	$4354
-	lda	#$7E				; indirect HDMA CPU bus data address bank
+	lda	#$7E							; indirect HDMA CPU bus data address bank
 	sta	$4357
 
 
 
 ; -------------------------- HDMA channel 6: Mode 7 C
-	lda	#$42				; transfer mode (2 bytes --> $211D), indirect table mode
+	lda	#$42							; transfer mode (2 bytes --> $211D), indirect table mode
 	sta	$4360
-	lda	#$1D				; PPU reg. $211D
+	lda	#$1D							; PPU reg. $211D
 	sta	$4361
 	ldx	#SRC_HDMA_M7C
 	stx	$4362
 	lda	#:SRC_HDMA_M7C
 	sta	$4364
-	lda	#$7E				; indirect HDMA CPU bus data address bank
+	lda	#$7E							; indirect HDMA CPU bus data address bank
 	sta	$4367
 
 
 
 ; -------------------------- HDMA channel 7: Mode 7 D
-	lda	#$42				; transfer mode (2 bytes --> $211E), indirect table mode
+	lda	#$42							; transfer mode (2 bytes --> $211E), indirect table mode
 	sta	$4370
-	lda	#$1E				; PPU reg. $211E
+	lda	#$1E							; PPU reg. $211E
 	sta	$4371
 	ldx	#SRC_HDMA_M7D
 	stx	$4372
 	lda	#:SRC_HDMA_M7D
 	sta	$4374
-	lda	#$7E				; indirect HDMA CPU bus data address bank
+	lda	#$7E							; indirect HDMA CPU bus data address bank
 	sta	$4377
 
 
 
 ; -------------------------- load Mode 7 palette
-	stz	$2121				; start at color 0
+	stz	$2121							; start at color 0
 
 	DMA_CH0 $02, :SRC_Sommappal, SRC_Sommappal, $22, 512
 ;	DMA_CH0 $02, :SRC_Mappal, SRC_Mappal, $22, $0200
@@ -90,10 +90,10 @@ TestMode7:
 
 ; -------------------------- load Mode 7 character data
 ; ############################### FOR PIC2MODE7'S GFX OUTPUT
-	lda	#$80				; VRAM address increment mode: increment address after high byte access
+	lda	#$80							; VRAM address increment mode: increment address after high byte access
 	sta	$2115
 
-	ldx	#$0000				; set VRAM address $0000
+	ldx	#$0000							; set VRAM address $0000
 	stx	$2116
 
 	DMA_CH0 $01, :GFX_Sommappic, GFX_Sommappic, $18, 32768 ;$0000
@@ -102,18 +102,18 @@ TestMode7:
 
 
 ; ############################### FOR GFX2SNES'/PCX2SNES' OUTPUT
-;	lda	#$00				; VRAM address increment mode: increment address after low byte access
+;	lda	#$00							; VRAM address increment mode: increment address after low byte access
 ;	sta	$2115
 
-;	ldx	#$0000				; set VRAM address $0000
+;	ldx	#$0000							; set VRAM address $0000
 ;	stx	$2116
 
 ;	DMA_CH0 $00, :SRC_Maptilemap, SRC_Maptilemap, $18, SRC_Maptilemap_END - SRC_Maptilemap
 
-;	lda	#$80				; VRAM address increment mode: increment address after high byte access
+;	lda	#$80							; VRAM address increment mode: increment address after high byte access
 ;	sta	$2115
 
-;	ldx	#$0000				; set VRAM address $0000
+;	ldx	#$0000							; set VRAM address $0000
 ;	stx	$2116
 
 ;	DMA_CH0 $00, :GFX_Mappic, GFX_Mappic, $19, GFX_Mappic_END - GFX_Mappic
@@ -134,16 +134,16 @@ TestMode7:
 
 
 ; -------------------------- load font & cloud sprites
-	lda	#$80				; VRAM address increment mode: increment address after high byte access
+	lda	#$80							; VRAM address increment mode: increment address after high byte access
 	sta	$2115
 
-	ldx	#ADDR_VRAM_SPR_Tiles		; set VRAM address for sprite tiles
+	ldx	#ADDR_VRAM_SPR_Tiles					; set VRAM address for sprite tiles
 	stx	$2116
 
 	DMA_CH0 $01, :GFX_Sprites_Smallfont, GFX_Sprites_Smallfont, $18, 4096
 	DMA_CH0 $01, :GFX_Sprites_Clouds, GFX_Sprites_Clouds, $18, 2048
 
-	lda	#$A0				; start at 3rd sprite color
+	lda	#$A0							; start at 3rd sprite color
 	sta	$2121
 
 	DMA_CH0 $02, :SRC_Palette_Clouds, SRC_Palette_Clouds, $22, 32
@@ -155,54 +155,54 @@ TestMode7:
 ; -------------------------- write cloud tilemap
 	A16
 
-	lda	#$1870				; Y, X start values of upper left corner of 128×32 GFX
+	lda	#$1870							; Y, X start values of upper left corner of 128×32 GFX
 	sta	temp
 
-	lda	#$3480				; tile properties (highest priority, fixed), tile num (start value)
+	lda	#$3480							; tile properties (highest priority, fixed), tile num (start value)
 	sta	temp+2
 
 	ldx	#$0000
--	lda	temp				; Y, X
+-	lda	temp							; Y, X
 	sta	SpriteBuf1.Reserved, x
 	clc
-	adc	#$0010				; X += 16
+	adc	#$0010							; X += 16
 	sta	temp
 	inx
 	inx
 
-	lda	temp+2				; tile properties, tile num
+	lda	temp+2							; tile properties, tile num
 	sta	SpriteBuf1.Reserved, x
 	clc
-	adc	#$0002				; tile num += 2
+	adc	#$0002							; tile num += 2
 	sta	temp+2
 	inx
 	inx
 
-	bit	#$000F				; check if last 4 bits of tile num clear = one row of 8 (large) sprites done?
-	bne	-				; "inner loop"
+	bit	#$000F							; check if last 4 bits of tile num clear = one row of 8 (large) sprites done?
+	bne	-							; "inner loop"
 
 	lda	temp
-	and	#$FF70				; reset X = 8
+	and	#$FF70							; reset X = 8
 	clc
-	adc	#$1000				; Y += 16
+	adc	#$1000							; Y += 16
 	sta	temp
 	lda	temp+2
 	clc
-	adc	#$0010				; tile num += 16 (i.e., skip one row of 8*8 tiles)
+	adc	#$0010							; tile num += 16 (i.e., skip one row of 8*8 tiles)
 	sta	temp+2
 
-	cpx	#$40				; 16 large sprites done?
-	bne	-				; "outer loop"
+	cpx	#$40							; 16 large sprites done?
+	bne	-							; "outer loop"
 
 	A8
 
-	stz	temp+2				; see Mode 7 matrix calculations below
+	stz	temp+2							; see Mode 7 matrix calculations below
 
 
 
 ; -------------------------- set transparency for clouds
 	A16
-	lda	#%0001000000000001		; turn on BG1 on mainscreen only, sprites on subscreen
+	lda	#%0001000000000001					; turn on BG1 on mainscreen only, sprites on subscreen
 	sta	$212C
 	sta	DP_Shadow_TSTM
 	A8
@@ -211,12 +211,12 @@ TestMode7:
 ;	stz	$2122
 ;	stz	$2122
 
-	lda	#$E0				; subscreen backdrop color
+	lda	#$E0							; subscreen backdrop color
 	sta	$2132
 	sta	$2132
-	lda	#%0000010			; enable BGs/OBJs on subscreen
+	lda	#%0000010						; enable BGs/OBJs on subscreen
 	sta	$2130
-	lda	#%01000001			; enable color math on BG1, add subscreen and div by 2
+	lda	#%01000001						; enable color math on BG1, add subscreen and div by 2
 	sta	$2131
 
 .ASM
@@ -224,7 +224,7 @@ TestMode7:
 
 
 ; -------------------------- load sky backdrop gradient
-	ldx	#(ARRAY_HDMA_BackgrPlayfield & $FFFF)	; set WRAM address to text box HDMA background
+	ldx	#(ARRAY_HDMA_BackgrPlayfield & $FFFF)			; set WRAM address to text box HDMA background
 	stx	$2181
 	stz	$2183
 
@@ -240,9 +240,9 @@ TestMode7:
 	cpx	#SRC_HDMA_ColMathMode7_End-SRC_HDMA_ColMathMode7
 	bne	-
 
-	lda	#%00000000			; clear color math disable bits (4-5)
+	lda	#%00000000						; clear color math disable bits (4-5)
 	sta	$2130
-	lda	#%00110111			; enable color math on BG1/2/3 + sprites + backdrop
+	lda	#%00110111						; enable color math on BG1/2/3 + sprites + backdrop
 	sta	$2131
 
 
@@ -251,30 +251,30 @@ TestMode7:
 	SetVblankRoutine TBL_NMI_Mode7
 
 	A16
-	lda	#220				; dot number for interrupt (256 = too late, 204 = too early)
+	lda	#220							; dot number for interrupt (256 = too late, 204 = too early)
 	sta	$4207
-	lda	#PARAM_MODE7_SKY_LINES		; scanline number for interrupt
+	lda	#PARAM_MODE7_SKY_LINES					; scanline number for interrupt
 	sta	$4209
 	A8
 
 	SetIRQRoutine TBL_VIRQ_Mode7
 
-	lda	REG_RDNMI			; clear NMI flag, this is necessary to prevent occasional graphics glitches (see Fullsnes, 4210h/RDNMI)
+	lda	REG_RDNMI						; clear NMI flag, this is necessary to prevent occasional graphics glitches (see Fullsnes, 4210h/RDNMI)
 
-	lda	#%10110001			; enable NMI, auto-joypad read, and IRQ at H=$4207 and V=$4209
+	lda	#%10110001						; enable NMI, auto-joypad read, and IRQ at H=$4207 and V=$4209
 	sta	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
 	cli
 
-	lda	#%11111100			; enable HDMA channels 2-7
+	lda	#%11111100						; enable HDMA channels 2-7
 	sta	DP_HDMAchannels
 
 	jsr	ResetMode7Matrix
 
-	WaitForFrames 2				; wait for altitude setting to take effect (FIXME, doesn't work with just 1 frame?!)
+	WaitForFrames 2							; wait for altitude setting to take effect (FIXME, doesn't work with just 1 frame?!)
 
 	A16
-	stz	temp				; clear temp vars (used in CalcMode7Matrix)
+	stz	temp							; clear temp vars (used in CalcMode7Matrix)
 	stz	temp+2
 	stz	temp+4
 	stz	temp+6
@@ -307,9 +307,9 @@ Mode7Loop:
 ;	PrintSpriteHexNum DP_Mode7_ScrollOffsetY+1
 ;	PrintSpriteHexNum DP_Mode7_ScrollOffsetY
 
-	WaitForFrames 1				; don't use WAI here as IRQ is enabled
+	WaitForFrames 1							; don't use WAI here as IRQ is enabled
 
-;-	lda	REG_HVBJOY			; wait for start of Vblank
+;-	lda	REG_HVBJOY						; wait for start of Vblank
 ;	bpl	-
 
 
@@ -328,7 +328,7 @@ Mode7Loop:
 	lda	#127
 +	sta	DP_Mode7_Altitude
 	jsr	CalcMode7Matrix
-	jmp	__M7SkipDpad			; skip additional d-pad checks (no more than 2 directions allowed)
+	jmp	__M7SkipDpad						; skip additional d-pad checks (no more than 2 directions allowed)
 ++
 
 
@@ -474,28 +474,28 @@ __M7SkipDpad:
 	and	#%10000000
 	beq	++
 
-	lda	DP_Mode7_RotAngle		; $00 < angle < $80 --> inc X
-	beq	__M7FlightY			; don't change X if angle = 0
+	lda	DP_Mode7_RotAngle					; $00 < angle < $80 --> inc X
+	beq	__M7FlightY						; don't change X if angle = 0
 	cmp	#$80
-	beq	__M7FlightY			; don't change X if angle = 128 (eq. 180°)
+	beq	__M7FlightY						; don't change X if angle = 128 (eq. 180°)
 	bcs	+
 	jsr	M7FlightIncX
 	bra	__M7FlightY
 
-+	jsr	M7FlightDecX			; $80 < angle <= $FF --> dec	X
++	jsr	M7FlightDecX						; $80 < angle <= $FF --> dec X
 
 __M7FlightY:
-	lda	DP_Mode7_RotAngle		; $40 < angle < $C0 --> inc Y
+	lda	DP_Mode7_RotAngle					; $40 < angle < $C0 --> inc Y
 	cmp	#$40
-	beq	++				; don't change Y if angle = 64 (eq. 90°)
+	beq	++							; don't change Y if angle = 64 (eq. 90°)
 	bcc	+
 	cmp	#$C0
-	beq	++				; don't change Y if angle = 192 (eq. 270°)
+	beq	++							; don't change Y if angle = 192 (eq. 270°)
 	bcs	+
 	jsr	M7FlightIncY
 	bra	++
 
-+	jsr	M7FlightDecY			; $C0 < angle <= $FF | $00 < angle < $40 --> dec	Y
++	jsr	M7FlightDecY						; $C0 < angle <= $FF | $00 < angle < $40 --> dec Y
 
 ++
 
@@ -536,21 +536,21 @@ __M7FlightY:
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
 	jsr	EffectHSplitOut2
-	jsr	SpriteInit			; purge OAM
+	jsr	SpriteInit						; purge OAM
 
-	ldx	#(TileMapBG3 & $FFFF)		; clear text
+	ldx	#(TileMapBG3 & $FFFF)					; clear text
 	stx	$2181
 	stz	$2183
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024
 
-	lda	#$80				; VRAM address increment mode: increment address by one word
-	sta	$2115				; after accessing the high byte ($2119)
+	lda	#$80							; VRAM address increment mode: increment address by one word
+	sta	$2115							; after accessing the high byte ($2119)
 
-	stz	$2116				; regs $2116-$2117: VRAM address
+	stz	$2116							; regs $2116-$2117: VRAM address
 	stz	$2117
 
-	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 0	; clear VRAM
+	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 0		; clear VRAM
 
 	jmp	AreaEnter
 +
@@ -564,7 +564,7 @@ __M7FlightY:
 
 	jsr	ResetMode7Matrix
 
-	WaitForFrames 1				; wait for altitude setting to take effect
+	WaitForFrames 1							; wait for altitude setting to take effect
 
 	jsr	CalcMode7Matrix
 +
@@ -572,12 +572,12 @@ __M7FlightY:
 
 
 ; -------------------------- show CPU load
-	lda	$2137				; latch H/V counter
-	lda	$213F				; reset OPHCT/OPVCT flip-flops
+	lda	$2137							; latch H/V counter
+	lda	$213F							; reset OPHCT/OPVCT flip-flops
 	lda	$213D
 	sta	DP_CurrentScanline
 	lda	$213D
-	and	#$01				; mask off 7 open bus bits
+	and	#$01							; mask off 7 open bus bits
 	sta	DP_CurrentScanline+1
 
 	PrintSpriteText 25, 21, "V-line: $", 1
@@ -617,31 +617,31 @@ CalcMode7Matrix:
 
 ; -------------------------- calculate M7A/M7D for next frame
 ; 8×8 multiplication for lower 8 bits of multiplicand
-	ldx #0
+	ldx	#0
 -	stz	temp+6
 	txy
 	lda	[DP_Mode7_AltTabOffset], y
 	sta	$4202
 	phx
 
-	ldx	DP_Mode7_RotAngle		; angle into X for indexing into the cos table
+	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the cos table
 	lda.l	SRC_Mode7Cos, x
-	bpl	+				; check for negative multiplier
+	bpl	+							; check for negative multiplier
 
-	eor	#$FF				; make multiplier positive
+	eor	#$FF							; make multiplier positive
 	inc	a
 	pha
 
-	lda	#$01				; remember that multplier has wrong sign
+	lda	#$01							; remember that multplier has wrong sign
 	sta	temp+6
 
 	pla
 +	sta	$4203
 
-	plx					; 5 cycles
+	plx								; 5 cycles
 
-	A16					; 3
-	lda	$4216				; 3 // store interim result 1
+	A16								; 3
+	lda	$4216							; 3 // store interim result 1
 	sta	temp
 	A8
 
@@ -651,27 +651,26 @@ CalcMode7Matrix:
 	sta	$4202
 	phx
 
-	ldx	DP_Mode7_RotAngle		; angle into X for indexing into the cos table
-
+	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the cos table
 	lda.l	SRC_Mode7Cos, x
-	bpl	+				; check for negative multiplier once again
+	bpl	+							; check for negative multiplier once again
 
-	eor	#$FF				; make multiplier positive
+	eor	#$FF							; make multiplier positive
 	inc	a
 +	sta	$4203
 
-	plx					; 5 cycles
+	plx								; 5 cycles
 
-	A16					; 3
-	lda	$4216				; 3 // store interim result 2
+	A16								; 3
+	lda	$4216							; 3 // store interim result 2
 	sta	temp+3
 	A8
 
-	lda	temp+6				; check how to combine interim results due to sign of multiplier
+	lda	temp+6							; check how to combine interim results due to sign of multiplier
 	beq	+
 
 	A16
-	lda	temp+3				; end result negative, subtract (interim 1 >> 8) from negative interim 2
+	lda	temp+3							; end result negative, subtract (interim 1 >> 8) from negative interim 2
 	eor	#$FFFF
 	inc	a
 	sec
@@ -680,7 +679,7 @@ CalcMode7Matrix:
 	bra	++
 
 +	A16
-	lda	temp+3				; end result positive, add (interim 1 >> 8) to interim 2
+	lda	temp+3							; end result positive, add (interim 1 >> 8) to interim 2
 	clc
 	adc	temp+1
 ++	sta	ARRAY_HDMA_M7A+(PARAM_MODE7_SKY_LINES*2), x
@@ -703,24 +702,23 @@ CalcMode7Matrix:
 	sta	$4202
 	phx
 
-	ldx	DP_Mode7_RotAngle		; angle into X for indexing into the sin table
-
+	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the sin table
 	lda.l	SRC_Mode7Sin, x
-	bpl	+				; check for negative multiplier
+	bpl	+							; check for negative multiplier
 
-	eor	#$FF				; make multiplier positive
+	eor	#$FF							; make multiplier positive
 	inc	a
 	pha
 
-	lda	#$01				; remember that multplier has wrong sign
+	lda	#$01							; remember that multplier has wrong sign
 	sta	temp+6
 	pla
 +	sta	$4203
 
-	plx					; 5 cycles
+	plx								; 5 cycles
 
-	A16					; 3
-	lda	$4216				; 3 // store interim result 1
+	A16								; 3
+	lda	$4216							; 3 // store interim result 1
 	sta	temp
 	A8
 
@@ -730,26 +728,26 @@ CalcMode7Matrix:
 	sta	$4202
 	phx
 
-	ldx	DP_Mode7_RotAngle		; angle into X for indexing into the sin table
+	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the sin table
 	lda.l	SRC_Mode7Sin, x
-	bpl	+				; check for negative multiplier once again
+	bpl	+							; check for negative multiplier once again
 
-	eor	#$FF				; make multiplier positive
+	eor	#$FF							; make multiplier positive
 	inc	a
 +	sta	$4203
 
-	plx					; 5 cycles
+	plx								; 5 cycles
 
-	A16					; 3
-	lda	$4216				; 3 // store interim result 2
+	A16								; 3
+	lda	$4216							; 3 // store interim result 2
 	sta	temp+3
 	A8
 
-	lda	temp+6				; check how to combine interim results due to sign of multiplier
+	lda	temp+6							; check how to combine interim results due to sign of multiplier
 	beq	+
 
 	A16
-	lda	temp+3				; end result negative, subtract (interim 1 >> 8) from negative interim 2
+	lda	temp+3							; end result negative, subtract (interim 1 >> 8) from negative interim 2
 	eor	#$FFFF
 	inc	a
 	sec
@@ -757,11 +755,11 @@ CalcMode7Matrix:
 	bra	++
 
 +	A16
-	lda	temp+3				; end result positive, add (interim 1 >> 8) to interim 2
+	lda	temp+3							; end result positive, add (interim 1 >> 8) to interim 2
 	clc
 	adc	temp+1
 ++	sta	ARRAY_HDMA_M7C+(PARAM_MODE7_SKY_LINES*2), x
-	eor	#$FFFF				; make M7C parameter negative and store in M7B
+	eor	#$FFFF							; make M7C parameter negative and store in M7B
 	inc	a
 	sta	ARRAY_HDMA_M7B+(PARAM_MODE7_SKY_LINES*2), x
 	A8
@@ -770,11 +768,11 @@ CalcMode7Matrix:
 	inx
 	cpx	#448-(PARAM_MODE7_SKY_LINES*2)
 	bne	-
-rts
+	rts
 
 
 
-M7FlightDecX:					; expects angle in Accu
+M7FlightDecX:								; expects angle in Accu
 	cmp	#$A0
 	bcc	__DoXDecByAngle
 
@@ -789,7 +787,7 @@ M7FlightDecX:					; expects angle in Accu
 
 __DoXDecByAngle:
 	A16
-	and	#$003F				; remove garbage in high byte, make sure angle in low byte doesn't exceed max. index ($20)
+	and	#$003F							; remove garbage in high byte, make sure angle in low byte doesn't exceed max. index ($20)
 	dec	a
 	asl	a
 	tax
@@ -897,18 +895,18 @@ __DecX2:
 __DecX1:
 	dec	a
 
-	and	#$1FFF				; max scroll value (CHECKME)
+	and	#$1FFF							; max scroll value (CHECKME)
 	sta	DP_Mode7_ScrollOffsetX
-	clc					; add 128 pixels (half a scanline)
+	clc								; add 128 pixels (half a scanline)
 	adc	#$0400
 	sta	DP_Mode7_CenterCoordX
 
 	A8
-rts
+	rts
 
 
 
-M7FlightIncX:					; expects angle in Accu
+M7FlightIncX:								; expects angle in Accu
 	cmp	#$20
 	bcc	__DoXIncByAngle
 
@@ -1031,18 +1029,18 @@ __IncX2:
 __IncX1:
 	inc	a
 
-	and	#$1FFF				; max scroll value (CHECKME)
+	and	#$1FFF							; max scroll value (CHECKME)
 	sta	DP_Mode7_ScrollOffsetX
-	clc					; add 128 pixels (half a scanline)
+	clc								; add 128 pixels (half a scanline)
 	adc	#$0400
 	sta	DP_Mode7_CenterCoordX
 
 	A8
-rts
+	rts
 
 
 
-M7FlightDecY:					; expects angle in Accu
+M7FlightDecY:								; expects angle in Accu
 	cmp	#$40
 	bcc	+
 
@@ -1171,23 +1169,23 @@ __DecY2:
 __DecY1:
 	dec	a
 
-	and	#$1FFF				; max scroll value (CHECKME)
+	and	#$1FFF							; max scroll value (CHECKME)
 	sta	DP_Mode7_ScrollOffsetY
 	clc
 	adc	#$0400 + (PARAM_MODE7_SKY_LINES*8)
 	sta	DP_Mode7_CenterCoordY
 
 	A8
-rts
+	rts
 
 
 
-M7FlightIncY:					; expects angle in Accu
+M7FlightIncY:								; expects angle in Accu
 	cmp	#$60
 	bcc	__DoYIncByAngle
 	cmp	#$A1
 	bcs	+
-	lda	#$20				; $60 <= angle <= $A0 --> increment Y by 32
+	lda	#$20							; $60 <= angle <= $A0 --> increment Y by 32
 	bra	__DoYIncByAngle
 
 +	lda	#$C0
@@ -1304,14 +1302,14 @@ __IncY2:
 __IncY1:
 	inc	a
 
-	and	#$1FFF				; max scroll value (CHECKME)
+	and	#$1FFF							; max scroll value (CHECKME)
 	sta	DP_Mode7_ScrollOffsetY
 	clc
 	adc	#$0400 + (PARAM_MODE7_SKY_LINES*8)
 	sta	DP_Mode7_CenterCoordY
 
 	A8
-rts
+	rts
 
 
 
@@ -1319,7 +1317,7 @@ ResetMode7Matrix:
 	A16
 	stz	DP_Mode7_ScrollOffsetX
 	stz	DP_Mode7_ScrollOffsetY
-	lda	#$0400				; 16-bit values
+	lda	#$0400							; 16-bit values
 	sta	DP_Mode7_CenterCoordX
 	lda	#$0400 + (PARAM_MODE7_SKY_LINES*8)
 	sta	DP_Mode7_CenterCoordY
@@ -1328,8 +1326,8 @@ ResetMode7Matrix:
 	lda	#64
 	sta	DP_Mode7_Altitude
 	stz	DP_Mode7_RotAngle
-	stz	$211A				; M7SEL: no flipping, Screen Over = wrap
-rts
+	stz	$211A							; M7SEL: no flipping, Screen Over = wrap
+	rts
 
 
 

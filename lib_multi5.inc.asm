@@ -15,40 +15,40 @@ check_mpa:
 	php
 
 	AXY8
-	stz DP_Multi5_Status
+	stz	DP_Multi5_Status
 
--	lda	$4212				; automatic controller read enabled?
+-	lda	$4212							; automatic controller read enabled?
 	and	#$01
 	bne	-
 
 ; determine if MPA is connected or not?
-	stz	$4016				; output "0" to out0
+	stz	$4016							; output "0" to out0
 	lda	#$01
-	sta	$4016				; output "1" to out0
+	sta	$4016							; output "1" to out0
 
 	ldx	#$08
 -	lda	$4016
 	lsr	a
 	lsr	a
-	rol	DP_Multi5_Reg0hi		; read d1 of $4016 and store it to DP_Multi5_Reg0hi
+	rol	DP_Multi5_Reg0hi					; read d1 of $4016 and store it to DP_Multi5_Reg0hi
 	lda	$4017
 	lsr	a
 	lsr	a
-	rol	DP_Multi5_Reg1hi		; read d1 of $4017 and store it to DP_Multi5_Reg1hi
+	rol	DP_Multi5_Reg1hi					; read d1 of $4017 and store it to DP_Multi5_Reg1hi
 	dex
 	bne	-
 
-	stz	$4016				; output "0" to out0
+	stz	$4016							; output "0" to out0
 
 	ldx	#$08
 -	lda	$4016
 	lsr	a
 	lsr	a
-	rol	DP_Multi5_Reg0lo		; read d1 of $4016 and store it to DP_Multi5_Reg0lo
+	rol	DP_Multi5_Reg0lo					; read d1 of $4016 and store it to DP_Multi5_Reg0lo
 	lda	$4017
 	lsr	a
 	lsr	a
-	rol	DP_Multi5_Reg1lo		; read d1 of $4017 and store it to DP_Multi5_Reg1lo
+	rol	DP_Multi5_Reg1lo					; read d1 of $4017 and store it to DP_Multi5_Reg1lo
 	dex
 	bne	-
 
@@ -56,31 +56,31 @@ check_mpa:
 
 ; check controller port 1
 	lda	DP_Multi5_Reg0hi
-	cmp	#$FF				; is DP_Multi5_Reg0hi=$FF?
-	bne	+				; YES -> determine if MPA or special device
-						; NO -> branch, check connection on port 2
+	cmp	#$FF							; is DP_Multi5_Reg0hi=$FF?
+	bne	+							; YES -> determine if MPA or special device
+									; NO -> branch, check connection on port 2
 	lda	DP_Multi5_Reg0lo
-	cmp	#$FF				; is DP_Multi5_Reg0lo=$FF?
-	beq	+				; YES -> special device connected to port 1, jmp
-						; NO -> MPA connected to port 1, set status
+	cmp	#$FF							; is DP_Multi5_Reg0lo=$FF?
+	beq	+							; YES -> special device connected to port 1, jmp
+									; NO -> MPA connected to port 1, set status
 	lda	#$80
 	sta	DP_Multi5_Status
 
 ; check controller port 2
 +	lda	DP_Multi5_Reg1hi
-	cmp	#$FF				; is DP_Multi5_Reg1hi=$FF?
-	bne	+				; YES -> determine if MPA or special device
-						; NO -> branch and return from routine
+	cmp	#$FF							; is DP_Multi5_Reg1hi=$FF?
+	bne	+							; YES -> determine if MPA or special device
+									; NO -> branch and return from routine
 	lda	DP_Multi5_Reg1lo
-	cmp	#$FF				; is DP_Multi5_Reg1lo=$FF?
-	beq	+				; YES -> special device connected to port 2, rts
-						; NO -> MPA connected to port 2, set status
+	cmp	#$FF							; is DP_Multi5_Reg1lo=$FF?
+	beq	+							; YES -> special device connected to port 2, return
+									; NO -> MPA connected to port 2, set status
 	lda	#$40
 	ora	DP_Multi5_Status
 	sta	DP_Multi5_Status
 
 +	plp
-rtl
+	rtl
 
 ;.DB "NINTENDO SHVC MULTI5 CONNECT CHECK Ver1.00"
 .DB "MODIFIED FROM SHVC MULTI5 CONNECT CHECK Ver1.00"

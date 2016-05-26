@@ -13,19 +13,19 @@
 .INDEX 16
 
 DebugMenu:
-	lda	#$80				; enter forced blank
+	lda	#$80							; enter forced blank
 	sta	$2100
 
-;	lda	#$20				; clear V-IRQ enable bit
+;	lda	#$20							; clear V-IRQ enable bit
 ;	trb	DP_Shadow_NMITIMEN
 
 	A16
-	stz	ARRAY_HDMA_BGScroll+1		; reset BG scroll values
+	stz	ARRAY_HDMA_BGScroll+1					; reset BG scroll values
 	lda	#$00FF
 	sta	ARRAY_HDMA_BGScroll+3
 	A8
 
-	stz	DP_HDMAchannels			; disable HDMA
+	stz	DP_HDMAchannels						; disable HDMA
 
 
 
@@ -48,20 +48,20 @@ DebugMenu:
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 2048
 
-	lda	#%01110111			; make sure BG1/2/3 lo/hi tilemaps get updated
+	lda	#%01110111						; make sure BG1/2/3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
 
-	WaitForFrames 5				; wait for regs/tilemaps to get cleared
+	WaitForFrames 5							; wait for regs/tilemaps to get cleared
 
 	DisableInterrupts
 	SetVblankRoutine TBL_NMI_DebugMenu
 
-;	stz	$2133				; SETINI (Display Control 2): no horizontal hi-res
+;	stz	$2133							; SETINI (Display Control 2): no horizontal hi-res
 
 
 
 ; -------------------------- load new NMI handler & GFX data
-	lda	#$80				; VRAM address increment mode: increment address after high byte access
+	lda	#$80							; VRAM address increment mode: increment address after high byte access
 	sta	$2115
 
 	ldx	#ADDR_VRAM_BG3_Tiles
@@ -70,42 +70,42 @@ DebugMenu:
 	DMA_CH0 $01, :GFX_FontHUD, GFX_FontHUD, $18, 2048
 
 	ldx	#0
-	lda	#$20				; priority bit
--	sta	TileMapBG3Hi, x			; set priority bit for BG3 HUD
+	lda	#$20							; priority bit
+-	sta	TileMapBG3Hi, x						; set priority bit for BG3 HUD
 	inx
 	cpx	#1024
 	bne	-
 
-	ldx	#ADDR_VRAM_SPR_Tiles		; set VRAM address for sprite tiles
+	ldx	#ADDR_VRAM_SPR_Tiles					; set VRAM address for sprite tiles
 	stx	$2116
 
 	DMA_CH0 $01, :GFX_Sprites_Smallfont, GFX_Sprites_Smallfont, $18, 4096
 
-	stz	$2121				; reset CGRAM address
+	stz	$2121							; reset CGRAM address
 
 	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
 
-	lda	#$80				; set CGRAM address to #256 (word address) for sprites
+	lda	#$80							; set CGRAM address to #256 (word address) for sprites
 	sta	$2121
 
 	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
 
 	A16
-	lda	#%0001011100010111		; turn on BG1/2/3 and sprites on mainscreen and subscreen
+	lda	#%0001011100010111					; turn on BG1/2/3 and sprites on mainscreen and subscreen
 	sta	$212C
-	sta	DP_Shadow_TSTM			; copy to shadow variable
+	sta	DP_Shadow_TSTM						; copy to shadow variable
 	A8
 
 	lda	#$02
 	ldx	#0
--	sta	SpriteBuf1.PlayableChar, x	; overwrite char sprite buffer area with some unused sprite font tiles
+-	sta	SpriteBuf1.PlayableChar, x				; overwrite char sprite buffer area with some unused sprite font tiles
 	inx
 	inx
 	cpx	#24
 	bne	-
 
-	lda	REG_RDNMI			; clear NMI flag
-	lda	#$81				; re-enable Vblank NMI + Auto Joypad Read
+	lda	REG_RDNMI						; clear NMI flag
+	lda	#$81							; re-enable Vblank NMI + Auto Joypad Read
 	sta	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
 	cli
@@ -113,15 +113,15 @@ DebugMenu:
 
 
 ; -------------------------- update registers in case they've been messed with
-	lda	#$48|$01			; BG3 tile map VRAM offset: $4800, Tile Map size: 64×32 tiles
+	lda	#$48|$01						; BG3 tile map VRAM offset: $4800, Tile Map size: 64×32 tiles
 	sta	$2109
-	lda	#$04				; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
+	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
 	sta	$210C
-	lda	#$01				; set BG Mode 1
+	lda	#$01							; set BG Mode 1
 	sta	$2105
 
-	stz	$2121				; reset CGRAM address
-	stz	$2122				; $1C00 = dark blue as background color
+	stz	$2121							; reset CGRAM address
+	stz	$2122							; $1C00 = dark blue as background color
 	lda	#$1C
 	sta	$2122
 
@@ -153,13 +153,13 @@ DebugMenu:
 ;	PrintString 16, 3, ""
 ;	PrintString 17, 3, ""
 
-	stz	SprTextMon			; reset sprite text filling level so it won't draw more than 1 cursor ;-)
+	stz	SprTextMon						; reset sprite text filling level so it won't draw more than 1 cursor ;-)
 
-	PrintSpriteText 10, 2, $10, 0		; put cursor on first line ($10 = cursor tile no.)
+	PrintSpriteText 10, 2, $10, 0					; put cursor on first line ($10 = cursor tile no.)
 
 	wai
 
-	lda	#$0F				; turn on the screen
+	lda	#$0F							; turn on the screen
 	sta	$2100
 
 
@@ -167,23 +167,23 @@ DebugMenu:
 DebugMenuLoop:
 	wai
 
--	lda	REG_HVBJOY			; are we still on Vblank?
-	bmi	-				; yes, wait
+-	lda	REG_HVBJOY						; are we still on Vblank?
+	bmi	-							; yes, wait
 
 	A16
 	lda	DP_NextTrack
 	asl	a
 	tax
-	lda.l	SRC_TrackPointerTable, x	; load track name pointer
+	lda.l	SRC_TrackPointerTable, x				; load track name pointer
 	sta	DP_SubStrAddr
 	A8
 
 	lda	#:SRC_TrackPointerTable
 	sta	DP_SubStrAddr+2
 
-	PrintString 18, 4, "%s"			; print current SNESGSS song title
+	PrintString 18, 4, "%s"						; print current SNESGSS song title
 
-	lda	#%01000100			; make sure BG3 lo/hi tilemaps get updated
+	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
 
 
@@ -193,7 +193,7 @@ DebugMenuLoop:
 	and	#%00001000
 	beq	++
 
-	lda	SpriteBuf1.Text+1		; Y coord of cursor
+	lda	SpriteBuf1.Text+1					; Y coord of cursor
 	cmp	#78
 	beq	+
 	sec
@@ -235,11 +235,11 @@ DebugMenuLoop:
 	and	#%00000010
 	beq	++
 
-	lda	SpriteBuf1.Text+1		; only do anything if cursor is on music test
+	lda	SpriteBuf1.Text+1					; only do anything if cursor is on music test
 	cmp	#134
 	bne	++
 
-	lda	DP_NextTrack			; go to previous track
+	lda	DP_NextTrack						; go to previous track
 	dec	a
 	bpl	+
 	lda	#0
@@ -254,11 +254,11 @@ DebugMenuLoop:
 	and	#%00000001
 	beq	++
 
-	lda	SpriteBuf1.Text+1		; only do anything if cursor is on music test
+	lda	SpriteBuf1.Text+1					; only do anything if cursor is on music test
 	cmp	#134
 	bne	++
 
-	lda	DP_NextTrack			; go to next track
+	lda	DP_NextTrack						; go to next track
 	inc	a
 	cmp	#(SRC_TrackPointerTable_END-SRC_TrackPointerTable)/2
 	bcc	+
@@ -283,7 +283,7 @@ DebugMenuLoop:
 +	cmp	#86
 	bne	+
 
-	ldx	#(TileMapBG3 & $FFFF)		; clear text
+	ldx	#(TileMapBG3 & $FFFF)					; clear text
 	stx	$2181
 	stz	$2183
 
@@ -316,7 +316,7 @@ DebugMenuLoop:
 
 	jmp	MoveSpriteCircularTest
 
-+	jsl	PlayTrack			; else, cursor must be on music test
++	jsl	PlayTrack						; else, cursor must be on music test
 
 ++
 
@@ -340,38 +340,37 @@ DebugMenuLoop:
 
 ; -------------------------- show CPU load (via scanline counter)
 ShowCPUload:
-	lda	$2137				; latch H/V counter
-	lda	$213F				; reset OPHCT/OPVCT flip-flops
-
+	lda	$2137							; latch H/V counter
+	lda	$213F							; reset OPHCT/OPVCT flip-flops
 	lda	$213D
 	sta	DP_CurrentScanline
-
 	lda	$213D
-	and	#$01				; mask off 7 open bus bits
+	and	#$01							; mask off 7 open bus bits
 	sta	DP_CurrentScanline+1
 
 	SetTextPos 2, 2
 	PrintNum DP_CurrentScanline
 
 	jsr	PrintF
-	.DB "  ", 0				; clear trailing numbers from old values
-rts
+	.DB "  ", 0							; clear trailing numbers from old values
+
+	rts
 
 
 
 ; ******************************* Tests ********************************
 
 MoveSpriteCircularTest:
-	ldx	#(TileMapBG3 & $FFFF)		; clear BG3 tilemap
+	ldx	#(TileMapBG3 & $FFFF)					; clear BG3 tilemap
 	stx	$2181
 	stz	$2183
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 2048
 
-	stz	temp				; reset angle
+	stz	temp							; reset angle
 	stz	temp+1
 
-	lda	#70				; set radius
+	lda	#70							; set radius
 	sta	temp+2
 
 ; X := CenterX + sin(angle)*radius
@@ -384,8 +383,8 @@ MoveSpriteCircularTest:
 __MSCTestLoop:
 	wai
 
--	lda	REG_HVBJOY			; are we still on Vblank?
-	bmi	-				; yes, wait
+-	lda	REG_HVBJOY						; are we still on Vblank?
+	bmi	-							; yes, wait
 
 	SetTextPos 2, 28
 	PrintHexNum temp
@@ -394,34 +393,34 @@ __MSCTestLoop:
 	lda.l	SRC_Mode7Sin, x
 	sta	$211B
 	stz	$211B
-	lda	temp+2				; radius
+	lda	temp+2							; radius
 	sta	$211C
 
 	lda	$2135
 	clc
 	adc	#128
-	sta	SpriteBuf1.Text			; X
+	sta	SpriteBuf1.Text						; X
 
 	lda	temp
 	cmp	#$81
 	bcc	+
 	
-	lda	SpriteBuf1.Text			; if angle > $80, subtract radius
+	lda	SpriteBuf1.Text						; if angle > $80, subtract radius
 	sec
 	sbc	temp+2
-	sta	SpriteBuf1.Text			; X
+	sta	SpriteBuf1.Text						; X
 
 +	ldx	temp
 	lda.l	SRC_Mode7Cos, x
 	sta	$211B
 	stz	$211B
-	lda	temp+2				; radius
+	lda	temp+2							; radius
 	sta	$211C
 
 	lda	$2135
 	clc
 	adc	#112
-	sta	SpriteBuf1.Text+1		; Y
+	sta	SpriteBuf1.Text+1					; Y
 
 	lda	temp
 	cmp	#$C0
@@ -429,12 +428,12 @@ __MSCTestLoop:
 	cmp	#$41
 	bcc	+
 
-	lda	SpriteBuf1.Text+1		; if $40 < angle < $C0, subtract radius
+	lda	SpriteBuf1.Text+1					; if $40 < angle < $C0, subtract radius
 	sec
 	sbc	temp+2
-	sta	SpriteBuf1.Text+1		; Y
+	sta	SpriteBuf1.Text+1					; Y
 
-+	lda	#%01000100			; make sure BG3 lo/hi tilemaps get updated
++	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
 
 	inc	temp
@@ -455,27 +454,27 @@ __MSCTestLoop:
 
 
 WorldMode3:
-	lda	#$80				; INIDISP (Display Control 1): forced blank
+	lda	#$80							; INIDISP (Display Control 1): forced blank
 	sta	$2100
 
-	stz	DP_HDMAchannels			; disable HDMA
+	stz	DP_HDMAchannels						; disable HDMA
 
-	wai					; wait for reg $420C to get cleared
+	wai								; wait for reg $420C to get cleared
 
 	DisableInterrupts
 
 
 
 ; -------------------------- load map data
-	lda	#$80				; VRAM address increment mode: increment address after accessing the high byte ($2119)
+	lda	#$80							; VRAM address increment mode: increment address after accessing the high byte ($2119)
 	sta	$2115
 
-	ldx	#$0000				; reset VRAM address
+	ldx	#$0000							; reset VRAM address
 	stx	$2116
 
 	DMA_CH0 $01, :GFX_Playfield_001, GFX_Playfield_001, $18, GFX_Playfield_001_END-GFX_Playfield_001	; 45,120 bytes
 
-	ldx	#$7C00				; set VRAM address of new BG1 tilemap (has to be greater than GFX length!!)
+	ldx	#$7C00							; set VRAM address of new BG1 tilemap (has to be greater than GFX length!!)
 	stx	$2116
 
 	DMA_CH0 $01, :SRC_Playfield_001_MAP, SRC_Playfield_001_MAP, $18, 2048
@@ -502,10 +501,10 @@ WorldMode3:
 ; -------------------------- set up NMI/misc. parameters
 	SetVblankRoutine TBL_NMI_Playfield
 
-	lda	#$7C				; set BG1's Tile Map VRAM offset to $7C00 (word address)
-	sta	$2107				; and the Tile Map size to 32×32 tiles
+	lda	#$7C							; set BG1's Tile Map VRAM offset to $7C00 (word address)
+	sta	$2107							; and the Tile Map size to 32×32 tiles
 
-	lda	#$81				; enable NMI and auto-joypad read
+	lda	#$81							; enable NMI and auto-joypad read
 	sta	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
 	cli
@@ -513,12 +512,12 @@ WorldMode3:
 
 
 ; -------------------------- set some more parameters
-	lda	#$03				; set BG Mode 3 for playfield
+	lda	#$03							; set BG Mode 3 for playfield
 	sta	$2105
 
-	lda	#%00000001			; turn on BG1 only
-	sta	$212C				; on the mainscreen
-	sta	$212D				; and on the subscreen
+	lda	#%00000001						; turn on BG1 only
+	sta	$212C							; on the mainscreen
+	sta	$212D							; and on the subscreen
 
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
@@ -530,18 +529,18 @@ WorldMode3:
 	sta	DP_EffectSpeed
 	jsr	EffectHSplitOut2
 
-	ldx	#(TileMapBG3 & $FFFF)		; clear text
+	ldx	#(TileMapBG3 & $FFFF)					; clear text
 	stx	$2181
 	stz	$2183
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024
 
-	lda	#$80				; VRAM address increment mode: increment address by one word
-	sta	$2115				; after accessing the high byte ($2119)
-	stz	$2116				; reset VRAM address
+	lda	#$80							; VRAM address increment mode: increment address by one word
+	sta	$2115							; after accessing the high byte ($2119)
+	stz	$2116							; reset VRAM address
 	stz	$2117
 
-	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 0	; clear VRAM
+	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 0		; clear VRAM
 
 	jml	AreaEnter
 

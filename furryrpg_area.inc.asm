@@ -10,20 +10,20 @@
 
 
 AreaEnter:
-	lda	#$80				; INIDISP (Display Control 1): forced blank
+	lda	#$80							; INIDISP (Display Control 1): forced blank
 	sta	$2100
 
 	jsr	SpriteInit
 
 	DisableInterrupts
 
-	stz	DP_HDMAchannels			; disable HDMA
+	stz	DP_HDMAchannels						; disable HDMA
 	stz	$420C
 
-	lda	#$80				; VRAM address increment mode: increment address by one word after accessing the high byte ($2119)
+	lda	#$80							; VRAM address increment mode: increment address by one word after accessing the high byte ($2119)
 	sta	$2115
 
-	jsr	LoadTextBoxBorderTiles		; prepare some stuff for text box
+	jsr	LoadTextBoxBorderTiles					; prepare some stuff for text box
 	jsr	MakeTextBoxTilemapBG1
 	jsr	MakeTextBoxTilemapBG2
 
@@ -36,7 +36,7 @@ AreaEnter:
 ;	DMA_CH0 $01, :GFX_Area001, GFX_Area001, $18, 2080
 	DMA_CH0 $01, :GFX_Area003, GFX_Area003, $18, 12320
 
-	ldx	#(TileMapBG1 & $FFFF)		; put 24-bit address of BG1 tile maps into temp for upcoming Y indexing
+	ldx	#(TileMapBG1 & $FFFF)					; put 24-bit address of BG1 tile maps into temp for upcoming Y indexing
 	stx	temp
 
 	ldx	#(TileMapBG1Hi & $FFFF)
@@ -52,9 +52,9 @@ AreaEnter:
 -	A16
 
 	lda.l	SRC_Tilemap_Area003, x
-	dec	a				; make up for empty tile skipped in pic data
-	clc					; add offset (font, portrait)
-	adc	#(ADDR_VRAM_AreaBG1 >> 4)	; 172 tiles
+	dec	a							; make up for empty tile skipped in pic data
+	clc								; add offset (font, portrait)
+	adc	#(ADDR_VRAM_AreaBG1 >> 4)				; 172 tiles
 
 	A8
 
@@ -68,7 +68,7 @@ AreaEnter:
 	cpy	#1024
 	bne	-
 
-	ldx	#ADDR_VRAM_BG1_Tilemap2		; FIXME, add tilemap buffer for BG1/2 second tilemaps
+	ldx	#ADDR_VRAM_BG1_Tilemap2					; FIXME, add tilemap buffer for BG1/2 second tilemaps
 	stx	$2116
 
 	ldx	#2048
@@ -77,7 +77,7 @@ AreaEnter:
 
 	lda.l	SRC_Tilemap_Area003, x
 	dec	a
-	clc					; add offset
+	clc								; add offset
 	adc	#(ADDR_VRAM_AreaBG1 >> 4)
 
 	A8
@@ -101,8 +101,8 @@ AreaEnter:
 
 	ldx	#0
 
-	lda	#$20				; priority bit
--	sta	TileMapBG3Hi, x			; set priority bit for BG3 HUD
+	lda	#$20							; priority bit
+-	sta	TileMapBG3Hi, x						; set priority bit for BG3 HUD
 	inx
 	cpx	#1024
 	bne	-
@@ -110,17 +110,17 @@ AreaEnter:
 
 
 ; -------------------------- palettes --> CGRAM
-	stz	$2121				; reset CGRAM address
+	stz	$2121							; reset CGRAM address
 
 	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
 
-	lda	#ADDR_CGRAM_AREA		; set CGRAM address for BG1 tiles palette
+	lda	#ADDR_CGRAM_AREA					; set CGRAM address for BG1 tiles palette
 	sta	$2121
 
 ;	DMA_CH0 $02, :SRC_Palette_Area001, SRC_Palette_Area001, $22, 32
 	DMA_CH0 $02, :SRC_Palette_Area003, SRC_Palette_Area003, $22, 32
 
-	lda	#$80				; set CGRAM address to #256 (word address) for sprites
+	lda	#$80							; set CGRAM address to #256 (word address) for sprites
 	sta	$2121
 
 	DMA_CH0 $02, :SRC_Palette_Spritesheet_Char1, SRC_Palette_Spritesheet_Char1, $22, 32
@@ -144,10 +144,10 @@ AreaEnter:
 
 
 ; -------------------------- HDMA channel 4: BG1 scroll registers
-	lda	#$07				; transfer mode (2 bytes --> $210D, 2 bytes --> $210E)
+	lda	#$07							; transfer mode (2 bytes --> $210D, 2 bytes --> $210E)
 	sta	$4340
 
-	lda	#$0D				; PPU reg. $210D
+	lda	#$0D							; PPU reg. $210D
 	sta	$4341
 
 	ldx	#ARRAY_HDMA_BGScroll
@@ -156,16 +156,16 @@ AreaEnter:
 	lda	#$7E
 	sta	$4344
 
-;	lda	#$7E				; indirect HDMA CPU bus data address bank
+;	lda	#$7E							; indirect HDMA CPU bus data address bank
 ;	sta	$4347
 
 
 
 ; -------------------------- HDMA channel 5: BG2 scroll registers
-	lda	#$07				; transfer mode (2 bytes --> $210F, 2 bytes --> $2110)
+	lda	#$07							; transfer mode (2 bytes --> $210F, 2 bytes --> $2110)
 	sta	$4350
 
-	lda	#$0F				; PPU reg. $210F
+	lda	#$0F							; PPU reg. $210F
 	sta	$4351
 
 	ldx	#ARRAY_HDMA_BGScroll
@@ -174,34 +174,34 @@ AreaEnter:
 	lda	#$7E
 	sta	$4354
 
-;	lda	#$7E				; indirect HDMA CPU bus data address bank
+;	lda	#$7E							; indirect HDMA CPU bus data address bank
 ;	sta	$4357
 
 
 
 ; -------------------------- screen registers
-	lda	#%00000011			; 8×8 (small) / 16×16 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
+	lda	#%00000011						; 8×8 (small) / 16×16 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
 	sta	$2101
 
-;	lda	#$03				; set BG Mode 3
+;	lda	#$03							; set BG Mode 3
 ;	sta	$2105
 
-	lda	#$50|$01			; BG1 tile map VRAM offset: $5000, Tile Map size: 64×32 tiles
+	lda	#$50|$01						; BG1 tile map VRAM offset: $5000, Tile Map size: 64×32 tiles
 	sta	$2107
 
-	lda	#$58|$01			; BG2 tile map VRAM offset: $5800, Tile Map size: 64×32 tiles
+	lda	#$58|$01						; BG2 tile map VRAM offset: $5800, Tile Map size: 64×32 tiles
 	sta	$2108
 
-	lda	#$48|$01			; BG3 tile map VRAM offset: $4800, Tile Map size: 64×32 tiles
+	lda	#$48|$01						; BG3 tile map VRAM offset: $4800, Tile Map size: 64×32 tiles
 	sta	$2109
 
-;	lda	#$00				; BG1/BG2 character data VRAM offset: $0000
+;	lda	#$00							; BG1/BG2 character data VRAM offset: $0000
 	stz	$210B
 
-	lda	#$04				; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
+	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
 	sta	$210C
 
-;	lda	#$09				; interlace test
+;	lda	#$09							; interlace test
 ;	sta	$2133
 
 
@@ -209,18 +209,18 @@ AreaEnter:
 ; -------------------------- character, Vblank, and effect parameters
 	A16
 
-	lda	#1				; set walking speed
+	lda	#1							; set walking speed
 	sta	DP_Char1WalkingSpd
 
-	lda	#$5078				; set character position
+	lda	#$5078							; set character position
 	sta	DP_Char1PosYX
 ;	sta	SpriteBuf1.PlayableChar
 ;	clc
-;	adc	#$1000				; Y += 10
+;	adc	#$1000							; Y += 10
 ;	sta	SpriteBuf1.PlayableChar+4
 
-	lda	#%0001011100010111		; turn on BG1/2/3 + sprites
-	sta	DP_Shadow_TSTM			; on mainscreen and subscreen
+	lda	#%0001011100010111					; turn on BG1/2/3 + sprites
+	sta	DP_Shadow_TSTM						; on mainscreen and subscreen
 
 	A8
 
@@ -228,27 +228,27 @@ AreaEnter:
 
 	A16
 
-	lda	#210				; dot number for interrupt (256 = too late, 204 = too early)
+	lda	#210							; dot number for interrupt (256 = too late, 204 = too early)
 	sta	$4207
 
-	lda	#176				; scanline number for interrupt: 176 (i.e., let IRQ fire in Hblank between scanlines 176 and 177)
+	lda	#176							; scanline number for interrupt: 176 (i.e., let IRQ fire in Hblank between scanlines 176 and 177)
 	sta	$4209
 
 	A8
 
 	SetIRQRoutine TBL_VIRQ_Area
 
-;	lda	#%00110000			; activate HDMA ch. 4, 5 (BG scroll reset)
+;	lda	#%00110000						; activate HDMA ch. 4, 5 (BG scroll reset)
 ;	tsb	DP_HDMAchannels
 
-	lda	#$80				; make character idle
+	lda	#$80							; make character idle
 	sta	DP_Char1SpriteStatus
 
-	lda	REG_RDNMI			; clear NMI flag
-	lda	#$81				; enable Vblank NMI + Auto Joypad Read
+	lda	REG_RDNMI						; clear NMI flag
+	lda	#$81							; enable Vblank NMI + Auto Joypad Read
 	sta	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
-	cli					; re-enable interrupts
+	cli								; re-enable interrupts
 
 ;	PrintString 1, 2, "Gengen"
 ;	PrintString 2, 2, "HP: 9999"
@@ -263,10 +263,10 @@ AreaEnter:
 ;	PrintHexNum DP_Mode7_ScrollOffsetY+1
 ;	PrintHexNum DP_Mode7_ScrollOffsetY
 
-	lda	#%01110111			; make sure BG1/2/3 lo/hi tilemaps get updated
+	lda	#%01110111						; make sure BG1/2/3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
 
-	WaitForFrames 4				; let the screen clear up
+	WaitForFrames 4							; let the screen clear up
 
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
@@ -277,14 +277,14 @@ AreaEnter:
 
 ; NIGHT
 ;	A16
-;	lda	#%0000000000010111		; turn on BG1/2/3 + sprites on mainscreen only
+;	lda	#%0000000000010111					; turn on BG1/2/3 + sprites on mainscreen only
 ;	sta	DP_Shadow_TSTM
 ;	A8
 
-;	lda	#$72				; subscreen backdrop color to subtract
+;	lda	#$72							; subscreen backdrop color to subtract
 ;	sta	$2132
-;	stz	$2130				; clear CM disable bits
-;	lda	#%10010011			; enable color math on BG1/2 + sprites, subtract color
+;	stz	$2130							; clear CM disable bits
+;	lda	#%10010011						; enable color math on BG1/2 + sprites, subtract color
 ;	sta	$2131
 
 ;	jmp	Forever
@@ -297,7 +297,7 @@ AreaEnter:
 	lda	#$80
 	sta	$2100
 
-	lda	#ADDR_CGRAM_AREA		; set CGRAM address for BG1 tiles palette
+	lda	#ADDR_CGRAM_AREA					; set CGRAM address for BG1 tiles palette
 	sta	$2121
 
 	ldx	#0
@@ -309,7 +309,7 @@ AreaEnter:
 	cpx	#32
 	bne	-
 
-	lda	#$80				; set CGRAM address to #256 (word address) for sprites
+	lda	#$80							; set CGRAM address to #256 (word address) for sprites
 	sta	$2121
 
 	ldx	#0
@@ -322,20 +322,20 @@ AreaEnter:
 	bne	-
 
 	A16
-	lda	#%0001001100000100		; turn on BG1/2 + sprites on subscreen, BG3 (HUD) on mainscreen
+	lda	#%0001001100000100					; turn on BG1/2 + sprites on subscreen, BG3 (HUD) on mainscreen
 	sta	DP_Shadow_TSTM
 	A8
 
-	stz	$2121				; backdrop color to subtract
+	stz	$2121							; backdrop color to subtract
 	lda	#$52
 	sta	$2122
 	lda	#$1E
 	sta	$2122
 
-	lda	#%00000010			; clear CM disable bits, enable BGs/OBJs on subscreen
+	lda	#%00000010						; clear CM disable bits, enable BGs/OBJs on subscreen
 	sta	$2130
 
-	lda	#%10100000			; enable color math on backdrop, subtract color
+	lda	#%10100000						; enable color math on backdrop, subtract color
 	sta	$2131
 
 	lda	#$0F
@@ -348,19 +348,19 @@ AreaEnter:
 
 
 ; EFFECT
-;	lda	#%00000010			; clear color math disable bits (4-5), enable BGs/OBJs on subscreen
+;	lda	#%00000010						; clear color math disable bits (4-5), enable BGs/OBJs on subscreen
 ;	sta	$2130
 
-;	lda	#%00100000			; enable color math on backdrop only
+;	lda	#%00100000						; enable color math on backdrop only
 ;	sta	$2131
 
-;	stz	$2121				; set backdrop color to overlay the whole image
-;	stz	$2122				; $6C00 = bright blue
+;	stz	$2121							; set backdrop color to overlay the whole image
+;	stz	$2122							; $6C00 = bright blue
 ;	lda	#$6C
 ;	sta	$2122
 
 ;	A16
-;	lda	#%0001001100000100		; mainscreen: BG3 (HUD), subscreen: BG1/2, sprites
+;	lda	#%0001001100000100					; mainscreen: BG3 (HUD), subscreen: BG1/2, sprites
 ;	sta	DP_Shadow_TSTM
 ;	A8
 
@@ -377,7 +377,7 @@ AreaEnter:
 
 
 MainAreaLoop:
-	WaitForFrames 1				; don't use WAI here as IRQ might be enabled!
+	WaitForFrames 1							; don't use WAI here as IRQ might be enabled!
 
 ;	lda	DP_Shadow_NMITIMEN
 ;	sta	REG_NMITIMEN
@@ -401,7 +401,7 @@ MainAreaLoop:
 	PrintHexNum ARRAY_HDMA_BGScroll+4
 	PrintHexNum ARRAY_HDMA_BGScroll+3
 
-	lda	#%01000100			; make sure BG3 lo/hi tilemaps get updated
+	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
 .ENDIF
 
@@ -412,10 +412,10 @@ MainAreaLoop:
 	and	#%10000000
 	beq	+
 
-	lda	#2				; B pressed, set fast walking speed
+	lda	#2							; B pressed, set fast walking speed
 	bra	++
 
-+	lda	#1				; B released, set slow walking speed
++	lda	#1							; B released, set slow walking speed
 ++	sta	DP_Char1WalkingSpd
 
 
@@ -436,7 +436,7 @@ MainAreaLoop:
 	and	#%00001111
 	bne	__MainAreaLoopDpadNewDone
 
-	lda	#$80				; d-pad released, make character idle
+	lda	#$80							; d-pad released, make character idle
 	tsb	DP_Char1SpriteStatus
 
 __MainAreaLoopDpadNewDone:
@@ -453,15 +453,15 @@ __MainAreaLoopDpadNewDone:
 
 /*	A16
 	lda	DP_Char1WalkingSpd
-	xba					; shift to high byte for Y value
-	eor	#$FFFF				; make negative
+	xba								; shift to high byte for Y value
+	eor	#$FFFF							; make negative
 	inc	a
 	clc
-	adc	DP_Char1PosYX			; Y = Y - DP_Char1WalkingSpd (add negative value)
+	adc	DP_Char1PosYX						; Y = Y - DP_Char1WalkingSpd (add negative value)
 	sta	DP_Char1PosYX
 	A8
 
-	lda	DP_Char1PosYX+1			; check for walking area border
+	lda	DP_Char1PosYX+1						; check for walking area border
 	cmp	#$B1
 	bcc	__MainAreaLoopDpadUpDone
 
@@ -489,13 +489,13 @@ __MainAreaLoopDpadUpDone:
 
 /*	A16
 	lda	DP_Char1WalkingSpd
-	xba					; shift to high byte for Y value
+	xba								; shift to high byte for Y value
 	clc
-	adc	DP_Char1PosYX			; Y += DP_Char1WalkingSpd
+	adc	DP_Char1PosYX						; Y += DP_Char1WalkingSpd
 	sta	DP_Char1PosYX
 	A8
 
-	lda	DP_Char1PosYX+1			; check for walking area border
+	lda	DP_Char1PosYX+1						; check for walking area border
 	cmp	#$B1
 	bcc	__MainAreaLoopDpadDownDone
 
@@ -525,11 +525,11 @@ __MainAreaLoopDpadDownDone:
 /*	A16
 	lda	DP_Char1PosYX
 	sec
-	sbc	DP_Char1WalkingSpd		; X = X - DP_Char1WalkingSpd
+	sbc	DP_Char1WalkingSpd					; X = X - DP_Char1WalkingSpd
 	sta	DP_Char1PosYX
 	A8
 
-	lda	DP_Char1PosYX			; check for walking area border
+	lda	DP_Char1PosYX						; check for walking area border
 	cmp	#$10
 	bcs	__MainAreaLoopDpadLeftDone
 
@@ -559,11 +559,11 @@ __MainAreaLoopDpadLeftDone:
 /*	A16
 	lda	DP_Char1PosYX
 	clc
-	adc	DP_Char1WalkingSpd		; X += DP_Char1WalkingSpd
+	adc	DP_Char1WalkingSpd					; X += DP_Char1WalkingSpd
 	sta	DP_Char1PosYX
 	A8
 
-	lda	DP_Char1PosYX			; check for walking area border
+	lda	DP_Char1PosYX						; check for walking area border
 	cmp	#$E1
 	bcc	__MainAreaLoopDpadRightDone
 
@@ -587,11 +587,11 @@ __MainAreaLoopDpadRightDone:
 	and	#%10000000
 	beq	__MainAreaLoopAButtonDone
 
-	lda	#$80				; make character idle
+	lda	#$80							; make character idle
 	tsb	DP_Char1SpriteStatus
 
 	lda	#$03
-	sta	DP_TextBoxCharPortrait		; set char portrait #3
+	sta	DP_TextBoxCharPortrait					; set char portrait #3
 
 	jsr	OpenTextBox
 
@@ -619,19 +619,19 @@ __MainAreaLoopXButtonDone:
 	sta	DP_EffectSpeed
 	jsr	EffectHSplitOut2
 
-	lda	#%10000000			; set "clear text box" bit
+	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
 
-	lda	#%00110000			; clear IRQ enable bits
+	lda	#%00110000						; clear IRQ enable bits
 	trb	DP_Shadow_NMITIMEN
 
 	lda	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
 
-;	lda	#%00110100			; deactivate used HDMA channels
+;	lda	#%00110100						; deactivate used HDMA channels
 ;	trb	DP_HDMAchannels
 
-;	lda	#TBL_Char1_down|$80		; make char face the player (for menu later) // adjust when debug menu is removed
+;	lda	#TBL_Char1_down|$80					; make char face the player (for menu later) // adjust when debug menu is removed
 ;	sta	DP_Char1SpriteStatus
 
 	WaitForFrames 1

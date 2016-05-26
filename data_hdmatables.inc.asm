@@ -10,10 +10,10 @@
 
 
 SRC_HDMA_ColMathMode7:
-	.DB PARAM_MODE7_SKY_LINES		; for the sky,
-	.DB $E0, $E0				; apply black (i.e., don't affect display)
+	.DB PARAM_MODE7_SKY_LINES					; for the sky,
+	.DB $E0, $E0							; apply black (i.e., don't affect display)
 
-	.DB 1					; apply b/w values for blur effect
+	.DB 1								; apply b/w values for blur effect
 	.DB $E0,$FC
 	.DB 1
 	.DB $E0,$FB
@@ -66,8 +66,8 @@ SRC_HDMA_ColMathMode7:
 	.DB 10
 	.DB $E0,$E1
 
-	.DB 1					; for the remaining scanlines,
-	.DB $E0, $E0				; don't affect display
+	.DB 1								; for the remaining scanlines,
+	.DB $E0, $E0							; don't affect display
 	.DB 0
 
 SRC_HDMA_ColMathMode7_End:
@@ -75,21 +75,21 @@ SRC_HDMA_ColMathMode7_End:
 
 
 SRC_HDMA_ColMathDialogSel:
-	.DB 127					; for 127 + 57 = 184 scanlines,
-	.DB $E0, $E0				; apply black (i.e., don't affect display)
+	.DB 127								; for 127 + 57 = 184 scanlines,
+	.DB $E0, $E0							; apply black (i.e., don't affect display)
 
-	.DB 57					; patch this in WRAM
+	.DB 57								; patch this in WRAM
 	.DB $E0, $E0
 
-	.DB 1					; for 8 scanlines (= line height), apply color
+	.DB 1								; for 8 scanlines (= line height), apply color
 	.DB $E0, %11101111
 	.DB 6
 	.DB $E0, %11101111
 	.DB 1
 	.DB $E0, %11101101
 
-	.DB 1					; for the remaining scanlines,
-	.DB $E0, $E0				; don't affect display
+	.DB 1								; for the remaining scanlines,
+	.DB $E0, $E0							; don't affect display
 	.DB 0
 
 SRC_HDMA_ColMathDialogSel_End:
@@ -97,24 +97,24 @@ SRC_HDMA_ColMathDialogSel_End:
 
 
 SRC_HDMA_ColMathMenu:
-;	.DB 70					; for 70 scanlines (below menu frame, value to be patched in WRAM for anything below it),
-;	.DB $E0, $E0				; apply black (i.e., don't affect display)
+;	.DB 70								; for 70 scanlines (below menu frame, value to be patched in WRAM for anything below it),
+;	.DB $E0, $E0							; apply black (i.e., don't affect display)
 
-;	.DB 68					; for the menu "window",
-;	.DB $E0, %10011011			; apply blue
+;	.DB 68								; for the menu "window",
+;	.DB $E0, %10011011						; apply blue
 
-	.DB 80					; for 80 scanlines (uppermost menu entry, value to be patched in WRAM for anything below it),
-	.DB $E0, $E0				; apply black (i.e., don't affect display)
+	.DB 80								; for 80 scanlines (uppermost menu entry, value to be patched in WRAM for anything below it),
+	.DB $E0, $E0							; apply black (i.e., don't affect display)
 
-	.DB 1					; for 8 scanlines (= line height), apply color
+	.DB 1								; for 8 scanlines (= line height), apply color
 	.DB $E0, %10011011
 	.DB 6
 	.DB $E0, %10001111
 	.DB 1
 	.DB $E0, %10011011
 
-	.DB 1					; for the remaining scanlines,
-	.DB $E0, $E0				; don't affect display
+	.DB 1								; for the remaining scanlines,
+	.DB $E0, $E0							; don't affect display
 	.DB 0
 
 SRC_HDMA_ColMathMenu_End:
@@ -191,69 +191,69 @@ SRC_HDMA_ColMathMainMenu_End:
 
 
 
-SRC_HDMA_MainEffects:				; FIXME, rename
-	.DB 112|$80				; 112 scanlines, continuous mode flag set
+SRC_HDMA_MainEffects:							; FIXME, rename
+	.DB 112|$80							; 112 scanlines, continuous mode flag set
 	.DW ARRAY_HDMA_MainEffects
 
 	.DB 112|$80
 	.DW ARRAY_HDMA_MainEffects+112
 
-	.DB 0					; end of HDMA table
+	.DB 0								; end of HDMA table
 
 
 
 SRC_HDMA_M7A:
-	.DB 112|$80				; 112 scanlines, continuous mode flag set
+	.DB 112|$80							; 112 scanlines, continuous mode flag set
 	.DW ARRAY_HDMA_M7A
 
 	.DB 112|$80
 	.DW ARRAY_HDMA_M7A+(112*2)
 
-	.DB 0					; end of HDMA table
+	.DB 0								; end of HDMA table
 
 
 
 SRC_HDMA_M7B:
-	.DB 112|$80				; 112 scanlines, continuous mode flag set
+	.DB 112|$80							; 112 scanlines, continuous mode flag set
 	.DW ARRAY_HDMA_M7B
 
 	.DB 112|$80
 	.DW ARRAY_HDMA_M7B+(112*2)
 
-	.DB 0					; end of HDMA table
+	.DB 0								; end of HDMA table
 
 
 
 SRC_HDMA_M7C:
-	.DB 112|$80				; 112 scanlines, continuous mode flag set
+	.DB 112|$80							; 112 scanlines, continuous mode flag set
 	.DW ARRAY_HDMA_M7C
 
 	.DB 112|$80
 	.DW ARRAY_HDMA_M7C+(112*2)
 
-	.DB 0					; end of HDMA table
+	.DB 0								; end of HDMA table
 
 
 
 SRC_HDMA_M7D:
-	.DB 112|$80				; 112 scanlines, continuous mode flag set
+	.DB 112|$80							; 112 scanlines, continuous mode flag set
 	.DW ARRAY_HDMA_M7D
 
 	.DB 112|$80
 	.DW ARRAY_HDMA_M7D+(112*2)
 
-	.DB 0					; end of HDMA table
+	.DB 0								; end of HDMA table
 
 
 
 SRC_HDMA_ResetBGScroll:
-	.DB 127					; 127 + 49 = 176 scanlines = playfield
-	.DW $0000, $00FF			; horiz. scroll = $0000, vert. scroll = $00FF (values to be manipulated in WRAM)
+	.DB 127								; 127 + 49 = 176 scanlines = playfield
+	.DW $0000, $00FF						; horiz. scroll = $0000, vert. scroll = $00FF (values to be manipulated in WRAM)
 
 	.DB 49
 	.DW $0000, $00FF
 
-	.DB 48					; 48 scanlines = text box area
+	.DB 48								; 48 scanlines = text box area
 	.DW $0000, $00FF
 
 	.DB 0
@@ -290,20 +290,20 @@ SRC_HDMA_test5:
 ; $04 --> lower frame (3 px) + 1 scanline below textbox
 
 SRC_HDMA_ColorGradient:
-	.DB 127|$80				; 127 + 49 = 176 scanlines for playfield, continuous mode flag set
-	.DW (ARRAY_HDMA_BackgrPlayfield & $FFFF)	; get low word
+	.DB 127|$80							; 127 + 49 = 176 scanlines for playfield, continuous mode flag set
+	.DW (ARRAY_HDMA_BackgrPlayfield & $FFFF)			; get low word
 
 	.DB 49|$80
 	.DW (ARRAY_HDMA_BackgrPlayfield & $FFFF)+(127*4)
 
-	.DB 48|$80				; 48 scanlines for textbox, continuous mode flag set
+	.DB 48|$80							; 48 scanlines for textbox, continuous mode flag set
 	.DW (ARRAY_HDMA_BackgrTextBox & $FFFF)
 
-	.DB 0					; end of HDMA table
+	.DB 0								; end of HDMA table
 
 
 
-SRC_HDMA_MenuParty:				; color gradient: black --> bright blue
+SRC_HDMA_MenuParty:							; color gradient: black --> bright blue
 .REPEAT 7
 	.dw $0000,$0000
 .ENDR
@@ -584,10 +584,10 @@ SRC_HDMA_Mode7Sky56_END:
 
 
 SRC_HDMA_TextBoxGradientBlue:
-	.DW $0000,$0000				; 3 scanlines black (to suppress color in frame corners)
+	.DW $0000,$0000							; 3 scanlines black (to suppress color in frame corners)
 	.DW $0000,$0000
 	.DW $0000,$0000
-	.DW $0000,$1000				; start of blue color gradient
+	.DW $0000,$1000							; start of blue color gradient
 	.DW $0000,$1000
 	.DW $0000,$1400
 	.DW $0000,$1400
@@ -628,18 +628,18 @@ SRC_HDMA_TextBoxGradientBlue:
 	.DW $0000,$5C00
 	.DW $0000,$5C00
 	.DW $0000,$6000
-	.DW $0000,$6000				; end of blue color gradient
-	.DW $0000,$0000				; 3 scanlines black
+	.DW $0000,$6000							; end of blue color gradient
+	.DW $0000,$0000							; 3 scanlines black
 	.DW $0000,$0000
 	.DW $0000,$0000
 
 
 
 SRC_HDMA_TextBoxGradientRed:
-	.DW $0000,$0000				; 3 scanlines black (to suppress color in frame corners)
+	.DW $0000,$0000							; 3 scanlines black (to suppress color in frame corners)
 	.DW $0000,$0000
 	.DW $0000,$0000
-	.DW $0000,$0004				; start of red color gradient
+	.DW $0000,$0004							; start of red color gradient
 	.DW $0000,$0004
 	.DW $0000,$0005
 	.DW $0000,$0005
@@ -680,18 +680,18 @@ SRC_HDMA_TextBoxGradientRed:
 	.DW $0000,$0017
 	.DW $0000,$0017
 	.DW $0000,$0018
-	.DW $0000,$0018				; end of red color gradient
-	.DW $0000,$0000				; 3 scanlines black
+	.DW $0000,$0018							; end of red color gradient
+	.DW $0000,$0000							; 3 scanlines black
 	.DW $0000,$0000
 	.DW $0000,$0000
 
 
 
 SRC_HDMA_TextBoxGradientPink:
-	.DW $0000,$0000				; 3 scanlines black (to suppress color in frame corners)
+	.DW $0000,$0000							; 3 scanlines black (to suppress color in frame corners)
 	.DW $0000,$0000
 	.DW $0000,$0000
-	.DW $0000,$1004				; start of pink color gradient
+	.DW $0000,$1004							; start of pink color gradient
 	.DW $0000,$1004
 	.DW $0000,$1405
 	.DW $0000,$1405
@@ -732,18 +732,18 @@ SRC_HDMA_TextBoxGradientPink:
 	.DW $0000,$741D
 	.DW $0000,$781E
 	.DW $0000,$781F
-	.DW $0000,$7C1F				; end of pink color gradient
-	.DW $0000,$0000				; 3 scanlines black
+	.DW $0000,$7C1F							; end of pink color gradient
+	.DW $0000,$0000							; 3 scanlines black
 	.DW $0000,$0000
 	.DW $0000,$0000
 
 
 
 SRC_HDMA_TextBoxGradientEvil:
-	.DW $0000,$0000				; 3 scanlines black (to suppress color in frame corners)
+	.DW $0000,$0000							; 3 scanlines black (to suppress color in frame corners)
 	.DW $0000,$0000
 	.DW $0000,$0000
-	.DW $0000,$0001				; start of "evil" color gradient
+	.DW $0000,$0001							; start of "evil" color gradient
 	.DW $0000,$0401
 	.DW $0000,$0401
 	.DW $0000,$0402
@@ -784,18 +784,18 @@ SRC_HDMA_TextBoxGradientEvil:
 	.DW $0000,$206E
 	.DW $0000,$206F
 	.DW $0000,$206F
-	.DW $0000,$206F				; end of "evil" color gradient
-	.DW $0000,$0000				; 3 scanlines black
+	.DW $0000,$206F							; end of "evil" color gradient
+	.DW $0000,$0000							; 3 scanlines black
 	.DW $0000,$0000
 	.DW $0000,$0000
 
 
 
 SRC_HDMA_TextBoxGradientPissed:
-	.DW $0000,$0000				; 3 scanlines black (to suppress color in frame corners)
+	.DW $0000,$0000							; 3 scanlines black (to suppress color in frame corners)
 	.DW $0000,$0000
 	.DW $0000,$0000
-	.DW $0000,$0022				; start of "pissed" color gradient
+	.DW $0000,$0022							; start of "pissed" color gradient
 	.DW $0000,$0423
 	.DW $0000,$0444
 	.DW $0000,$0444
@@ -836,8 +836,8 @@ SRC_HDMA_TextBoxGradientPissed:
 	.DW $0000,$15DF
 	.DW $0000,$15DF
 	.DW $0000,$15DF
-	.DW $0000,$15DF				; end of "pissed" color gradient
-	.DW $0000,$0000				; 3 scanlines black
+	.DW $0000,$15DF							; end of "pissed" color gradient
+	.DW $0000,$0000							; 3 scanlines black
 	.DW $0000,$0000
 	.DW $0000,$0000
 

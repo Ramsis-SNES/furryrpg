@@ -14,10 +14,10 @@
 .BASE $C0
 
 .DEFINE DEBUG
-;.DEFINE NOMUSIC				; activate this to disable music // FIXME (make this actually work)
+;.DEFINE NOMUSIC							; activate this to disable music // FIXME (make this actually work)
 
 .DEFINE CurrentBank	0
-.DEFINE START_OFFSET	$F000			; start code offset in bank $C0
+.DEFINE START_OFFSET	$F000						; start code offset in bank $C0
 
 .DEFINE SPC700_DRV	".\\music\\00-spc700-driver.bin"
 
@@ -59,13 +59,13 @@
 
 .ROMBANKMAP
 	BANKSTOTAL	24
-	BANKSIZE	$10000			; ROM banks are 64 KBytes in size
-	BANKS		24			; 24 ROM banks = 12 Mbit
+	BANKSIZE	$10000						; ROM banks are 64 KBytes in size
+	BANKS		24						; 24 ROM banks = 12 Mbit
 .ENDRO
 
 
 
-.SNESHEADER					; this also calculates ROM checksum & complement
+.SNESHEADER								; this also calculates ROM checksum & complement
 	ID		"SNES"
 	NAME		"FURRY RPG!           "
 	HIROM
@@ -83,7 +83,7 @@
 .BANK CurrentBank SLOT 0
 .ORG START_OFFSET + $FB0
 
-	.DB		"00"			; new licensee code
+	.DB "00"							; new licensee code
 
 
 
@@ -132,8 +132,8 @@ DummyCOP:
 
 ; **************** Variables, macros, library routines *****************
 
-	.INCLUDE "lib_variables.asm"		; global variables
-	.INCLUDE "lib_macros.asm"		; macros
+.INCLUDE "lib_variables.asm"						; global variables
+.INCLUDE "lib_macros.asm"						; macros
 
 
 
@@ -157,7 +157,7 @@ STR_SoftwareVersionNo:
 ;STR_SoftwareVersionNo_END:
 
 STR_SoftwareMaker:
-	.DB $A9, " 2016 by www.ManuLoewe.de"	; $A9 = copyright symbol
+	.DB $A9, " 2016 by www.ManuLoewe.de"				; $A9 = copyright symbol
 	.DB 0
 
 STR_SoftwareBuild:
@@ -204,24 +204,28 @@ SRC_IRQJumpTable:
 
 
 .SECTION "Main Code" SEMIFREE
-	.INCLUDE "furryrpg_area.inc.asm"	; area handler
-	.INCLUDE "furryrpg_boot.inc.asm"	; boot code
-	.INCLUDE "furryrpg_debug.inc.asm"	; debug menu
-	.INCLUDE "furryrpg_effects_transitions.inc.asm"	; screen transition effects
-	.INCLUDE "furryrpg_irqnmi.inc.asm"	; Vblank NMI & IRQ handlers with subroutines
-	.INCLUDE "furryrpg_mainmenu.inc.asm"	; in-game main menu
-	.INCLUDE "furryrpg_mode7.inc.asm"	; Mode 7 handler
-	.INCLUDE "furryrpg_music.inc.asm"	; music handler
-	.INCLUDE "furryrpg_sram.inc.asm"	; SRAM handler
-	.INCLUDE "furryrpg_text.inc.asm"	; text printing routines
+
+.INCLUDE "furryrpg_area.inc.asm"					; area handler
+.INCLUDE "furryrpg_boot.inc.asm"					; boot code
+.INCLUDE "furryrpg_debug.inc.asm"					; debug menu
+.INCLUDE "furryrpg_effects_transitions.inc.asm"				; screen transition effects
+.INCLUDE "furryrpg_irqnmi.inc.asm"					; Vblank NMI & IRQ handlers with subroutines
+.INCLUDE "furryrpg_mainmenu.inc.asm"					; in-game main menu
+.INCLUDE "furryrpg_mode7.inc.asm"					; Mode 7 handler
+.INCLUDE "furryrpg_music.inc.asm"					; music handler
+.INCLUDE "furryrpg_sram.inc.asm"					; SRAM handler
+.INCLUDE "furryrpg_text.inc.asm"					; text printing routines
+
 .ENDS
 
 
 
 .SECTION "libs" SEMIFREE
-	.INCLUDE "lib_joypads.inc.asm"
-	.INCLUDE "lib_multi5.inc.asm"
-	.INCLUDE "lib_snesgss.inc.asm"
+
+.INCLUDE "lib_joypads.inc.asm"
+.INCLUDE "lib_multi5.inc.asm"
+.INCLUDE "lib_snesgss.inc.asm"
+
 .ENDS
 
 
@@ -232,9 +236,9 @@ SRC_IRQJumpTable:
 .SECTION "Startup" FORCE
 
 Startup:
-	sei					; disable interrupts
+	sei								; disable interrupts
 	clc
-	xce					; switch to native mode
+	xce								; switch to native mode
 
 	jml	Boot
 
@@ -250,8 +254,10 @@ Startup:
 .ORG 0
 
 .SECTION "CharacterData"
-	.INCLUDE "data_gfxdata.inc.asm"	; sprites, fonts, palettes
-	.INCLUDE "data_fontwidthtables.inc.asm"	; font width table for sprite VWF
+
+.INCLUDE "data_gfxdata.inc.asm"						; sprites, fonts, palettes
+.INCLUDE "data_fontwidthtables.inc.asm"					; font width table for sprite VWF
+
 .ENDS
 
 
@@ -264,14 +270,18 @@ Startup:
 .ORG 0
 
 .SECTION "English dialog" FORCE
-	.INCLUDE "data_dialogpointers_eng.inc.asm"	; pointers to English dialog
-	.INCLUDE "data_dialog_eng.inc.asm"		; English dialog
+
+.INCLUDE "data_dialogpointers_eng.inc.asm"				; pointers to English dialog
+.INCLUDE "data_dialog_eng.inc.asm"					; English dialog
+
 .ENDS
 
 .ORG $8000
 
 .SECTION "English items" FORCE
-	.INCLUDE "data_items_eng.inc.asm"		; English item names
+
+.INCLUDE "data_items_eng.inc.asm"					; English item names
+
 .ENDS
 
 
@@ -284,14 +294,18 @@ Startup:
 .ORG 0
 
 .SECTION "German dialog" FORCE
-	.INCLUDE "data_dialogpointers_ger.inc.asm"	; pointers to German dialog
-	.INCLUDE "data_dialog_ger.inc.asm"		; German dialog
+
+.INCLUDE "data_dialogpointers_ger.inc.asm"				; pointers to German dialog
+.INCLUDE "data_dialog_ger.inc.asm"					; German dialog
+
 .ENDS
 
 .ORG $8000
 
 .SECTION "German items" FORCE
-	.INCLUDE "data_items_ger.inc.asm"		; German item names
+
+.INCLUDE "data_items_ger.inc.asm"					; German item names
+
 .ENDS
 
 
@@ -304,8 +318,10 @@ Startup:
 .ORG 0
 
 .SECTION "Source tables"
-	.INCLUDE "data_hdmatables.inc.asm"	; HDMA tables
-	.INCLUDE "data_mode7tables.inc.asm"	; Mode 7 scaling/rotation tables
+
+.INCLUDE "data_hdmatables.inc.asm"					; HDMA tables
+.INCLUDE "data_mode7tables.inc.asm"					; Mode 7 scaling/rotation tables
+
 .ENDS
 
 
@@ -320,28 +336,28 @@ Startup:
 .SECTION "Intro GFX"
 
 SRC_RamsisPresentsMap:
-	.INCBIN ".\\gfx\\ramsis-presents-256.map"
+.INCBIN ".\\gfx\\ramsis-presents-256.map"
 
 SRC_RamsisPresentsPal:
-	.INCBIN ".\\gfx\\ramsis-presents-256.pal"
+.INCBIN ".\\gfx\\ramsis-presents-256.pal"
 
 GFX_RamsisPresentsPic:
-	.INCBIN ".\\gfx\\ramsis-presents-256.pic"
+.INCBIN ".\\gfx\\ramsis-presents-256.pic"
 
 SRC_RamsisMap:
-	.INCBIN ".\\gfx\\ramsis-256.map"
+.INCBIN ".\\gfx\\ramsis-256.map"
 
 SRC_RamsisPal:
-	.INCBIN ".\\gfx\\ramsis-256.pal"
+.INCBIN ".\\gfx\\ramsis-256.pal"
 
 GFX_RamsisPic:
-	.INCBIN ".\\gfx\\ramsis-256.pic"
+.INCBIN ".\\gfx\\ramsis-256.pic"
 
 SRC_SoundEnginesPal:
-	.INCBIN ".\\gfx\\sound-engines-256.pal"
+.INCBIN ".\\gfx\\sound-engines-256.pal"
 
 GFX_SoundEnginesPic:
-	.INCBIN ".\\gfx\\sound-engines-256.pic"
+.INCBIN ".\\gfx\\sound-engines-256.pic"
 
 .ENDS
 
@@ -357,16 +373,16 @@ GFX_SoundEnginesPic:
 .SECTION "Intro GFX 2"
 
 SRC_SoundEnginesMap:
-	.INCBIN ".\\gfx\\sound-engines-256.map"
+.INCBIN ".\\gfx\\sound-engines-256.map"
 
 SRC_StartMap:
-	.INCBIN ".\\gfx\\start2-256.map"
+.INCBIN ".\\gfx\\start2-256.map"
 
 SRC_StartPal:
-	.INCBIN ".\\gfx\\start2-256.pal"
+.INCBIN ".\\gfx\\start2-256.pal"
 
 GFX_StartPic:
-	.INCBIN ".\\gfx\\start2-256.pic"
+.INCBIN ".\\gfx\\start2-256.pic"
 
 .ENDS
 
@@ -382,16 +398,16 @@ GFX_StartPic:
 .SECTION "Playfield GFX"
 
 GFX_Playfield_001:
-;	.INCBIN ".\\gfx\\playfield_001.pic"
-	.INCBIN ".\\gfx\\pitcairn.pic"
+;.INCBIN ".\\gfx\\playfield_001.pic"
+.INCBIN ".\\gfx\\pitcairn.pic"
 
 GFX_Playfield_001_END:
 
 
 
 SRC_Playfield_001_MAP:
-;	.INCBIN ".\\gfx\\playfield_001.map"
-	.INCBIN ".\\gfx\\pitcairn.map"
+;.INCBIN ".\\gfx\\playfield_001.map"
+.INCBIN ".\\gfx\\pitcairn.map"
 
 SRC_Playfield_001_MAP_END:
 
@@ -409,12 +425,12 @@ SRC_Playfield_001_MAP_END:
 .SECTION "Mode 7 GFX 2"
 
 SRC_Sommappal:
-	.INCBIN ".\\gfx\\iot.pal" ;som_map.pal"
-;	.INCBIN ".\\SOM.zst" SKIP $618 READ 512
+.INCBIN ".\\gfx\\iot.pal" ;som_map.pal"
+;.INCBIN ".\\SOM.zst" SKIP $618 READ 512
 
 GFX_Sommappic:
-	.INCBIN ".\\gfx\\iot.bin" ;som_map.pic"
-;	.INCBIN ".\\SOM.zst" SKIP $20C13 READ $8000
+.INCBIN ".\\gfx\\iot.bin" ;som_map.pic"
+;.INCBIN ".\\SOM.zst" SKIP $20C13 READ $8000
 
 GFX_Sommappic_END:
 
@@ -432,7 +448,7 @@ GFX_Sommappic_END:
 .SECTION ".roDataSoundDriver" SEMIFREE
 
 SRC_spc700_driver:
-	.INCBIN SPC700_DRV
+.INCBIN SPC700_DRV
 
 .ENDS
 
@@ -448,10 +464,10 @@ SRC_spc700_driver:
 .SECTION ".roDataSoundCode02" SEMIFREE
 
 SRC_track_00_pointers:
-	.INCBIN TRACK00_SMP SKIP 10 READ 6	; 2 + 8
+.INCBIN TRACK00_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_00_samples:
-	.INCBIN TRACK00_SMP SKIP 2342		; 2 + 2340
+.INCBIN TRACK00_SMP SKIP 2342						; 2 + 2340
 
 SRC_track_00_samples_END:
 
@@ -462,7 +478,7 @@ SRC_track_00_samples_END:
 .SECTION ".roDataMusic02" SEMIFREE
 
 SRC_track_00_notes:
-	.INCBIN TRACK00_NOTES
+.INCBIN TRACK00_NOTES
 
 .ENDS
 
@@ -478,10 +494,10 @@ SRC_track_00_notes:
 .SECTION ".roDataSoundCode03" SEMIFREE
 
 SRC_track_01_pointers:
-	.INCBIN TRACK01_SMP SKIP 10 READ 6	; 2 + 8
+.INCBIN TRACK01_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_01_samples:
-	.INCBIN TRACK01_SMP SKIP 2342		; 2 + 2340
+.INCBIN TRACK01_SMP SKIP 2342						; 2 + 2340
 
 SRC_track_01_samples_END:
 
@@ -492,7 +508,7 @@ SRC_track_01_samples_END:
 .SECTION ".roDataMusic03" SEMIFREE
 
 SRC_track_01_notes:
-	.INCBIN TRACK01_NOTES
+.INCBIN TRACK01_NOTES
 
 .ENDS
 
@@ -501,10 +517,10 @@ SRC_track_01_notes:
 .SECTION ".roDataSoundCode05" SEMIFREE
 
 SRC_track_03_pointers:
-	.INCBIN TRACK03_SMP SKIP 10 READ 6	; 2 + 8
+.INCBIN TRACK03_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_03_samples:
-	.INCBIN TRACK03_SMP SKIP 2342		; 2 + 2340
+.INCBIN TRACK03_SMP SKIP 2342						; 2 + 2340
 
 SRC_track_03_samples_END:
 
@@ -515,7 +531,7 @@ SRC_track_03_samples_END:
 .SECTION ".roDataMusic05" SEMIFREE
 
 SRC_track_03_notes:
-	.INCBIN TRACK03_NOTES
+.INCBIN TRACK03_NOTES
 
 .ENDS
 
@@ -531,10 +547,10 @@ SRC_track_03_notes:
 .SECTION ".roDataSoundCode04" SEMIFREE
 
 SRC_track_02_pointers:
-	.INCBIN TRACK02_SMP SKIP 10 READ 6	; 2 + 8
+.INCBIN TRACK02_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_02_samples:
-	.INCBIN TRACK02_SMP SKIP 2342		; 2 + 2340
+.INCBIN TRACK02_SMP SKIP 2342						; 2 + 2340
 
 SRC_track_02_samples_END:
 
@@ -545,7 +561,7 @@ SRC_track_02_samples_END:
 .SECTION ".roDataMusic04" SEMIFREE
 
 SRC_track_02_notes:
-	.INCBIN TRACK02_NOTES
+.INCBIN TRACK02_NOTES
 
 .ENDS
 
@@ -561,10 +577,10 @@ SRC_track_02_notes:
 .SECTION ".roDataSoundCode06" SEMIFREE
 
 SRC_track_04_pointers:
-	.INCBIN TRACK04_SMP SKIP 10 READ 6	; 2 + 8
+.INCBIN TRACK04_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_04_samples:
-	.INCBIN TRACK04_SMP SKIP 2342		; 2 + 2340
+.INCBIN TRACK04_SMP SKIP 2342						; 2 + 2340
 
 SRC_track_04_samples_END:
 
@@ -575,7 +591,7 @@ SRC_track_04_samples_END:
 .SECTION ".roDataMusic06" SEMIFREE
 
 SRC_track_04_notes:
-	.INCBIN TRACK04_NOTES
+.INCBIN TRACK04_NOTES
 
 .ENDS
 
@@ -591,10 +607,10 @@ SRC_track_04_notes:
 .SECTION ".roDataSoundCode07" SEMIFREE
 
 SRC_track_05_pointers:
-	.INCBIN TRACK05_SMP SKIP 10 READ 6	; 2 + 8
+.INCBIN TRACK05_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_05_samples:
-	.INCBIN TRACK05_SMP SKIP 2342		; 2 + 2340
+.INCBIN TRACK05_SMP SKIP 2342						; 2 + 2340
 
 SRC_track_05_samples_END:
 
@@ -605,7 +621,7 @@ SRC_track_05_samples_END:
 .SECTION ".roDataMusic07" SEMIFREE
 
 SRC_track_05_notes:
-	.INCBIN TRACK05_NOTES
+.INCBIN TRACK05_NOTES
 
 .ENDS
 
@@ -621,10 +637,10 @@ SRC_track_05_notes:
 .SECTION ".roDataSoundCode08" SEMIFREE
 
 SRC_track_06_pointers:
-	.INCBIN TRACK06_SMP SKIP 10 READ 6	; 2 + 8
+.INCBIN TRACK06_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_06_samples:
-	.INCBIN TRACK06_SMP SKIP 2342		; 2 + 2340
+.INCBIN TRACK06_SMP SKIP 2342						; 2 + 2340
 
 SRC_track_06_samples_END:
 
@@ -635,7 +651,7 @@ SRC_track_06_samples_END:
 .SECTION ".roDataMusic08" SEMIFREE
 
 SRC_track_06_notes:
-	.INCBIN TRACK06_NOTES
+.INCBIN TRACK06_NOTES
 
 .ENDS
 
@@ -651,10 +667,10 @@ SRC_track_06_notes:
 .SECTION ".roDataSoundCode09" SEMIFREE
 
 SRC_track_07_pointers:
-	.INCBIN TRACK07_SMP SKIP 10 READ 6	; 2 + 8
+.INCBIN TRACK07_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_07_samples:
-	.INCBIN TRACK07_SMP SKIP 2342		; 2 + 2340
+.INCBIN TRACK07_SMP SKIP 2342						; 2 + 2340
 
 SRC_track_07_samples_END:
 
@@ -665,7 +681,7 @@ SRC_track_07_samples_END:
 .SECTION ".roDataMusic09" SEMIFREE
 
 SRC_track_07_notes:
-	.INCBIN TRACK07_NOTES
+.INCBIN TRACK07_NOTES
 
 .ENDS
 
@@ -681,10 +697,10 @@ SRC_track_07_notes:
 .SECTION ".roDataSoundCode10" SEMIFREE
 
 SRC_track_08_pointers:
-	.INCBIN TRACK08_SMP SKIP 10 READ 6	; 2 + 8
+.INCBIN TRACK08_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_08_samples:
-	.INCBIN TRACK08_SMP SKIP 2342		; 2 + 2340
+.INCBIN TRACK08_SMP SKIP 2342						; 2 + 2340
 
 SRC_track_08_samples_END:
 
@@ -695,7 +711,7 @@ SRC_track_08_samples_END:
 .SECTION ".roDataMusic10" SEMIFREE
 
 SRC_track_08_notes:
-	.INCBIN TRACK08_NOTES
+.INCBIN TRACK08_NOTES
 
 .ENDS
 
@@ -711,10 +727,10 @@ SRC_track_08_notes:
 .SECTION ".roDataSoundCode11" SEMIFREE
 
 SRC_track_09_pointers:
-	.INCBIN TRACK09_SMP SKIP 10 READ 6	; 2 + 8
+.INCBIN TRACK09_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_09_samples:
-	.INCBIN TRACK09_SMP SKIP 2342		; 2 + 2340
+.INCBIN TRACK09_SMP SKIP 2342						; 2 + 2340
 
 SRC_track_09_samples_END:
 
@@ -725,7 +741,7 @@ SRC_track_09_samples_END:
 .SECTION ".roDataMusic11" SEMIFREE
 
 SRC_track_09_notes:
-	.INCBIN TRACK09_NOTES
+.INCBIN TRACK09_NOTES
 
 .ENDS
 

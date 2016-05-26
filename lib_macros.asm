@@ -58,8 +58,8 @@
 ; Effect: Branch-relative to subroutine (useful for relocatable code).
 
 .MACRO bsr
-	per	__ReturnAdress\@ - 1		; push relative return address minus 1 (RTS adds 1) onto stack
-	brl	\1				; branch-relative to subroutine
+	per	__ReturnAdress\@ - 1					; push relative return address minus 1 (RTS adds 1) onto stack
+	brl	\1							; branch-relative to subroutine
 
 __ReturnAdress\@:
 
@@ -110,7 +110,7 @@ __ReturnAdress\@:
 
 .MACRO DisableInterrupts
 	sei
-	lda.b	#$00				; reminder: stz doesn't support 24-bit addressing
+	lda.b	#$00							; reminder: stz doesn't support 24-bit addressing
 	sta.l	REG_NMITIMEN
 .ENDM
 
@@ -124,17 +124,17 @@ __ReturnAdress\@:
 ; Expects: A 8 bit, X/Y 16 bit
 
 .MACRO DMA_CH0
-	lda	#\1				; DMA mode (8 bit)
+	lda	#\1							; DMA mode (8 bit)
  	sta	$4300
-	lda	#\4				; B bus register (8 bit)
+	lda	#\4							; B bus register (8 bit)
 	sta	$4301
-	ldx	#(\3 & $FFFF)			; get low word of data offset (16 bit)
+	ldx	#(\3 & $FFFF)						; get low word of data offset (16 bit)
 	stx	$4302
-	lda	#\2				; data bank (8 bit)
+	lda	#\2							; data bank (8 bit)
 	sta	$4304
-	ldx	#\5				; data length (16 bit)
+	ldx	#\5							; data length (16 bit)
 	stx	$4305
-	lda	#%00000001			; initiate DMA transfer (channel 0)
+	lda	#%00000001						; initiate DMA transfer (channel 0)
 	sta	$420B
 .ENDM
 
@@ -151,9 +151,9 @@ __ReturnAdress\@:
 
 ; -------------------------- draw upper border
 	ldx	#32*\2 + \1
-	lda	#$10				; upper left corner
+	lda	#$10							; upper left corner
 	sta	TileMapBG3, x
-	lda	#$11				; horizontal line
+	lda	#$11							; horizontal line
 
 __DrawUpperBorder\@:
 	inx
@@ -161,7 +161,7 @@ __DrawUpperBorder\@:
 	cpx	#32*\2 + \1 + \3
 	bne	__DrawUpperBorder\@
 
-	lda	#$12				; upper right corner
+	lda	#$12							; upper right corner
 	sta	TileMapBG3, x
 	bra	__GoToNextLine\@
 
@@ -169,24 +169,24 @@ __DrawUpperBorder\@:
 
 ; -------------------------- draw left & right border
 __DrawLRBorder\@:
-	lda	#$13				; left vertical line
+	lda	#$13							; left vertical line
 	sta	TileMapBG3, x
 
 	A16
 	txa
 	clc
-	adc	#\3				; go to right border
+	adc	#\3							; go to right border
 	tax
 	A8
 
-	lda	#$14				; right vertical line
+	lda	#$14							; right vertical line
 	sta	TileMapBG3, x
 
 __GoToNextLine\@:
 	A16
 	txa
 	clc
-	adc	#32 - \3			; go to next line
+	adc	#32 - \3						; go to next line
 	tax
 	A8
 
@@ -196,10 +196,10 @@ __GoToNextLine\@:
 
 
 ; -------------------------- draw lower border
-	lda	#$15				; lower left corner
+	lda	#$15							; lower left corner
 	sta	TileMapBG3, x
 	inx
-	lda	#$16				; horizontal line
+	lda	#$16							; horizontal line
 
 __DrawLowerBorder\@:
 	sta	TileMapBG3, x
@@ -207,7 +207,7 @@ __DrawLowerBorder\@:
 	cpx	#32*(\2+\4) + \1 + \3
 	bne	__DrawLowerBorder\@
 
-	lda	#$17				; lower right corner
+	lda	#$17							; lower right corner
 	sta	TileMapBG3, x
 .ENDM
 
@@ -216,7 +216,7 @@ __DrawLowerBorder\@:
 ; Set Data Bank macro by ManuLöwe
 ;
 ; Usage: SetDataBank $XX
-; Effect: Changes the current Data Bank to $XX (only useful for HiROM games).
+; Effect: Changes the current Data Bank to $XX.
 ;
 ; Expects: A 8 bit
 
@@ -252,11 +252,11 @@ __DrawLowerBorder\@:
 .MACRO SetIRQRoutine
 	A16
 	lda	#\1
-	asl	a				; value × 4 (the table consists of 4-byte entries)
+	asl	a							; value × 4 (the table consists of 4-byte entries)
 	asl	a
 	tax
-	lda.l	SRC_IRQJumpTable, x		; holds a 4-byte instruction like jml SomeVblankRoutine
-	sta	DP_IRQJump			; IRQ vector points here
+	lda.l	SRC_IRQJumpTable, x					; holds a 4-byte instruction like jml SomeVblankRoutine
+	sta	DP_IRQJump						; IRQ vector points here
 	inx
 	inx
 	lda.l	SRC_IRQJumpTable, x
@@ -276,11 +276,11 @@ __DrawLowerBorder\@:
 .MACRO SetVblankRoutine
 	A16
 	lda	#\1
-	asl	a				; value × 4 (the table consists of 4-byte entries)
+	asl	a							; value × 4 (the table consists of 4-byte entries)
 	asl	a
 	tax
-	lda.l	SRC_VblankJumpTable, x		; holds a 4-byte instruction like jml SomeVblankRoutine
-	sta	DP_VblankJump			; NMI vector points here
+	lda.l	SRC_VblankJumpTable, x					; holds a 4-byte instruction like jml SomeVblankRoutine
+	sta	DP_VblankJump						; NMI vector points here
 	inx
 	inx
 	lda.l	SRC_VblankJumpTable, x
@@ -328,7 +328,7 @@ __WaitForVblankEnd\@:
 __CheckJoypad\@:
 	wai
 	lda	Joy1New
-	and	#$F0F0				; B, Y, Select, Start (no d-pad), A, X, L, R
+	and	#$F0F0							; B, Y, Select, Start (no d-pad), A, X, L, R
 	beq	__CheckJoypad\@
 
 	A8
@@ -343,7 +343,7 @@ __CheckJoypad\@:
 	stx	Cursor
 	jsr	PrintF
 
-	.DB \3, 0				; instead of a return address (-1), the string address (-1) is on the stack
+	.DB \3, 0							; instead of a return address (-1), the string address (-1) is on the stack
 .ENDM
 
 
@@ -358,7 +358,7 @@ __CheckJoypad\@:
 ;.MACRO ClearLine
 ;	clc
 ;	lda.b	#\1
-;	adc.b	#minPrintY			; add Y indention
+;	adc.b	#minPrintY						; add Y indention
 ;	jsr	PrintClearLine
 ;.ENDM
 

@@ -18,26 +18,26 @@ spc_load_data:
 	tay
 	A8
 
-;	sta.l	REG_NMITIMEN			;disable NMI,interrupts has to be disabled to prevent possible lockup in the IPL transfer routine
-;	sei					;disable IRQ
+;	sta.l	REG_NMITIMEN						;disable NMI,interrupts has to be disabled to prevent possible lockup in the IPL transfer routine
+;	sei								;disable IRQ
 
 	A16
-	lda	DP_SPC_DATA_SIZE ;7,s		;size
+	lda	DP_SPC_DATA_SIZE ;7,s					;size
 	tax
-	lda	DP_SPC_DATA_OFFS ;9,s		;src
+	lda	DP_SPC_DATA_OFFS ;9,s					;src
 	sta	sneslib_ptr
-	lda	DP_SPC_DATA_BANK ;11,s		;srch
+	lda	DP_SPC_DATA_BANK ;11,s					;srch
 	sta	sneslib_ptr+2
-	lda.w	#$bbaa		;IPL ready signature
+	lda.w	#$bbaa							;IPL ready signature
 
 _wait1:
 
 	cmp.l	REG_APUIO01
 	bne	_wait1
 
-	lda	DP_SPC_DATA_ADDR ;5,s		;adr
+	lda	DP_SPC_DATA_ADDR ;5,s					;adr
 	sta.l	REG_APUIO23
-	lda.w	#$01cc		;IPL load and ready signature
+	lda.w	#$01cc							;IPL load and ready signature
 	sta.l	REG_APUIO01
 	A8
 
@@ -76,13 +76,13 @@ _load3:
 	plb
 
 	A16
-	lda.w	#$0200		;loaded code starting address
+	lda.w	#$0200							;loaded code starting address
 	sta.l	REG_APUIO23
 	A8
 
-	lda.b	#$00			;execute code
-	sta.l	REG_APUIO1
-	tya					;stop transfer
+	lda.b	#$00							;execute code
+	sta.l	REG_APUIO1	
+	tya								;stop transfer
 	sta.l	REG_APUIO0
 
 ;	A16
@@ -97,14 +97,14 @@ _load3:
 
 ;	A8
 ;	txa
-;	sta.l	REG_NMITIMEN		;enable NMI
-;	cli					;enable IRQ
+;	sta.l	REG_NMITIMEN						;enable NMI
+;	cli								;enable IRQ
 
 	A16
 
 _load5:
 
-	lda.l	REG_APUIO01			;wait until SPC700 clears all communication ports, confirming that code has started
+	lda.l	REG_APUIO01						;wait until SPC700 clears all communication ports, confirming that code has started
 	ora.l	REG_APUIO23
 	bne	_load5
 
@@ -122,11 +122,10 @@ spc_command_asm:
 	A8
 
 ;	lda	#$00
-;	sta.l	REG_NMITIMEN			; disable NMI // LAST ADD 198
-;	sei					; disable IRQ // LAST ADD 198
+;	sta.l	REG_NMITIMEN						; disable NMI // LAST ADD 198
+;	sei								; disable IRQ // LAST ADD 198
 
--
-	lda.l	REG_APUIO0
+-	lda.l	REG_APUIO0
 	bne	-
 
 	A16
@@ -134,7 +133,7 @@ spc_command_asm:
 	sta.l	REG_APUIO23
 	lda	gss_command
 	sta.l	REG_APUIO01
-	cmp.w	#SCMD_LOAD	;don't wait acknowledge
+	cmp.w	#SCMD_LOAD						;don't wait acknowledge
 	beq	+
 
 	A8
@@ -143,10 +142,10 @@ spc_command_asm:
 
 +
 
-	A8					; LAST ADD 200
+	A8								; LAST ADD 200
 ;	lda	#$81
-;	sta.l	REG_NMITIMEN			; reenable NMI // LAST ADD 198
-;	cli					; reenable IRQ // LAST ADD 198
+;	sta.l	REG_NMITIMEN						; reenable NMI // LAST ADD 198
+;	cli								; reenable IRQ // LAST ADD 198
 
 ;	.endif
 
@@ -160,9 +159,9 @@ spc_command:
 	php
 
 	AXY16
-	lda	7,s				;param
+	lda	7,s							;param
 	sta	gss_param
-	lda	5,s				;command
+	lda	5,s							;command
 	sta	gss_command
 	jsl	spc_command_asm
 
@@ -177,7 +176,7 @@ spc_stereo:
 	php
 
 	AXY16
-	lda	5,s			;stereo
+	lda	5,s							;stereo
 	sta	gss_param
 	lda.w	#SCMD_STEREO
 	sta	gss_command
@@ -194,11 +193,11 @@ spc_global_volume:
 	php
 
 	AXY16
-	lda	DP_SPC_VOL_FADESPD ;7,s		;speed
+	lda	DP_SPC_VOL_FADESPD ;7,s					;speed
 	xba
 	and.w	#$ff00
 	sta	gss_param
-	lda	DP_SPC_VOL_CURRENT ;5,s		;volume
+	lda	DP_SPC_VOL_CURRENT ;5,s					;volume
 	and.w	#$00ff
 	ora	gss_param
 	sta	gss_param
@@ -217,11 +216,11 @@ spc_channel_volume:
 	php
 
 	AXY16
-	lda	5,s			;channels
+	lda	5,s							;channels
 	xba
 	and.w	#$ff00
 	sta	gss_param
-	lda	7,s			;volume
+	lda	7,s							;volume
 	and.w	#$00ff
 	ora	gss_param
 	sta	gss_param
@@ -256,7 +255,7 @@ music_pause:
 	php
 
 	AXY16
-	lda	5,s			;pause
+	lda	5,s							;pause
 	sta	gss_param
 	lda.w	#SCMD_MUSIC_PAUSE
 	sta	gss_command
@@ -289,7 +288,7 @@ sfx_play:
 	php
 
 	AXY16
-	lda	11,s			;pan
+	lda	11,s							;pan
 	bpl +
 	lda.w	#0
 +
@@ -301,15 +300,15 @@ sfx_play:
 	xba
 	and.w	#$ff00
 	sta	gss_param
-	lda	7,s				;sfx number
+	lda	7,s							;sfx number
 	and.w	#$00ff
 	ora	gss_param
 	sta	gss_param
-	lda	9,s				;volume
+	lda	9,s							;volume
 	xba
 	and.w	#$ff00
 	sta	gss_command
-	lda	5,s				;chn
+	lda	5,s							;chn
 	asl	a
 	asl	a
 	asl	a

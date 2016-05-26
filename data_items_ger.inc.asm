@@ -11,16 +11,16 @@
 
 ; ****************************** Defines *******************************
 
-;	.DEFINE Auml		$80		; Ä
-;	.DEFINE Ouml		$81		; Ö
-;	.DEFINE Uuml		$82		; Ü
-;	.DEFINE auml		$83		; ä
-;	.DEFINE ouml		$84		; ö
-;	.DEFINE uuml		$85		; ü
-;	.DEFINE szlig		$86		; ß
-;	.DEFINE SYM_heart	$87, $88	; heart symbol
-;	.DEFINE SYM_quot	$89		; quotation mark
-;	.DEFINE SYM_mult	$8A		; multiplication sign
+;.DEFINE Auml		$80						; Ä
+;.DEFINE Ouml		$81						; Ö
+;.DEFINE Uuml		$82						; Ü
+;.DEFINE auml		$83						; ä
+;.DEFINE ouml		$84						; ö
+;.DEFINE uuml		$85						; ü
+;.DEFINE szlig		$86						; ß
+;.DEFINE SYM_heart	$87, $88					; heart symbol
+;.DEFINE SYM_quot	$89						; quotation mark
+;.DEFINE SYM_mult	$8A						; multiplication sign
 
 
 

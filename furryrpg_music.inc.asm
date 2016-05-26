@@ -13,7 +13,7 @@
 .INDEX 16
 
 PlayTrack:
-	DisableInterrupts			; reminder: this was moved here from the original SNESGSS routines as of build #00203
+	DisableInterrupts						; reminder: this was moved here from the original SNESGSS routines as of build #00203
 
 	jsl	music_stop
 
@@ -27,13 +27,13 @@ PlayTrack:
 	lda	DP_NextTrack
 	asl	a
 	tax
-	lda.l	SRC_TrackPtrBankTable, x	; read bank byte of pointers
+	lda.l	SRC_TrackPtrBankTable, x				; read bank byte of pointers
 	sta	DP_SPC_DATA_BANK
-	lda.l	SRC_TrackPtrOffsetTable, x	; read offset of pointers
+	lda.l	SRC_TrackPtrOffsetTable, x				; read offset of pointers
 	sta	DP_SPC_DATA_OFFS
-	lda	#6				; data length = 3 16-bit pointers to ADSR table, SFX, and music
+	lda	#6							; data length = 3 16-bit pointers to ADSR table, SFX, and music
 	sta	DP_SPC_DATA_SIZE
-	lda	#$0208				; store pointers to SPC700 memory address $208
+	lda	#$0208							; store pointers to SPC700 memory address $208
 	sta	DP_SPC_DATA_ADDR
 	jsl	spc_load_data
 
@@ -47,13 +47,13 @@ PlayTrack:
 	lda	DP_NextTrack
 	asl	a
 	tax
-	lda.l	SRC_TrackSmpBankTable, x	; read bank byte of sample pack
+	lda.l	SRC_TrackSmpBankTable, x				; read bank byte of sample pack
 	sta	DP_SPC_DATA_BANK
-	lda.l	SRC_TrackSmpOffsetTable, x	; read offset of sample pack
+	lda.l	SRC_TrackSmpOffsetTable, x				; read offset of sample pack
 	sta	DP_SPC_DATA_OFFS
-	lda.l	SRC_TrackSmpLengthTable, x	; data length
+	lda.l	SRC_TrackSmpLengthTable, x				; data length
 	sta	DP_SPC_DATA_SIZE
-	lda	#$0B24				; store samples to SPC700 memory address $B24 ($200 + $924, where $924 = size of sound driver)
+	lda	#$0B24							; store samples to SPC700 memory address $B24 ($200 + $924, where $924 = size of sound driver)
 	sta	DP_SPC_DATA_ADDR
 	jsl	spc_load_data
 
@@ -67,28 +67,28 @@ PlayTrack:
 	lda	DP_NextTrack
 	asl	a
 	tax
-	lda.l	SRC_TrackNotBankTable, x	; read bank byte of notes data
+	lda.l	SRC_TrackNotBankTable, x				; read bank byte of notes data
 	sta	DP_SPC_DATA_BANK
-	lda.l	SRC_TrackNotOffsetTable, x	; read offset of notes data (excluding 2 bytes at the beginning, denoting file size)
+	lda.l	SRC_TrackNotOffsetTable, x				; read offset of notes data (excluding 2 bytes at the beginning, denoting file size)
 	sta	DP_SPC_DATA_OFFS
-	lda.l	SRC_TrackNotSizeTable, x	; read file size
+	lda.l	SRC_TrackNotSizeTable, x				; read file size
 	sta	DP_SPC_DATA_SIZE
-	lda.l	SRC_TrackSmpLengthTable, x	; store samples to SPC700 memory address $B24 + size of sample pack
+	lda.l	SRC_TrackSmpLengthTable, x				; store samples to SPC700 memory address $B24 + size of sample pack
 	clc
 	adc	#$0B24
 	sta	DP_SPC_DATA_ADDR
 	jsl	spc_load_data
 
 	A16
-	lda.w	#SCMD_INITIALIZE		; this is important, or else the song won't play correctly
+	lda.w	#SCMD_INITIALIZE					; this is important, or else the song won't play correctly
 	sta	gss_command
 	stz	gss_param
 	jsl	spc_command_asm
 
 	A16
-	lda	#SCMD_STEREO			; default output is mono, so issue stereo command ...
+	lda	#SCMD_STEREO						; default output is mono, so issue stereo command ...
 	sta	gss_command
-	lda	#1				; ... with 1 as parameter
+	lda	#1							; ... with 1 as parameter
 	sta	gss_param
 	jsl	spc_command_asm
 
@@ -106,11 +106,11 @@ PlayTrack:
 	jsl	spc_command_asm
 
 	A8
-	lda.l	REG_RDNMI			; clear NMI flag to prevent graphics glitches (see Fullsnes, 4210h/RDNMI)
-	lda.l	DP_Shadow_NMITIMEN		; reenable interrupts
+	lda.l	REG_RDNMI						; clear NMI flag to prevent graphics glitches (see Fullsnes, 4210h/RDNMI)
+	lda.l	DP_Shadow_NMITIMEN					; reenable interrupts
 	sta.l	REG_NMITIMEN
 	cli
-rtl
+	rtl
 
 
 
@@ -281,7 +281,7 @@ STR_Track09:
 BootSPC700:
 	DisableInterrupts
 
-;	php					; preserve processor status
+;	php								; preserve processor status
 
 	A16
 	lda	#:SRC_spc700_driver
@@ -300,12 +300,12 @@ BootSPC700:
 	stz	gss_param
 	jsl	spc_command_asm
 
-	lda.l	DP_Shadow_NMITIMEN		; reenable interrupts
+	lda.l	DP_Shadow_NMITIMEN					; reenable interrupts
 	sta.l	REG_NMITIMEN
 	cli
 
-;	plp					; restore processor status
-rtl
+;	plp								; restore processor status
+	rtl
 
 
 
@@ -314,7 +314,7 @@ rtl
 .ACCU 8
 
 CheckForMSU1:
-	lda	MSU_ID				; check for "S-MSU1"
+	lda	MSU_ID							; check for "S-MSU1"
 	cmp	#'S'
 	bne	__NoMSU1
 	lda	MSU_ID+1
@@ -340,7 +340,7 @@ __NoMSU1:
 __MSU1Found:
 	lda	#$01
 	sta	DP_MSU1present
-+ rtl
++	rtl
 
 
 
@@ -354,7 +354,7 @@ __MSU1Found:
 	sep	#A_8BIT
 	rep	#XY_8BIT
 
-	sei					; Disable NMI & IRQ
+	sei								; Disable NMI & IRQ
 	stz	$4200
 
 ; ---- Begin upload
@@ -369,7 +369,7 @@ __MSU1Found:
 	lda.w	spccode,x
 	jsr	spc_upload_byte
 	inx
-	cpy	#41				; size of spc code
+	cpy	#41							; size of spc code
 	bne	-
 
 ; ---- Execute loader
@@ -377,8 +377,8 @@ __MSU1Found:
 	ldy	#$0002
 	jsr	spc_execute
 
-	lda	#$81				; VBlank NMI + Auto Joypad Read
-	sta	$4200				; re-enable VBlank NMI
+	lda	#$81							; VBlank NMI + Auto Joypad Read
+	sta	$4200							; re-enable VBlank NMI
 	cli
 
 	plp
@@ -394,10 +394,10 @@ BackTo0:
 	ldx	#$0000
 	stx	MSU_TRACK
 
--	bit	MSU_STATUS			; wait for Audio Busy bit to clear
+-	bit	MSU_STATUS						; wait for Audio Busy bit to clear
 	bvs	-
 
-	lda	#%00000011			; set play, repeat flags
+	lda	#%00000011						; set play, repeat flags
 	sta	MSU_CONTROL
 
 	SetCursorPos 0, 12
@@ -416,7 +416,7 @@ MSUloop1:
 	wai
 
 	lda	Joy1New
-	and	#$80				; check for A button
+	and	#$80							; check for A button
 	beq	MSUloop1
 
 	lda	#$FF
@@ -427,15 +427,15 @@ MSUloop1:
 	sta	MSU_VOLUME
 	bne	-
 
-	lda	#%00000100			; clear play/repeat flags, set resume flag --> very odd, but that's how it's designed ...
+	lda	#%00000100						; clear play/repeat flags, set resume flag
 	sta	MSU_CONTROL
 	ldx	#$0001
 	stx	MSU_TRACK
 
--	bit	MSU_STATUS			; wait for Audio Busy bit to clear
+-	bit	MSU_STATUS						; wait for Audio Busy bit to clear
 	bvs	-
 
-	lda	#%00000011			; set play, repeat flags
+	lda	#%00000011						; set play, repeat flags
 	sta	MSU_CONTROL
 
 	SetCursorPos 0, 12
@@ -454,7 +454,7 @@ MSUloop2:
 	wai
 
 	lda	Joy1New
-	and	#$80				; check for A button
+	and	#$80							; check for A button
 	beq	MSUloop2
 
 	lda	#$FF
@@ -472,34 +472,34 @@ MSUloop2:
 ; -------------------------- SPC700 pass-through
 
 spc_begin_upload:
-	sty	APUIO2				; Set address
-	ldy	#$BBAA				; Wait for SPC
+	sty	APUIO2							; Set address
+	ldy	#$BBAA							; Wait for SPC
 -	cpy	APUIO0
 	bne	-
 
-	lda	#$CC				; Send acknowledgement
+	lda	#$CC							; Send acknowledgement
 	sta	APUIO1
 	sta	APUIO0
 
--       					; Wait for acknowledgement
+-       								; Wait for acknowledgement
 	cmp	APUIO0
 	bne	-
 
-	ldy	#0				; Initialize index
-rts
+	ldy	#0							; Initialize index
+	rts
 
 
 
 spc_upload_byte:
 	sta	APUIO1
-	tya					; Signal it's ready
+	tya								; Signal it's ready
 	sta	APUIO0
--     						; Wait for acknowledgement
+-     									; Wait for acknowledgement
 	cmp	APUIO0
 	bne	-
 
 	iny
-rts
+	rts
 
 
 
@@ -514,7 +514,7 @@ spc_execute:
 ; Wait for acknowledgement
 -	cmp	APUIO0
 	bne	-
-rts
+	rts
 
 
 
