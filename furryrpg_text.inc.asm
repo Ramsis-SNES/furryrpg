@@ -76,12 +76,10 @@ OpenTextBox:
 	A16
 	lda	#%0000001100000011					; turn on BG1/2 only (i.e., disable BG3 and sprites) for text box
 	sta	VAR_TextBox_TSTM
-
 	lda	ARRAY_HDMA_BGScroll+1					; copy BG scroll reg values to second half of playfield
 	sta	ARRAY_HDMA_BGScroll+6
 	lda	ARRAY_HDMA_BGScroll+3
 	sta	ARRAY_HDMA_BGScroll+8
-
 	stz	ARRAY_HDMA_BGScroll+11					; reset scrolling parameters for text box area
 	lda	#$00FF
 	sta	ARRAY_HDMA_BGScroll+13
@@ -90,10 +88,8 @@ OpenTextBox:
 
 	lda	#%00110100						; activate HDMA ch. 2 (backdrop color), 4, 5 (BG scrolling regs)
 	tsb	DP_HDMAchannels
-
 	lda	#%00110000						; enable IRQ at H=$4207 and V=$4209
 	tsb	DP_Shadow_NMITIMEN
-
 ;	lda	#$08							; tell SETINI (Display Control 2) register that horizontal hi-res is used
 ;	sta	$2133
 
@@ -457,7 +453,6 @@ __TBHSLoopDpadDownDone:
 	bpl	__TBHSLoop
 
 __TBHSDone:
-
 	lda	#%00111100						; clear selection bits
 	trb	DP_TextBoxStatus
 	lda	#%00001000						; disable HDMA channel 3 (color math) // FIXME for CM on playfield!!

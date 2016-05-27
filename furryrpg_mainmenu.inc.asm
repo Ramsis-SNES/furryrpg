@@ -331,13 +331,11 @@ InGameMenu:
 	ldx	#0
 -	lda.l	SRC_HDMA_ColMathMainMenu, x
 	sta	ARRAY_HDMA_ColorMath, x
-
 	inx
 	cpx	#SRC_HDMA_ColMathMainMenu_End-SRC_HDMA_ColMathMainMenu
 	bne	-
 
 	stz	$2130							; clear color math disable bits
-
 	lda	#%00100001						; enable color math on BG1 + backdrop
 	sta	$2131
 
@@ -490,51 +488,37 @@ __RingMenuLoopDpadRightDone:
 ; -------------------------- update headline based on angle
 	lda	DP_RingMenuAngle
 	bne	+
-
 	PrintString 2, 8, "    Settings    "
-
 	jmp	++
 
 +	cmp	#$20
 	bne	+
-
 	PrintString 2, 8, "   Quit Game    "
-
 	jmp	++
 
 +	cmp	#$40
 	bne	+
-
 	PrintString 2, 8, "      ???1      "
-
 	jmp	++
 
 +	cmp	#$60
 	bne	+
-
 	PrintString 2, 8, "      ???2      "
-
 	bra	++
 
 +	cmp	#$80
 	bne	+
-
 	PrintString 2, 8, "   Inventory    "
-
 	bra	++
 
 +	cmp	#$A0
 	bne	+
-
 	PrintString 2, 8, "     Talent     "
-
 	bra	++
 
 +	cmp	#$C0
 	bne	+
-
 	PrintString 2, 8, "     Party      "
-
 	bra	++
 
 +	PrintString 2, 8, "   Lily's log   "
@@ -653,7 +637,6 @@ CalcRingMenuItemPos:
 	lda	DP_RingMenuAngleOffset
 	cmp	#$81
 	bcc	+
-
 	pla								; if angle > $80, subtract radius
 	sec
 	sbc	#PARAM_RingMenuRadius
@@ -678,7 +661,6 @@ CalcRingMenuItemPos:
 	bcs	+
 	cmp	#$41
 	bcc	+
-
 	pla								; if $40 < angle < $C0, subtract radius
 	sec
 	sbc	#PARAM_RingMenuRadius
@@ -699,55 +681,39 @@ CalcRingMenuItemPos:
 
 	ldx	#$04C0							; "L"
 	jsr	SaveTextBoxTileToVRAM
-
 	ldx	#$0650							; "e"
 	jsr	SaveTextBoxTileToVRAM
-
 	ldx	#$0660							; "f"
 	jsr	SaveTextBoxTileToVRAM
-
 	ldx	#$0740							; "t"
 	jsr	SaveTextBoxTileToVRAM
-
 	ldx	#$03A0							; ":"
 	jsr	SaveTextBoxTileToVRAM
-
 	ldx	#$0200							; " "
 	jsr	SaveTextBoxTileToVRAM
-
 	ldx	#$04D0							; "M"
 	jsr	SaveTextBoxTileToVRAM
-
 	ldx	#$06F0							; "o"
 	jsr	SaveTextBoxTileToVRAM
-
 	ldx	#$0640							; "d"
 	jsr	SaveTextBoxTileToVRAM
-
 	ldx	#$0650							; "e"
 	jsr	SaveTextBoxTileToVRAM
-
 	ldx	#$0200							; " "
 	jsr	SaveTextBoxTileToVRAM
-
 	ldx	#$0350							; "5"
 	jsr	SaveTextBoxTileToVRAM
 
 	lda	#$90
 	sta	TileMapBG2 + 163
-
 	lda	#$92
 	sta	TileMapBG2 + 164
-
 	lda	#$94
 	sta	TileMapBG2 + 165
-
 	lda	#$96
 	sta	TileMapBG2 + 195
-
 	lda	#$98
 	sta	TileMapBG2 + 196
-
 	lda	#$9A
 	sta	TileMapBG2 + 197
 
@@ -796,7 +762,6 @@ CalcRingMenuItemPos:
 	sta	$2100
 
 	stz	DP_HDMAchannels						; disable HDMA
-
 	lda	#$81							; enable Vblank NMI + Auto Joypad Read (no H-IRQ any more)
 	sta	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN

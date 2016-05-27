@@ -53,8 +53,8 @@ Boot:
 	stz	$13
 	stz	$14
 	stz	$14
-	lda	#$80							; VRAM address increment mode: increment address by one word
-	sta	$15							; after accessing the high byte ($2119)
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	$15
 	stz	$16							; regs $2116-$2117: VRAM address
 	stz	$17
 
@@ -246,10 +246,8 @@ Boot:
 	lda	ADDR_SRAM_ROMGOOD					; if byte is $01, then ROM integrity check was already passed
 	cmp	#$01
 	beq	+
-
 	lda	#$0F							; turn on the screen
 	sta	$2100
-
 	jsr	VerifyROMIntegrity
 +	jml	DebugMenu
 
@@ -290,6 +288,7 @@ AlphaIntro:
 
 ;StartScreenProc:
 	stz	$2121							; reset CGRAM address
+
 	DMA_CH0 $02, :SRC_RamsisPal, SRC_RamsisPal, $22, 512
 
 	ldx	#$0000
@@ -330,6 +329,7 @@ AlphaIntro:
 	WaitForFrames 10
 
 	stz	$2121							; reset CGRAM address
+
 	DMA_CH0 $02, :SRC_RamsisPresentsPal, SRC_RamsisPresentsPal, $22, 512
 
 	ldx	#$0000
@@ -370,6 +370,7 @@ AlphaIntro:
 	WaitForFrames 10
 
 	stz	$2121							; reset CGRAM address
+
 	DMA_CH0 $02, :SRC_StartPal, SRC_StartPal, $22, 512
 
 	ldx	#$0000
@@ -410,6 +411,7 @@ AlphaIntro:
 	WaitForFrames 10
 
 	stz	$2121							; reset CGRAM address
+
 	DMA_CH0 $02, :SRC_SoundEnginesPal, SRC_SoundEnginesPal, $22, 512
 
 	ldx	#$0000

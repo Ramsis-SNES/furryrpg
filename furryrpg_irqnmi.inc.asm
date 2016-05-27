@@ -606,7 +606,6 @@ VIRQ_Area:
 	sta	$2107
 	lda	#$7C							; BG2 tile map VRAM offset: $7C00, Tile Map size: 32×32 tiles
 	sta	$2108
-
 ;	lda	#$FF							; set BG1 vertical scroll = -1 (reminder: 0 would mean 1st scanline is invisible!)
 ;	sta	$210E
 ;	stz	$210E

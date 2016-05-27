@@ -38,10 +38,8 @@ AreaEnter:
 
 	ldx	#(TileMapBG1 & $FFFF)					; put 24-bit address of BG1 tile maps into temp for upcoming Y indexing
 	stx	temp
-
 	ldx	#(TileMapBG1Hi & $FFFF)
 	stx	temp+3
-
 	lda	#$7E
 	sta	temp+2
 	sta	temp+5
@@ -61,7 +59,6 @@ AreaEnter:
 	sta	[temp], y
 	xba
 	sta	[temp+3], y
-
 	inx
 	inx
 	iny
@@ -85,7 +82,6 @@ AreaEnter:
 	sta	$2118
 	xba
 	sta	$2119
-
 	inx
 	inx
 	cpx	#4096
@@ -100,7 +96,6 @@ AreaEnter:
 	DMA_CH0 $01, :GFX_FontHUD, GFX_FontHUD, $18, 2048
 
 	ldx	#0
-
 	lda	#$20							; priority bit
 -	sta	TileMapBG3Hi, x						; set priority bit for BG3 HUD
 	inx
@@ -131,7 +126,6 @@ AreaEnter:
 	A16
 
 	ldx	#0
-
 -	lda.l	SRC_HDMA_ResetBGScroll, x
 	sta	ARRAY_HDMA_BGScroll, x
 	inx
@@ -146,16 +140,12 @@ AreaEnter:
 ; -------------------------- HDMA channel 4: BG1 scroll registers
 	lda	#$07							; transfer mode (2 bytes --> $210D, 2 bytes --> $210E)
 	sta	$4340
-
 	lda	#$0D							; PPU reg. $210D
 	sta	$4341
-
 	ldx	#ARRAY_HDMA_BGScroll
 	stx	$4342
-
 	lda	#$7E
 	sta	$4344
-
 ;	lda	#$7E							; indirect HDMA CPU bus data address bank
 ;	sta	$4347
 
@@ -164,16 +154,12 @@ AreaEnter:
 ; -------------------------- HDMA channel 5: BG2 scroll registers
 	lda	#$07							; transfer mode (2 bytes --> $210F, 2 bytes --> $2110)
 	sta	$4350
-
 	lda	#$0F							; PPU reg. $210F
 	sta	$4351
-
 	ldx	#ARRAY_HDMA_BGScroll
 	stx	$4352
-
 	lda	#$7E
 	sta	$4354
-
 ;	lda	#$7E							; indirect HDMA CPU bus data address bank
 ;	sta	$4357
 
@@ -182,25 +168,18 @@ AreaEnter:
 ; -------------------------- screen registers
 	lda	#%00000011						; 8×8 (small) / 16×16 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
 	sta	$2101
-
 ;	lda	#$03							; set BG Mode 3
 ;	sta	$2105
-
 	lda	#$50|$01						; BG1 tile map VRAM offset: $5000, Tile Map size: 64×32 tiles
 	sta	$2107
-
 	lda	#$58|$01						; BG2 tile map VRAM offset: $5800, Tile Map size: 64×32 tiles
 	sta	$2108
-
 	lda	#$48|$01						; BG3 tile map VRAM offset: $4800, Tile Map size: 64×32 tiles
 	sta	$2109
-
 ;	lda	#$00							; BG1/BG2 character data VRAM offset: $0000
 	stz	$210B
-
 	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
 	sta	$210C
-
 ;	lda	#$09							; interlace test
 ;	sta	$2133
 
@@ -211,14 +190,12 @@ AreaEnter:
 
 	lda	#1							; set walking speed
 	sta	DP_Char1WalkingSpd
-
 	lda	#$5078							; set character position
 	sta	DP_Char1PosYX
 ;	sta	SpriteBuf1.PlayableChar
 ;	clc
 ;	adc	#$1000							; Y += 10
 ;	sta	SpriteBuf1.PlayableChar+4
-
 	lda	#%0001011100010111					; turn on BG1/2/3 + sprites
 	sta	DP_Shadow_TSTM						; on mainscreen and subscreen
 
@@ -230,7 +207,6 @@ AreaEnter:
 
 	lda	#210							; dot number for interrupt (256 = too late, 204 = too early)
 	sta	$4207
-
 	lda	#176							; scanline number for interrupt: 176 (i.e., let IRQ fire in Hblank between scanlines 176 and 177)
 	sta	$4209
 
@@ -270,7 +246,6 @@ AreaEnter:
 
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
-
 	jsr	EffectHSplitIn
 
 
@@ -301,7 +276,6 @@ AreaEnter:
 	sta	$2121
 
 	ldx	#0
-
 -	lda.l	SRC_Palette_Area001, x
 	eor	#$FF
 	sta	$2122
@@ -313,7 +287,6 @@ AreaEnter:
 	sta	$2121
 
 	ldx	#0
-
 -	lda.l	SRC_Palette_Spritesheet_Char1, x
 	eor	#$FF
 	sta	$2122
@@ -331,10 +304,8 @@ AreaEnter:
 	sta	$2122
 	lda	#$1E
 	sta	$2122
-
 	lda	#%00000010						; clear CM disable bits, enable BGs/OBJs on subscreen
 	sta	$2130
-
 	lda	#%10100000						; enable color math on backdrop, subtract color
 	sta	$2131
 
@@ -350,7 +321,6 @@ AreaEnter:
 ; EFFECT
 ;	lda	#%00000010						; clear color math disable bits (4-5), enable BGs/OBJs on subscreen
 ;	sta	$2130
-
 ;	lda	#%00100000						; enable color math on backdrop only
 ;	sta	$2131
 
@@ -411,7 +381,6 @@ MainAreaLoop:
 	lda	Joy1Press+1
 	and	#%10000000
 	beq	+
-
 	lda	#2							; B pressed, set fast walking speed
 	bra	++
 
@@ -589,10 +558,8 @@ __MainAreaLoopDpadRightDone:
 
 	lda	#$80							; make character idle
 	tsb	DP_Char1SpriteStatus
-
 	lda	#$03
 	sta	DP_TextBoxCharPortrait					; set char portrait #3
-
 	jsr	OpenTextBox
 
 __MainAreaLoopAButtonDone:
@@ -639,7 +606,6 @@ __MainAreaLoopXButtonDone:
 	jmp	DebugMenu
 
 __MainAreaLoopStButtonDone:
-
 	jsr	ShowCPUload
 	jmp	MainAreaLoop
 

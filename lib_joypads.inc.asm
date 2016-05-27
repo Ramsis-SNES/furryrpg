@@ -18,7 +18,6 @@
 JoyInit:
 	lda	#$C0							; have the automatic read of the SNES read the first pair of JoyPads
 	sta	REG_WRIO
-
 	ldx	#$0000
 	stx	Joy1Press
 	stx	Joy2Press
