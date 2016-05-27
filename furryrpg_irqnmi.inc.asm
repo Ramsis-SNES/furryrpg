@@ -12,13 +12,13 @@
 ; ************************ Vblank/NMI routines *************************
 
 Vblank_Area:
-	AXY16
+	AccuIndex16
 
 	pha								; push 16 bit registers onto stack
 	phx
 	phy
 
-	A8
+	Accu8
 
 	jsr	UpdateGameTime
 
@@ -62,13 +62,15 @@ __TextBoxVblankDone:
 	nop
 	nop
 
-	A16
+	Accu16
+
 	lda	$4216
 	xba
 	clc
 	adc	#(GFX_Spritesheet_Char1 & $FFFF)
 	sta	$4302							; data offset
-	A8
+
+	Accu8
 
 	lda	#$01							; DMA mode
  	sta	$4300
@@ -121,7 +123,9 @@ __Char1Frame1:
 
 __Char1WalkingDone:
 	asl	a							; frame no. × 2 for correct tile no. in spritesheet
-	A16
+
+	Accu16
+
 	and	#$00FF							; remove garbage bits
 	ora	#$2000							; add sprite priority
 	sta	SpriteBuf1.PlayableChar+2				; tile no. (upper half of body)
@@ -134,7 +138,8 @@ __Char1WalkingDone:
 	clc
 	adc	#$1000							; Y += 10
 	sta	SpriteBuf1.PlayableChar+4
-	A8
+
+	Accu8
 
 	jsr	RefreshBGs
 
@@ -160,10 +165,12 @@ __SkipRefreshes3:
 	lda	#$58|$01						; BG2 tile map VRAM offset: $5800, Tile Map size: 64×32 tiles
 	sta	$2108
 
-	A16
+	Accu16
+
 	lda	DP_Shadow_TSTM						; copy mainscreen & subscreen shadow registers
 	sta	$212C
-	A8
+
+	Accu8
 
 	lda	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
@@ -213,7 +220,7 @@ __SkipRefreshes3:
 
 	lda	$4210							; acknowledge NMI
 
-	AXY16
+	AccuIndex16
 
 	ply								; pull original 16 bit registers back
 	plx
@@ -223,13 +230,13 @@ __SkipRefreshes3:
 
 
 Vblank_DebugMenu:
-	AXY16
+	AccuIndex16
 
 	pha								; push 16 bit registers onto stack
 	phx
 	phy
 
-	A8
+	Accu8
 
 	jsr	UpdateGameTime
 	jsr	RefreshBGs
@@ -259,7 +266,7 @@ Vblank_DebugMenu:
 
 	lda	$4210							; acknowledge NMI
 
-	AXY16
+	AccuIndex16
 
 	ply								; pull original 16 bit registers back
 	plx
@@ -269,13 +276,13 @@ Vblank_DebugMenu:
 
 
 Vblank_Mode7:
-	AXY16
+	AccuIndex16
 
 	pha								; push 16 bit registers onto stack
 	phx
 	phy
 
-	A8
+	Accu8
 
 	jsr	UpdateGameTime
 
@@ -302,42 +309,54 @@ Vblank_Mode7:
 
 
 ; -------------------------- Mode7
-	A16
+	Accu16
+
 	lda	DP_Mode7_ScrollOffsetX
 	lsr	a							; shift right for 13-bit value
 	lsr	a
 	lsr	a
-	A8
+
+	Accu8
+
 	sta	$210D							; BG1HOFS/M7HOFS
 	xba
 	sta	$210D
 
-	A16
+	Accu16
+
 	lda	DP_Mode7_ScrollOffsetY
 	lsr	a
 	lsr	a
 	lsr	a
-	A8
+
+	Accu8
+
 	sta	$210E							; BG1VOFS/M7VOFS
 	xba
 	sta	$210E
 
-	A16
+	Accu16
+
 	lda	DP_Mode7_CenterCoordX
 	lsr	a
 	lsr	a
 	lsr	a
-	A8
+
+	Accu8
+
 	sta	$211F							; Mode 7 center position X register (low)
 	xba
 	sta	$211F							; Mode 7 center position X register (high)
 
-	A16
+	Accu16
+
 	lda	DP_Mode7_CenterCoordY
 	lsr	a
 	lsr	a
 	lsr	a
-	A8
+
+	Accu8
+
 	sta	$2120							; Mode 7 center position Y register (low)
 	xba
 	sta	$2120							; Mode 7 center position Y register (high)
@@ -349,14 +368,17 @@ Vblank_Mode7:
 	sta	$211B
 	lda	DP_Mode7_Altitude
 	sta	$211C
-	A16
+
+	Accu16
+
 	lda	$2134
 	sta	DP_Mode7_AltTabOffset
 	lda	#(SRC_Mode7Scaling & $FFFF)
 	clc
 	adc	DP_Mode7_AltTabOffset
 	sta	DP_Mode7_AltTabOffset
-	A8
+
+	Accu8
 
 
 
@@ -380,7 +402,7 @@ Vblank_Mode7:
 
 	lda	$4210							; acknowledge NMI
 
-	AXY16
+	AccuIndex16
 
 	ply								; pull original 16 bit registers back
 	plx
@@ -390,13 +412,13 @@ Vblank_Mode7:
 
 
 Vblank_Playfield:
-	AXY16
+	AccuIndex16
 
 	pha								; push 16 bit registers onto stack
 	phx
 	phy
 
-	A8
+	Accu8
 
 	jsr	UpdateGameTime
 
@@ -456,7 +478,7 @@ Vblank_Playfield:
 
 	lda	$4210							; acknowledge NMI
 
-	AXY16
+	AccuIndex16
 
 	ply								; pull original 16 bit registers back
 	plx
@@ -466,13 +488,13 @@ Vblank_Playfield:
 
 
 Vblank_Error:
-	AXY16
+	AccuIndex16
 
 	pha								; push 16 bit registers onto stack
 	phx
 	phy
 
-	A8
+	Accu8
 
 
 
@@ -510,7 +532,7 @@ Vblank_Error:
 
 	lda	$4210							; acknowledge NMI
 
-	AXY16
+	AccuIndex16
 
 	ply								; pull original 16 bit registers back
 	plx
@@ -520,13 +542,13 @@ Vblank_Error:
 
 
 Vblank_Intro:
-	AXY16
+	AccuIndex16
 
 	pha								; push 16 bit registers onto stack
 	phx
 	phy
 
-	A8
+	Accu8
 
 
 
@@ -553,7 +575,7 @@ Vblank_Intro:
 
 	lda	$4210							; acknowledge NMI
 
-	AXY16
+	AccuIndex16
 
 	ply								; pull original 16 bit registers back
 	plx
@@ -570,15 +592,19 @@ Vblank_Intro:
 HIRQ_MainMenu:
 	php								; preserve processor status
 
-	A16
+	Accu16
+
 	pha								; preserve 16 bit accumulator
-	A8
 	lda	#$01|$08
 	sta	$2105							; switch to BG Mode 1 (BG3 priority)
 
+	Accu8
+
+
 	lda	REG_TIMEUP						; acknowledge IRQ
 
-	A16
+	Accu16
+
 	pla								; pull 16 bit accumulator
 	plp								; pull processor status
 	rti
@@ -590,11 +616,11 @@ HIRQ_MainMenu:
 VIRQ_Area:
 	php								; preserve processor status
 
-	A16
+	Accu16
 
 	pha								; preserve 16 bit accumulator
 
-	A8
+	Accu8
 
 ;-	bit	REG_HVBJOY						; wait for Hblank period flag to get set
 ;	bvc	-
@@ -616,14 +642,17 @@ VIRQ_Area:
 ;	stz	$210F							; reset BG2 horizontal scroll
 ;	stz	$210F
 
-	A16
+	Accu16
+
 	lda	VAR_TextBox_TSTM					; write Sub/Mainscreen designation regs
 	sta	$212C
-	A8
+
+	Accu8
 
 	lda	REG_TIMEUP						; acknowledge IRQ
 
-	A16
+	Accu16
+
 	pla								; restore 16 bit accumulator
 	plp								; restore processor status
 	rti
@@ -633,9 +662,11 @@ VIRQ_Area:
 VIRQ_Mode7:
 	php								; preserve processor status
 
-	A16
+	Accu16
+
 	pha								; preserve 16 bit accumulator
-	A8
+
+	Accu8
 
 ;-	bit	REG_HVBJOY						; wait for Hblank period flag to get set
 ;	bvc	-
@@ -654,7 +685,8 @@ VIRQ_Mode7:
 
 	lda	REG_TIMEUP						; acknowledge IRQ
 
-	A16
+	Accu16
+
 	pla								; restore 16 bit accumulator
 	plp								; restore processor status
 	rti
@@ -926,26 +958,28 @@ __GameTimeUpdateDone:
 ; ************************** Software Errors ***************************
 
 ErrorHandlerBRK:
-	AXY16
+	AccuIndex16
 
 	pha
 	phx
 	phy
 
-	A8
+	Accu8
 
 	lda	#$80							; enter forced blank
 	sta	$2100
 
-	DisableInterrupts
+	DisableIRQs
 
 	jsl	sound_stop_all
 
-	A16
-	SetDirectPage $0000
-	A8
+	Accu16
+
+	SetDPag	$0000
 
 	stz	$420C							; disable HDMA
+	Accu8
+
 
 
 
@@ -1068,26 +1102,28 @@ ErrorHandlerBRK:
 
 
 ErrorHandlerCOP:
-	AXY16
+	AccuIndex16
 
 	pha
 	phx
 	phy
 
-	A8
+	Accu8
 
 	lda	#$80							; enter forced blank
 	sta	$2100
 
-	DisableInterrupts
+	DisableIRQs
 
 	jsl	sound_stop_all
 
-	A16
-	SetDirectPage $0000
-	A8
+	Accu16
 
 	stz	$420C							; disable HDMA
+	SetDPag	$0000
+
+	Accu8
+
 
 
 
@@ -1197,7 +1233,7 @@ ErrorHandlerCOP:
 	sta	temp
 	PrintHexNum temp
 
-	SetVblankRoutine TBL_NMI_Error
+	SetNMI	TBL_NMI_Error
 
 	lda.l	REG_RDNMI						; clear NMI flag
 

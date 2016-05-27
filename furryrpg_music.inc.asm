@@ -13,16 +13,18 @@
 .INDEX 16
 
 PlayTrack:
-	DisableInterrupts						; reminder: this was moved here from the original SNESGSS routines as of build #00203
+	DisableIRQs						; reminder: this was moved here from the original SNESGSS routines as of build #00203
 
 	jsl	music_stop
 
-	A16
+	Accu16
+
 	lda.w	#SCMD_LOAD
 	sta	gss_command
 	stz	gss_param
 	jsl	spc_command_asm
-	A16
+
+	Accu16
 
 	lda	DP_NextTrack
 	asl	a
@@ -37,13 +39,15 @@ PlayTrack:
 	sta	DP_SPC_DATA_ADDR
 	jsl	spc_load_data
 
-	A16
+	Accu16
+
 	lda.w	#SCMD_LOAD
 	sta	gss_command
 	stz	gss_param
 	jsl	spc_command_asm
 
-	A16
+	Accu16
+
 	lda	DP_NextTrack
 	asl	a
 	tax
@@ -57,13 +61,15 @@ PlayTrack:
 	sta	DP_SPC_DATA_ADDR
 	jsl	spc_load_data
 
-	A16
+	Accu16
+
 	lda.w	#SCMD_LOAD
 	sta	gss_command
 	stz	gss_param
 	jsl	spc_command_asm
 
-	A16
+	Accu16
+
 	lda	DP_NextTrack
 	asl	a
 	tax
@@ -79,33 +85,38 @@ PlayTrack:
 	sta	DP_SPC_DATA_ADDR
 	jsl	spc_load_data
 
-	A16
+	Accu16
+
 	lda.w	#SCMD_INITIALIZE					; this is important, or else the song won't play correctly
 	sta	gss_command
 	stz	gss_param
 	jsl	spc_command_asm
 
-	A16
+	Accu16
+
 	lda	#SCMD_STEREO						; default output is mono, so issue stereo command ...
 	sta	gss_command
 	lda	#1							; ... with 1 as parameter
 	sta	gss_param
 	jsl	spc_command_asm
 
-	A16
+	Accu16
+
 	lda	#$00FF
 	sta	DP_SPC_VOL_FADESPD
 	lda	#$007F
 	sta	DP_SPC_VOL_CURRENT
 	jsl	spc_global_volume
 
-	A16
+	Accu16
+
 	lda.w	#SCMD_MUSIC_PLAY
 	sta	gss_command
 	stz	gss_param
 	jsl	spc_command_asm
 
-	A8
+	Accu8
+
 	lda.l	REG_RDNMI						; clear NMI flag to prevent graphics glitches (see Fullsnes, 4210h/RDNMI)
 	lda.l	DP_Shadow_NMITIMEN					; reenable interrupts
 	sta.l	REG_NMITIMEN
@@ -279,11 +290,12 @@ STR_Track09:
 
 ; -------------------------- boot SPC700 with sound driver only, don't load music yet
 BootSPC700:
-	DisableInterrupts
+	DisableIRQs
 
 ;	php								; preserve processor status
 
-	A16
+	Accu16
+
 	lda	#:SRC_spc700_driver
 	sta	DP_SPC_DATA_BANK
 	lda	#SRC_spc700_driver+2
@@ -294,7 +306,8 @@ BootSPC700:
 	sta	DP_SPC_DATA_ADDR
 	jsl	spc_load_data
 
-	A16
+	Accu16
+
 	lda.w	#SCMD_INITIALIZE
 	sta	gss_command
 	stz	gss_param

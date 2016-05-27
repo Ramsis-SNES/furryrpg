@@ -20,7 +20,7 @@ TestMode7:
 
 	wai								; wait for OAM to refresh
 
-	DisableInterrupts
+	DisableIRQs
 
 
 
@@ -153,7 +153,7 @@ TestMode7:
 .ENDASM
 
 ; -------------------------- write cloud tilemap
-	A16
+	Accu16
 
 	lda	#$1870							; Y, X start values of upper left corner of 128×32 GFX
 	sta	temp
@@ -194,18 +194,20 @@ TestMode7:
 	cpx	#$40							; 16 large sprites done?
 	bne	-							; "outer loop"
 
-	A8
+	Accu8
 
 	stz	temp+2							; see Mode 7 matrix calculations below
 
 
 
 ; -------------------------- set transparency for clouds
-	A16
+	Accu16
+
 	lda	#%0001000000000001					; turn on BG1 on mainscreen only, sprites on subscreen
 	sta	$212C
 	sta	DP_Shadow_TSTM
-	A8
+
+	Accu8
 
 ;	stz	$2121
 ;	stz	$2122
@@ -248,16 +250,18 @@ TestMode7:
 
 
 ; -------------------------- set new NMI/IRQ vectors & screen parameters
-	SetVblankRoutine TBL_NMI_Mode7
+	SetNMI	TBL_NMI_Mode7
 
-	A16
+	Accu16
+
 	lda	#220							; dot number for interrupt (256 = too late, 204 = too early)
 	sta	$4207
 	lda	#PARAM_MODE7_SKY_LINES					; scanline number for interrupt
 	sta	$4209
-	A8
 
-	SetIRQRoutine TBL_VIRQ_Mode7
+	Accu8
+
+	SetIRQ	TBL_VIRQ_Mode7
 
 	lda	REG_RDNMI						; clear NMI flag, this is necessary to prevent occasional graphics glitches (see Fullsnes, 4210h/RDNMI)
 
@@ -271,14 +275,16 @@ TestMode7:
 
 	jsr	ResetMode7Matrix
 
-	WaitForFrames 2							; wait for altitude setting to take effect (FIXME, doesn't work with just 1 frame?!)
+	WaitFrames	2						; wait for altitude setting to take effect (FIXME, doesn't work with just 1 frame?!)
 
-	A16
+	Accu16
+
 	stz	temp							; clear temp vars (used in CalcMode7Matrix)
 	stz	temp+2
 	stz	temp+4
 	stz	temp+6
-	A8
+
+	Accu8
 
 	jsr	CalcMode7Matrix
 
@@ -307,10 +313,7 @@ Mode7Loop:
 ;	PrintSpriteHexNum DP_Mode7_ScrollOffsetY+1
 ;	PrintSpriteHexNum DP_Mode7_ScrollOffsetY
 
-	WaitForFrames 1							; don't use WAI here as IRQ is enabled
-
-;-	lda	REG_HVBJOY						; wait for start of Vblank
-;	bpl	-
+	WaitFrames	1						; don't use WAI here as IRQ is enabled
 
 
 
@@ -564,7 +567,7 @@ __M7FlightY:
 
 	jsr	ResetMode7Matrix
 
-	WaitForFrames 1							; wait for altitude setting to take effect
+	WaitFrames	1						; wait for altitude setting to take effect
 
 	jsr	CalcMode7Matrix
 +
@@ -640,10 +643,12 @@ CalcMode7Matrix:
 
 	plx								; 5 cycles
 
-	A16								; 3
+	Accu16								; 3
+
 	lda	$4216							; 3 // store interim result 1
 	sta	temp
-	A8
+
+	Accu8
 
 ; 8×8 multiplication for upper 8 bits of multiplicand
 	iny
@@ -661,15 +666,18 @@ CalcMode7Matrix:
 
 	plx								; 5 cycles
 
-	A16								; 3
+	Accu16								; 3
+
 	lda	$4216							; 3 // store interim result 2
 	sta	temp+3
-	A8
+
+	Accu8
 
 	lda	temp+6							; check how to combine interim results due to sign of multiplier
 	beq	+
 
-	A16
+	Accu16
+
 	lda	temp+3							; end result negative, subtract (interim 1 >> 8) from negative interim 2
 	eor	#$FFFF
 	inc	a
@@ -678,13 +686,15 @@ CalcMode7Matrix:
 
 	bra	++
 
-+	A16
++	Accu16
+
 	lda	temp+3							; end result positive, add (interim 1 >> 8) to interim 2
 	clc
 	adc	temp+1
 ++	sta	ARRAY_HDMA_M7A+(PARAM_MODE7_SKY_LINES*2), x
 	sta	ARRAY_HDMA_M7D+(PARAM_MODE7_SKY_LINES*2), x
-	A8
+
+	Accu8
 
 	inx
 	inx
@@ -717,10 +727,12 @@ CalcMode7Matrix:
 
 	plx								; 5 cycles
 
-	A16								; 3
+	Accu16								; 3
+
 	lda	$4216							; 3 // store interim result 1
 	sta	temp
-	A8
+
+	Accu8
 
 ; 8×8 multiplication for upper 8 bits of multiplicand
 	iny
@@ -738,15 +750,18 @@ CalcMode7Matrix:
 
 	plx								; 5 cycles
 
-	A16								; 3
+	Accu16								; 3
+
 	lda	$4216							; 3 // store interim result 2
 	sta	temp+3
-	A8
+
+	Accu8
 
 	lda	temp+6							; check how to combine interim results due to sign of multiplier
 	beq	+
 
-	A16
+	Accu16
+
 	lda	temp+3							; end result negative, subtract (interim 1 >> 8) from negative interim 2
 	eor	#$FFFF
 	inc	a
@@ -754,7 +769,8 @@ CalcMode7Matrix:
 	sbc	temp+1
 	bra	++
 
-+	A16
++	Accu16
+
 	lda	temp+3							; end result positive, add (interim 1 >> 8) to interim 2
 	clc
 	adc	temp+1
@@ -762,7 +778,8 @@ CalcMode7Matrix:
 	eor	#$FFFF							; make M7C parameter negative and store in M7B
 	inc	a
 	sta	ARRAY_HDMA_M7B+(PARAM_MODE7_SKY_LINES*2), x
-	A8
+
+	Accu8
 
 	inx
 	inx
@@ -786,7 +803,8 @@ M7FlightDecX:								; expects angle in Accu
 	sbc	DP_Mode7_RotAngle
 
 __DoXDecByAngle:
-	A16
+	Accu16
+
 	and	#$003F							; remove garbage in high byte, make sure angle in low byte doesn't exceed max. index ($20)
 	dec	a
 	asl	a
@@ -901,7 +919,8 @@ __DecX1:
 	adc	#$0400
 	sta	DP_Mode7_CenterCoordX
 
-	A8
+	Accu8
+
 	rts
 
 
@@ -920,7 +939,8 @@ M7FlightIncX:								; expects angle in Accu
 	sbc	DP_Mode7_RotAngle
 
 __DoXIncByAngle:
-	A16
+	Accu16
+
 	and	#$003F
 	dec	a
 	asl	a
@@ -1035,7 +1055,8 @@ __IncX1:
 	adc	#$0400
 	sta	DP_Mode7_CenterCoordX
 
-	A8
+	Accu8
+
 	rts
 
 
@@ -1060,7 +1081,8 @@ __DoYDecFull:
 	sbc	DP_Mode7_RotAngle
 
 __DoYDecByAngle:
-	A16
+	Accu16
+
 	and	#$003F
 	dec	a
 	asl	a
@@ -1175,7 +1197,8 @@ __DecY1:
 	adc	#$0400 + (PARAM_MODE7_SKY_LINES*8)
 	sta	DP_Mode7_CenterCoordY
 
-	A8
+	Accu8
+
 	rts
 
 
@@ -1193,7 +1216,8 @@ M7FlightIncY:								; expects angle in Accu
 	sbc	DP_Mode7_RotAngle
 
 __DoYIncByAngle:
-	A16
+	Accu16
+
 	and	#$003F
 	dec	a
 	asl	a
@@ -1308,20 +1332,23 @@ __IncY1:
 	adc	#$0400 + (PARAM_MODE7_SKY_LINES*8)
 	sta	DP_Mode7_CenterCoordY
 
-	A8
+	Accu8
+
 	rts
 
 
 
 ResetMode7Matrix:
-	A16
+	Accu16
+
 	stz	DP_Mode7_ScrollOffsetX
 	stz	DP_Mode7_ScrollOffsetY
 	lda	#$0400							; 16-bit values
 	sta	DP_Mode7_CenterCoordX
 	lda	#$0400 + (PARAM_MODE7_SKY_LINES*8)
 	sta	DP_Mode7_CenterCoordY
-	A8
+
+	Accu8
 
 	lda	#64
 	sta	DP_Mode7_Altitude

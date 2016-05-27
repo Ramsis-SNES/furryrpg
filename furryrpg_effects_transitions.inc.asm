@@ -56,7 +56,7 @@ __HSplitInMainLoop:
 	dec	temp+6							; only wait for a new frame every Nth iteration (where N = value in DP_EffectSpeed)
 	bne	+
 
-	WaitForFrames 1
+	WaitFrames	1
 
 	lda	DP_EffectSpeed
 	sta	temp+6
@@ -150,7 +150,7 @@ __HSplitOutMainLoop:
 	dec	temp+6
 	bne	+
 
-	WaitForFrames 1
+	WaitFrames	1
 
 	lda	DP_EffectSpeed
 	sta	temp+6
@@ -194,7 +194,7 @@ __HSplitOutSubLoop2:							; loop 2: go towards start of table
 	lda	#%00000010						; deactivate channel 1
 	trb	DP_HDMAchannels
 
-	WaitForFrames 1							; wait for HDMA register update
+	WaitFrames	1						; wait for HDMA register update
 
 	lda	#$80							; enter forced blank
 	sta	$2100
@@ -244,7 +244,7 @@ __HSplitOut2MainLoop:
 	dec	temp+6
 	bne	+
 
-	WaitForFrames 1
+	WaitFrames	1
 
 	lda	DP_EffectSpeed
 	sta	temp+6
@@ -288,7 +288,7 @@ __HSplitOut2SubLoop2:
 	lda	#%00000010						; deactivate channel 1
 	trb	DP_HDMAchannels
 
-	WaitForFrames 1							; wait for HDMA register update
+	WaitFrames	1						; wait for HDMA register update
 
 	lda	#$80							; enter forced blank
 	sta	$2100

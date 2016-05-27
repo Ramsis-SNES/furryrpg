@@ -73,7 +73,8 @@ OpenTextBox:
 	lda	#%00100000						; color math window 1 area = outside (why does this work??)
 	sta	$2125
 
-	A16
+	Accu16
+
 	lda	#%0000001100000011					; turn on BG1/2 only (i.e., disable BG3 and sprites) for text box
 	sta	VAR_TextBox_TSTM
 	lda	ARRAY_HDMA_BGScroll+1					; copy BG scroll reg values to second half of playfield
@@ -84,7 +85,7 @@ OpenTextBox:
 	lda	#$00FF
 	sta	ARRAY_HDMA_BGScroll+13
 
-	A8
+	Accu8
 
 	lda	#%00110100						; activate HDMA ch. 2 (backdrop color), 4, 5 (BG scrolling regs)
 	tsb	DP_HDMAchannels
@@ -93,7 +94,7 @@ OpenTextBox:
 ;	lda	#$08							; tell SETINI (Display Control 2) register that horizontal hi-res is used
 ;	sta	$2133
 
-	WaitForFrames 1
+	WaitFrames	1
 
 
 
@@ -106,7 +107,8 @@ __ProcessNextDialog:
 	lda	DP_TextLanguage						; check language again for the right pointer table
 	bne	+
 
-	A16
+	Accu16
+
 	lda	DP_TextPointerNo
 	asl	a
 	tax
@@ -116,13 +118,15 @@ __ProcessNextDialog:
 +	;cmp	#TBL_Lang_Ger						; German language selected?
 ;	bne	Somewhere						; for even more languages/text banks
 
-	A16
+	Accu16
+
 	lda	DP_TextPointerNo
 	asl	a
 	tax
 	lda.l	SRC_DiagPointerGer, x					; DP_TextLanguage is 1 --> German
 ++	sta	DP_TextString
-	A8
+
+	Accu8
 
 	lda	#%01000010						; set text box open, text pending flags
 	sta	DP_TextBoxStatus
@@ -130,7 +134,7 @@ __ProcessNextDialog:
 
 
 MainTextBoxLoop:
-	WaitForFrames 1							; don't use WAI here as IRQ is enabled
+	WaitFrames	1						; don't use WAI here as IRQ is enabled
 
 
 
@@ -182,7 +186,7 @@ __MainTextBoxLoopAButtonDone:
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
 
-	WaitForFrames 1
+	WaitFrames	1
 
 ;	inc	DP_TextLanguage
 	lda	#TBL_Lang_Ger
@@ -201,7 +205,7 @@ __MainTextBoxLoopDpadUpDone:
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
 
-	WaitForFrames 1
+	WaitFrames	1
 
 ;	dec	DP_TextLanguage
 	lda	#TBL_Lang_Eng
@@ -237,16 +241,19 @@ __PrevTextPointer:
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
 
-	WaitForFrames 1
+	WaitFrames	1
 
-	A16
+	Accu16
+
 	lda	DP_TextPointerNo					; decrement text pointer
 	sec
 	sbc	#1
 	bpl	+
 	lda	#0
 +	sta	DP_TextPointerNo
-	A8
+
+	Accu8
+
 	jmp	__ProcessNextDialog
 
 __MainTextBoxLoopDpadLeftDone:
@@ -262,9 +269,10 @@ __NextTextPointer:
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
 
-	WaitForFrames 1
+	WaitFrames	1
 
-	A16
+	Accu16
+
 	lda	DP_TextPointerNo					; increment text pointer
 	clc
 	adc	#1
@@ -272,7 +280,9 @@ __NextTextPointer:
 	bcc	+
 	lda	#(SRC_DiagPointerEng_END-SRC_DiagPointerEng)/2-1
 +	sta	DP_TextPointerNo
-	A8
+
+	Accu8
+
 	jmp	__ProcessNextDialog
 
 __MainTextBoxLoopDpadRightDone:
@@ -287,9 +297,10 @@ __MainTextBoxLoopDpadRightDone:
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
 
-	WaitForFrames 1
+	WaitFrames	1
 
-	A16
+	Accu16
+
 	lda	DP_TextPointerNo					; decrement text pointer
 	cmp	#50
 	bcs	+
@@ -298,7 +309,9 @@ __MainTextBoxLoopDpadRightDone:
 +;	sec								; never mind, carry is already set
 	sbc	#50
 ++	sta	DP_TextPointerNo
-	A8
+
+	Accu8
+
 	jmp	__ProcessNextDialog
 
 __MainTextBoxLoopLButtonDone:
@@ -313,9 +326,10 @@ __MainTextBoxLoopLButtonDone:
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
 
-	WaitForFrames 1
+	WaitFrames	1
 
-	A16
+	Accu16
+
 	lda	DP_TextPointerNo					; increment text pointer
 	cmp	#(SRC_DiagPointerEng_END-SRC_DiagPointerEng)/2-50
 	bcc	+
@@ -324,11 +338,12 @@ __MainTextBoxLoopLButtonDone:
 +;	clc								; never mind, carry is already clear
 	adc	#50
 ++	sta	DP_TextPointerNo
-	A8
+
+	Accu8
+
 	jmp	__ProcessNextDialog
 
 __MainTextBoxLoopRButtonDone:
-
 	jmp	MainTextBoxLoop
 
 
@@ -339,19 +354,22 @@ __CloseTextBox:
 	lda	#%00110100						; deactivate used HDMA channels
 	trb	DP_HDMAchannels
 
-	WaitForFrames 1
+	WaitFrames	1
 
-	A16
+	Accu16
+
 	lda	ARRAY_HDMA_BGScroll+1					; restore scrolling parameters
 	sta	ARRAY_HDMA_BGScroll+11
 	lda	ARRAY_HDMA_BGScroll+3
 	sta	ARRAY_HDMA_BGScroll+13
-	A8
+
+	Accu8
 
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
 
-	WaitForFrames 1
+	WaitFrames	1
+
 	rts
 
 
@@ -411,7 +429,7 @@ TextBoxHandleSelection:
 
 
 __TBHSLoop:
-	WaitForFrames 1							; don't use WAI here as IRQ is enabled
+	WaitFrames	1						; don't use WAI here as IRQ is enabled
 
 
 ; -------------------------- check for dpad up
@@ -465,7 +483,8 @@ VWFTileBufferFull:
 	lda	#$80							; VRAM address increment mode: increment address by one word
 	sta	$2115							; after accessing the high byte ($2119)
 
-	A16
+	Accu16
+
 	lda	DP_TextTileDataCounter
 	clc								; add VRAM address for BG2 font tiles (+ 32 empty tiles),
 	adc	#ADDR_VRAM_TextBoxL1					; this is done here once so we can proceed with zero-based counter math
@@ -495,7 +514,8 @@ VWFTileBufferFull:
 	bne	-
 
 	stz	DP_VWFBufferIndex					; reset buffer index
-	A8
+
+	Accu8
 
 	lda	#$01							; done, reset "VWF buffer full" bit
 	trb	DP_TextBoxStatus
@@ -507,10 +527,13 @@ ProcessNextText:
 
 __ProcessTextLoop:
 	lda	DP_TextStringCounter
-	A16
+
+	Accu16
+
 	and	#$00FF							; remove garbage in high byte
 	tay
-	A8
+
+	Accu8
 
 	inc	DP_TextStringCounter					; increment to next ASCII string character
 	lda	[DP_TextString], y					; read ASCII string character
@@ -540,12 +563,14 @@ __ProcessTextLoop:
 +	cmp	#CC_Selection						; selection?
 	bne	__OtherControlCode
 
-	A16
+	Accu16
+
 	lda	DP_TextTileDataCounter					; selection required, check what line we've been on
 	cmp	#46*8							; line 1?
 	bcs	+
 
-	A8
+	Accu8
+
 	lda	#%00000100
 	bra	++
 
@@ -554,7 +579,8 @@ __ProcessTextLoop:
 +	cmp	#92*8							; line 2?
 	bcs	+
 
-	A8
+	Accu8
+
 	lda	#%00001000
 	bra	++
 
@@ -563,11 +589,13 @@ __ProcessTextLoop:
 +	cmp	#138*8							; line 3?
 	bcs	+
 
-	A8
+	Accu8
+
 	lda	#%00010000
 	bra	++
 
-+	A8
++	Accu8
+
 	lda	#%00100000						; else, line 4
 ++	tsb	DP_TextBoxStatus
 
@@ -586,9 +614,10 @@ __CarriageReturn:
 	lda	#$01							; set "VWF buffer full" bit
 	tsb	DP_TextBoxStatus
 
-	WaitForFrames 1
+	WaitFrames	1
 
-	A16
+	Accu16
+
 	stz	DP_VWFBitsUsed						; reset VWF bit counter
 	lda	DP_TextTileDataCounter					; check what line we've been on
 	cmp	#46*8							; line 1?
@@ -622,22 +651,24 @@ __CarriageReturn:
 .ACCU 8
 
 __ClearTextBoxMidString:
-	A16
+	Accu16
+
 	lda	DP_VWFBitsUsed						; check if bit counter <> 0
 	bne	+
 
 	lda	DP_VWFBufferIndex					; check if VWF buffer index <> 0
 	beq	++
 
-+	A8
++	Accu8
+
 	lda	#$01							; if either <> 0, set "VWF buffer full" bit
 	tsb	DP_TextBoxStatus
 
-;	WaitForFrames 1							; never mind, see below
+;	WaitFrames	1						; never mind, see below
 
-++	A8
+++	Accu8
 
--	WaitForFrames 1							; next, wait for player to press the A button
+-	WaitFrames	1						; next, wait for player to press the A button
 
 	lda	Joy1New
 	and	#%10000000
@@ -646,26 +677,32 @@ __ClearTextBoxMidString:
 	lda	#%10000000						; lastly, set "clear text box" bit
 	sta	DP_TextBoxStatus
 
-	WaitForFrames 1
+	WaitFrames	1
 
-	A16
+	Accu16
+
 	inc	DP_TextPointerNo					; increment to next text pointer
 	pla								; pull 16 bits of garbage off the stack as there's no rts from jsr ProcessNextText
-	A8
+
+	Accu8
+
 	jmp	__ProcessNextDialog
 
 
 
 ; -------------------------- process normal text
 __ProcessTextNormal:
-	A16
+	Accu16
+
 	and	#$00FF							; remove garbage in high byte
 	sta	DP_TextASCIIChar					; save ASCII char no.
-	A8
+
+	Accu8
 
 	jsr	ProcessVWFTiles
 
-	A16
+	Accu16
+
 	lda	DP_VWFBufferIndex					; check if 2 buffer tiles full
 	lsr	a							; buffer index / 16 = tile no.
 	lsr	a
@@ -674,50 +711,60 @@ __ProcessTextNormal:
 	cmp	#2
 	bcs	+
 
-	A8
+	Accu8
+
 	jmp	__ProcessTextLoop
 
-+	A8
++	Accu8
+
 	lda	#$01							; set "VWF buffer full" bit
 	tsb	DP_TextBoxStatus
 
-	WaitForFrames 1
+	WaitFrames	1
 
 __ProcessTextIncTileCounter:
-	A16
+	Accu16
+
 	lda	DP_TextTileDataCounter					; increment VRAM tile counter by 2 tiles
 	clc
 	adc	#16							; not 32 because of VRAM word addressing
 	sta	DP_TextTileDataCounter
-	A8
+
+	Accu8
+
 	bra	__ProcessTextJumpOut
 
 __ProcessTextDone:
-	A16
+	Accu16
+
 	lda	DP_VWFBitsUsed						; check if bit counter <> 0
 	bne	+
 
 	lda	DP_VWFBufferIndex					; check if VWF buffer index <> 0
 	beq	++
 
-+	A8
++	Accu8
+
 	lda	#$01							; if either <> 0, set "VWF buffer full" bit
 	tsb	DP_TextBoxStatus
 
-	WaitForFrames 1
+	WaitFrames	1
 
-++	A8
+++	Accu8
+
 	lda	#%01000000						; clear "more text pending" flag
 	trb	DP_TextBoxStatus
 
 ;	stz	DP_TextPalette						; reset string parameters
 	stz	DP_TextStringCounter
 
-	A16
+	Accu16
+
 	stz	DP_TextTileDataCounter
 
 __ProcessTextJumpOut:
-	A8
+	Accu8
+
 	rts
 
 
@@ -727,17 +774,19 @@ ClearTextBox:
 	sta	$2115							; after accessing the high byte ($2119)
 
 	ldx	#ADDR_VRAM_TextBoxL1					; set VRAM address to beginning of line 1
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 184*16		; 184 tiles
 
 ;	stz	DP_TextPalette						; reset string parameters
 	stz	DP_TextStringCounter
 
-	A16
+	Accu16
+
 	stz	DP_TextTileDataCounter					; reset tile data counter
 	stz	DP_VWFBitsUsed
-	A8
+
+	Accu8
 
 	jsr	ClearVWFBuffer
 
@@ -870,7 +919,8 @@ MakeTextBoxTilemapBG1:
 	cpx	#PARAM_TextBox+192					; end of line 6
 	bne	-
 
-	A8
+	Accu8
+
 	rts
 
 
@@ -881,7 +931,7 @@ MakeTextBoxTilemapBG2:
 	ldx	#ADDR_VRAM_BG2_Tilemap3+PARAM_TextBox			; set VRAM address within new BG2 tilemap
 	stx	$2116
 
-	A16
+	Accu16
 
 
 
@@ -1060,20 +1110,24 @@ MakeTextBoxTilemapBG2:
 	sta	$2118
 	lda	#27|$400						; tile no. of black tile
 	sta	$2118
-	A8
+
+	Accu8
+
 	rts
 
 
 
 ProcessVWFTiles:
-	A16
+	Accu16
+
 	lda	DP_TextASCIIChar					; ASCII char no. --> font tile no.
 	asl	a							; value * 16 as 1 font tile = 16 bytes
 	asl	a
 	asl	a
 	asl	a
 	tax
-	A8
+
+	Accu8
 
 	ldy	DP_VWFBufferIndex
 	lda	#16							; loop through 16 bytes per tile
@@ -1102,12 +1156,15 @@ __VWFTilesLoop:
 	bcs	+
 	sta	DP_VWFBitsUsed
 
-	A16
+	Accu16
+
 	tya
 	sec
 	sbc	#16
 	sta	DP_VWFBufferIndex
-	A8
+
+	Accu8
+
 	bra	__ProcessVWFTilesDone
 
 +	sec
@@ -1124,7 +1181,8 @@ VWFShiftBits:
 	phx
 	phy
 
-	A16
+	Accu16
+
 	pha
 	lda	DP_VWFBitsUsed
 	bne	+
@@ -1169,8 +1227,8 @@ __R1:
 
 
 __VWFShiftBitsDone:
+	Accu8
 
-	A8
 	ply
 	plx
 	rts
@@ -1178,7 +1236,7 @@ __VWFShiftBitsDone:
 
 
 SaveTextBoxTileToVRAM:
-	A16
+	Accu16
 
 	ldy	#0
 -	lda.l	GFX_FontMode5, x					; copy font tile
@@ -1189,13 +1247,14 @@ SaveTextBoxTileToVRAM:
 	cpy	#8							; 16 bytes (8 double bytes) per tile
 	bne	-
 
-	A8
+	Accu8
+
 	rts
 
 
 
 ClearVWFBuffer:
-	A16
+	Accu16
 
 	lda	#0
 	ldy	#0
@@ -1206,7 +1265,9 @@ ClearVWFBuffer:
 	bne	-
 
 	stz	DP_VWFBufferIndex					; reset buffer index
-	A8
+
+	Accu8
+
 	rts
 
 
@@ -1306,8 +1367,8 @@ PrintFStart:
 ;	PHX
 ;	PHY
 
-	A8
-	XY16
+	Accu8
+	Index16
 
 PrintFLoop:
 	lda	[strBank], y						; read next format string character
@@ -1339,19 +1400,23 @@ PrintFControl:
 _cn:	CMP	#'n'
 	bne	_ct
 
-	AXY16
+	AccuIndex16
+
 	lda	Cursor							; get current position
 	CLC
 	adc	#$0020							; move to the next line
 	AND	#$FFE0
 	sta	Cursor							; save new position
-	A8
+
+	Accu8
+
 	bra	PrintFLoop
 
 _ct:	CMP	#'t'
 	bne	_defaultC
 
-	AXY16
+	AccuIndex16
+
 	lda	Cursor							; get current position
 	CLC
 ;	adc	#$0008							; move to the next tab
@@ -1361,7 +1426,8 @@ _ct:	CMP	#'t'
 ;	adc	#$0002							; use this instead for even smaller tabs
 ;	and	#$fffe
 	sta	Cursor							; save new position
-	A8
+
+	Accu8
 
 	bra	PrintFLoop
 
@@ -1386,7 +1452,6 @@ _sf:	CMP	#'s'
 	bra	-
 
 __PrintSubstringDone:
-
 	ply
 	bra	PrintFLoop
 _df:	CMP	#'d'
@@ -1432,8 +1497,9 @@ PrintSpriteText:
 	ldy	strPtr
 	php
 
-	A8
-	XY16
+	Accu8
+	Index16
+
 	ldx	SprTextMon						; start where there is some unused sprite text buffer
 
 __PrintSpriteTextLoop:
@@ -1443,10 +1509,12 @@ __PrintSpriteTextLoop:
 	phy
 	pha
 
-	A16
+	Accu16
+
 	and	#$00FF							; delete garbage in high byte
 	tay
-	A8
+
+	Accu8
 
 	lda	Cursor
 	sta	SpriteBuf1.Text, x					; X
@@ -1647,10 +1715,12 @@ FillSpriteTextBuf:
 	ldx	SprTextMon						; start where there is some unused sprite text buffer
 	pha
 
-	A16
+	Accu16
+
 	and	#$00FF							; delete garbage in high byte
 	tay
-	A8
+
+	Accu8
 
 	lda	Cursor
 	sta	SpriteBuf1.Text, x					; X
@@ -1692,7 +1762,8 @@ FillSpriteTextBuf:
 ; ************************* Clearing functions *************************
 
 ClearSpriteText:
-	A16
+	Accu16
+
 	lda	#$F0F0
 	ldy	#$0000
 
@@ -1705,7 +1776,9 @@ ClearSpriteText:
 	bne	-
 
 	stz	SprTextMon						; reset filling level
-	A8
+
+	Accu8
+
 	rts
 
 

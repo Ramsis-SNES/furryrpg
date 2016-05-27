@@ -14,9 +14,11 @@ Boot:
 	lda	#$1FFF							; set stack pointer to $1FFF
 	tcs
 
-	SetDirectPage $2100
-	A8
-	SetDataBank $00
+	SetDPag	$2100							; set Direct Page to PPU registers
+
+	Accu8
+
+	SetDBR	$00							; set Data Bank = $00
 
 
 
@@ -110,9 +112,11 @@ Boot:
 
 	; regs $4016-$4017: serial JoyPad read registers, no need to initialize
 
-	A16
-	SetDirectPage $4200
-	A8
+	Accu16
+
+	SetDPag	$4200							; set Direct Page to CPU registers
+
+	Accu8
 
 	stz	$00							; reg $4200: disable timers, NMI, and auto-joyread
 	lda	#$FF
@@ -145,9 +149,11 @@ Boot:
 
 
 ; -------------------------- clear all directly accessible RAM areas (with parameters/addresses set/reset above)
-	A16
-	SetDirectPage $0000
-	A8
+	Accu16
+
+	SetDPag	$0000
+
+	Accu8
 
 	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 0		; VRAM (length $0000 = 65536 bytes)
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $22, 512		; CGRAM (512 bytes)
@@ -233,16 +239,17 @@ Boot:
 	lda	#$01							; set BG mode 1
 	sta	$2105
 
-	A16
+	Accu16
+
 	lda	#%0001010000010100					; turn on BG3 + sprites
 	sta	$212C							; on mainscreen and subscreen
 	sta	DP_Shadow_TSTM						; copy to shadow variable
-	A8
 
-	SetVblankRoutine TBL_NMI_DebugMenu
+	Accu8
+
+	SetNMI	TBL_NMI_DebugMenu
 
 	jsr	JoyInit							; initialize joypads and enable NMI
-
 	lda	ADDR_SRAM_ROMGOOD					; if byte is $01, then ROM integrity check was already passed
 	cmp	#$01
 	beq	+
@@ -258,7 +265,7 @@ AlphaIntro:
 	lda	#$80							; enter forced blank
 	sta	$2100
 
-	DisableInterrupts
+	DisableIRQs
 
 	lda	#$03							; set BG Mode 3
 	sta	$2105
@@ -272,18 +279,23 @@ AlphaIntro:
 	sta	$210E
 	stz	$210E
 
-	A16
+	Accu16
+
 	lda	#%0000000100000001					; turn on BG1 only
 	sta	$212C							; on mainscreen and subscreen
 	sta	DP_Shadow_TSTM						; copy to shadow variable
-	A8
 
-	SetVblankRoutine TBL_NMI_Intro
+	Accu8
 
-	A16
+	SetNMI	TBL_NMI_Intro
+
+	Accu16
+
 	lda	#7
 	sta	DP_NextTrack
-	A8
+
+	Accu8
+
 	jsl	PlayTrack
 
 ;StartScreenProc:
@@ -311,7 +323,7 @@ AlphaIntro:
 	cpx	#8
 	bne	-
 
-	WaitForFrames 150
+	WaitFrames	150
 
 	lda	#$0F
 	ldx	#0
@@ -326,7 +338,7 @@ AlphaIntro:
 	lda	#$80							; enter forced blank
 	sta	$2100
 
-	WaitForFrames 10
+	WaitFrames	10
 
 	stz	$2121							; reset CGRAM address
 
@@ -352,7 +364,7 @@ AlphaIntro:
 	cpx	#8
 	bne	-
 
-	WaitForFrames 150
+	WaitFrames	150
 
 	lda	#$0F
 	ldx	#0
@@ -367,7 +379,7 @@ AlphaIntro:
 	lda	#$80							; enter forced blank
 	sta	$2100
 
-	WaitForFrames 10
+	WaitFrames	10
 
 	stz	$2121							; reset CGRAM address
 
@@ -393,7 +405,7 @@ AlphaIntro:
 	cpx	#8
 	bne	-
 
-	WaitForFrames 150
+	WaitFrames	150
 
 	lda	#$0F
 	ldx	#0
@@ -408,7 +420,7 @@ AlphaIntro:
 	lda	#$80							; enter forced blank
 	sta	$2100
 
-	WaitForFrames 10
+	WaitFrames	10
 
 	stz	$2121							; reset CGRAM address
 
@@ -434,7 +446,7 @@ AlphaIntro:
 	cpx	#8
 	bne	-
 
-	WaitForFrames 150
+	WaitFrames	150
 
 	lda	#$0F
 	ldx	#0
@@ -449,15 +461,17 @@ AlphaIntro:
 	lda	#$80							; enter forced blank
 	sta	$2100
 
-	DisableInterrupts
-	SetVblankRoutine TBL_NMI_DebugMenu
+	DisableIRQs
+	SetNMI	TBL_NMI_DebugMenu
 
-	A16
+	Accu16
+
 	lda	#$0010							; fade-out intro song
 	sta	DP_SPC_VOL_FADESPD
 	stz	DP_SPC_VOL_CURRENT
 	jsl	spc_global_volume
-	A8
+
+	Accu8
 
 	lda	REG_RDNMI						; clear NMI flag
 	lda	#$81							; reenable interrupts
@@ -465,7 +479,7 @@ AlphaIntro:
 	sta	DP_Shadow_NMITIMEN
 	cli
 
-	WaitForFrames 20
+	WaitFrames	20
 
 	ldx	#$0000
 	stx	$2116
@@ -610,7 +624,8 @@ VerifyROMIntegrity:
 	tsb	DP_DMAUpdates
 .ENDIF
 
-	A16
+	Accu16
+
 	stz	temp+5
 	lda	#$01FE							; assume [$C0FFDC-F] = $FF, $FF, $00, $00, so add these right now
 	sta	temp+3
@@ -634,7 +649,8 @@ VerifyROMIntegrity:
 	iny
 	bne	-
 
-	A8
+	Accu8
+
 	inc	temp+7							; increment bank byte
 
 --
@@ -646,7 +662,7 @@ VerifyROMIntegrity:
 	tsb	DP_DMAUpdates
 .ENDIF
 
-	A16
+	Accu16
 
 	ldy	#0
 -	lda	[temp+5], y						; from bank $C1 onwards, don't skip anything
@@ -657,14 +673,15 @@ VerifyROMIntegrity:
 	iny
 	bne	-
 
-	A8
+	Accu8
+
 	lda	temp+7							; increment bank byte
 	inc	a
 	sta	temp+7
 	cmp	#$D3							; last bank + 1 reached?
 	bcc	--
 
-	A16
+	Accu16
 
 	lda	temp+3							; compare sum to ROM checksum
 	cmp	$C0FFDE
@@ -675,7 +692,7 @@ VerifyROMIntegrity:
 	cmp	$C0FFDC
 	bne	__ROMIntegrityBad
 
-	A8
+	Accu8
 
 	stz	$2121							; reset CGRAM address
 	lda	#$E4							; $131A = light green
@@ -694,12 +711,12 @@ VerifyROMIntegrity:
 
 	jsr	FixSRAMChecksum
 
-	WaitForUserInput
+	WaitUserInput
 
 	bra	__ROMIntegrityGood
 
 __ROMIntegrityBad:
-	A8
+	Accu8
 
 	stz	$2121							; reset CGRAM address
 	lda	#$1C							; $001C = red
@@ -807,7 +824,7 @@ ShowBigSpriteText:
 SpriteInit:
 	php	
 
-	AXY16
+	AccuIndex16
 
 	ldx	#$0000
 
@@ -823,7 +840,7 @@ __Init_OAM_lo:
 	cpx	#$0200
 	bne	__Init_OAM_lo
 
-	A8
+	Accu8
 
 	lda	#%10101010						; large sprites for everything except the sprite font
 	ldx	#$0000

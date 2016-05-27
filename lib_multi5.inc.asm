@@ -14,7 +14,8 @@
 check_mpa:
 	php
 
-	AXY8
+	AccuIndex8
+
 	stz	DP_Multi5_Status
 
 -	lda	$4212							; automatic controller read enabled?

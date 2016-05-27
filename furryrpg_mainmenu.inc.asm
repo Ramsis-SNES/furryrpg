@@ -46,15 +46,17 @@ MainMenu:
 	lda	#%00001000						; enable HDMA channel 3 (color math)
 	tsb	DP_HDMAchannels
 
-	A16
+	Accu16
+
 	lda	#%0001000000000111					; mainscreen : BG1/2/3, subscreen : sprites (i.e., sprites will disappear as $2130.1 is clear)
 	sta	DP_Shadow_TSTM
-	A8
+
+	Accu8
 
 
 
 MainMenuLoop:
-	WaitForFrames 1
+	WaitFrames	1
 
 ;	SetTextPos 2, 25
 ;	PrintHexNum DP_GameTime_Hours
@@ -190,10 +192,12 @@ MainMenuLoop:
 	lda	#%00001000						; disable HDMA channel 3 (color math)
 	trb	DP_HDMAchannels
 
-	A16
+	Accu16
+
 	lda	#%0001000000010000					; re-enable sprites
 	tsb	DP_Shadow_TSTM
-	A8
+
+	Accu8
 
 	jmp	MainAreaLoop
 
@@ -206,7 +210,7 @@ MainMenuLoop:
 ;	and	#%00010000
 ;	beq	+
 
-;	WaitForUserInput
+;	WaitUserInput
 
 ;+
 
@@ -224,7 +228,7 @@ InGameMenu:
 
 	wai								; wait
 
-	DisableInterrupts
+	DisableIRQs
 
 
 
@@ -307,14 +311,14 @@ InGameMenu:
 	lda	#%01110111						; make sure BG1/2/3 lo/hi tilemaps get updated once NMI is reenabled
 	tsb	DP_DMAUpdates
 
-	SetVblankRoutine TBL_NMI_DebugMenu
+	SetNMI	TBL_NMI_DebugMenu
 
 	lda	REG_RDNMI						; clear NMI flag
 	lda	#$81							; reenable NMI & IRQ
 	sta	REG_NMITIMEN
 	cli
 
-	WaitForFrames 5							; wait for tilemaps to get updated
+	WaitFrames	5						; wait for tilemaps to get updated
 
 
 
@@ -322,11 +326,13 @@ InGameMenu:
 	lda	#%01100011						; 16×16 (small) / 32×32 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
 	sta	$2101
 
-	A16
+	Accu16
+
 	lda	#%0001011100010111					; turn on BG1/2/3 & sprites on mainscreen and	subscreen
 	sta	$212C
 	sta	DP_Shadow_TSTM						; copy to shadow variable (not yet used)
-	A8
+
+	Accu8
 
 	ldx	#0
 -	lda.l	SRC_HDMA_ColMathMainMenu, x
@@ -434,10 +440,12 @@ InGameMenu:
 	PrintString 20, 21, "Healer"
 	PrintString 21, 21, "Healthy"
 
-;	A16
+;	Accu16
+
 ;	lda	#$3008							; set char 1 position
 ;	sta	DP_Char1PosYX
-;	A8
+
+;	Accu8
 
 .ASM
 
@@ -756,7 +764,7 @@ CalcRingMenuItemPos:
 	lda	#$0F							; turn screen back on
 	sta	$2100
 
-	WaitForUserInput
+	WaitUserInput
 
 	lda	#$80							; enter forced blank
 	sta	$2100

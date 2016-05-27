@@ -11,17 +11,20 @@
 
 spc_load_data:
 	php
-	AXY16
+
+	AccuIndex16
 
 ;	.ifndef DISABLE_SOUND
 	lda.w	#0
 	tay
-	A8
+
+	Accu8
 
 ;	sta.l	REG_NMITIMEN						;disable NMI,interrupts has to be disabled to prevent possible lockup in the IPL transfer routine
 ;	sei								;disable IRQ
 
-	A16
+	Accu16
+
 	lda	DP_SPC_DATA_SIZE ;7,s					;size
 	tax
 	lda	DP_SPC_DATA_OFFS ;9,s					;src
@@ -39,7 +42,8 @@ _wait1:
 	sta.l	REG_APUIO23
 	lda.w	#$01cc							;IPL load and ready signature
 	sta.l	REG_APUIO01
-	A8
+
+	Accu8
 
 _wait2:
 
@@ -75,17 +79,20 @@ _load3:
 
 	plb
 
-	A16
+	Accu16
+
 	lda.w	#$0200							;loaded code starting address
 	sta.l	REG_APUIO23
-	A8
+
+	Accu8
 
 	lda.b	#$00							;execute code
 	sta.l	REG_APUIO1	
 	tya								;stop transfer
 	sta.l	REG_APUIO0
 
-;	A16
+;	Accu16
+
 ;	ldx	#$80
 ;	lda.w	__tccs_snes_pad_count
 ;	cmp.w	#2
@@ -95,12 +102,13 @@ _load3:
 	
 ;_load4:
 
-;	A8
+;	Accu8
+
 ;	txa
 ;	sta.l	REG_NMITIMEN						;enable NMI
 ;	cli								;enable IRQ
 
-	A16
+	Accu16
 
 _load5:
 
@@ -119,7 +127,7 @@ spc_command_asm:
 
 ;	.ifndef DISABLE_SOUND
 
-	A8
+	Accu8
 
 ;	lda	#$00
 ;	sta.l	REG_NMITIMEN						; disable NMI // LAST ADD 198
@@ -128,7 +136,8 @@ spc_command_asm:
 -	lda.l	REG_APUIO0
 	bne	-
 
-	A16
+	Accu16
+
 	lda	gss_param
 	sta.l	REG_APUIO23
 	lda	gss_command
@@ -136,13 +145,15 @@ spc_command_asm:
 	cmp.w	#SCMD_LOAD						;don't wait acknowledge
 	beq	+
 
-	A8
+	Accu8
+
 -	lda.l	REG_APUIO0
 	beq	-
 
 +
 
-	A8								; LAST ADD 200
+	Accu8								; LAST ADD 200
+
 ;	lda	#$81
 ;	sta.l	REG_NMITIMEN						; reenable NMI // LAST ADD 198
 ;	cli								; reenable IRQ // LAST ADD 198
@@ -158,7 +169,8 @@ spc_command_asm:
 spc_command:
 	php
 
-	AXY16
+	AccuIndex16
+
 	lda	7,s							;param
 	sta	gss_param
 	lda	5,s							;command
@@ -175,7 +187,8 @@ spc_command:
 spc_stereo:
 	php
 
-	AXY16
+	AccuIndex16
+
 	lda	5,s							;stereo
 	sta	gss_param
 	lda.w	#SCMD_STEREO
@@ -192,7 +205,8 @@ spc_stereo:
 spc_global_volume:
 	php
 
-	AXY16
+	AccuIndex16
+
 	lda	DP_SPC_VOL_FADESPD ;7,s					;speed
 	xba
 	and.w	#$ff00
@@ -215,7 +229,8 @@ spc_global_volume:
 spc_channel_volume:
 	php
 
-	AXY16
+	AccuIndex16
+
 	lda	5,s							;channels
 	xba
 	and.w	#$ff00
@@ -238,7 +253,8 @@ spc_channel_volume:
 music_stop:
 	php
 
-	AXY16
+	AccuIndex16
+
 	lda.w	#SCMD_MUSIC_STOP
 	sta	gss_command
 	stz	gss_param
@@ -254,7 +270,8 @@ music_stop:
 music_pause:
 	php
 
-	AXY16
+	AccuIndex16
+
 	lda	5,s							;pause
 	sta	gss_param
 	lda.w	#SCMD_MUSIC_PAUSE
@@ -271,7 +288,8 @@ music_pause:
 sound_stop_all:
 	php
 
-	AXY16
+	AccuIndex16
+
 	lda.w	#SCMD_STOP_ALL_SOUNDS
 	sta	gss_command
 	stz	gss_param
@@ -287,7 +305,8 @@ sound_stop_all:
 sfx_play:
 	php
 
-	AXY16
+	AccuIndex16
+
 	lda	11,s							;pan
 	bpl +
 	lda.w	#0
@@ -329,7 +348,7 @@ sfx_play:
 spc_stream_update:
 	php
 
-	AXY16
+	AccuIndex16
 
 _stream_update_loop:
 	lda.w	__tccs_spc_stream_enable
@@ -346,7 +365,8 @@ _stream_update_loop1:
 
 _test2:
 	stz.w	__tccs_spc_stream_enable
-	A8
+
+	Accu8
 
 _stream_wait7:
 	lda.l	REG_APUIO0
@@ -360,7 +380,7 @@ _stream_wait8:
 	bra	_stream_update_done
 
 _stream_update_play:
-	A8
+	Accu8
 
 _stream_wait1:
 	lda.l	REG_APUIO0
@@ -379,7 +399,8 @@ _stream_wait3:
 	lda.l	REG_APUIO2
 	beq	_stream_update_done
 
-	A16
+	Accu16
+
 	lda.w	__tccs_spc_stream_block_src+0
 	sta	brr_stream_src+0
 	lda.w	__tccs_spc_stream_block_src+2
@@ -395,10 +416,13 @@ _stream_wait3:
 _norepeat:
 	ldy.w	__tccs_spc_stream_block_ptr
 
-	A8
+	Accu8
+
 	lda	[brr_stream_src],y
 	iny
-	A16
+
+	Accu16
+
 	and.w	#$00ff
 	lsr	a
 	bcc	_stream_update_repeat
@@ -431,7 +455,8 @@ _stream_update_repeat:
 	ply
 
 _stream_update_send:
-	A8
+	Accu8
+
 	lda	$000C2E, y ;[brr_stream_src],y
 	iny
 	sta.l	REG_APUIO1

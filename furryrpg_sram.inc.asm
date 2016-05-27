@@ -16,7 +16,8 @@ CheckSRAM:
 	lda	#ADDR_SRAM_BANK						; set start address to SRAM data
 	sta	temp+7
 
-	A16
+	Accu16
+
 	lda	#(ADDR_SRAM_SLOT1 & $FFFF)
 	sta	temp+5
 	lda	#$01FE							; assume ADDR_SRAM_CHKSUMCMPL = $FFFF and ADDR_SRAM_CHKSUM = $0000, so add these right now
@@ -65,7 +66,8 @@ __SRAMBad:
 	sta	ADDR_SRAM_CHKSUMCMPL
 
 __SRAMGood:
-	A8
+	Accu8
+
 	rts
 
 
@@ -74,7 +76,8 @@ FixSRAMChecksum:
 	lda	#ADDR_SRAM_BANK						; set start address to SRAM data
 	sta	temp+7
 
-	A16
+	Accu16
+
 	lda	#(ADDR_SRAM_SLOT1 & $FFFF)
 	sta	temp+5
 	lda	#$01FE							; assume ADDR_SRAM_CHKSUMCMPL = $FFFF and ADDR_SRAM_CHKSUM = $0000, so add these right now
@@ -104,7 +107,8 @@ FixSRAMChecksum:
 	eor	#$FFFF							; and complement
 	sta	ADDR_SRAM_CHKSUMCMPL
 
-	A8
+	Accu8
+
 	rts
 
 

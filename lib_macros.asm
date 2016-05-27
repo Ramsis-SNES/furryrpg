@@ -11,38 +11,38 @@
 
 ; ******************************* Macros *******************************
 
-; -------------------------- A/X/Y reg size macros
-.MACRO A8
+; -------------------------- A/X/Y register control
+.MACRO Accu8
 	sep	#$20
 .ENDM
 
 
 
-.MACRO A16
+.MACRO Accu16
 	rep	#$20
 .ENDM
 
 
 
-.MACRO AXY8
+.MACRO AccuIndex8
 	sep	#$30
 .ENDM
 
 
 
-.MACRO AXY16
+.MACRO AccuIndex16
 	rep	#$30
 .ENDM
 
 
 
-.MACRO XY8
+.MACRO Index8
 	sep	#$10
 .ENDM
 
 
 
-.MACRO XY16
+.MACRO Index16
 	rep	#$10
 .ENDM
 
@@ -90,7 +90,8 @@ __ReturnAdress\@:
 .MACRO ldc
 	php
 
-	A16
+	Accu16
+
 	lda.w	\1
 
 	plp
@@ -101,14 +102,14 @@ __ReturnAdress\@:
 ; -------------------------- frequently-used "code snippet" macros
 .ACCU 8
 
-; Macro DisableInterrupts by ManuLöwe
+; Macro DisableIRQs by ManuLöwe
 ;
-; Usage: DisableInterrupts
+; Usage: DisableIRQs
 ; Effect: Disables NMI & IRQ.
 ;
 ; Expects: A 8 bit
 
-.MACRO DisableInterrupts
+.MACRO DisableIRQs
 	sei
 	lda.b	#$00							; reminder: stz doesn't support 24-bit addressing
 	sta.l	REG_NMITIMEN
@@ -172,23 +173,27 @@ __DrawLRBorder\@:
 	lda	#$13							; left vertical line
 	sta	TileMapBG3, x
 
-	A16
+	Accu16
+
 	txa
 	clc
 	adc	#\3							; go to right border
 	tax
-	A8
+
+	Accu8
 
 	lda	#$14							; right vertical line
 	sta	TileMapBG3, x
 
 __GoToNextLine\@:
-	A16
+	Accu16
+
 	txa
 	clc
 	adc	#32 - \3						; go to next line
 	tax
-	A8
+
+	Accu8
 
 	cpx	#32*(\2+\4) + \1
 	bne	__DrawLRBorder\@
@@ -215,12 +220,12 @@ __DrawLowerBorder\@:
 
 ; Set Data Bank macro by ManuLöwe
 ;
-; Usage: SetDataBank $XX
-; Effect: Changes the current Data Bank to $XX.
+; Usage: SetDBR $XX
+; Effect: Sets the Data Bank register to $XX.
 ;
 ; Expects: A 8 bit
 
-.MACRO SetDataBank
+.MACRO SetDBR
 	lda.b	#\1
 	pha
 	plb
@@ -230,27 +235,28 @@ __DrawLowerBorder\@:
 
 ; Set Direct Page macro by ManuLöwe
 ;
-; Usage: SetDirectPage $XXXX
-; Effect: Changes the Direct Page register to $XXXX.
+; Usage: SetDPag $XXXX
+; Effect: Sets the Direct Page register to $XXXX.
 ;
 ; Expects: A 16 bit
 
-.MACRO SetDirectPage
+.MACRO SetDPag
 	lda.w	#\1
 	tcd
 .ENDM
 
 
 
-; Macro SetIRQRoutine by ManuLöwe
+; Macro SetIRQ by ManuLöwe
 ;
-; Usage: SetIRQRoutine <Name of IRQ routine>
+; Usage: SetIRQ <Name of IRQ routine>
 ; Effect: Writes the desired jumping instruction to the RAM location the IRQ vector points to. Caveat: IRQ has to be disabled before the macro is called!
 ;
 ; Expects: A 8 bit, X/Y 16 bit
 
-.MACRO SetIRQRoutine
-	A16
+.MACRO SetIRQ
+	Accu16
+
 	lda	#\1
 	asl	a							; value × 4 (the table consists of 4-byte entries)
 	asl	a
@@ -261,20 +267,22 @@ __DrawLowerBorder\@:
 	inx
 	lda.l	SRC_IRQJumpTable, x
 	sta	DP_IRQJump+2
-	A8
+
+	Accu8
 .ENDM
 
 
 
-; Macro SetVblankRoutine by ManuLöwe
+; Macro SetNMI by ManuLöwe
 ;
-; Usage: SetVblankRoutine <Name of Vblank routine>
+; Usage: SetNMI <Name of Vblank routine>
 ; Effect: Writes the desired jumping instruction to the RAM location the NMI vector points to. Caveat: NMI has to be disabled before the macro is called!
 ;
 ; Expects: A 8 bit, X/Y 16 bit
 
-.MACRO SetVblankRoutine
-	A16
+.MACRO SetNMI
+	Accu16
+
 	lda	#\1
 	asl	a							; value × 4 (the table consists of 4-byte entries)
 	asl	a
@@ -285,19 +293,20 @@ __DrawLowerBorder\@:
 	inx
 	lda.l	SRC_VblankJumpTable, x
 	sta	DP_VblankJump+2
-	A8
+
+	Accu8
 .ENDM
 
 
 
-; Macro WaitForFrames by ManuLöwe
+; Macro WaitFrames by ManuLöwe
 ;
-; Usage: WaitForFrames <number of frames>
+; Usage: WaitFrames <number of frames>
 ; Effect: Waits for the given amount of Vblanks to pass. Works even when NMI is disabled.
 ;
 ; Expects: A 8 bit, X/Y 16 bit
 
-.MACRO WaitForFrames
+.MACRO WaitFrames
 	ldx	#\1
 
 __FrameDelay\@:
@@ -315,15 +324,15 @@ __WaitForVblankEnd\@:
 
 
 
-; Macro WaitForUserInput by ManuLöwe
+; Macro WaitUserInput by ManuLöwe
 ;
-; Usage: WaitForUserInput
+; Usage: WaitUserInput
 ; Effect: Waits for the user to press any button (d-pad is ignored).
 ;
 ; Expects: A 8 bit, X/Y 16 bit
 
-.MACRO WaitForUserInput
-	A16
+.MACRO WaitUserInput
+	Accu16
 
 __CheckJoypad\@:
 	wai
@@ -331,7 +340,7 @@ __CheckJoypad\@:
 	and	#$F0F0							; B, Y, Select, Start (no d-pad), A, X, L, R
 	beq	__CheckJoypad\@
 
-	A8
+	Accu8
 .ENDM
 
 

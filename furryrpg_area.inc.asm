@@ -15,7 +15,7 @@ AreaEnter:
 
 	jsr	SpriteInit
 
-	DisableInterrupts
+	DisableIRQs
 
 	stz	DP_HDMAchannels						; disable HDMA
 	stz	$420C
@@ -47,14 +47,14 @@ AreaEnter:
 	ldx	#0
 	ldy	#0
 
--	A16
+-	Accu16
 
 	lda.l	SRC_Tilemap_Area003, x
 	dec	a							; make up for empty tile skipped in pic data
 	clc								; add offset (font, portrait)
 	adc	#(ADDR_VRAM_AreaBG1 >> 4)				; 172 tiles
 
-	A8
+	Accu8
 
 	sta	[temp], y
 	xba
@@ -70,14 +70,14 @@ AreaEnter:
 
 	ldx	#2048
 
--	A16
+-	Accu16
 
 	lda.l	SRC_Tilemap_Area003, x
 	dec	a
 	clc								; add offset
 	adc	#(ADDR_VRAM_AreaBG1 >> 4)
 
-	A8
+	Accu8
 
 	sta	$2118
 	xba
@@ -123,7 +123,7 @@ AreaEnter:
 
 
 ; -------------------------- HDMA tables --> WRAM
-	A16
+	Accu16
 
 	ldx	#0
 -	lda.l	SRC_HDMA_ResetBGScroll, x
@@ -133,7 +133,7 @@ AreaEnter:
 	cpx	#16
 	bne	-
 
-	A8
+	Accu8
 
 
 
@@ -186,7 +186,7 @@ AreaEnter:
 
 
 ; -------------------------- character, Vblank, and effect parameters
-	A16
+	Accu16
 
 	lda	#1							; set walking speed
 	sta	DP_Char1WalkingSpd
@@ -199,20 +199,20 @@ AreaEnter:
 	lda	#%0001011100010111					; turn on BG1/2/3 + sprites
 	sta	DP_Shadow_TSTM						; on mainscreen and subscreen
 
-	A8
+	Accu8
 
-	SetVblankRoutine TBL_NMI_Area
+	SetNMI	TBL_NMI_Area
 
-	A16
+	Accu16
 
 	lda	#210							; dot number for interrupt (256 = too late, 204 = too early)
 	sta	$4207
 	lda	#176							; scanline number for interrupt: 176 (i.e., let IRQ fire in Hblank between scanlines 176 and 177)
 	sta	$4209
 
-	A8
+	Accu8
 
-	SetIRQRoutine TBL_VIRQ_Area
+	SetIRQ	TBL_VIRQ_Area
 
 ;	lda	#%00110000						; activate HDMA ch. 4, 5 (BG scroll reset)
 ;	tsb	DP_HDMAchannels
@@ -242,7 +242,7 @@ AreaEnter:
 	lda	#%01110111						; make sure BG1/2/3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
 
-	WaitForFrames 4							; let the screen clear up
+	WaitFrames	4						; let the screen clear up
 
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
@@ -251,10 +251,12 @@ AreaEnter:
 
 
 ; NIGHT
-;	A16
+;	Accu16
+
 ;	lda	#%0000000000010111					; turn on BG1/2/3 + sprites on mainscreen only
 ;	sta	DP_Shadow_TSTM
-;	A8
+
+;	Accu8
 
 ;	lda	#$72							; subscreen backdrop color to subtract
 ;	sta	$2132
@@ -294,10 +296,12 @@ AreaEnter:
 	cpx	#32
 	bne	-
 
-	A16
+	Accu16
+
 	lda	#%0001001100000100					; turn on BG1/2 + sprites on subscreen, BG3 (HUD) on mainscreen
 	sta	DP_Shadow_TSTM
-	A8
+
+	Accu8
 
 	stz	$2121							; backdrop color to subtract
 	lda	#$52
@@ -329,10 +333,12 @@ AreaEnter:
 ;	lda	#$6C
 ;	sta	$2122
 
-;	A16
+;	Accu16
+
 ;	lda	#%0001001100000100					; mainscreen: BG3 (HUD), subscreen: BG1/2, sprites
 ;	sta	DP_Shadow_TSTM
-;	A8
+
+;	Accu8
 
 
 
@@ -340,14 +346,16 @@ AreaEnter:
 	lda	#TBL_Lang_Eng
 	sta	DP_TextLanguage
 
-	A16
+	Accu16
+
 	stz	DP_TextPointerNo
-	A8
+
+	Accu8
 
 
 
 MainAreaLoop:
-	WaitForFrames 1							; don't use WAI here as IRQ might be enabled!
+	WaitFrames	1						; don't use WAI here as IRQ might be enabled!
 
 ;	lda	DP_Shadow_NMITIMEN
 ;	sta	REG_NMITIMEN
@@ -420,7 +428,8 @@ __MainAreaLoopDpadNewDone:
 	lda	#TBL_Char1_up
 	sta	DP_Char1SpriteStatus
 
-/*	A16
+/*	Accu16
+
 	lda	DP_Char1WalkingSpd
 	xba								; shift to high byte for Y value
 	eor	#$FFFF							; make negative
@@ -428,7 +437,8 @@ __MainAreaLoopDpadNewDone:
 	clc
 	adc	DP_Char1PosYX						; Y = Y - DP_Char1WalkingSpd (add negative value)
 	sta	DP_Char1PosYX
-	A8
+
+	Accu8
 
 	lda	DP_Char1PosYX+1						; check for walking area border
 	cmp	#$B1
@@ -437,12 +447,14 @@ __MainAreaLoopDpadNewDone:
 	stz	DP_Char1PosYX+1
 */
 
-	A16
+	Accu16
+
 	lda	ARRAY_HDMA_BGScroll+3
 	dec	a
 	and	#$3FFF
 	sta	ARRAY_HDMA_BGScroll+3
-	A8
+
+	Accu8
 
 __MainAreaLoopDpadUpDone:
 
@@ -456,13 +468,15 @@ __MainAreaLoopDpadUpDone:
 	lda	#TBL_Char1_down
 	sta	DP_Char1SpriteStatus
 
-/*	A16
+/*	Accu16
+
 	lda	DP_Char1WalkingSpd
 	xba								; shift to high byte for Y value
 	clc
 	adc	DP_Char1PosYX						; Y += DP_Char1WalkingSpd
 	sta	DP_Char1PosYX
-	A8
+
+	Accu8
 
 	lda	DP_Char1PosYX+1						; check for walking area border
 	cmp	#$B1
@@ -472,12 +486,14 @@ __MainAreaLoopDpadUpDone:
 	sta	DP_Char1PosYX+1
 */
 
-	A16
+	Accu16
+
 	lda	ARRAY_HDMA_BGScroll+3
 	inc	a
 	and	#$3FFF
 	sta	ARRAY_HDMA_BGScroll+3
-	A8
+
+	Accu8
 
 __MainAreaLoopDpadDownDone:
 
@@ -491,12 +507,14 @@ __MainAreaLoopDpadDownDone:
 	lda	#TBL_Char1_left
 	sta	DP_Char1SpriteStatus
 
-/*	A16
+/*	Accu16
+
 	lda	DP_Char1PosYX
 	sec
 	sbc	DP_Char1WalkingSpd					; X = X - DP_Char1WalkingSpd
 	sta	DP_Char1PosYX
-	A8
+
+	Accu8
 
 	lda	DP_Char1PosYX						; check for walking area border
 	cmp	#$10
@@ -506,12 +524,14 @@ __MainAreaLoopDpadDownDone:
 	sta	DP_Char1PosYX
 */
 
-	A16
+	Accu16
+
 	lda	ARRAY_HDMA_BGScroll+1
 	dec	a
 	and	#$3FFF
 	sta	ARRAY_HDMA_BGScroll+1
-	A8
+
+	Accu8
 
 __MainAreaLoopDpadLeftDone:
 
@@ -525,12 +545,14 @@ __MainAreaLoopDpadLeftDone:
 	lda	#TBL_Char1_right
 	sta	DP_Char1SpriteStatus
 
-/*	A16
+/*	Accu16
+
 	lda	DP_Char1PosYX
 	clc
 	adc	DP_Char1WalkingSpd					; X += DP_Char1WalkingSpd
 	sta	DP_Char1PosYX
-	A8
+
+	Accu8
 
 	lda	DP_Char1PosYX						; check for walking area border
 	cmp	#$E1
@@ -540,12 +562,14 @@ __MainAreaLoopDpadLeftDone:
 	sta	DP_Char1PosYX
 */
 
-	A16
+	Accu16
+
 	lda	ARRAY_HDMA_BGScroll+1
 	inc	a
 	and	#$3FFF
 	sta	ARRAY_HDMA_BGScroll+1
-	A8
+
+	Accu8
 
 __MainAreaLoopDpadRightDone:
 
@@ -601,7 +625,7 @@ __MainAreaLoopXButtonDone:
 ;	lda	#TBL_Char1_down|$80					; make char face the player (for menu later) // adjust when debug menu is removed
 ;	sta	DP_Char1SpriteStatus
 
-	WaitForFrames 1
+	WaitFrames	1
 
 	jmp	DebugMenu
 

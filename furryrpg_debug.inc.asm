@@ -16,14 +16,13 @@ DebugMenu:
 	lda	#$80							; enter forced blank
 	sta	$2100
 
-;	lda	#$20							; clear V-IRQ enable bit
-;	trb	DP_Shadow_NMITIMEN
+	Accu16
 
-	A16
 	stz	ARRAY_HDMA_BGScroll+1					; reset BG scroll values
 	lda	#$00FF
 	sta	ARRAY_HDMA_BGScroll+3
-	A8
+
+	Accu8
 
 	stz	DP_HDMAchannels						; disable HDMA
 
@@ -51,10 +50,10 @@ DebugMenu:
 	lda	#%01110111						; make sure BG1/2/3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
 
-	WaitForFrames 5							; wait for regs/tilemaps to get cleared
+	WaitFrames	5						; wait for regs/tilemaps to get cleared
 
-	DisableInterrupts
-	SetVblankRoutine TBL_NMI_DebugMenu
+	DisableIRQs
+	SetNMI	TBL_NMI_DebugMenu
 
 ;	stz	$2133							; SETINI (Display Control 2): no horizontal hi-res
 
@@ -90,11 +89,13 @@ DebugMenu:
 
 	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
 
-	A16
+	Accu16
+
 	lda	#%0001011100010111					; turn on BG1/2/3 and sprites on mainscreen and subscreen
 	sta	$212C
 	sta	DP_Shadow_TSTM						; copy to shadow variable
-	A8
+
+	Accu8
 
 	lda	#$02
 	ldx	#0
@@ -128,9 +129,11 @@ DebugMenu:
 
 
 ; -------------------------- reset song pointer
-	A16
+	Accu16
+
 	stz	DP_NextTrack
-	A8
+
+	Accu8
 
 
 
@@ -170,13 +173,15 @@ DebugMenuLoop:
 -	lda	REG_HVBJOY						; are we still on Vblank?
 	bmi	-							; yes, wait
 
-	A16
+	Accu16
+
 	lda	DP_NextTrack
 	asl	a
 	tax
 	lda.l	SRC_TrackPointerTable, x				; load track name pointer
 	sta	DP_SubStrAddr
-	A8
+
+	Accu8
 
 	lda	#:SRC_TrackPointerTable
 	sta	DP_SubStrAddr+2
@@ -327,7 +332,7 @@ DebugMenuLoop:
 ;	and	#%00010000
 ;	beq	+
 
-;	WaitForUserInput
+;	DoSomething
 
 ;+
 
@@ -461,7 +466,7 @@ WorldMode3:
 
 	wai								; wait for reg $420C to get cleared
 
-	DisableInterrupts
+	DisableIRQs
 
 
 
@@ -499,7 +504,7 @@ WorldMode3:
 
 
 ; -------------------------- set up NMI/misc. parameters
-	SetVblankRoutine TBL_NMI_Playfield
+	SetNMI	TBL_NMI_Playfield
 
 	lda	#$7C							; set BG1's Tile Map VRAM offset to $7C00 (word address)
 	sta	$2107							; and the Tile Map size to 32×32 tiles
@@ -523,7 +528,7 @@ WorldMode3:
 	sta	DP_EffectSpeed
 	jsr	EffectHSplitIn
 
-	WaitForUserInput
+	WaitUserInput
 
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
