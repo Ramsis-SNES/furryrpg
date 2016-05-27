@@ -49,7 +49,7 @@ _W1:	bit	REG_HVBJOY
 	lda	Joy1
 	sta	Joy1Old
 
-	lda	REG_JOY0						; get JoyPad1
+	lda	REG_JOY1L						; get JoyPad1
 	tax
 	eor	Joy1							; A = A xor JoyState = (changes in joy state)
 	stx	Joy1							; update JoyState
@@ -57,7 +57,7 @@ _W1:	bit	REG_HVBJOY
 	and	Joy1							; A = ((joy changes) or (buttons pressed)) and (current joy state)
 	sta	Joy1Press						; store A = (buttons pressed since last clearing reg) and (button is still down)
 
-	lda	REG_JOY1						; get JoyPad2
+	lda	REG_JOY2L						; get JoyPad2
 	tax
 	eor	Joy2							; A = A xor JoyState = (changes in joy state)
 	stx	Joy2							; update JoyState
@@ -72,17 +72,17 @@ _W1:	bit	REG_HVBJOY
 
 ; ********** make sure Joypads 1, 2 are valid
 
-	lda	REG_JOYSER0
 	AccuIndex8
 
+	lda	REG_JOYA
 	eor	#$01
-	and	#$01							; A = -bit0 of JoySer0
+	and	#$01							; A = -bit0 of JOYA
 	ora	Joy1
 	sta	Joy1							; joy state = (joy state) or A.... so bit0 of Joy1State = 0 only if it is a valid joypad
 
-	lda	REG_JOYSER1
+	lda	REG_JOYB
 	eor	#$01
-	and	#$01							; A = -bit0 of JoySer1
+	and	#$01							; A = -bit0 of JOYB
 	ora	Joy2
 	sta	Joy2							; joy state = (joy state) or A.... so bit0 of Joy1State = 0 only if it is a valid joypad
 

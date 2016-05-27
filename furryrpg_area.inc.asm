@@ -10,19 +10,16 @@
 
 
 AreaEnter:
-	lda	#$80							; INIDISP (Display Control 1): forced blank
-	sta	$2100
-
-	jsr	SpriteInit
+	lda	#$80							; enter forced blank
+	sta	REG_INIDISP
+	jsr	SpriteInit						; purge OAM
 
 	DisableIRQs
 
 	stz	DP_HDMAchannels						; disable HDMA
-	stz	$420C
-
-	lda	#$80							; VRAM address increment mode: increment address by one word after accessing the high byte ($2119)
-	sta	$2115
-
+	stz	REG_HDMAEN
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
 	jsr	LoadTextBoxBorderTiles					; prepare some stuff for text box
 	jsr	MakeTextBoxTilemapBG1
 	jsr	MakeTextBoxTilemapBG2
@@ -31,7 +28,7 @@ AreaEnter:
 
 ; -------------------------- area data --> VRAM/WRAM
 	ldx	#ADDR_VRAM_AreaBG1
-	stx	$2116
+	stx	REG_VMADDL
 
 ;	DMA_CH0 $01, :GFX_Area001, GFX_Area001, $18, 2080
 	DMA_CH0 $01, :GFX_Area003, GFX_Area003, $18, 12320
@@ -66,7 +63,7 @@ AreaEnter:
 	bne	-
 
 	ldx	#ADDR_VRAM_BG1_Tilemap2					; FIXME, add tilemap buffer for BG1/2 second tilemaps
-	stx	$2116
+	stx	REG_VMADDL
 
 	ldx	#2048
 
@@ -79,9 +76,9 @@ AreaEnter:
 
 	Accu8
 
-	sta	$2118
+	sta	REG_VMDATAL
 	xba
-	sta	$2119
+	sta	REG_VMDATAH
 	inx
 	inx
 	cpx	#4096
@@ -91,7 +88,7 @@ AreaEnter:
 
 ; -------------------------- HUD font --> VRAM
 	ldx	#ADDR_VRAM_BG3_Tiles
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_FontHUD, GFX_FontHUD, $18, 2048
 
@@ -169,7 +166,7 @@ AreaEnter:
 	lda	#%00000011						; 8×8 (small) / 16×16 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
 	sta	$2101
 ;	lda	#$03							; set BG Mode 3
-;	sta	$2105
+;	sta	REG_BGMODE
 	lda	#$50|$01						; BG1 tile map VRAM offset: $5000, Tile Map size: 64×32 tiles
 	sta	$2107
 	lda	#$58|$01						; BG2 tile map VRAM offset: $5800, Tile Map size: 64×32 tiles
@@ -181,7 +178,7 @@ AreaEnter:
 	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
 	sta	$210C
 ;	lda	#$09							; interlace test
-;	sta	$2133
+;	sta	REG_SETINI
 
 
 
@@ -271,8 +268,8 @@ AreaEnter:
 .ENDASM
 
 ; NIGHT W/ SPRITES, XORed palette req.
-	lda	#$80
-	sta	$2100
+	lda	#$80							; enter forced blank
+	sta	REG_INIDISP
 
 	lda	#ADDR_CGRAM_AREA					; set CGRAM address for BG1 tiles palette
 	sta	$2121
@@ -314,7 +311,7 @@ AreaEnter:
 	sta	$2131
 
 	lda	#$0F
-	sta	$2100
+	sta	REG_INIDISP
 
 	jmp	Forever
 

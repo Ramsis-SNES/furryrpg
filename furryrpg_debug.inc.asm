@@ -14,7 +14,7 @@
 
 DebugMenu:
 	lda	#$80							; enter forced blank
-	sta	$2100
+	sta	REG_INIDISP
 
 	Accu16
 
@@ -30,20 +30,20 @@ DebugMenu:
 
 ; -------------------------- clear tilemap buffers
 	ldx	#(TileMapBG1 & $FFFF)
-	stx	$2181
-	stz	$2183
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 2048
 
 	ldx	#(TileMapBG2 & $FFFF)
-	stx	$2181
-	stz	$2183
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 2048
 
 	ldx	#(TileMapBG3 & $FFFF)
-	stx	$2181
-	stz	$2183
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 2048
 
@@ -55,16 +55,15 @@ DebugMenu:
 	DisableIRQs
 	SetNMI	TBL_NMI_DebugMenu
 
-;	stz	$2133							; SETINI (Display Control 2): no horizontal hi-res
+;	stz	REG_SETINI						; SETINI (Display Control 2): no horizontal hi-res
 
 
 
 ; -------------------------- load new NMI handler & GFX data
-	lda	#$80							; VRAM address increment mode: increment address after high byte access
-	sta	$2115
-
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
 	ldx	#ADDR_VRAM_BG3_Tiles
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_FontHUD, GFX_FontHUD, $18, 2048
 
@@ -76,7 +75,7 @@ DebugMenu:
 	bne	-
 
 	ldx	#ADDR_VRAM_SPR_Tiles					; set VRAM address for sprite tiles
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_Sprites_Smallfont, GFX_Sprites_Smallfont, $18, 4096
 
@@ -92,7 +91,7 @@ DebugMenu:
 	Accu16
 
 	lda	#%0001011100010111					; turn on BG1/2/3 and sprites on mainscreen and subscreen
-	sta	$212C
+	sta	REG_TM
 	sta	DP_Shadow_TSTM						; copy to shadow variable
 
 	Accu8
@@ -119,7 +118,7 @@ DebugMenu:
 	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
 	sta	$210C
 	lda	#$01							; set BG Mode 1
-	sta	$2105
+	sta	REG_BGMODE
 
 	stz	$2121							; reset CGRAM address
 	stz	$2122							; $1C00 = dark blue as background color
@@ -163,7 +162,7 @@ DebugMenu:
 	wai
 
 	lda	#$0F							; turn on the screen
-	sta	$2100
+	sta	REG_INIDISP
 
 
 
@@ -289,8 +288,8 @@ DebugMenuLoop:
 	bne	+
 
 	ldx	#(TileMapBG3 & $FFFF)					; clear text
-	stx	$2181
-	stz	$2183
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024
 
@@ -345,11 +344,11 @@ DebugMenuLoop:
 
 ; -------------------------- show CPU load (via scanline counter)
 ShowCPUload:
-	lda	$2137							; latch H/V counter
-	lda	$213F							; reset OPHCT/OPVCT flip-flops
-	lda	$213D
+	lda	REG_SLHV						; latch H/V counter
+	lda	REG_STAT78						; reset OPHCT/OPVCT flip-flops
+	lda	REG_OPVCT
 	sta	DP_CurrentScanline
-	lda	$213D
+	lda	REG_OPVCT
 	and	#$01							; mask off 7 open bus bits
 	sta	DP_CurrentScanline+1
 
@@ -367,8 +366,8 @@ ShowCPUload:
 
 MoveSpriteCircularTest:
 	ldx	#(TileMapBG3 & $FFFF)					; clear BG3 tilemap
-	stx	$2181
-	stz	$2183
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 2048
 
@@ -459,9 +458,8 @@ __MSCTestLoop:
 
 
 WorldMode3:
-	lda	#$80							; INIDISP (Display Control 1): forced blank
-	sta	$2100
-
+	lda	#$80							; enter forced blank
+	sta	REG_INIDISP
 	stz	DP_HDMAchannels						; disable HDMA
 
 	wai								; wait for reg $420C to get cleared
@@ -471,16 +469,15 @@ WorldMode3:
 
 
 ; -------------------------- load map data
-	lda	#$80							; VRAM address increment mode: increment address after accessing the high byte ($2119)
-	sta	$2115
-
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
 	ldx	#$0000							; reset VRAM address
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_Playfield_001, GFX_Playfield_001, $18, GFX_Playfield_001_END-GFX_Playfield_001	; 45,120 bytes
 
 	ldx	#$7C00							; set VRAM address of new BG1 tilemap (has to be greater than GFX length!!)
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $01, :SRC_Playfield_001_MAP, SRC_Playfield_001_MAP, $18, 2048
 
@@ -488,8 +485,8 @@ WorldMode3:
 
 ; -------------------------- set up BG1 tilemap buffer
 ;	ldx	#(TileMapBG1 & $FFFF)
-;	stx	$2181
-;	stz	$2183
+;	stx	REG_WMADDL
+;	stz	REG_WMADDH
 
 ;	DMA_CH0 $00, :SRC_Playfield_001_MAP, SRC_Playfield_001_MAP, $80, 1024
 
@@ -518,11 +515,11 @@ WorldMode3:
 
 ; -------------------------- set some more parameters
 	lda	#$03							; set BG Mode 3 for playfield
-	sta	$2105
+	sta	REG_BGMODE
 
 	lda	#%00000001						; turn on BG1 only
-	sta	$212C							; on the mainscreen
-	sta	$212D							; and on the subscreen
+	sta	REG_TM							; on the mainscreen
+	sta	REG_TS							; and on the subscreen
 
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
@@ -535,15 +532,15 @@ WorldMode3:
 	jsr	EffectHSplitOut2
 
 	ldx	#(TileMapBG3 & $FFFF)					; clear text
-	stx	$2181
-	stz	$2183
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024
 
-	lda	#$80							; VRAM address increment mode: increment address by one word
-	sta	$2115							; after accessing the high byte ($2119)
-	stz	$2116							; reset VRAM address
-	stz	$2117
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
+	stz	REG_VMADDL						; reset VRAM address
+	stz	REG_VMADDH
 
 	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 0		; clear VRAM
 

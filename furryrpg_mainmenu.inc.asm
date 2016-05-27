@@ -139,8 +139,8 @@ MainMenuLoop:
 	bne	+
 
 	ldx	#(TileMapBG3 & $FFFF)					; clear text
-	stx	$2181
-	stz	$2183
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024
 
@@ -221,9 +221,8 @@ MainMenuLoop:
 ; ***************************** Main menu ******************************
 
 InGameMenu:
-	lda	#$80							; INIDISP (Display Control 1): forced blank
-	sta	$2100
-
+	lda	#$80							; enter forced blank
+	sta	REG_INIDISP
 	stz	DP_HDMAchannels						; disable HDMA
 
 	wai								; wait
@@ -234,8 +233,8 @@ InGameMenu:
 
 ; -------------------------- clear tilemap buffers, init sprites
 	ldx	#(TileMapBG1 & $FFFF)
-	stx	$2181
-	stz	$2183
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024*6
 
@@ -244,10 +243,10 @@ InGameMenu:
 
 
 ; -------------------------- clear VRAM
-	lda	#$80							; VRAM address increment mode: increment address by one word after accessing the high byte ($2119)
-	sta	$2115
-	stz	$2116							; regs $2116-$2117: VRAM address
-	stz	$2117
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
+	stz	REG_VMADDL						; reset VRAM address
+	stz	REG_VMADDH
 
 	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 0		; clear VRAM
 
@@ -255,23 +254,23 @@ InGameMenu:
 
 ; -------------------------- load menu GFX
 	ldx	#ADDR_VRAM_BG1_Tiles					; set VRAM address for BG1 tiles
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_Logo, GFX_Logo, $18, 8000
 
 	ldx	#(TileMapBG1 & $FFFF)
-	stx	$2181
-	stz	$2183
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 
 	DMA_CH0 $00, :SRC_Tilemap_Logo, SRC_Tilemap_Logo, $80, 1024
 
 	ldx	#ADDR_VRAM_SPR_Tiles					; set VRAM address for sprite tiles
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_Sprites_InGameMenu, GFX_Sprites_InGameMenu, $18, 8192
 
 	ldx	#ADDR_VRAM_BG3_Tiles
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_FontHUD, GFX_FontHUD, $18, 2048
 
@@ -329,7 +328,7 @@ InGameMenu:
 	Accu16
 
 	lda	#%0001011100010111					; turn on BG1/2/3 & sprites on mainscreen and	subscreen
-	sta	$212C
+	sta	REG_TM
 	sta	DP_Shadow_TSTM						; copy to shadow variable (not yet used)
 
 	Accu8
@@ -449,8 +448,8 @@ InGameMenu:
 
 .ASM
 
-	lda	#$0F
-	sta	$2100
+	lda	#$0F							; turn on screen
+	sta	REG_INIDISP
 
 RingMenuLoop:
 	wai
@@ -549,8 +548,8 @@ PutRingMenuItems:
 	sta	DP_RingMenuAngleOffset
 
 	ldx	#SpriteBuf1.RingMenuItem1				; set WRAM address for 1st item on ring menu
-	stx	$2181
-	stz	$2183
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 	jsr	CalcRingMenuItemPos
 
 	lda	DP_RingMenuAngle					; set angle for 2nd item on ring menu ($60 = 1:30 o'clock)
@@ -559,8 +558,8 @@ PutRingMenuItems:
 	sta	DP_RingMenuAngleOffset
 
 	ldx	#SpriteBuf1.RingMenuItem2				; set WRAM address for 2nd item on ring menu
-	stx	$2181
-	stz	$2183
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 	jsr	CalcRingMenuItemPos
 
 	lda	DP_RingMenuAngle					; set angle for 3rd item on ring menu ($40 = 3:00 o'clock)
@@ -569,8 +568,8 @@ PutRingMenuItems:
 	sta	DP_RingMenuAngleOffset
 
 	ldx	#SpriteBuf1.RingMenuItem3				; set WRAM address for 3rd item on ring menu
-	stx	$2181
-	stz	$2183
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 	jsr	CalcRingMenuItemPos
 
 	lda	DP_RingMenuAngle					; set angle for 4th item on ring menu ($20 = 4:30 o'clock)
@@ -579,8 +578,8 @@ PutRingMenuItems:
 	sta	DP_RingMenuAngleOffset
 
 	ldx	#SpriteBuf1.RingMenuItem4				; set WRAM address for 4th item on ring menu
-	stx	$2181
-	stz	$2183
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 	jsr	CalcRingMenuItemPos
 
 	lda	DP_RingMenuAngle					; set angle for 5th item on ring menu ($00 = 6:00 o'clock)
@@ -589,8 +588,8 @@ PutRingMenuItems:
 	sta	DP_RingMenuAngleOffset
 
 	ldx	#SpriteBuf1.RingMenuItem5				; set WRAM address for 5th item on ring menu
-	stx	$2181
-	stz	$2183
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 	jsr	CalcRingMenuItemPos
 
 	lda	DP_RingMenuAngle					; set angle for 6th item on ring menu ($E0 = 7:30 o'clock)
@@ -599,8 +598,8 @@ PutRingMenuItems:
 	sta	DP_RingMenuAngleOffset
 
 	ldx	#SpriteBuf1.RingMenuItem6				; set WRAM address for 6th item on ring menu
-	stx	$2181
-	stz	$2183
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 	jsr	CalcRingMenuItemPos
 
 	lda	DP_RingMenuAngle					; set angle for 7th item on ring menu ($C0 = 9:00 o'clock)
@@ -609,8 +608,8 @@ PutRingMenuItems:
 	sta	DP_RingMenuAngleOffset
 
 	ldx	#SpriteBuf1.RingMenuItem7				; set WRAM address for 7th item on ring menu
-	stx	$2181
-	stz	$2183
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 	jsr	CalcRingMenuItemPos
 
 	lda	DP_RingMenuAngle					; set angle for 8th item on ring menu ($A0 = 10:30 o'clock)
@@ -619,8 +618,8 @@ PutRingMenuItems:
 	sta	DP_RingMenuAngleOffset
 
 	ldx	#SpriteBuf1.RingMenuItem8				; set WRAM address for 8th item on ring menu
-	stx	$2181
-	stz	$2183
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 	jsr	CalcRingMenuItemPos
 	rts
 
@@ -651,7 +650,7 @@ CalcRingMenuItemPos:
 	pha
 
 +	pla
-	sta	$2180							; save X
+	sta	REG_WMDATA						; save X
 
 	ldx	DP_RingMenuAngleOffset
 	lda.l	SRC_Mode7Cos, x
@@ -675,17 +674,16 @@ CalcRingMenuItemPos:
 	pha
 
 +	pla
-	sta	$2180							; save Y
+	sta	REG_WMDATA						; save Y
 	rts
 
 
 
 .ENDASM
-	lda	#$80							; VRAM address increment mode: increment address by one word after accessing the high byte ($2119)
-	sta	$2115
-
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
 	ldx	#ADDR_VRAM_BG2_TILES + $480				; set VRAM address for BG2 font tiles
-	stx	$2116
+	stx	REG_VMADDL
 
 	ldx	#$04C0							; "L"
 	jsr	SaveTextBoxTileToVRAM
@@ -740,7 +738,7 @@ CalcRingMenuItemPos:
 	stx	$4352
 	lda	#:SRC_HDMA_test5
 	sta	$4354
-	lda	#$05							; PPU reg. $2105 (screen mode)
+	lda	#$05							; PPU reg. $2105 (BGMODE)
 	sta	$4351
 	lda	#$00							; transfer mode (1 byte)
 	sta	$4350
@@ -758,17 +756,15 @@ CalcRingMenuItemPos:
 	cli
 
 	lda	#%00000110						; turn on BG2/3
-	sta	$212C							; on the mainscreen
-	sta	$212D							; and on the subscreen
-
+	sta	REG_TM							; on the mainscreen
+	sta	REG_TS							; and on the subscreen
 	lda	#$0F							; turn screen back on
-	sta	$2100
+	sta	REG_INIDISP
 
 	WaitUserInput
 
 	lda	#$80							; enter forced blank
-	sta	$2100
-
+	sta	REG_INIDISP
 	stz	DP_HDMAchannels						; disable HDMA
 	lda	#$81							; enable Vblank NMI + Auto Joypad Read (no H-IRQ any more)
 	sta	DP_Shadow_NMITIMEN
@@ -777,7 +773,7 @@ CalcRingMenuItemPos:
 	wai								; wait for reg $420C to get cleared
 
 	lda	#$01|$08						; set BG Mode 1 (BG3 priority)
-	sta	$2105
+	sta	REG_BGMODE
 
 	lda	#$00							; clear BG2 tilemap
 	sta	TileMapBG2 + 163

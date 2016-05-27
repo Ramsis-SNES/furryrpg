@@ -18,35 +18,35 @@ check_mpa:
 
 	stz	DP_Multi5_Status
 
--	lda	$4212							; automatic controller read enabled?
+-	lda	REG_HVBJOY						; automatic controller read enabled?
 	and	#$01
 	bne	-
 
 ; determine if MPA is connected or not?
-	stz	$4016							; output "0" to out0
+	stz	REG_JOYWR						; output "0" to out0
 	lda	#$01
-	sta	$4016							; output "1" to out0
+	sta	REG_JOYWR						; output "1" to out0
 
 	ldx	#$08
--	lda	$4016
+-	lda	REG_JOYA
 	lsr	a
 	lsr	a
 	rol	DP_Multi5_Reg0hi					; read d1 of $4016 and store it to DP_Multi5_Reg0hi
-	lda	$4017
+	lda	REG_JOYB
 	lsr	a
 	lsr	a
 	rol	DP_Multi5_Reg1hi					; read d1 of $4017 and store it to DP_Multi5_Reg1hi
 	dex
 	bne	-
 
-	stz	$4016							; output "0" to out0
+	stz	REG_JOYWR						; output "0" to out0
 
 	ldx	#$08
--	lda	$4016
+-	lda	REG_JOYA
 	lsr	a
 	lsr	a
 	rol	DP_Multi5_Reg0lo					; read d1 of $4016 and store it to DP_Multi5_Reg0lo
-	lda	$4017
+	lda	REG_JOYB
 	lsr	a
 	lsr	a
 	rol	DP_Multi5_Reg1lo					; read d1 of $4017 and store it to DP_Multi5_Reg1lo

@@ -16,7 +16,7 @@
 
 LoadTextBoxBorderTiles:
 	ldx	#ADDR_VRAM_BG2_Tiles + $80				; set VRAM address for BG2 font tiles (+ 16 empty tiles)
-	stx	$2116
+	stx	REG_VMADDL
 	ldx	#$0100							; upper left corner (1)
 	jsr	SaveTextBoxTileToVRAM
 	ldx	#$0110							; upper left corner (2) / upper border (1)
@@ -92,7 +92,7 @@ OpenTextBox:
 	lda	#%00110000						; enable IRQ at H=$4207 and V=$4209
 	tsb	DP_Shadow_NMITIMEN
 ;	lda	#$08							; tell SETINI (Display Control 2) register that horizontal hi-res is used
-;	sta	$2133
+;	sta	REG_SETINI
 
 	WaitFrames	1
 
@@ -480,19 +480,19 @@ __TBHSDone:
 
 
 VWFTileBufferFull:
-	lda	#$80							; VRAM address increment mode: increment address by one word
-	sta	$2115							; after accessing the high byte ($2119)
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
 
 	Accu16
 
 	lda	DP_TextTileDataCounter
 	clc								; add VRAM address for BG2 font tiles (+ 32 empty tiles),
 	adc	#ADDR_VRAM_TextBoxL1					; this is done here once so we can proceed with zero-based counter math
-	sta	$2116							; store as new VRAM address
+	sta	REG_VMADDL						; store as new VRAM address
 
 	ldy	#0							; transfer VWF tile buffer to VRAM
 -	lda	ARRAY_VWFTileBuffer, y					; copy font tiles
-	sta	$2118
+	sta	REG_VMDATAL
 	iny
 	iny
 	cpy	#32							; 2 tiles, 16 bytes per tile
@@ -770,9 +770,8 @@ __ProcessTextJumpOut:
 
 
 ClearTextBox:
-	lda	#$80							; VRAM address increment mode: increment address by one word
-	sta	$2115							; after accessing the high byte ($2119)
-
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
 	ldx	#ADDR_VRAM_TextBoxL1					; set VRAM address to beginning of line 1
 	stx	REG_VMADDL
 
@@ -797,11 +796,10 @@ ClearTextBox:
 
 
 ;ClearTextBoxSingleLine:
-;	lda	#$80							; VRAM address increment mode: increment address by one word
-;	sta	$2115							; after accessing the high byte ($2119)
-
+;	lda	#$80							; increment VRAM address by 1 after writing to $2119
+;	sta	REG_VMAIN
 ;	ldx	#ADDR_VRAM_BG2_TEXTBOXL1				; set VRAM address to beginning of line 1
-;	stx	$2116
+;	stx	REG_VMADDL
 
 ;	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 800		; 50 tiles × 16 bytes
 ;	rts
@@ -810,18 +808,18 @@ ClearTextBox:
 
 MakeTextBoxTilemapBG1:
 	ldx	#ADDR_VRAM_BG1_Tilemap3+PARAM_TextBox			; set VRAM address within new BG1 tilemap
-	stx	$2116
+	stx	REG_VMADDL
 
-	A16
+	Accu16
 
 
 
 ; -------------------------- line 1 of text box area
 	lda	#0|$400							; patch up first tile ($00 = blank tile), palette no. 1
-	sta	$2118
+	sta	REG_VMDATAL
 
 	lda	#ADDR_VRAM_Portrait/16|$400				; get tile no. for start of portrait
--	sta	$2118
+-	sta	REG_VMDATAL
 	inc	a
 	inc	a
 	cmp	#ADDR_VRAM_Portrait/16+10|$400				; 5 (double) tiles done?
@@ -829,7 +827,7 @@ MakeTextBoxTilemapBG1:
 
 	ldx	#PARAM_TextBox+6
 	lda	#0|$400							; blank tile
--	sta	$2118
+-	sta	REG_VMDATAL
 	inx
 	cpx	#PARAM_TextBox+33					; end of line 1 + first tile of line 2
 	bne	-
@@ -838,7 +836,7 @@ MakeTextBoxTilemapBG1:
 
 ; -------------------------- line 2 of text box area
 	lda	#ADDR_VRAM_Portrait/16+10|$400				; get next tile no.
--	sta	$2118
+-	sta	REG_VMDATAL
 	inc	a
 	inc	a
 	cmp	#ADDR_VRAM_Portrait/16+20|$400				; 5 (double) tiles done?
@@ -846,7 +844,7 @@ MakeTextBoxTilemapBG1:
 
 	ldx	#PARAM_TextBox+32+6
 	lda	#0|$400							; blank tile
--	sta	$2118
+-	sta	REG_VMDATAL
 	inx
 	cpx	#PARAM_TextBox+65					; end of line 2 + first tile of line 3
 	bne	-
@@ -855,7 +853,7 @@ MakeTextBoxTilemapBG1:
 
 ; -------------------------- line 3 of text box area
 	lda	#ADDR_VRAM_Portrait/16+20|$400				; get next tile no.
--	sta	$2118
+-	sta	REG_VMDATAL
 	inc	a
 	inc	a
 	cmp	#ADDR_VRAM_Portrait/16+30|$400				; 5 (double) tiles done?
@@ -863,7 +861,7 @@ MakeTextBoxTilemapBG1:
 
 	ldx	#PARAM_TextBox+64+6
 	lda	#0|$400							; blank tile
--	sta	$2118
+-	sta	REG_VMDATAL
 	inx
 	cpx	#PARAM_TextBox+97					; end of line 3 + first tile of line 4
 	bne	-
@@ -872,7 +870,7 @@ MakeTextBoxTilemapBG1:
 
 ; -------------------------- line 4 of text box area
 	lda	#ADDR_VRAM_Portrait/16+30|$400				; get next tile no.
--	sta	$2118
+-	sta	REG_VMDATAL
 	inc	a
 	inc	a
 	cmp	#ADDR_VRAM_Portrait/16+40|$400				; 5 (double) tiles done?
@@ -880,7 +878,7 @@ MakeTextBoxTilemapBG1:
 
 	ldx	#PARAM_TextBox+96+6
 	lda	#0|$400							; blank tile
--	sta	$2118
+-	sta	REG_VMDATAL
 	inx
 	cpx	#PARAM_TextBox+129					; end of line 4 + first tile of line 5
 	bne	-
@@ -889,7 +887,7 @@ MakeTextBoxTilemapBG1:
 
 ; -------------------------- line 5 of text box area
 	lda	#ADDR_VRAM_Portrait/16+40|$400				; get next tile no.
--	sta	$2118
+-	sta	REG_VMDATAL
 	inc	a
 	inc	a
 	cmp	#ADDR_VRAM_Portrait/16+50|$400				; 5 (double) tiles done?
@@ -897,7 +895,7 @@ MakeTextBoxTilemapBG1:
 
 	ldx	#PARAM_TextBox+128+6
 	lda	#0|$400							; blank tile
--	sta	$2118
+-	sta	REG_VMDATAL
 	inx
 	cpx	#PARAM_TextBox+161					; end of line 5 + first tile of line 6
 	bne	-
@@ -906,7 +904,7 @@ MakeTextBoxTilemapBG1:
 
 ; -------------------------- line 6 of text box area
 	lda	#ADDR_VRAM_Portrait/16+50|$400				; get next tile no.
--	sta	$2118
+-	sta	REG_VMDATAL
 	inc	a
 	inc	a
 	cmp	#ADDR_VRAM_Portrait/16+60|$400				; 5 (double) tiles done?
@@ -914,7 +912,7 @@ MakeTextBoxTilemapBG1:
 
 	ldx	#PARAM_TextBox+160+6
 	lda	#0|$400							; blank tile
--	sta	$2118
+-	sta	REG_VMDATAL
 	inx
 	cpx	#PARAM_TextBox+192					; end of line 6
 	bne	-
@@ -929,7 +927,7 @@ MakeTextBoxTilemapBG2:
 ; We use a fixed tilemap and generate Mode 5 compatible tile data based on the given text string on-the-fly in VRAM.
 
 	ldx	#ADDR_VRAM_BG2_Tilemap3+PARAM_TextBox			; set VRAM address within new BG2 tilemap
-	stx	$2116
+	stx	REG_VMADDL
 
 	Accu16
 
@@ -937,47 +935,47 @@ MakeTextBoxTilemapBG2:
 
 ; -------------------------- line 1 of text box area
 	lda	#27|$400						; tile no. of black tile, palette no. 1
-	sta	$2118
+	sta	REG_VMDATAL
 
 	ldx	#PARAM_TextBox+1
 	lda	#0							; no. of blank tile
--	sta	$2118							; 1st "line" of portrait
+-	sta	REG_VMDATAL						; 1st "line" of portrait
 	inx
 	cpx	#PARAM_TextBox+6					; 5 tiles done?
 	bne	-
 
 	lda	#16							; upper left corner tiles
-	sta	$2118
+	sta	REG_VMDATAL
 	inx
 	lda	#17							; upper border tiles
--	sta	$2118
+-	sta	REG_VMDATAL
 	inx
 	cpx	#PARAM_TEXTBOX_UL+PARAM_TEXTBOX_WIDTH			; position: upper right corner
 	bne	-
 
 	lda	#18							; upper right corner tiles
-	sta	$2118
+	sta	REG_VMDATAL
 	lda	#27|$400						; tile no. of black tile
-	sta	$2118
+	sta	REG_VMDATAL
 
 
 
 ; -------------------------- line 2 of text box area
 ;	lda	#27|$400						; tile no. of black tile
-	sta	$2118
+	sta	REG_VMDATAL
 
 	ldx	#PARAM_TextBox+33
 	lda	#0							; no. of blank tile
--	sta	$2118							; 2nd "line" of portrait
+-	sta	REG_VMDATAL						; 2nd "line" of portrait
 	inx
 	cpx	#PARAM_TextBox+32+6					; 5 tiles done?
 	bne	-
 
 	lda	#20							; left border tiles
-	sta	$2118
+	sta	REG_VMDATAL
 	inx
 	lda	#$20							; $20 = no. of 1st text string tile in VRAM, $22 = second tile etc.
--	sta	$2118
+-	sta	REG_VMDATAL
 	inc	a							; tile no. += 2 (Mode 5 always shows two 8×8 tiles at once, resulting in a single 16×8 tile)
 	inc	a
 	inx
@@ -986,30 +984,30 @@ MakeTextBoxTilemapBG2:
 
 	pha								; preserve no. of text string tile
 	lda	#21							; right border tiles
-	sta	$2118
+	sta	REG_VMDATAL
 	lda	#27|$400						; tile no. of black tile
-	sta	$2118
+	sta	REG_VMDATAL
 
 
 
 ; -------------------------- line 3 of text box area
 ;	lda	#27|$400						; tile no. of black tile
-	sta	$2118
+	sta	REG_VMDATAL
 
 	ldx	#PARAM_TextBox+65
 	lda	#0							; no. of blank tile
--	sta	$2118							; 3rd "line" of portrait
+-	sta	REG_VMDATAL						; 3rd "line" of portrait
 	inx
 	cpx	#PARAM_TextBox+64+6					; 5 tiles done?
 	bne	-
 
 	lda	#20							; left border tiles
-	sta	$2118
+	sta	REG_VMDATAL
 	inx
 
 	pla								; restore no. of text string tile
--	sta	$2118
-	inc	a							; tile no. += 2 (Mode 5 always shows two 8×8 tiles at once, resulting in a single 16×8 tile)
+-	sta	REG_VMDATAL
+	inc	a							; tile no. += 2
 	inc	a
 	inx								; position in tilemap += 1
 	cpx	#PARAM_TextBox_Line2+PARAM_TEXTBOX_WIDTH-1
@@ -1017,32 +1015,32 @@ MakeTextBoxTilemapBG2:
 
 	pha								; preserve no. of text string tile
 	lda	#21							; right border tiles
-	sta	$2118
+	sta	REG_VMDATAL
 	inx
 	lda	#27|$400						; tile no. of black tile
-	sta	$2118
+	sta	REG_VMDATAL
 	inx
 
 
 
 ; -------------------------- line 4 of text box area
 ;	lda	#27|$400						; tile no. of black tile
-	sta	$2118
+	sta	REG_VMDATAL
 
 	ldx	#PARAM_TextBox+97
 	lda	#0							; no. of blank tile
--	sta	$2118							; 4th "line" of portrait
+-	sta	REG_VMDATAL						; 4th "line" of portrait
 	inx
 	cpx	#PARAM_TextBox+96+6					; 5 tiles done?
 	bne	-
 
 	lda	#20							; left border tiles
-	sta	$2118
+	sta	REG_VMDATAL
 	inx
 
 	pla								; restore no. of text string tile
--	sta	$2118
-	inc	a							; tile no. += 2 (Mode 5 always shows two 8×8 tiles at once, resulting in a single 16×8 tile)
+-	sta	REG_VMDATAL
+	inc	a							; tile no. += 2
 	inc	a
 	inx								; position in tilemap += 1
 	cpx	#PARAM_TextBox_Line3+PARAM_TEXTBOX_WIDTH-1
@@ -1050,29 +1048,29 @@ MakeTextBoxTilemapBG2:
 
 	pha								; preserve no. of text string tile
 	lda	#21							; right border tiles
-	sta	$2118
+	sta	REG_VMDATAL
 	lda	#27|$400						; tile no. of black tile
-	sta	$2118
+	sta	REG_VMDATAL
 
 
 
 ; -------------------------- line 5 of text box area
 ;	lda	#27|$400						; tile no. of black tile
-	sta	$2118
+	sta	REG_VMDATAL
 
 	ldx	#PARAM_TextBox+129
 	lda	#0							; no. of blank tile
--	sta	$2118							; 5th "line" of portrait
+-	sta	REG_VMDATAL						; 5th "line" of portrait
 	inx
 	cpx	#PARAM_TextBox+128+6					; 5 tiles done?
 	bne	-
 
 	lda	#20							; left border tiles
-	sta	$2118
+	sta	REG_VMDATAL
 	inx
 
 	pla								; restore no. of text string tile
--	sta	$2118
+-	sta	REG_VMDATAL
 	inc	a							; tile no. += 2
 	inc	a
 	inx								; position in tilemap += 1
@@ -1080,36 +1078,36 @@ MakeTextBoxTilemapBG2:
 	bne	-
 
 	lda	#21							; right border tiles
-	sta	$2118
+	sta	REG_VMDATAL
 	lda	#27|$400						; tile no. of black tile
-	sta	$2118
+	sta	REG_VMDATAL
 
 
 
 ; -------------------------- line 6 of text box area
 ;	lda	#27|$400						; tile no. of black tile
-	sta	$2118
+	sta	REG_VMDATAL
 
 	ldx	#PARAM_TextBox+161
 	lda	#0							; no. of blank tile
--	sta	$2118							; 6th "line" of portrait
+-	sta	REG_VMDATAL						; 6th "line" of portrait
 	inx
 	cpx	#PARAM_TextBox+160+6					; 5 tiles done?
 	bne	-
 
 	lda	#23							; lower left corner tiles
-	sta	$2118
+	sta	REG_VMDATAL
 	inx
 	lda	#24							; lower border tiles
--	sta	$2118
+-	sta	REG_VMDATAL
 	inx
 	cpx	#PARAM_TEXTBOX_UL+PARAM_TEXTBOX_WIDTH+160		; lower right corner reached?
 	bne	-
 
 	lda	#25							; lower right corner tiles
-	sta	$2118
+	sta	REG_VMDATAL
 	lda	#27|$400						; tile no. of black tile
-	sta	$2118
+	sta	REG_VMDATAL
 
 	Accu8
 
@@ -1240,7 +1238,7 @@ SaveTextBoxTileToVRAM:
 
 	ldy	#0
 -	lda.l	GFX_FontMode5, x					; copy font tile
-	sta	$2118
+	sta	REG_VMDATAL
 	inx
 	inx
 	iny
@@ -1274,8 +1272,8 @@ ClearVWFBuffer:
 
 ChangeTextBoxBG:
 	ldx	#(ARRAY_HDMA_BackgrTextBox & $FFFF)			; set WRAM address to text box HDMA background
-	stx	$2181
-	stz	$2183
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 
 	cmp	#CC_BoxRed						; check for text box color code
 	bne	+

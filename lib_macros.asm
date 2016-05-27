@@ -136,7 +136,7 @@ __ReturnAdress\@:
 	ldx	#\5							; data length (16 bit)
 	stx	$4305
 	lda	#%00000001						; initiate DMA transfer (channel 0)
-	sta	$420B
+	sta	REG_MDMAEN
 .ENDM
 
 

@@ -202,7 +202,7 @@ Boot:
 
 ; -------------------------- load gfx & palettes for debug screen
 	ldx	#ADDR_VRAM_BG3_Tiles					; set VRAM address for BG3 tiles
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_FontHUD, GFX_FontHUD, $18, 2048
 
@@ -214,7 +214,7 @@ Boot:
 	bne	-
 
 	ldx	#ADDR_VRAM_SPR_Tiles					; set VRAM address for sprite tiles
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_Sprites_Smallfont, GFX_Sprites_Smallfont, $18, 4096
 
@@ -237,12 +237,12 @@ Boot:
 	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
 	sta	$210C
 	lda	#$01							; set BG mode 1
-	sta	$2105
+	sta	REG_BGMODE
 
 	Accu16
 
 	lda	#%0001010000010100					; turn on BG3 + sprites
-	sta	$212C							; on mainscreen and subscreen
+	sta	REG_TM							; on mainscreen and subscreen
 	sta	DP_Shadow_TSTM						; copy to shadow variable
 
 	Accu8
@@ -254,7 +254,7 @@ Boot:
 	cmp	#$01
 	beq	+
 	lda	#$0F							; turn on the screen
-	sta	$2100
+	sta	REG_INIDISP
 	jsr	VerifyROMIntegrity
 +	jml	DebugMenu
 
@@ -263,12 +263,12 @@ Boot:
 ; -------------------------- intro / title screen // FIXME, move to event handler
 AlphaIntro:
 	lda	#$80							; enter forced blank
-	sta	$2100
+	sta	REG_INIDISP
 
 	DisableIRQs
 
 	lda	#$03							; set BG Mode 3
-	sta	$2105
+	sta	REG_BGMODE
 	lda	#$50							; set BG1's Tile Map VRAM offset to $5000 (word address)
 	sta	$2107							; and the Tile Map size to 32×32 tiles
 	lda	#$20							; set BG1's Character VRAM offset to $0000 (word address)
@@ -282,7 +282,7 @@ AlphaIntro:
 	Accu16
 
 	lda	#%0000000100000001					; turn on BG1 only
-	sta	$212C							; on mainscreen and subscreen
+	sta	REG_TM							; on mainscreen and subscreen
 	sta	DP_Shadow_TSTM						; copy to shadow variable
 
 	Accu8
@@ -304,12 +304,12 @@ AlphaIntro:
 	DMA_CH0 $02, :SRC_RamsisPal, SRC_RamsisPal, $22, 512
 
 	ldx	#$0000
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_RamsisPic, GFX_RamsisPic, $18, 40384
 
 	ldx	#$5000
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $01, :SRC_RamsisMap, SRC_RamsisMap, $18, 2048
 
@@ -318,7 +318,7 @@ AlphaIntro:
 -	wai
 	inc	a
 	inc	a
-	sta	$2100
+	sta	REG_INIDISP
 	inx
 	cpx	#8
 	bne	-
@@ -330,13 +330,13 @@ AlphaIntro:
 -	wai
 	dec	a
 	dec	a
-	sta	$2100
+	sta	REG_INIDISP
 	inx
 	cpx	#8
 	bne	-
 
 	lda	#$80							; enter forced blank
-	sta	$2100
+	sta	REG_INIDISP
 
 	WaitFrames	10
 
@@ -345,12 +345,12 @@ AlphaIntro:
 	DMA_CH0 $02, :SRC_RamsisPresentsPal, SRC_RamsisPresentsPal, $22, 512
 
 	ldx	#$0000
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_RamsisPresentsPic, GFX_RamsisPresentsPic, $18, 40384
 
 	ldx	#$5000
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $01, :SRC_RamsisPresentsMap, SRC_RamsisPresentsMap, $18, 2048
 
@@ -359,7 +359,7 @@ AlphaIntro:
 -	wai
 	inc	a
 	inc	a
-	sta	$2100
+	sta	REG_INIDISP
 	inx
 	cpx	#8
 	bne	-
@@ -371,13 +371,13 @@ AlphaIntro:
 -	wai
 	dec	a
 	dec	a
-	sta	$2100
+	sta	REG_INIDISP
 	inx
 	cpx	#8
 	bne	-
 
 	lda	#$80							; enter forced blank
-	sta	$2100
+	sta	REG_INIDISP
 
 	WaitFrames	10
 
@@ -386,12 +386,12 @@ AlphaIntro:
 	DMA_CH0 $02, :SRC_StartPal, SRC_StartPal, $22, 512
 
 	ldx	#$0000
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_StartPic, GFX_StartPic, $18, 40384
 
 	ldx	#$5000
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $01, :SRC_StartMap, SRC_StartMap, $18, 2048
 
@@ -400,7 +400,7 @@ AlphaIntro:
 -	wai
 	inc	a
 	inc	a
-	sta	$2100
+	sta	REG_INIDISP
 	inx
 	cpx	#8
 	bne	-
@@ -412,13 +412,13 @@ AlphaIntro:
 -	wai
 	dec	a
 	dec	a
-	sta	$2100
+	sta	REG_INIDISP
 	inx
 	cpx	#8
 	bne	-
 
 	lda	#$80							; enter forced blank
-	sta	$2100
+	sta	REG_INIDISP
 
 	WaitFrames	10
 
@@ -427,12 +427,12 @@ AlphaIntro:
 	DMA_CH0 $02, :SRC_SoundEnginesPal, SRC_SoundEnginesPal, $22, 512
 
 	ldx	#$0000
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_SoundEnginesPic, GFX_SoundEnginesPic, $18, 40384
 
 	ldx	#$5000
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $01, :SRC_SoundEnginesMap, SRC_SoundEnginesMap, $18, 2048
 
@@ -441,7 +441,7 @@ AlphaIntro:
 -	wai
 	inc	a
 	inc	a
-	sta	$2100
+	sta	REG_INIDISP
 	inx
 	cpx	#8
 	bne	-
@@ -453,13 +453,13 @@ AlphaIntro:
 -	wai
 	dec	a
 	dec	a
-	sta	$2100
+	sta	REG_INIDISP
 	inx
 	cpx	#8
 	bne	-
 
 	lda	#$80							; enter forced blank
-	sta	$2100
+	sta	REG_INIDISP
 
 	DisableIRQs
 	SetNMI	TBL_NMI_DebugMenu
@@ -482,7 +482,7 @@ AlphaIntro:
 	WaitFrames	20
 
 	ldx	#$0000
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 0		; clear VRAM
 
@@ -508,7 +508,7 @@ StartScreenLoop:
 ; -------------------------- Start pressed, go to debug menu
 	lda	#$0F
 -	dec	a
-	sta	$2100
+	sta	REG_INIDISP
 	wai
 	wai
 	cmp	#$00
@@ -522,11 +522,10 @@ StartScreenLoop:
 
 
 ; -------------------------- clear BG1 tilemap
-;	lda	#$80							; VRAM address increment mode: increment address after accessing the high byte ($2119)
-;	sta	$2115
-
+;	lda	#$80							; increment VRAM address by 1 after writing to $2119
+;	sta	REG_VMAIN
 ;	ldx	#ADDR_VRAM_BG1_TILEMAP					; set VRAM address to BG1 tile map
-;	stx	$2116
+;	stx	REG_VMADDL
 
 ;	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, $0800		; 2048 bytes (low & high tilemap byte)
 
@@ -534,8 +533,8 @@ StartScreenLoop:
 
 ; -------------------------- clear BG1 tilemap buffer
 ;	ldx	#(TileMapBG1 & $FFFF)
-;	stx	$2181
-;	stz	$2183
+;	stx	REG_WMADDL
+;	stz	REG_WMADDH
 
 ;	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024
 
@@ -543,8 +542,8 @@ StartScreenLoop:
 
 ; -------------------------- black screen BG --> HDMA buffer
 ;	ldx	#(ARRAY_HDMA_BackgrPlayfield &$FFFF)
-;	stx	$2181
-;	stz	$2183
+;	stx	REG_WMADDL
+;	stz	REG_WMADDH
 
 ;	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 704
 

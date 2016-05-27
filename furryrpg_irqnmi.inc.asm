@@ -47,10 +47,10 @@ __TextBoxVblankDone:
 
 
 ; -------------------------- animate playable character
-	lda	#$80							; VRAM address increment mode: increment address after accessing the high byte ($2119)
-	sta	$2115
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
 	ldx	#ADDR_VRAM_SPR_Tiles					; set VRAM address for sprite tiles
-	stx	$2116
+	stx	REG_VMADDL
 
 	lda	DP_Char1SpriteStatus
 	and	#%00000111						; isolate direction parameter
@@ -81,7 +81,7 @@ __TextBoxVblankDone:
 	ldx	#2048							; data length
 	stx	$4305
 	lda	#%00000001						; initiate DMA transfer (channel 0)
-	sta	$420B
+	sta	REG_MDMAEN
 
 	lda	DP_Char1SpriteStatus
 	bpl	__Char1IsWalking					; bit 7 set = idle
@@ -159,7 +159,7 @@ __SkipRefreshes3:
 
 ; -------------------------- reset registers changed by V-IRQ for text box
 	lda	#$01|$08						; set BG Mode 1 for area, BG3 priority
-	sta	$2105
+	sta	REG_BGMODE
 	lda	#$50|$01						; BG1 tile map VRAM offset: $5000, Tile Map size: 64×32 tiles
 	sta	$2107
 	lda	#$58|$01						; BG2 tile map VRAM offset: $5800, Tile Map size: 64×32 tiles
@@ -168,14 +168,13 @@ __SkipRefreshes3:
 	Accu16
 
 	lda	DP_Shadow_TSTM						; copy mainscreen & subscreen shadow registers
-	sta	$212C
+	sta	REG_TM
 
 	Accu8
 
 	lda	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
-
-;	stz	$2133
+;	stz	REG_SETINI
 
 
 
@@ -216,9 +215,9 @@ __SkipRefreshes3:
 
 	lda	DP_HDMAchannels						; initiate HDMA transfers
 	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
-	sta	$420C
+	sta	REG_HDMAEN
 
-	lda	$4210							; acknowledge NMI
+	lda	REG_RDNMI						; acknowledge NMI
 
 	AccuIndex16
 
@@ -262,9 +261,9 @@ Vblank_DebugMenu:
 
 	lda	DP_HDMAchannels						; initiate HDMA transfers
 	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
-	sta	$420C
+	sta	REG_HDMAEN
 
-	lda	$4210							; acknowledge NMI
+	lda	REG_RDNMI						; acknowledge NMI
 
 	AccuIndex16
 
@@ -384,12 +383,12 @@ Vblank_Mode7:
 
 ; -------------------------- reset registers changed by V-IRQ for Mode 7
 	lda	#$01|$08						; set BG Mode 1 for sky, BG3 priority
-	sta	$2105
+	sta	REG_BGMODE
 
 ;	lda	#%00010110						; turn on BG2, BG3, and sprites
 	lda	#%00010000
-	sta	$212C							; on the mainscreen
-	sta	$212D							; and on the subscreen
+	sta	REG_TM							; on the mainscreen
+	sta	REG_TS							; and on the subscreen
 
 
 
@@ -398,9 +397,9 @@ Vblank_Mode7:
 
 	lda	DP_HDMAchannels						; initiate HDMA transfers
 	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
-	sta	$420C
+	sta	REG_HDMAEN
 
-	lda	$4210							; acknowledge NMI
+	lda	REG_RDNMI						; acknowledge NMI
 
 	AccuIndex16
 
@@ -425,31 +424,28 @@ Vblank_Playfield:
 
 
 ; -------------------------- refresh BG1 (low tilemap bytes)
-;	stz	$2115							; VRAM address increment mode: increment address by one word after accessing the low byte ($2118)
-
+;	stz	REG_VMAIN						; increment VRAM address by 1 after writing to $2118
 ;	ldx	#ADDR_VRAM_BG1_TILEMAP					; set VRAM address to BG1 tile map
-;	stx	$2116
+;	stx	REG_VMADDL
 
 ;	DMA_CH0 $00, $7E, TileMapBG1, $18, 1024
 
 
 
 ; -------------------------- refresh BG2 (low tilemap bytes)
-;	stz	$2115							; VRAM address increment mode: increment address by one word after accessing the low byte ($2118)
-
+;	stz	REG_VMAIN						; increment VRAM address by 1 after writing to $2118
 ;	ldx	#ADDR_VRAM_BG2_TILEMAP					; set VRAM address to BG2 tile map
-;	stx	$2116
+;	stx	REG_VMADDL
 
 ;	DMA_CH0 $00, $7E, TileMapBG2, $18, 1024
 
 
 
 ; -------------------------- refresh BG2 (high tilemap bytes)
-;	lda	#$80							; VRAM address increment mode: increment address by one word after accessing the high byte ($2119)
-;	sta	$2115
-
+;	lda	#$80							; increment VRAM address by 1 after writing to $2119
+;	sta	REG_VMAIN
 ;	ldx	#ADDR_VRAM_BG2_TILEMAP					; set VRAM address to BG2 tile map
-;	stx	$2116
+;	stx	REG_VMADDL
 
 ;	DMA_CH0 $00, $7E, TileMapBG2Hi, $19, 1024
 
@@ -474,9 +470,9 @@ Vblank_Playfield:
 
 	lda	DP_HDMAchannels						; initiate HDMA transfers
 	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
-	sta	$420C
+	sta	REG_HDMAEN
 
-	lda	$4210							; acknowledge NMI
+	lda	REG_RDNMI						; acknowledge NMI
 
 	AccuIndex16
 
@@ -499,21 +495,19 @@ Vblank_Error:
 
 
 ; -------------------------- refresh BG3 (low tilemap bytes)
-	stz	$2115							; VRAM address increment mode: increment address by one word after accessing the low byte ($2118)
-
+	stz	REG_VMAIN						; increment VRAM address by 1 after writing to $2118
 	ldx	#ADDR_VRAM_BG3_Tilemap1					; set VRAM address to BG3 tile map
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $00, $7E, TileMapBG3, $18, 1024
 
 
 
 ; -------------------------- refresh BG3 (high tilemap bytes)
-	lda	#$80							; VRAM address increment mode: increment address by one word after accessing the high byte ($2119)
-	sta	$2115
-
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
 	ldx	#ADDR_VRAM_BG3_Tilemap1					; set VRAM address to BG3 tile map
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $00, $7E, TileMapBG3Hi, $19, 1024
 
@@ -528,9 +522,8 @@ Vblank_Error:
 	sta	$2112
 	stz	$2112
 
-	stz	$420C							; disable HDMA
-
-	lda	$4210							; acknowledge NMI
+	stz	REG_HDMAEN						; disable HDMA
+	lda	REG_RDNMI						; acknowledge NMI
 
 	AccuIndex16
 
@@ -571,9 +564,8 @@ Vblank_Intro:
 
 	lda	DP_HDMAchannels						; initiate HDMA transfers
 	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
-	sta	$420C
-
-	lda	$4210							; acknowledge NMI
+	sta	REG_HDMAEN
+	lda	REG_RDNMI						; acknowledge NMI
 
 	AccuIndex16
 
@@ -595,11 +587,11 @@ HIRQ_MainMenu:
 	Accu16
 
 	pha								; preserve 16 bit accumulator
-	lda	#$01|$08
-	sta	$2105							; switch to BG Mode 1 (BG3 priority)
 
 	Accu8
 
+	lda	#$01|$08						; switch to BG Mode 1 (BG3 priority)
+	sta	REG_BGMODE
 
 	lda	REG_TIMEUP						; acknowledge IRQ
 
@@ -626,8 +618,7 @@ VIRQ_Area:
 ;	bvc	-
 
 	lda	#$05							; switch to BG Mode 5 for text box
-	sta	$2105
-
+	sta	REG_BGMODE
 	lda	#$78							; BG1 tile map VRAM offset: $7800, Tile Map size: 32×32 tiles
 	sta	$2107
 	lda	#$7C							; BG2 tile map VRAM offset: $7C00, Tile Map size: 32×32 tiles
@@ -645,7 +636,7 @@ VIRQ_Area:
 	Accu16
 
 	lda	VAR_TextBox_TSTM					; write Sub/Mainscreen designation regs
-	sta	$212C
+	sta	REG_TM
 
 	Accu8
 
@@ -674,14 +665,12 @@ VIRQ_Mode7:
 ;	lda	#%11110000						; enable HDMA channels 4-7
 ;	ora	DP_HDMAchannels						; don't terminate other channels
 ;	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
-;	sta	$420C
-
+;	sta	REG_HDMAEN
 	lda	#$07							; switch to BG Mode 7
-	sta	$2105
-
+	sta	REG_BGMODE
 	lda	#%00010001						; turn on BG1 and sprites only
-	sta	$212C							; on the mainscreen
-	sta	$212D							; and on the subscreen
+	sta	REG_TM							; on the mainscreen
+	sta	REG_TS							; and on the subscreen
 
 	lda	REG_TIMEUP						; acknowledge IRQ
 
@@ -710,10 +699,9 @@ RefreshBGs:
 
 
 ; -------------------------- refresh BG1 (low tilemap bytes)
-	stz	$2115							; VRAM address increment mode: increment address by one word after accessing the low byte ($2118)
-
+	stz	REG_VMAIN						; increment VRAM address by 1 after writing to $2118
 	ldx	#ADDR_VRAM_BG1_Tilemap1					; set VRAM address to BG1 tile map
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $00, $7E, TileMapBG1, $18, 1024
 
@@ -732,10 +720,9 @@ RefreshBGs:
 
 
 ; -------------------------- refresh BG2 (low tilemap bytes)
-	stz	$2115							; VRAM address increment mode: increment address by one word after accessing the low byte ($2118)
-
+	stz	REG_VMAIN						; increment VRAM address by 1 after writing to $2118
 	ldx	#ADDR_VRAM_BG2_Tilemap1					; set VRAM address to BG2 tile map
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $00, $7E, TileMapBG2, $18, 1024
 
@@ -754,10 +741,9 @@ RefreshBGs:
 
 
 ; -------------------------- refresh BG3 (low tilemap bytes)
-	stz	$2115							; VRAM address increment mode: increment address by one word after accessing the low byte ($2118)
-
+	stz	REG_VMAIN						; increment VRAM address by 1 after writing to $2118
 	ldx	#ADDR_VRAM_BG3_Tilemap1					; set VRAM address to BG3 tile map
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $00, $7E, TileMapBG3, $18, 1024
 
@@ -776,11 +762,10 @@ RefreshBGs:
 
 
 ; -------------------------- refresh BG1 (high tilemap bytes)
-	lda	#$80							; VRAM address increment mode: increment address by one word after accessing the high byte ($2119)
-	sta	$2115
-
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
 	ldx	#ADDR_VRAM_BG1_Tilemap1					; set VRAM address to BG1 tile map
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $00, $7E, TileMapBG1Hi, $19, 1024
 
@@ -797,11 +782,10 @@ RefreshBGs:
 
 
 ; -------------------------- refresh BG2 (high tilemap bytes)
-	lda	#$80							; VRAM address increment mode: increment address by one word after accessing the high byte ($2119)
-	sta	$2115
-
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
 	ldx	#ADDR_VRAM_BG2_Tilemap1					; set VRAM address to BG2 tile map
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $00, $7E, TileMapBG2Hi, $19, 1024
 
@@ -818,11 +802,10 @@ RefreshBGs:
 
 
 ; -------------------------- refresh BG3 (high tilemap bytes)
-	lda	#$80							; VRAM address increment mode: increment address by one word after accessing the high byte ($2119)
-	sta	$2115
-
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
 	ldx	#ADDR_VRAM_BG3_Tilemap1					; set VRAM address to BG3 tile map
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $00, $7E, TileMapBG3Hi, $19, 1024
 
@@ -840,11 +823,10 @@ __DMAUpdatesDone:
 
 
 UpdateCharPortrait:
-	lda	#$80							; VRAM address increment mode: increment address after accessing the high byte ($2119)
-	sta	$2115
-
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
 	ldx	#ADDR_VRAM_Portrait					; set VRAM address to char portrait
-	stx	$2116
+	stx	REG_VMADDL
 
 	lda	DP_TextBoxCharPortrait
 	and	#%00011111						; check for portrait no., 0 = no portrait
@@ -967,7 +949,7 @@ ErrorHandlerBRK:
 	Accu8
 
 	lda	#$80							; enter forced blank
-	sta	$2100
+	sta	REG_INIDISP
 
 	DisableIRQs
 
@@ -977,27 +959,26 @@ ErrorHandlerBRK:
 
 	SetDPag	$0000
 
-	stz	$420C							; disable HDMA
 	Accu8
 
+	stz	REG_HDMAEN						; disable HDMA
 
 
 
 ; -------------------------- clear BG3 tilemap buffer
 	ldx	#(TileMapBG3 & $FFFF)
-	stx	$2181
-	stz	$2183
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 2048
 
 
 
 ; -------------------------- HUD font --> VRAM
-	lda	#$80							; VRAM address increment mode: increment address by one word after accessing the high byte ($2119)
-	sta	$2115
-
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
 	ldx	#ADDR_VRAM_BG3_Tiles
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_FontHUD, GFX_FontHUD, $18, 2048
 
@@ -1028,15 +1009,15 @@ ErrorHandlerBRK:
 
 ; -------------------------- register updates
 	lda	#$01							; set BG mode 1
-	sta	$2105
+	sta	REG_BGMODE
 
 	lda	#$48							; BG3 tile map VRAM offset: $4800, Tile Map size: 32×32 tiles
 	sta	$2109
 	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
 	sta	$210C
 	lda	#%00000100						; turn on BG3 only
-	sta	$212C							; on the mainscreen
-	sta	$212D							; and on the subscreen
+	sta	REG_TM							; on the mainscreen
+	sta	REG_TS							; and on the subscreen
 
 	PrintString 3, 2, "An error occurred!"
 	PrintString 5, 2, "Error type: BRK"
@@ -1090,12 +1071,11 @@ ErrorHandlerBRK:
 	sta	temp
 	PrintHexNum temp
 
-	SetVblankRoutine TBL_NMI_Error
+	SetNMI	TBL_NMI_Error
 
 	lda.l	REG_RDNMI						; clear NMI flag
-
 	lda	#$0F							; turn on screen
-	sta	$2100
+	sta	REG_INIDISP
 
 	jmp Forever							; go to trap loop instead of RTI
 
@@ -1111,7 +1091,7 @@ ErrorHandlerCOP:
 	Accu8
 
 	lda	#$80							; enter forced blank
-	sta	$2100
+	sta	REG_INIDISP
 
 	DisableIRQs
 
@@ -1119,29 +1099,28 @@ ErrorHandlerCOP:
 
 	Accu16
 
-	stz	$420C							; disable HDMA
 	SetDPag	$0000
 
 	Accu8
 
+	stz	REG_HDMAEN						; disable HDMA
 
 
 
 ; -------------------------- clear BG3 tilemap buffer
 	ldx	#(TileMapBG3 & $FFFF)
-	stx	$2181
-	stz	$2183
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 2048
 
 
 
 ; -------------------------- HUD font --> VRAM
-	lda	#$80							; VRAM address increment mode: increment address by one word after accessing the high byte ($2119)
-	sta	$2115
-
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
 	ldx	#ADDR_VRAM_BG3_Tiles
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_FontHUD, GFX_FontHUD, $18, 2048
 
@@ -1171,15 +1150,15 @@ ErrorHandlerCOP:
 
 ; -------------------------- register updates
 	lda	#$01							; set BG mode 1
-	sta	$2105
+	sta	REG_BGMODE
 
 	lda	#$48							; BG3 tile map VRAM offset: $4800, Tile Map size: 32×32 tiles
 	sta	$2109
 	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
 	sta	$210C
 	lda	#%00000100						; turn on BG3 only
-	sta	$212C							; on the mainscreen
-	sta	$212D							; and on the subscreen
+	sta	REG_TM							; on the mainscreen
+	sta	REG_TS							; and on the subscreen
 
 	PrintString 3, 2, "An error occurred!"
 	PrintString 5, 2, "Error type: COP"
@@ -1236,9 +1215,8 @@ ErrorHandlerCOP:
 	SetNMI	TBL_NMI_Error
 
 	lda.l	REG_RDNMI						; clear NMI flag
-
 	lda	#$0F							; turn on screen
-	sta	$2100
+	sta	REG_INIDISP
 
 	jmp Forever							; go to trap loop instead of RTI
 

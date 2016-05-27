@@ -13,9 +13,8 @@
 .INDEX 16
 
 TestMode7:
-	lda	#$80							; INIDISP (Display Control 1): forced blank
-	sta	$2100
-
+	lda	#$80							; enter forced blank
+	sta	REG_INIDISP
 	stz	DP_HDMAchannels						; disable HDMA
 
 	wai								; wait for OAM to refresh
@@ -90,11 +89,10 @@ TestMode7:
 
 ; -------------------------- load Mode 7 character data
 ; ############################### FOR PIC2MODE7'S GFX OUTPUT
-	lda	#$80							; VRAM address increment mode: increment address after high byte access
-	sta	$2115
-
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
 	ldx	#$0000							; set VRAM address $0000
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_Sommappic, GFX_Sommappic, $18, 32768 ;$0000
 ; ##########################################################
@@ -102,19 +100,16 @@ TestMode7:
 
 
 ; ############################### FOR GFX2SNES'/PCX2SNES' OUTPUT
-;	lda	#$00							; VRAM address increment mode: increment address after low byte access
-;	sta	$2115
-
+;	stz	REG_VMAIN						; increment VRAM address by 1 after writing to $2118
 ;	ldx	#$0000							; set VRAM address $0000
-;	stx	$2116
+;	stx	REG_VMADDL
 
 ;	DMA_CH0 $00, :SRC_Maptilemap, SRC_Maptilemap, $18, SRC_Maptilemap_END - SRC_Maptilemap
 
-;	lda	#$80							; VRAM address increment mode: increment address after high byte access
-;	sta	$2115
-
+;	lda	#$80							; increment VRAM address by 1 after writing to $2119
+;	sta	REG_VMAIN
 ;	ldx	#$0000							; set VRAM address $0000
-;	stx	$2116
+;	stx	REG_VMADDL
 
 ;	DMA_CH0 $00, :GFX_Mappic, GFX_Mappic, $19, GFX_Mappic_END - GFX_Mappic
 ; ##############################################################
@@ -134,11 +129,10 @@ TestMode7:
 
 
 ; -------------------------- load font & cloud sprites
-	lda	#$80							; VRAM address increment mode: increment address after high byte access
-	sta	$2115
-
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
 	ldx	#ADDR_VRAM_SPR_Tiles					; set VRAM address for sprite tiles
-	stx	$2116
+	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_Sprites_Smallfont, GFX_Sprites_Smallfont, $18, 4096
 	DMA_CH0 $01, :GFX_Sprites_Clouds, GFX_Sprites_Clouds, $18, 2048
@@ -204,7 +198,7 @@ TestMode7:
 	Accu16
 
 	lda	#%0001000000000001					; turn on BG1 on mainscreen only, sprites on subscreen
-	sta	$212C
+	sta	REG_TM
 	sta	DP_Shadow_TSTM
 
 	Accu8
@@ -227,8 +221,8 @@ TestMode7:
 
 ; -------------------------- load sky backdrop gradient
 	ldx	#(ARRAY_HDMA_BackgrPlayfield & $FFFF)			; set WRAM address to text box HDMA background
-	stx	$2181
-	stz	$2183
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 
 	DMA_CH0 $00, :SRC_HDMA_Mode7Sky72, SRC_HDMA_Mode7Sky72, $80, SRC_HDMA_Mode7Sky72_END - SRC_HDMA_Mode7Sky72
 
@@ -542,16 +536,15 @@ __M7FlightY:
 	jsr	SpriteInit						; purge OAM
 
 	ldx	#(TileMapBG3 & $FFFF)					; clear text
-	stx	$2181
-	stz	$2183
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024
 
-	lda	#$80							; VRAM address increment mode: increment address by one word
-	sta	$2115							; after accessing the high byte ($2119)
-
-	stz	$2116							; regs $2116-$2117: VRAM address
-	stz	$2117
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
+	stz	REG_VMADDL						; reset VRAM address
+	stz	REG_VMADDH
 
 	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 0		; clear VRAM
 
@@ -575,11 +568,11 @@ __M7FlightY:
 
 
 ; -------------------------- show CPU load
-	lda	$2137							; latch H/V counter
-	lda	$213F							; reset OPHCT/OPVCT flip-flops
-	lda	$213D
+	lda	REG_SLHV						; latch H/V counter
+	lda	REG_STAT78						; reset OPHCT/OPVCT flip-flops
+	lda	REG_OPVCT
 	sta	DP_CurrentScanline
-	lda	$213D
+	lda	REG_OPVCT
 	and	#$01							; mask off 7 open bus bits
 	sta	DP_CurrentScanline+1
 

@@ -197,7 +197,7 @@ __HSplitOutSubLoop2:							; loop 2: go towards start of table
 	WaitFrames	1						; wait for HDMA register update
 
 	lda	#$80							; enter forced blank
-	sta	$2100
+	sta	REG_INIDISP
 	rts
 
 
@@ -291,7 +291,7 @@ __HSplitOut2SubLoop2:
 	WaitFrames	1						; wait for HDMA register update
 
 	lda	#$80							; enter forced blank
-	sta	$2100
+	sta	REG_INIDISP
 	rts
 
 
