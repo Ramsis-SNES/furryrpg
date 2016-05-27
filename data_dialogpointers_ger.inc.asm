@@ -144,6 +144,32 @@ SRC_DiagPointerGer:
 	.DW STR_DialogGer0122
 	.DW STR_DialogGer0123
 	.DW STR_DialogGer0124
+	.DW STR_DialogGer0125
+	.DW STR_DialogGer0126
+	.DW STR_DialogGer0127
+	.DW STR_DialogGer0128
+	.DW STR_DialogGer0129
+	.DW STR_DialogGer0130
+	.DW STR_DialogGer0131
+	.DW STR_DialogGer0132
+	.DW STR_DialogGer0133
+	.DW STR_DialogGer0134
+	.DW STR_DialogGer0135
+	.DW STR_DialogGer0136
+	.DW STR_DialogGer0137
+	.DW STR_DialogGer0138
+	.DW STR_DialogGer0139
+	.DW STR_DialogGer0140
+	.DW STR_DialogGer0141
+	.DW STR_DialogGer0142
+	.DW STR_DialogGer0143
+	.DW STR_DialogGer0144
+	.DW STR_DialogGer0145
+	.DW STR_DialogGer0146
+	.DW STR_DialogGer0147
+	.DW STR_DialogGer0148
+	.DW STR_DialogGer0149
+	.DW STR_DialogGer0150
 
 SRC_DiagPointerGer_END:
 

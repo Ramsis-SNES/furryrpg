@@ -1,6 +1,13 @@
 FURRY RPG! (WORKING TITLE) -- CHANGES:
 --------------------------------------
 
+Build #00257:
+- changed code layout for better readability
+- additions to the dialog script (English only for now)
+- minor bugfixes
+
+
+
 Build #00256:
 - started to work on a proper in-game main menu (ring-menu style)
 
