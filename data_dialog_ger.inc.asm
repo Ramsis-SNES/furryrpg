@@ -247,7 +247,7 @@ STR_DialogGer0035:
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "Right. Apart from Tusker's missing sausages,", CC_NewLine
 	.DB CC_Indent, "even more weird stuff's been going on in the", CC_NewLine
-	.DB CC_Indent, "village.", CC_End
+	.DB CC_Indent, "village.", CC_ClearTextBox
 
 STR_DialogGer0036:
 	.DB CC_Indent, "My Foxen neighbors' kid said he'd actually seen", CC_NewLine
@@ -513,7 +513,8 @@ STR_DialogGer0082:
 STR_DialogGer0083:
 	.DB CC_BoxBlue
 	.DB "LILY:", CC_NewLine
-	.DB CC_Indent, "But your job plus his job equals our job, doesn't it?", CC_NewLine
+	.DB CC_Indent, "But your job plus his job equals our job,", CC_NewLine
+	.DB CC_Indent, "doesn't it?", CC_NewLine
 	.DB CC_Indent, "Also ... Sollen wir langsam aufbrechen?", CC_End
 
 STR_DialogGer0084:

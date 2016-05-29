@@ -463,7 +463,7 @@
 	DP_VWFBitsUsed		dw
 	DP_VWFBufferIndex	dw
 	DP_VWFLoop		db
-.ENDE									; 149 of 256 bytes used
+.ENDE									; 159 of 256 bytes used
 
 
 

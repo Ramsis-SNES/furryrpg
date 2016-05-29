@@ -462,7 +462,7 @@ __RingMenuLoopDpadLeftDone:
 
 	ldy	#$0020
 -	wai
-	inc	DP_RingMenuAngle					; inc	angle --> rotate counter-clockwise
+	inc	DP_RingMenuAngle					; inc angle --> rotate counter-clockwise
 	inc	DP_RingMenuAngle
 	jsr	PutRingMenuItems
 	dey

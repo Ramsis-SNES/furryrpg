@@ -151,7 +151,7 @@ Boot:
 ; -------------------------- clear all directly accessible RAM areas (with parameters/addresses set/reset above)
 	Accu16
 
-	SetDPag	$0000
+	SetDPag	$0000							; set Direct Page = $0000
 
 	Accu8
 
