@@ -31,6 +31,7 @@
 .DEFINE TRACK07_SMP	".\\music\\08-allons-ensemble-spc700.bin"
 .DEFINE TRACK08_SMP	".\\music\\09-caterwauling-spc700.bin"
 .DEFINE TRACK09_SMP	".\\music\\10-contemplate-spc700.bin"
+.DEFINE TRACK10_SMP	".\\music\\11-tembas-theme-spc700.bin"
 
 .DEFINE TRACK00_NOTES	".\\music\\02-worldmap-3-music.bin"
 .DEFINE TRACK01_NOTES	".\\music\\03-cave-1-music.bin"
@@ -42,6 +43,7 @@
 .DEFINE TRACK07_NOTES	".\\music\\08-allons-ensemble-music.bin"
 .DEFINE TRACK08_NOTES	".\\music\\09-caterwauling-music.bin"
 .DEFINE TRACK09_NOTES	".\\music\\10-contemplate-music.bin"
+.DEFINE TRACK10_NOTES	".\\music\\11-tembas-theme-music.bin"
 
 .EMPTYFILL		$FF
 
@@ -164,7 +166,7 @@ STR_SoftwareBuild:
 	.DB "Build #"
 
 STR_SoftwareBuildNo:
-	.DB "00257"
+	.DB "00258"
 	.DB 0
 
 ;STR_Software_BuildNo_END:
@@ -449,6 +451,21 @@ GFX_Sommappic_END:
 
 SRC_spc700_driver:
 .INCBIN SPC700_DRV
+
+.ENDS
+
+.SECTION ".roDataSoundCode12" SEMIFREE
+
+SRC_track_10_pointers:
+.INCBIN TRACK10_SMP SKIP 10 READ 6					; 2 + 8
+
+SRC_track_10_samples:
+.INCBIN TRACK10_SMP SKIP 2342						; 2 + 2340
+
+SRC_track_10_samples_END:
+
+SRC_track_10_notes:
+.INCBIN TRACK10_NOTES
 
 .ENDS
 

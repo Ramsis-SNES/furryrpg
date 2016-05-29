@@ -332,6 +332,28 @@ AreaEnter:
 
 
 
+; -------------------------- play music & ambient sound effect
+	lda	#10
+	sta	DP_NextTrack
+	stz	DP_NextTrack+1
+	jsl	PlayTrack
+
+	lda	DP_MSU1present
+	beq	+
+
+	ldx	#$0001							; MSU1 present, play track #1
+	stx	MSU_TRACK
+-	bit	MSU_STATUS						; wait for Audio Busy bit to clear
+	bvs	-
+
+	lda	#%00000011						; set play, repeat flags
+	sta	MSU_CONTROL
+	lda	#$FF
+	sta	MSU_VOLUME
++
+
+
+
 MainAreaLoop:
 	WaitFrames	1						; don't use WAI here as IRQ might be enabled!
 
@@ -597,6 +619,12 @@ __MainAreaLoopXButtonDone:
 ;	sta	DP_Char1SpriteStatus
 
 	WaitFrames	1
+
+	jsl	music_stop						; stop music
+	lda	DP_MSU1present
+	beq	+
+	stz	MSU_CONTROL						; stop ambient soundtrack
++
 
 	jmp	DebugMenu
 

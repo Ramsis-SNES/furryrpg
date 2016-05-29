@@ -13,7 +13,7 @@
 .INDEX 16
 
 PlayTrack:
-	DisableIRQs						; reminder: this was moved here from the original SNESGSS routines as of build #00203
+	DisableIRQs							; reminder: this was moved here from the original SNESGSS routines as of build #00203
 
 	jsl	music_stop
 
@@ -136,6 +136,7 @@ SRC_TrackPtrBankTable:
 	.DW :SRC_track_07_pointers
 	.DW :SRC_track_08_pointers
 	.DW :SRC_track_09_pointers
+	.DW :SRC_track_10_pointers
 
 
 
@@ -150,6 +151,7 @@ SRC_TrackPtrOffsetTable:
 	.DW SRC_track_07_pointers
 	.DW SRC_track_08_pointers
 	.DW SRC_track_09_pointers
+	.DW SRC_track_10_pointers
 
 
 
@@ -164,6 +166,7 @@ SRC_TrackSmpBankTable:
 	.DW :SRC_track_07_samples
 	.DW :SRC_track_08_samples
 	.DW :SRC_track_09_samples
+	.DW :SRC_track_10_samples
 
 
 
@@ -178,6 +181,7 @@ SRC_TrackSmpOffsetTable:
 	.DW SRC_track_07_samples
 	.DW SRC_track_08_samples
 	.DW SRC_track_09_samples
+	.DW SRC_track_10_samples
 
 
 
@@ -192,6 +196,7 @@ SRC_TrackSmpLengthTable:
 	.DW SRC_track_07_samples_END-SRC_track_07_samples
 	.DW SRC_track_08_samples_END-SRC_track_08_samples
 	.DW SRC_track_09_samples_END-SRC_track_09_samples
+	.DW SRC_track_10_samples_END-SRC_track_10_samples
 
 
 
@@ -206,6 +211,7 @@ SRC_TrackNotBankTable:
 	.DW :SRC_track_07_notes
 	.DW :SRC_track_08_notes
 	.DW :SRC_track_09_notes
+	.DW :SRC_track_10_notes
 
 
 
@@ -220,6 +226,7 @@ SRC_TrackNotOffsetTable:
 	.DW SRC_track_07_notes+2
 	.DW SRC_track_08_notes+2
 	.DW SRC_track_09_notes+2
+	.DW SRC_track_10_notes+2
 
 
 
@@ -234,6 +241,7 @@ SRC_TrackNotSizeTable:
 	.INCBIN TRACK07_NOTES READ 2
 	.INCBIN TRACK08_NOTES READ 2
 	.INCBIN TRACK09_NOTES READ 2
+	.INCBIN TRACK10_NOTES READ 2
 
 
 
@@ -248,6 +256,7 @@ SRC_TrackPointerTable:
 	.DW STR_Track07
 	.DW STR_Track08
 	.DW STR_Track09
+	.DW STR_Track10
 
 SRC_TrackPointerTable_END:
 
@@ -285,6 +294,9 @@ STR_Track08:
 
 STR_Track09:
 	.DB "09 Contemplate             ", 0
+
+STR_Track10:
+	.DB "10 Temba's Theme           ", 0
 
 
 
