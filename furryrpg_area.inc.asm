@@ -143,8 +143,6 @@ AreaEnter:
 	stx	$4342
 	lda	#$7E
 	sta	$4344
-;	lda	#$7E							; indirect HDMA CPU bus data address bank
-;	sta	$4347
 
 
 
@@ -157,16 +155,12 @@ AreaEnter:
 	stx	$4352
 	lda	#$7E
 	sta	$4354
-;	lda	#$7E							; indirect HDMA CPU bus data address bank
-;	sta	$4357
 
 
 
 ; -------------------------- screen registers
 	lda	#%00000011						; 8×8 (small) / 16×16 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
 	sta	$2101
-;	lda	#$03							; set BG Mode 3
-;	sta	REG_BGMODE
 	lda	#$50|$01						; BG1 tile map VRAM offset: $5000, Tile Map size: 64×32 tiles
 	sta	$2107
 	lda	#$58|$01						; BG2 tile map VRAM offset: $5800, Tile Map size: 64×32 tiles
@@ -177,8 +171,6 @@ AreaEnter:
 	stz	$210B
 	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
 	sta	$210C
-;	lda	#$09							; interlace test
-;	sta	REG_SETINI
 
 
 
@@ -211,12 +203,8 @@ AreaEnter:
 
 	SetIRQ	TBL_VIRQ_Area
 
-;	lda	#%00110000						; activate HDMA ch. 4, 5 (BG scroll reset)
-;	tsb	DP_HDMAchannels
-
 	lda	#$80							; make character idle
 	sta	DP_Char1SpriteStatus
-
 	lda	REG_RDNMI						; clear NMI flag
 	lda	#$81							; enable Vblank NMI + Auto Joypad Read
 	sta	DP_Shadow_NMITIMEN
@@ -228,13 +216,6 @@ AreaEnter:
 ;	PrintString 3, 2, "EP: 0000"
 	PrintString 23, 17, "-Green Greens-"
 ;	PrintString 2, 19, "Time:"
-
-;	PrintString 14, 13, "M7H/X="
-;	PrintHexNum DP_Mode7_ScrollOffsetX+1
-;	PrintHexNum DP_Mode7_ScrollOffsetX
-;	PrintString 15, 13, "M7V/Y="
-;	PrintHexNum DP_Mode7_ScrollOffsetY+1
-;	PrintHexNum DP_Mode7_ScrollOffsetY
 
 	lda	#%01110111						; make sure BG1/2/3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
@@ -606,19 +587,12 @@ __MainAreaLoopXButtonDone:
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
 	jsr	EffectHSplitOut2
-
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
-
 	lda	#%00110000						; clear IRQ enable bits
 	trb	DP_Shadow_NMITIMEN
-
 	lda	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
-
-;	lda	#%00110100						; deactivate used HDMA channels
-;	trb	DP_HDMAchannels
-
 ;	lda	#TBL_Char1_down|$80					; make char face the player (for menu later) // adjust when debug menu is removed
 ;	sta	DP_Char1SpriteStatus
 

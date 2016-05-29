@@ -181,34 +181,22 @@ __SkipRefreshes3:
 ; -------------------------- misc. tasks
 	jsr	GetInput
 
-;	lda	DP_ScrollX						; BG1 horizontal scroll
-	lda	ARRAY_HDMA_BGScroll+1
+	lda	ARRAY_HDMA_BGScroll+1					; BG1 horizontal scroll
 	sta	$210D
-;	lda	DP_ScrollX+1
 	lda	ARRAY_HDMA_BGScroll+2
 	sta	$210D
-
-;	lda	DP_ScrollX						; BG2 horizontal scroll
-	lda	ARRAY_HDMA_BGScroll+1
+	lda	ARRAY_HDMA_BGScroll+1					; BG2 horizontal scroll
 	sta	$210F
-;	lda	DP_ScrollX+1
 	lda	ARRAY_HDMA_BGScroll+2
 	sta	$210F
-
-;	lda	DP_ScrollY						; BG1 vertical scroll
-	lda	ARRAY_HDMA_BGScroll+3
+	lda	ARRAY_HDMA_BGScroll+3					; BG1 vertical scroll
 	sta	$210E
-;	lda	DP_ScrollY+1
 	lda	ARRAY_HDMA_BGScroll+4
 	sta	$210E
-
-;	lda	DP_ScrollY						; BG2 vertical scroll
-	lda	ARRAY_HDMA_BGScroll+3
+	lda	ARRAY_HDMA_BGScroll+3					; BG2 vertical scroll
 	sta	$2110
-;	lda	DP_ScrollY+1
 	lda	ARRAY_HDMA_BGScroll+4
 	sta	$2110
-
 	lda	#$FF							; fixed BG3 vertical scroll = -1
 	sta	$2112
 	stz	$2112
@@ -253,12 +241,6 @@ Vblank_DebugMenu:
 ; -------------------------- misc. tasks
 	jsr	GetInput
 
-;	lda	scrollY
-;	sta	$210E							; BG1 vertical scroll
-;	stz	$210E
-;	sta	$2110							; BG2 vertical scroll
-;	stz	$2110
-
 	lda	DP_HDMAchannels						; initiate HDMA transfers
 	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
 	sta	REG_HDMAEN
@@ -284,18 +266,6 @@ Vblank_Mode7:
 	Accu8
 
 	jsr	UpdateGameTime
-
-
-
-; -------------------------- move cursor
-;	lda	cursorX
-;	sta	SpriteBuf1
-;	lda	cursorY
-;	sec
-;	sbc	#$10
-	; clc
-	; adc	#$08
-;	sta	SpriteBuf1+1
 
 
 
@@ -423,34 +393,6 @@ Vblank_Playfield:
 
 
 
-; -------------------------- refresh BG1 (low tilemap bytes)
-;	stz	REG_VMAIN						; increment VRAM address by 1 after writing to $2118
-;	ldx	#ADDR_VRAM_BG1_TILEMAP					; set VRAM address to BG1 tile map
-;	stx	REG_VMADDL
-
-;	DMA_CH0 $00, $7E, TileMapBG1, $18, 1024
-
-
-
-; -------------------------- refresh BG2 (low tilemap bytes)
-;	stz	REG_VMAIN						; increment VRAM address by 1 after writing to $2118
-;	ldx	#ADDR_VRAM_BG2_TILEMAP					; set VRAM address to BG2 tile map
-;	stx	REG_VMADDL
-
-;	DMA_CH0 $00, $7E, TileMapBG2, $18, 1024
-
-
-
-; -------------------------- refresh BG2 (high tilemap bytes)
-;	lda	#$80							; increment VRAM address by 1 after writing to $2119
-;	sta	REG_VMAIN
-;	ldx	#ADDR_VRAM_BG2_TILEMAP					; set VRAM address to BG2 tile map
-;	stx	REG_VMADDL
-
-;	DMA_CH0 $00, $7E, TileMapBG2Hi, $19, 1024
-
-
-
 ; -------------------------- refresh sprites
 ;	stz	$2102							; reset OAM address
 ;	stz	$2103
@@ -461,12 +403,6 @@ Vblank_Playfield:
 
 ; -------------------------- misc. tasks
 	jsr	GetInput
-
-;	lda	scrollY
-;	sta	$210E							; BG1 vertical scroll
-;	stz	$210E
-;	sta	$2110							; BG2 vertical scroll
-;	stz	$2110
 
 	lda	DP_HDMAchannels						; initiate HDMA transfers
 	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
@@ -556,12 +492,6 @@ Vblank_Intro:
 ; -------------------------- misc. tasks
 	jsr	GetInput
 
-;	lda	scrollY
-;	sta	$210E							; BG1 vertical scroll
-;	stz	$210E
-;	sta	$2110							; BG2 vertical scroll
-;	stz	$2110
-
 	lda	DP_HDMAchannels						; initiate HDMA transfers
 	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
 	sta	REG_HDMAEN
@@ -623,15 +553,6 @@ VIRQ_Area:
 	sta	$2107
 	lda	#$7C							; BG2 tile map VRAM offset: $7C00, Tile Map size: 32×32 tiles
 	sta	$2108
-;	lda	#$FF							; set BG1 vertical scroll = -1 (reminder: 0 would mean 1st scanline is invisible!)
-;	sta	$210E
-;	stz	$210E
-;	sta	$2110							; set BG2 vertical scroll = -1
-;	stz	$2110
-;	stz	$210D							; reset BG1 horizontal scroll
-;	stz	$210D
-;	stz	$210F							; reset BG2 horizontal scroll
-;	stz	$210F
 
 	Accu16
 
@@ -662,10 +583,6 @@ VIRQ_Mode7:
 ;-	bit	REG_HVBJOY						; wait for Hblank period flag to get set
 ;	bvc	-
 
-;	lda	#%11110000						; enable HDMA channels 4-7
-;	ora	DP_HDMAchannels						; don't terminate other channels
-;	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
-;	sta	REG_HDMAEN
 	lda	#$07							; switch to BG Mode 7
 	sta	REG_BGMODE
 	lda	#%00010001						; turn on BG1 and sprites only

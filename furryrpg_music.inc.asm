@@ -359,42 +359,9 @@ __MSU1Found:
 
 .ENDASM
 
-
-
-; SPC700 pass-through enabling needed, source: http://board.byuu.org/viewtopic.php?p=65217#p65217
-
-	php
-	sep	#A_8BIT
-	rep	#XY_8BIT
-
-	sei								; Disable NMI & IRQ
-	stz	$4200
-
-; ---- Begin upload
-
-	ldy	#$0002
-	jsr	spc_begin_upload
-
-; ---- Upload SPC700 pass-through code
-
-	ldx	#$0000
--
-	lda.w	spccode,x
-	jsr	spc_upload_byte
-	inx
-	cpy	#41							; size of spc code
-	bne	-
-
-; ---- Execute loader
-
-	ldy	#$0002
-	jsr	spc_execute
-
 	lda	#$81							; VBlank NMI + Auto Joypad Read
 	sta	$4200							; re-enable VBlank NMI
 	cli
-
-	plp
 
 	SetCursorPos 0, 0
 	PrintString "Currently playing song #\n\n"
@@ -479,83 +446,6 @@ MSUloop2:
 	bne	-
 
 	jmp	BackTo0
-
-
-
-; -------------------------- SPC700 pass-through
-
-spc_begin_upload:
-	sty	APUIO2							; Set address
-	ldy	#$BBAA							; Wait for SPC
--	cpy	APUIO0
-	bne	-
-
-	lda	#$CC							; Send acknowledgement
-	sta	APUIO1
-	sta	APUIO0
-
--       								; Wait for acknowledgement
-	cmp	APUIO0
-	bne	-
-
-	ldy	#0							; Initialize index
-	rts
-
-
-
-spc_upload_byte:
-	sta	APUIO1
-	tya								; Signal it's ready
-	sta	APUIO0
--     									; Wait for acknowledgement
-	cmp	APUIO0
-	bne	-
-
-	iny
-	rts
-
-
-
-spc_execute:
-	sty	APUIO2
-	stz	APUIO1
-	lda	APUIO0
-	inc	a
-	inc	a
-	sta	APUIO0
-
-; Wait for acknowledgement
--	cmp	APUIO0
-	bne	-
-	rts
-
-
-
-spccode:
-	.byt $e8, $6c		; - MOV A, #$6c ; FLG register
-	.byt $c4, $f2		; MOV $f2, A
-	.byt $e8, $20		; MOV A, #$20   ; unmute, disable echo
-	.byt $c4, $f3		; MOV $f3, A
-	.byt $78, $20, $f3	; cmp	$f3, #$20
-	.byt $d0, $f3		; bne	-
-
-	.byt $e8, $2c		; - MOV A, #$2c ; Echo volume left
-	.byt $c4, $f2		; MOV $f2, A
-	.byt $e8, $00		; MOV A, #$00   ; silent
-	.byt $c4, $f3		; MOV $f3, A
-	.byt $78, $00, $f3	; cmp	$f3, #$00
-	.byt $d0, $f3		; bne	-
-
-	.byt $e8, $3c		; - MOV A, #$3c ; Echo volume right
-	.byt $c4, $f2		; MOV $f2, A
-	.byt $e8, $00		; MOV A, #$00   ; silent
-	.byt $c4, $f3		; MOV $f3, A
-	.byt $78, $00, $f3	; cmp	$f3, #$00
-	.byt $d0, $f3		; bne	-
-
-	.byt $2f, $fe		; - BRA -
-
-
 
 .ASM
 

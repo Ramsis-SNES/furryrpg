@@ -32,10 +32,6 @@
 .DEFINE LOGO_MAP		".\\gfx\\logo-gr.map"
 .DEFINE LOGO_PAL		".\\gfx\\logo-gr.pal"
 
-;.DEFINE MAINMENUBG_P		".\\gfx\\test\\menubg-party.pic"
-;.DEFINE MAINMENUBG_P_MAP	".\\gfx\\test\\menubg-party.map"
-;.DEFINE MAINMENUBG_P_PAL	".\\gfx\\test\\menubg-party.pal"
-
 .DEFINE MENU_SPRITES		".\\gfx\\menu-sprites.pic"
 .DEFINE MENU_SPRITES_PAL	".\\gfx\\menu-sprites.pal"
 
@@ -224,19 +220,6 @@ SRC_Tilemap_Area003:
 ;	.REDEFINE SkipTileNo SkipTileNo+2
 ;	.INCBIN ".\\gfx\\area-003.map" SKIP SkipTileNo READ 1		; read odd bytes
 ;.ENDR
-
-
-
-; ***************************** Menu data ******************************
-
-;GFX_MainMenuBG_Party:
-;.INCBIN MAINMENUBG_P
-
-;SRC_Tilemap_MainMenuBG_Party:
-;.INCBIN MAINMENUBG_P_MAP
-
-;SRC_Palette_MainMenuBG_Party:
-;.INCBIN MAINMENUBG_P_PAL
 
 
 

@@ -521,67 +521,6 @@ StartScreenLoop:
 
 
 
-; -------------------------- clear BG1 tilemap
-;	lda	#$80							; increment VRAM address by 1 after writing to $2119
-;	sta	REG_VMAIN
-;	ldx	#ADDR_VRAM_BG1_TILEMAP					; set VRAM address to BG1 tile map
-;	stx	REG_VMADDL
-
-;	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, $0800		; 2048 bytes (low & high tilemap byte)
-
-
-
-; -------------------------- clear BG1 tilemap buffer
-;	ldx	#(TileMapBG1 & $FFFF)
-;	stx	REG_WMADDL
-;	stz	REG_WMADDH
-
-;	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024
-
-
-
-; -------------------------- black screen BG --> HDMA buffer
-;	ldx	#(ARRAY_HDMA_BackgrPlayfield &$FFFF)
-;	stx	REG_WMADDL
-;	stz	REG_WMADDH
-
-;	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 704
-
-
-
-; -------------------------- redraw text box
-;	lda	DP_TextBoxStatus
-;	and	#%00000001						; text box already open?
-;	beq	+
-
-;	jsr	__RedrawText						; if so, simply redraw previous text
-;	bra	++
-
-;+	jsr	OpenTextBox						; otherwise, open text box normally
-
-;++
-
-
-
-; -------------------------- change char portrait
-;	lda	DP_TextBoxCharPortrait
-;	and	#%00011111
-;	cmp	#$04
-;	bcs	+
-;	inc	a
-;	sta	DP_TextBoxCharPortrait
-;+
-
-;	lda	DP_TextBoxCharPortrait
-;	and	#%00011111
-;	cmp	#$01
-;	beq	+
-;	dec	a
-;	sta	DP_TextBoxCharPortrait
-; +
-
-
-
 Forever:
 	lda	#$81
 	sta	REG_NMITIMEN						; turn on NMI

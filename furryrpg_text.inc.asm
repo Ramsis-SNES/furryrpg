@@ -91,8 +91,6 @@ OpenTextBox:
 	tsb	DP_HDMAchannels
 	lda	#%00110000						; enable IRQ at H=$4207 and V=$4209
 	tsb	DP_Shadow_NMITIMEN
-;	lda	#$08							; tell SETINI (Display Control 2) register that horizontal hi-res is used
-;	sta	REG_SETINI
 
 	WaitFrames	1
 
@@ -663,8 +661,6 @@ __ClearTextBoxMidString:
 
 	lda	#$01							; if either <> 0, set "VWF buffer full" bit
 	tsb	DP_TextBoxStatus
-
-;	WaitFrames	1						; never mind, see below
 
 ++	Accu8
 
@@ -1353,7 +1349,6 @@ __ChangeTextBoxBGDone:
 PrintF:
 	ply								; pull return address from stack, which is actually the start of our string (minus one)
 	iny								; make y = start of string
-
 	stz	strBank
 	stz	strBank+1
 	lda	#$C0							; debug menu strings are all in bank $C0
@@ -1361,9 +1356,6 @@ PrintF:
 
 PrintFStart:
 	PHP
-;	PHA
-;	PHX
-;	PHY
 
 	Accu8
 	Index16
@@ -1382,9 +1374,6 @@ NormalPrint:
 	bra	PrintFLoop
 
 PrintFDone:
-;	PLY
-;	PLX
-;	PLA
 	PLP
 	phy								; push return address (-1) onto stack
 	RTS
@@ -1475,12 +1464,10 @@ _defaultF:
 ; Modifies: P
 
 FillTextBuffer:								; expectations: A = 8 bit, X/Y = 16 bit
-;	phx
 	ldx	Cursor
 	sta	TileMapBG3, x						; write character to the BG1 text buffer
 	inx								; advance text cursor position
 	stx	Cursor
-;	plx
 	rts
 
 

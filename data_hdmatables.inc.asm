@@ -97,12 +97,6 @@ SRC_HDMA_ColMathDialogSel_End:
 
 
 SRC_HDMA_ColMathMenu:
-;	.DB 70								; for 70 scanlines (below menu frame, value to be patched in WRAM for anything below it),
-;	.DB $E0, $E0							; apply black (i.e., don't affect display)
-
-;	.DB 68								; for the menu "window",
-;	.DB $E0, %10011011						; apply blue
-
 	.DB 80								; for 80 scanlines (uppermost menu entry, value to be patched in WRAM for anything below it),
 	.DB $E0, $E0							; apply black (i.e., don't affect display)
 
@@ -281,13 +275,8 @@ SRC_HDMA_test5:
 
 ; textbox scanlines:
 
-; $AF --> scanlines above textbox
-; $30 --> textbox (with frame)
-; $01 --> 1 scanline below textbox
-
-; $B2 --> scanlines above textbox + upper frame (3 px)
-; $2A --> textbox (without frame)
-; $04 --> lower frame (3 px) + 1 scanline below textbox
+; $00-$AF --> scanlines above textbox
+; $B0-$DF --> textbox (with frame border)
 
 SRC_HDMA_ColorGradient:
 	.DB 127|$80							; 127 + 49 = 176 scanlines for playfield, continuous mode flag set
@@ -511,75 +500,6 @@ SRC_HDMA_Mode7Sky72:
 	.DW $0000,$7798
 
 SRC_HDMA_Mode7Sky72_END:
-
-
-
-SRC_HDMA_Mode7Sky56:
-	.DW $0000,$65C3
-	.DW $0000,$65C3
-	.DW $0000,$65E4
-	.DW $0000,$65E4
-	.DW $0000,$69E5
-	.DW $0000,$69E5
-	.DW $0000,$6A05
-	.DW $0000,$6A06
-	.DW $0000,$6A06
-	.DW $0000,$6A07
-	.DW $0000,$6A27
-	.DW $0000,$6A27
-	.DW $0000,$6A28
-	.DW $0000,$6A28
-	.DW $0000,$6A48
-	.DW $0000,$6A49
-	.DW $0000,$6A49
-	.DW $0000,$6A4A
-	.DW $0000,$6A6A
-	.DW $0000,$6A6A
-	.DW $0000,$6A6B
-	.DW $0000,$6E6B
-	.DW $0000,$6E8C
-	.DW $0000,$6E8C
-	.DW $0000,$6E8C
-	.DW $0000,$6E8D
-	.DW $0000,$6EAD
-	.DW $0000,$6EAD
-	.DW $0000,$6EAE
-	.DW $0000,$6EAE
-	.DW $0000,$6ECF
-	.DW $0000,$6ECF
-	.DW $0000,$6ECF
-	.DW $0000,$6ED0
-	.DW $0000,$6EF0
-	.DW $0000,$6EF1
-	.DW $0000,$72F1
-	.DW $0000,$72F1
-	.DW $0000,$7312
-	.DW $0000,$7312
-	.DW $0000,$7312
-	.DW $0000,$7313
-	.DW $0000,$7333
-	.DW $0000,$7334
-	.DW $0000,$7334
-	.DW $0000,$7354
-	.DW $0000,$7355
-	.DW $0000,$7355
-	.DW $0000,$7356
-	.DW $0000,$7356
-	.DW $0000,$7376
-	.DW $0000,$7377
-	.DW $0000,$7377
-	.DW $0000,$7777
-	.DW $0000,$7798
-	.DW $0000,$7798
-
-SRC_HDMA_Mode7Sky56_END:
-
-
-
-;SRC_HDMA_Mode7Blur:
-
-
-;SRC_HDMA_Mode7Blur_END:
 
 
 

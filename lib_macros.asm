@@ -364,15 +364,6 @@ __CheckJoypad\@:
 
 
 
-;.MACRO ClearLine
-;	clc
-;	lda.b	#\1
-;	adc.b	#minPrintY						; add Y indention
-;	jsr	PrintClearLine
-;.ENDM
-
-
-
 ;here's a macro for printing a number (a byte)
 ;
 ; ex:  PrintNum $2103 	;print value of reg $2103

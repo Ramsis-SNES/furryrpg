@@ -55,8 +55,6 @@ DebugMenu:
 	DisableIRQs
 	SetNMI	TBL_NMI_DebugMenu
 
-;	stz	REG_SETINI						; SETINI (Display Control 2): no horizontal hi-res
-
 
 
 ; -------------------------- load new NMI handler & GFX data
@@ -141,9 +139,6 @@ DebugMenu:
 ;	PrintString 3, 3, "(c) by www.ManuLoewe.de"
 
 	PrintString 7, 3, "DEBUG MENU:"
-
-;	DrawFrame 0, 9, 31, 7
-
 	PrintString 10, 3, "Alpha intro"
 	PrintString 11, 3, "Area/dialog test"
 	PrintString 12, 3, "Error test (BRK)"
@@ -483,15 +478,6 @@ WorldMode3:
 
 
 
-; -------------------------- set up BG1 tilemap buffer
-;	ldx	#(TileMapBG1 & $FFFF)
-;	stx	REG_WMADDL
-;	stz	REG_WMADDH
-
-;	DMA_CH0 $00, :SRC_Playfield_001_MAP, SRC_Playfield_001_MAP, $80, 1024
-
-
-
 ; -------------------------- load palette
 	lda	#ADDR_CGRAM_WORLDMAP
 	sta	$2121
@@ -505,7 +491,6 @@ WorldMode3:
 
 	lda	#$7C							; set BG1's Tile Map VRAM offset to $7C00 (word address)
 	sta	$2107							; and the Tile Map size to 32×32 tiles
-
 	lda	#$81							; enable NMI and auto-joypad read
 	sta	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
@@ -516,11 +501,9 @@ WorldMode3:
 ; -------------------------- set some more parameters
 	lda	#$03							; set BG Mode 3 for playfield
 	sta	REG_BGMODE
-
 	lda	#%00000001						; turn on BG1 only
 	sta	REG_TM							; on the mainscreen
 	sta	REG_TS							; and on the subscreen
-
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
 	jsr	EffectHSplitIn
@@ -530,7 +513,6 @@ WorldMode3:
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
 	jsr	EffectHSplitOut2
-
 	ldx	#(TileMapBG3 & $FFFF)					; clear text
 	stx	REG_WMADDL
 	stz	REG_WMADDH

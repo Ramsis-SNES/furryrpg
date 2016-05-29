@@ -341,7 +341,6 @@
 	DP_Char1FrameCounter	db
 	DP_Char1PosYX		dw					; high byte = Y position, low byte = X position
 	DP_Char1SpriteStatus	db					; irrrrddd [i = not walking (idle), ddd = walking direction (0 = down, 1 = up, 2 = left, 3 = right)]
-;	DP_Char1SpriteStatus	dw					; irrrrfffrrrrrddd [i = not walking (idle), fff = frame no., ddd = direction (0 = down, 1 = up, 2 = left)]
 	DP_Char1WalkingSpd	dw
 
 	DP_DMAUpdates		dw					; rrrrrrrrdcba4321 [1234 = BG no. that needs to have its lower tilemap updated on next Vblank, abcd = same thing for upper tilemaps, r = reserved]
@@ -508,7 +507,6 @@
 
 	ARRAY_VWFTileBuffer		dsb 32
 	ARRAY_VWFTileBuffer2		dsb 32
-;	ARRAY_VWFTileBuffer3		dsb 64
 
 	ARRAY_HDMA_ColorMath		dsb 96
 
@@ -516,11 +514,6 @@
 	ARRAY_HDMA_M7B			dsb 448
 	ARRAY_HDMA_M7C			dsb 448
 	ARRAY_HDMA_M7D			dsb 448
-
-;	ARRAY_HDMA_M7A2			dsb 448
-;	ARRAY_HDMA_M7B2			dsb 448
-;	ARRAY_HDMA_M7C2			dsb 448
-;	ARRAY_HDMA_M7D2			dsb 448
 
 	ARRAY_HDMA_MainEffects		dsb 224
 	ARRAY_HDMA_BGScroll		dsb 16

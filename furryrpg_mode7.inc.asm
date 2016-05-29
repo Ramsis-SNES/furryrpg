@@ -116,15 +116,7 @@ TestMode7:
 
 
 
-; -------------------------- clear char sprite
-;	ldx	#0
-;-	stz	SpriteBuf1.PlayableChar, x
-;	inx
-;	inx
-;	cpx	#24
-;	bne	-
-
-	jsr	SpriteInit
+	jsr	SpriteInit						; purge OAM
 
 
 
@@ -202,10 +194,6 @@ TestMode7:
 	sta	DP_Shadow_TSTM
 
 	Accu8
-
-;	stz	$2121
-;	stz	$2122
-;	stz	$2122
 
 	lda	#$E0							; subscreen backdrop color
 	sta	$2132

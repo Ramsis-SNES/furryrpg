@@ -58,11 +58,6 @@ MainMenu:
 MainMenuLoop:
 	WaitFrames	1
 
-;	SetTextPos 2, 25
-;	PrintHexNum DP_GameTime_Hours
-;	PrintString 2, 27, ":"
-;	PrintHexNum DP_GameTime_Minutes
-
 
 
 ; -------------------------- check for dpad up
@@ -76,7 +71,6 @@ MainMenuLoop:
 	sec
 	sbc	#8
 	sta	ARRAY_HDMA_ColorMath+0
-
 	bra	++
 
 +	lda	#120
@@ -97,7 +91,6 @@ MainMenuLoop:
 	clc
 	adc	#8
 	sta	ARRAY_HDMA_ColorMath+0
-
 	bra	++
 
 +	lda	#80
@@ -113,27 +106,21 @@ MainMenuLoop:
 	beq	++
 
 	lda	#%00000100						; mosaic on BG3
-
 -	sta	$2106
-
 	wai
-
 	clc
 	adc	#$10
 	cmp	#$64
 	bne	-
 
 -	sta	$2106
-
 	wai
-
 	sec
 	sbc	#$10
 	cmp	#$04
 	bne	-
 
 	stz	$2106
-
 /*	lda	ARRAY_HDMA_ColorMath+0
 	cmp	#80
 	bne	+
@@ -148,17 +135,14 @@ MainMenuLoop:
 
 +	cmp	#88
 	bne	+
-
 	jmp	PartyMenu
 
 +	cmp	#96
 	bne	+
-
 	jmp	WorldMode3
 
 +	cmp	#104
 	bne	+
-
 	jmp	TestMode7
 
 +	jmp	MusicTest						; else, selection bar must be on the bottom
@@ -188,7 +172,6 @@ MainMenuLoop:
 	lda	#%00110000						; disable color math
 	sta	$2130
 	stz	$2125							; disable color math window
-
 	lda	#%00001000						; disable HDMA channel 3 (color math)
 	trb	DP_HDMAchannels
 
@@ -224,7 +207,6 @@ InGameMenu:
 	lda	#$80							; enter forced blank
 	sta	REG_INIDISP
 	stz	DP_HDMAchannels						; disable HDMA
-
 	wai								; wait
 
 	DisableIRQs
@@ -343,7 +325,6 @@ InGameMenu:
 	stz	$2130							; clear color math disable bits
 	lda	#%00100001						; enable color math on BG1 + backdrop
 	sta	$2131
-
 	lda	#%00001000						; enable HDMA channels 3 (color math)
 	tsb	DP_HDMAchannels
 
@@ -791,8 +772,6 @@ CalcRingMenuItemPos:
 
 
 LoadMenuCharPortraits:
-;	rep	#A_8BIT							; A = 16 bit
-
 	ldx	#$01C0
 	lda	#$02
 -	sta	TileMapBG1, x
@@ -847,7 +826,6 @@ LoadMenuCharPortraits:
 	cmp	#$5C
 	bne	-
 
-;	sep	#A_8BIT							; A = 8 bit
 	rts
 
 .ASM
