@@ -77,12 +77,12 @@ DebugMenu:
 
 	DMA_CH0 $01, :GFX_Sprites_Smallfont, GFX_Sprites_Smallfont, $18, 4096
 
-	stz	$2121							; reset CGRAM address
+	stz	REG_CGADD						; reset CGRAM address
 
 	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
 
 	lda	#$80							; set CGRAM address to #256 (word address) for sprites
-	sta	$2121
+	sta	REG_CGADD
 
 	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
 
@@ -112,16 +112,16 @@ DebugMenu:
 
 ; -------------------------- update registers in case they've been messed with
 	lda	#$48|$01						; BG3 tile map VRAM offset: $4800, Tile Map size: 64×32 tiles
-	sta	$2109
+	sta	REG_BG3SC
 	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
-	sta	$210C
+	sta	REG_BG34NBA
 	lda	#$01							; set BG Mode 1
 	sta	REG_BGMODE
 
-	stz	$2121							; reset CGRAM address
-	stz	$2122							; $1C00 = dark blue as background color
+	stz	REG_CGADD						; reset CGRAM address
+	stz	REG_CGDATA						; $1C00 = dark blue as background color
 	lda	#$1C
-	sta	$2122
+	sta	REG_CGDATA
 
 
 
@@ -390,12 +390,12 @@ __MSCTestLoop:
 
 	ldx	temp
 	lda.l	SRC_Mode7Sin, x
-	sta	$211B
-	stz	$211B
+	sta	REG_M7A
+	stz	REG_M7A
 	lda	temp+2							; radius
-	sta	$211C
+	sta	REG_M7B
 
-	lda	$2135
+	lda	REG_MPYM
 	clc
 	adc	#128
 	sta	SpriteBuf1.Text						; X
@@ -411,12 +411,12 @@ __MSCTestLoop:
 
 +	ldx	temp
 	lda.l	SRC_Mode7Cos, x
-	sta	$211B
-	stz	$211B
+	sta	REG_M7A
+	stz	REG_M7A
 	lda	temp+2							; radius
-	sta	$211C
+	sta	REG_M7B
 
-	lda	$2135
+	lda	REG_MPYM
 	clc
 	adc	#112
 	sta	SpriteBuf1.Text+1					; Y
@@ -480,7 +480,7 @@ WorldMode3:
 
 ; -------------------------- load palette
 	lda	#ADDR_CGRAM_WORLDMAP
-	sta	$2121
+	sta	REG_CGADD
 
 	DMA_CH0 $02, :SRC_Palette_Playfield_001, SRC_Palette_Playfield_001, $22, 224	; 112 colors
 
@@ -490,7 +490,7 @@ WorldMode3:
 	SetNMI	TBL_NMI_Playfield
 
 	lda	#$7C							; set BG1's Tile Map VRAM offset to $7C00 (word address)
-	sta	$2107							; and the Tile Map size to 32×32 tiles
+	sta	REG_BG1SC						; and the Tile Map size to 32×32 tiles
 	lda	#$81							; enable NMI and auto-joypad read
 	sta	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN

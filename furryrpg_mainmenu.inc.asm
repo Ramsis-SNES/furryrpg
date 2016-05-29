@@ -33,15 +33,15 @@ MainMenu:
 	bne	-
 
 	lda	#%00010000						; set color math enable bits (4-5) to "MathWindow"
-	sta	$2130
+	sta	REG_CGWSEL
 	lda	#%00010111						; enable color math on BG1/2/3 + sprites
-	sta	$2131
+	sta	REG_CGADSUB
 	lda	#86							; color "window" left pos
-	sta	$2126
+	sta	REG_WH0
 	lda	#169							; color "window" right pos
-	sta	$2127
+	sta	REG_WH1
 	lda	#%00100000						; color math window 1 area = outside (why does this work??)
-	sta	$2125
+	sta	REG_WOBJSEL
 
 	lda	#%00001000						; enable HDMA channel 3 (color math)
 	tsb	DP_HDMAchannels
@@ -106,21 +106,21 @@ MainMenuLoop:
 	beq	++
 
 	lda	#%00000100						; mosaic on BG3
--	sta	$2106
+-	sta	REG_MOSAIC
 	wai
 	clc
 	adc	#$10
 	cmp	#$64
 	bne	-
 
--	sta	$2106
+-	sta	REG_MOSAIC
 	wai
 	sec
 	sbc	#$10
 	cmp	#$04
 	bne	-
 
-	stz	$2106
+	stz	REG_MOSAIC
 /*	lda	ARRAY_HDMA_ColorMath+0
 	cmp	#80
 	bne	+
@@ -170,8 +170,8 @@ MainMenuLoop:
 
 
 	lda	#%00110000						; disable color math
-	sta	$2130
-	stz	$2125							; disable color math window
+	sta	REG_CGWSEL
+	stz	REG_WOBJSEL						; disable color math window
 	lda	#%00001000						; disable HDMA channel 3 (color math)
 	trb	DP_HDMAchannels
 
@@ -266,12 +266,12 @@ InGameMenu:
 
 
 ; -------------------------- palettes --> CGRAM
-	stz	$2121							; reset CGRAM address
+	stz	REG_CGADD						; reset CGRAM address
 
 	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
 
 	lda	#ADDR_CGRAM_AREA					; set CGRAM address for BG1 tiles palette
-	sta	$2121
+	sta	REG_CGADD
 
 	DMA_CH0 $02, :SRC_Palette_Logo, SRC_Palette_Logo, $22, 32
 
@@ -285,7 +285,7 @@ InGameMenu:
 	bne	-
 
 	lda	#$80							; set CGRAM address to #256 (word address) for sprites
-	sta	$2121
+	sta	REG_CGADD
 
 	DMA_CH0 $02, :SRC_Palette_Sprites_InGameMenu, SRC_Palette_Sprites_InGameMenu, $22, 32
 
@@ -305,7 +305,7 @@ InGameMenu:
 
 ; -------------------------- set up menu BG color & misc. screen registers
 	lda	#%01100011						; 16×16 (small) / 32×32 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
-	sta	$2101
+	sta	REG_OBSEL
 
 	Accu16
 
@@ -322,9 +322,9 @@ InGameMenu:
 	cpx	#SRC_HDMA_ColMathMainMenu_End-SRC_HDMA_ColMathMainMenu
 	bne	-
 
-	stz	$2130							; clear color math disable bits
+	stz	REG_CGWSEL						; clear color math disable bits
 	lda	#%00100001						; enable color math on BG1 + backdrop
-	sta	$2131
+	sta	REG_CGADSUB
 	lda	#%00001000						; enable HDMA channels 3 (color math)
 	tsb	DP_HDMAchannels
 
@@ -613,11 +613,11 @@ CalcRingMenuItemPos:
 
 	ldx	DP_RingMenuAngleOffset
 	lda.l	SRC_Mode7Sin, x
-	sta	$211B
-	stz	$211B
+	sta	REG_M7A
+	stz	REG_M7A
 	lda	#PARAM_RingMenuRadius
-	sta	$211C
-	lda	$2135
+	sta	REG_M7B
+	lda	REG_MPYM
 	clc
 	adc	#PARAM_RingMenuCenterX-16				; subtract half of sprite width (as above)
 	pha
@@ -635,11 +635,11 @@ CalcRingMenuItemPos:
 
 	ldx	DP_RingMenuAngleOffset
 	lda.l	SRC_Mode7Cos, x
-	sta	$211B
-	stz	$211B
+	sta	REG_M7A
+	stz	REG_M7A
 	lda	#PARAM_RingMenuRadius
-	sta	$211C
-	lda	$2135
+	sta	REG_M7B
+	lda	REG_MPYM
 	clc
 	adc	#PARAM_RingMenuCenterY-(PARAM_RingMenuRadius/2)		; subtract radius/2 (as above)
 	pha
@@ -728,8 +728,8 @@ CalcRingMenuItemPos:
 	sta	DP_HDMAchannels
 
 	lda	#$28							; H-IRQ setup: dot number for interrupt
-	sta	$4207							; set low byte of H-timer
-	stz	$4208							; set high byte of H-timer
+	sta	REG_HTIMEL						; set low byte of H-timer
+	stz	REG_HTIMEH						; set high byte of H-timer
 
 	lda	#$91							; enable H-IRQ, NMI, and auto-joypad read
 	sta	DP_Shadow_NMITIMEN
@@ -765,7 +765,7 @@ CalcRingMenuItemPos:
 	sta	TileMapBG2 + 197
 
 ;	lda	#$20							; set BG1's Character VRAM offset to $0000 (word address)
-;	sta	$210B							; and BG2's Character VRAM offset to $2000 (word address)
+;	sta	REG_BG12NBA						; and BG2's Character VRAM offset to $2000 (word address)
 
 	jml	DebugMenu
 

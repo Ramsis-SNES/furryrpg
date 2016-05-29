@@ -54,9 +54,9 @@ __TextBoxVblankDone:
 
 	lda	DP_Char1SpriteStatus
 	and	#%00000111						; isolate direction parameter
-	sta	$4202
+	sta	REG_WRMPYA
 	lda	#$08							; multiply direction with #$0800 (2048) to get offset for upcoming DMA
-	sta	$4203
+	sta	REG_WRMPYB
 	nop
 	nop
 	nop
@@ -64,7 +64,7 @@ __TextBoxVblankDone:
 
 	Accu16
 
-	lda	$4216
+	lda	REG_RDMPYL
 	xba
 	clc
 	adc	#(GFX_Spritesheet_Char1 & $FFFF)
@@ -146,8 +146,8 @@ __Char1WalkingDone:
 
 
 ; -------------------------- refresh sprites
-	stz	$2102							; reset OAM address
-	stz	$2103
+	stz	REG_OAMADDL						; reset OAM address
+	stz	REG_OAMADDH
 
 	DMA_CH0 $00, $7E, SpriteBuf1, $04, 544
 
@@ -161,9 +161,9 @@ __SkipRefreshes3:
 	lda	#$01|$08						; set BG Mode 1 for area, BG3 priority
 	sta	REG_BGMODE
 	lda	#$50|$01						; BG1 tile map VRAM offset: $5000, Tile Map size: 64×32 tiles
-	sta	$2107
+	sta	REG_BG1SC
 	lda	#$58|$01						; BG2 tile map VRAM offset: $5800, Tile Map size: 64×32 tiles
-	sta	$2108
+	sta	REG_BG2SC
 
 	Accu16
 
@@ -182,24 +182,24 @@ __SkipRefreshes3:
 	jsr	GetInput
 
 	lda	ARRAY_HDMA_BGScroll+1					; BG1 horizontal scroll
-	sta	$210D
+	sta	REG_BG1HOFS
 	lda	ARRAY_HDMA_BGScroll+2
-	sta	$210D
+	sta	REG_BG1HOFS
 	lda	ARRAY_HDMA_BGScroll+1					; BG2 horizontal scroll
-	sta	$210F
+	sta	REG_BG2HOFS
 	lda	ARRAY_HDMA_BGScroll+2
-	sta	$210F
+	sta	REG_BG2HOFS
 	lda	ARRAY_HDMA_BGScroll+3					; BG1 vertical scroll
-	sta	$210E
+	sta	REG_BG1VOFS
 	lda	ARRAY_HDMA_BGScroll+4
-	sta	$210E
+	sta	REG_BG1VOFS
 	lda	ARRAY_HDMA_BGScroll+3					; BG2 vertical scroll
-	sta	$2110
+	sta	REG_BG2VOFS
 	lda	ARRAY_HDMA_BGScroll+4
-	sta	$2110
+	sta	REG_BG2VOFS
 	lda	#$FF							; fixed BG3 vertical scroll = -1
-	sta	$2112
-	stz	$2112
+	sta	REG_BG3VOFS
+	stz	REG_BG3VOFS
 
 	lda	DP_HDMAchannels						; initiate HDMA transfers
 	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
@@ -231,8 +231,8 @@ Vblank_DebugMenu:
 
 
 ; -------------------------- refresh sprites
-	stz	$2102							; reset OAM address
-	stz	$2103
+	stz	REG_OAMADDL						; reset OAM address
+	stz	REG_OAMADDH
 
 	DMA_CH0 $00, $7E, SpriteBuf1, $04, 544
 
@@ -270,8 +270,8 @@ Vblank_Mode7:
 
 
 ; -------------------------- refresh sprites
-	stz	$2102							; set OAM address to 0
-	stz	$2103
+	stz	REG_OAMADDL						; set OAM address to 0
+	stz	REG_OAMADDH
 
 	DMA_CH0 $00, $7E, SpriteBuf1, $04, 544
 
@@ -287,9 +287,9 @@ Vblank_Mode7:
 
 	Accu8
 
-	sta	$210D							; BG1HOFS/M7HOFS
+	sta	REG_BG1HOFS						; BG1HOFS/M7HOFS
 	xba
-	sta	$210D
+	sta	REG_BG1HOFS
 
 	Accu16
 
@@ -300,9 +300,9 @@ Vblank_Mode7:
 
 	Accu8
 
-	sta	$210E							; BG1VOFS/M7VOFS
+	sta	REG_BG1VOFS						; BG1VOFS/M7VOFS
 	xba
-	sta	$210E
+	sta	REG_BG1VOFS
 
 	Accu16
 
@@ -313,9 +313,9 @@ Vblank_Mode7:
 
 	Accu8
 
-	sta	$211F							; Mode 7 center position X register (low)
+	sta	REG_M7X							; Mode 7 center position X register (low)
 	xba
-	sta	$211F							; Mode 7 center position X register (high)
+	sta	REG_M7X							; Mode 7 center position X register (high)
 
 	Accu16
 
@@ -326,21 +326,21 @@ Vblank_Mode7:
 
 	Accu8
 
-	sta	$2120							; Mode 7 center position Y register (low)
+	sta	REG_M7Y							; Mode 7 center position Y register (low)
 	xba
-	sta	$2120							; Mode 7 center position Y register (high)
+	sta	REG_M7Y							; Mode 7 center position Y register (high)
 
 ; calculate table index based on altitude
 	lda	#$C0							; $1C0 = 224*2 scanlines
-	sta	$211B
+	sta	REG_M7A
 	lda	#$01
-	sta	$211B
+	sta	REG_M7A
 	lda	DP_Mode7_Altitude
-	sta	$211C
+	sta	REG_M7B
 
 	Accu16
 
-	lda	$2134
+	lda	REG_MPYL
 	sta	DP_Mode7_AltTabOffset
 	lda	#(SRC_Mode7Scaling & $FFFF)
 	clc
@@ -394,8 +394,8 @@ Vblank_Playfield:
 
 
 ; -------------------------- refresh sprites
-;	stz	$2102							; reset OAM address
-;	stz	$2103
+;	stz	REG_OAMADDL						; reset OAM address
+;	stz	REG_OAMADDH
 
 ;	DMA_CH0 $00, $7E, SpriteBuf1, $04, 544
 
@@ -452,11 +452,11 @@ Vblank_Error:
 ; -------------------------- misc. tasks
 	jsr	GetInput
 
-	stz	$2111							; reset BG3 horizontal scroll
-	stz	$2111
+	stz	REG_BG3HOFS						; reset BG3 horizontal scroll
+	stz	REG_BG3HOFS
 	lda	#$FF							; set BG3 vertical scroll = -1
-	sta	$2112
-	stz	$2112
+	sta	REG_BG3VOFS
+	stz	REG_BG3VOFS
 
 	stz	REG_HDMAEN						; disable HDMA
 	lda	REG_RDNMI						; acknowledge NMI
@@ -482,8 +482,8 @@ Vblank_Intro:
 
 
 ; -------------------------- refresh sprites
-;	stz	$2102							; reset OAM address
-;	stz	$2103
+;	stz	REG_OAMADDL						; reset OAM address
+;	stz	REG_OAMADDH
 
 ;	DMA_CH0 $00, $7E, SpriteBuf1, $04, 544
 
@@ -550,9 +550,9 @@ VIRQ_Area:
 	lda	#$05							; switch to BG Mode 5 for text box
 	sta	REG_BGMODE
 	lda	#$78							; BG1 tile map VRAM offset: $7800, Tile Map size: 32×32 tiles
-	sta	$2107
+	sta	REG_BG1SC
 	lda	#$7C							; BG2 tile map VRAM offset: $7C00, Tile Map size: 32×32 tiles
-	sta	$2108
+	sta	REG_BG2SC
 
 	Accu16
 
@@ -750,7 +750,7 @@ UpdateCharPortrait:
 	bne	+
 
 	lda	#ADDR_CGRAM_PORTRAIT					; set CGRAM address for character portrait, zero out palette
-	sta	$2121
+	sta	REG_CGADD
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $22, 32
 
@@ -762,7 +762,7 @@ UpdateCharPortrait:
 	DMA_CH0 $01, :GFX_Portrait_Char1, GFX_Portrait_Char1, $18, 1920
 
 	lda	#ADDR_CGRAM_PORTRAIT					; set CGRAM address for character portrait
-	sta	$2121
+	sta	REG_CGADD
 
 	DMA_CH0 $02, :SRC_Palette_Portrait_Char1, SRC_Palette_Portrait_Char1, $22, 32
 
@@ -774,7 +774,7 @@ UpdateCharPortrait:
 	DMA_CH0 $01, :GFX_Portrait_Char2, GFX_Portrait_Char2, $18, 1920
 
 	lda	#ADDR_CGRAM_PORTRAIT					; set CGRAM address for character portrait
-	sta	$2121
+	sta	REG_CGADD
 
 	DMA_CH0 $02, :SRC_Palette_Portrait_Char2, SRC_Palette_Portrait_Char2, $22, 32
 
@@ -786,7 +786,7 @@ UpdateCharPortrait:
 	DMA_CH0 $01, :GFX_Portrait_Char3, GFX_Portrait_Char3, $18, 1920
 
 	lda	#ADDR_CGRAM_PORTRAIT					; set CGRAM address for character portrait
-	sta	$2121
+	sta	REG_CGADD
 
 	DMA_CH0 $02, :SRC_Palette_Portrait_Char3, SRC_Palette_Portrait_Char3, $22, 32
 
@@ -798,7 +798,7 @@ UpdateCharPortrait:
 	DMA_CH0 $01, :GFX_Portrait_Char4, GFX_Portrait_Char4, $18, 1920
 
 	lda	#ADDR_CGRAM_PORTRAIT					; set CGRAM address for character portrait
-	sta	$2121
+	sta	REG_CGADD
 
 	DMA_CH0 $02, :SRC_Palette_Portrait_Char4, SRC_Palette_Portrait_Char4, $22, 32
 
@@ -909,15 +909,14 @@ ErrorHandlerBRK:
 
 
 ; -------------------------- font palette --> CGRAM
-	stz	$2121							; reset CGRAM address
-
-	stz	$2122							; set mainscreen bg color: blue
+	stz	REG_CGADD						; reset CGRAM address
+	stz	REG_CGDATA						; set mainscreen bg color: blue
 	lda	#$70
-	sta	$2122
+	sta	REG_CGDATA
 
 	ldx	#2							; skip original bg color
 -	lda.l	SRC_Palettes_Text, x					; copy remaining 3 colors
-	sta	$2122
+	sta	REG_CGDATA
 	inx
 	cpx	#8
 	bne	-
@@ -929,9 +928,9 @@ ErrorHandlerBRK:
 	sta	REG_BGMODE
 
 	lda	#$48							; BG3 tile map VRAM offset: $4800, Tile Map size: 32×32 tiles
-	sta	$2109
+	sta	REG_BG3SC
 	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
-	sta	$210C
+	sta	REG_BG34NBA
 	lda	#%00000100						; turn on BG3 only
 	sta	REG_TM							; on the mainscreen
 	sta	REG_TS							; and on the subscreen
@@ -1051,14 +1050,14 @@ ErrorHandlerCOP:
 
 
 ; -------------------------- font palette --> CGRAM
-	stz	$2121							; reset CGRAM address
+	stz	REG_CGADD						; reset CGRAM address
 	lda	#$1C							; set mainscreen bg color: red
-	sta	$2122
-	stz	$2122
+	sta	REG_CGDATA
+	stz	REG_CGDATA
 
 	ldx	#2							; skip original bg color
 -	lda.l	SRC_Palettes_Text, x					; copy remaining 3 colors
-	sta	$2122
+	sta	REG_CGDATA
 	inx
 	cpx	#8
 	bne	-
@@ -1070,9 +1069,9 @@ ErrorHandlerCOP:
 	sta	REG_BGMODE
 
 	lda	#$48							; BG3 tile map VRAM offset: $4800, Tile Map size: 32×32 tiles
-	sta	$2109
+	sta	REG_BG3SC
 	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
-	sta	$210C
+	sta	REG_BG34NBA
 	lda	#%00000100						; turn on BG3 only
 	sta	REG_TM							; on the mainscreen
 	sta	REG_TS							; and on the subscreen

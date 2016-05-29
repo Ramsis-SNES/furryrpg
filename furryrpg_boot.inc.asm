@@ -218,12 +218,12 @@ Boot:
 
 	DMA_CH0 $01, :GFX_Sprites_Smallfont, GFX_Sprites_Smallfont, $18, 4096
 
-	stz	$2121							; reset CGRAM address
+	stz	REG_CGADD						; reset CGRAM address
 
 	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
 
 	lda	#$80							; set CGRAM address to #256 (word address) for sprites
-	sta	$2121
+	sta	REG_CGADD
 
 	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
 
@@ -231,11 +231,11 @@ Boot:
 
 ; -------------------------- set screen regs
 	lda	#%00000011						; 8×8 (small) / 16×16 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
-	sta	$2101
+	sta	REG_OBSEL
 	lda	#$48|$01						; BG3 tile map VRAM offset: $4800, Tile Map size: 64×32 tiles
-	sta	$2109
+	sta	REG_BG3SC
 	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
-	sta	$210C
+	sta	REG_BG34NBA
 	lda	#$01							; set BG mode 1
 	sta	REG_BGMODE
 
@@ -270,14 +270,14 @@ AlphaIntro:
 	lda	#$03							; set BG Mode 3
 	sta	REG_BGMODE
 	lda	#$50							; set BG1's Tile Map VRAM offset to $5000 (word address)
-	sta	$2107							; and the Tile Map size to 32×32 tiles
+	sta	REG_BG1SC						; and the Tile Map size to 32×32 tiles
 	lda	#$20							; set BG1's Character VRAM offset to $0000 (word address)
-	sta	$210B							; (ignore BG2 bits)
-	stz	$210D							; reset BG1 horizontal scroll
-	stz	$210D
+	sta	REG_BG12NBA						; (ignore BG2 bits)
+	stz	REG_BG1HOFS						; reset BG1 horizontal scroll
+	stz	REG_BG1HOFS
 	lda	#$FF							; set BG1 vertical scroll = -1 (reminder: 0 would mean 1st scanline invisible!)
-	sta	$210E
-	stz	$210E
+	sta	REG_BG1VOFS
+	stz	REG_BG1VOFS
 
 	Accu16
 
@@ -299,7 +299,7 @@ AlphaIntro:
 	jsl	PlayTrack
 
 ;StartScreenProc:
-	stz	$2121							; reset CGRAM address
+	stz	REG_CGADD						; reset CGRAM address
 
 	DMA_CH0 $02, :SRC_RamsisPal, SRC_RamsisPal, $22, 512
 
@@ -340,7 +340,7 @@ AlphaIntro:
 
 	WaitFrames	10
 
-	stz	$2121							; reset CGRAM address
+	stz	REG_CGADD						; reset CGRAM address
 
 	DMA_CH0 $02, :SRC_RamsisPresentsPal, SRC_RamsisPresentsPal, $22, 512
 
@@ -381,7 +381,7 @@ AlphaIntro:
 
 	WaitFrames	10
 
-	stz	$2121							; reset CGRAM address
+	stz	REG_CGADD						; reset CGRAM address
 
 	DMA_CH0 $02, :SRC_StartPal, SRC_StartPal, $22, 512
 
@@ -422,7 +422,7 @@ AlphaIntro:
 
 	WaitFrames	10
 
-	stz	$2121							; reset CGRAM address
+	stz	REG_CGADD						; reset CGRAM address
 
 	DMA_CH0 $02, :SRC_SoundEnginesPal, SRC_SoundEnginesPal, $22, 512
 
@@ -532,11 +532,11 @@ Forever:
 ; ************************* Testing functions **************************
 
 VerifyROMIntegrity:
-	stz	$2121							; reset CGRAM address for mainscreen BG color
+	stz	REG_CGADD						; reset CGRAM address for mainscreen BG color
 	lda	#$7E							; $077E = bright yellow
-	sta	$2122
+	sta	REG_CGDATA
 	lda	#$07
-	sta	$2122
+	sta	REG_CGDATA
 
 	PrintString 2, 3, "ROM integrity check"
 	PrintString 3, 3, "-------------------"
@@ -632,11 +632,11 @@ VerifyROMIntegrity:
 
 	Accu8
 
-	stz	$2121							; reset CGRAM address
+	stz	REG_CGADD						; reset CGRAM address
 	lda	#$E4							; $131A = light green
-	sta	$2122
+	sta	REG_CGDATA
 	lda	#$13
-	sta	$2122
+	sta	REG_CGDATA
 
 	PrintString 11, 3, "ROM integrity check passed!"
 	PrintString 12, 3, "Press any button ..."
@@ -656,10 +656,10 @@ VerifyROMIntegrity:
 __ROMIntegrityBad:
 	Accu8
 
-	stz	$2121							; reset CGRAM address
+	stz	REG_CGADD						; reset CGRAM address
 	lda	#$1C							; $001C = red
-	sta	$2122
-	stz	$2122
+	sta	REG_CGDATA
+	stz	REG_CGDATA
 
 	PrintString 11, 3, "Corrupt ROM, unable to"
 	PrintString 12, 3, "continue!"

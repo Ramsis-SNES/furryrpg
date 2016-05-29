@@ -80,7 +80,7 @@ TestMode7:
 
 
 ; -------------------------- load Mode 7 palette
-	stz	$2121							; start at color 0
+	stz	REG_CGADD						; start at color 0
 
 	DMA_CH0 $02, :SRC_Sommappal, SRC_Sommappal, $22, 512
 ;	DMA_CH0 $02, :SRC_Mappal, SRC_Mappal, $22, $0200
@@ -130,7 +130,7 @@ TestMode7:
 	DMA_CH0 $01, :GFX_Sprites_Clouds, GFX_Sprites_Clouds, $18, 2048
 
 	lda	#$A0							; start at 3rd sprite color
-	sta	$2121
+	sta	REG_CGADD
 
 	DMA_CH0 $02, :SRC_Palette_Clouds, SRC_Palette_Clouds, $22, 32
 
@@ -196,12 +196,12 @@ TestMode7:
 	Accu8
 
 	lda	#$E0							; subscreen backdrop color
-	sta	$2132
-	sta	$2132
+	sta	REG_COLDATA
+	sta	REG_COLDATA
 	lda	#%0000010						; enable BGs/OBJs on subscreen
-	sta	$2130
+	sta	REG_CGWSEL
 	lda	#%01000001						; enable color math on BG1, add subscreen and div by 2
-	sta	$2131
+	sta	REG_CGADSUB
 
 .ASM
 
@@ -225,9 +225,9 @@ TestMode7:
 	bne	-
 
 	lda	#%00000000						; clear color math disable bits (4-5)
-	sta	$2130
+	sta	REG_CGWSEL
 	lda	#%00110111						; enable color math on BG1/2/3 + sprites + backdrop
-	sta	$2131
+	sta	REG_CGADSUB
 
 
 
@@ -237,9 +237,9 @@ TestMode7:
 	Accu16
 
 	lda	#220							; dot number for interrupt (256 = too late, 204 = too early)
-	sta	$4207
+	sta	REG_HTIMEL
 	lda	#PARAM_MODE7_SKY_LINES					; scanline number for interrupt
-	sta	$4209
+	sta	REG_VTIMEL
 
 	Accu8
 
@@ -247,7 +247,7 @@ TestMode7:
 
 	lda	REG_RDNMI						; clear NMI flag, this is necessary to prevent occasional graphics glitches (see Fullsnes, 4210h/RDNMI)
 
-	lda	#%10110001						; enable NMI, auto-joypad read, and IRQ at H=$4207 and V=$4209
+	lda	#%10110001						; enable NMI, auto-joypad read, and IRQ at H=HTIMEL and V=VTIMEL
 	sta	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
 	cli
@@ -605,7 +605,7 @@ CalcMode7Matrix:
 -	stz	temp+6
 	txy
 	lda	[DP_Mode7_AltTabOffset], y
-	sta	$4202
+	sta	REG_WRMPYA
 	phx
 
 	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the cos table
@@ -620,13 +620,13 @@ CalcMode7Matrix:
 	sta	temp+6
 
 	pla
-+	sta	$4203
++	sta	REG_WRMPYB
 
 	plx								; 5 cycles
 
 	Accu16								; 3
 
-	lda	$4216							; 3 // store interim result 1
+	lda	REG_RDMPYL						; 3 // store interim result 1
 	sta	temp
 
 	Accu8
@@ -634,7 +634,7 @@ CalcMode7Matrix:
 ; 8×8 multiplication for upper 8 bits of multiplicand
 	iny
 	lda	[DP_Mode7_AltTabOffset], y
-	sta	$4202
+	sta	REG_WRMPYA
 	phx
 
 	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the cos table
@@ -643,13 +643,13 @@ CalcMode7Matrix:
 
 	eor	#$FF							; make multiplier positive
 	inc	a
-+	sta	$4203
++	sta	REG_WRMPYB
 
 	plx								; 5 cycles
 
 	Accu16								; 3
 
-	lda	$4216							; 3 // store interim result 2
+	lda	REG_RDMPYL						; 3 // store interim result 2
 	sta	temp+3
 
 	Accu8
@@ -690,7 +690,7 @@ CalcMode7Matrix:
 -	stz	temp+6
 	txy
 	lda	[DP_Mode7_AltTabOffset], y
-	sta	$4202
+	sta	REG_WRMPYA
 	phx
 
 	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the sin table
@@ -704,13 +704,13 @@ CalcMode7Matrix:
 	lda	#$01							; remember that multplier has wrong sign
 	sta	temp+6
 	pla
-+	sta	$4203
++	sta	REG_WRMPYB
 
 	plx								; 5 cycles
 
 	Accu16								; 3
 
-	lda	$4216							; 3 // store interim result 1
+	lda	REG_RDMPYL						; 3 // store interim result 1
 	sta	temp
 
 	Accu8
@@ -718,7 +718,7 @@ CalcMode7Matrix:
 ; 8×8 multiplication for upper 8 bits of multiplicand
 	iny
 	lda	[DP_Mode7_AltTabOffset], y
-	sta	$4202
+	sta	REG_WRMPYA
 	phx
 
 	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the sin table
@@ -727,13 +727,13 @@ CalcMode7Matrix:
 
 	eor	#$FF							; make multiplier positive
 	inc	a
-+	sta	$4203
++	sta	REG_WRMPYB
 
 	plx								; 5 cycles
 
 	Accu16								; 3
 
-	lda	$4216							; 3 // store interim result 2
+	lda	REG_RDMPYL						; 3 // store interim result 2
 	sta	temp+3
 
 	Accu8
@@ -1334,7 +1334,7 @@ ResetMode7Matrix:
 	lda	#64
 	sta	DP_Mode7_Altitude
 	stz	DP_Mode7_RotAngle
-	stz	$211A							; M7SEL: no flipping, Screen Over = wrap
+	stz	REG_M7SEL						; M7SEL: no flipping, Screen Over = wrap
 	rts
 
 

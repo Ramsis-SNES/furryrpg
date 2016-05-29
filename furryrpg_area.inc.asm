@@ -102,18 +102,18 @@ AreaEnter:
 
 
 ; -------------------------- palettes --> CGRAM
-	stz	$2121							; reset CGRAM address
+	stz	REG_CGADD						; reset CGRAM address
 
 	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
 
 	lda	#ADDR_CGRAM_AREA					; set CGRAM address for BG1 tiles palette
-	sta	$2121
+	sta	REG_CGADD
 
 ;	DMA_CH0 $02, :SRC_Palette_Area001, SRC_Palette_Area001, $22, 32
 	DMA_CH0 $02, :SRC_Palette_Area003, SRC_Palette_Area003, $22, 32
 
 	lda	#$80							; set CGRAM address to #256 (word address) for sprites
-	sta	$2121
+	sta	REG_CGADD
 
 	DMA_CH0 $02, :SRC_Palette_Spritesheet_Char1, SRC_Palette_Spritesheet_Char1, $22, 32
 
@@ -160,17 +160,17 @@ AreaEnter:
 
 ; -------------------------- screen registers
 	lda	#%00000011						; 8×8 (small) / 16×16 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
-	sta	$2101
+	sta	REG_OBSEL
 	lda	#$50|$01						; BG1 tile map VRAM offset: $5000, Tile Map size: 64×32 tiles
-	sta	$2107
+	sta	REG_BG1SC
 	lda	#$58|$01						; BG2 tile map VRAM offset: $5800, Tile Map size: 64×32 tiles
-	sta	$2108
+	sta	REG_BG2SC
 	lda	#$48|$01						; BG3 tile map VRAM offset: $4800, Tile Map size: 64×32 tiles
-	sta	$2109
+	sta	REG_BG3SC
 ;	lda	#$00							; BG1/BG2 character data VRAM offset: $0000
-	stz	$210B
+	stz	REG_BG12NBA
 	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
-	sta	$210C
+	sta	REG_BG34NBA
 
 
 
@@ -195,9 +195,9 @@ AreaEnter:
 	Accu16
 
 	lda	#210							; dot number for interrupt (256 = too late, 204 = too early)
-	sta	$4207
+	sta	REG_HTIMEL
 	lda	#176							; scanline number for interrupt: 176 (i.e., let IRQ fire in Hblank between scanlines 176 and 177)
-	sta	$4209
+	sta	REG_VTIMEL
 
 	Accu8
 
@@ -237,10 +237,10 @@ AreaEnter:
 ;	Accu8
 
 ;	lda	#$72							; subscreen backdrop color to subtract
-;	sta	$2132
-;	stz	$2130							; clear CM disable bits
+;	sta	REG_COLDATA
+;	stz	REG_CGWSEL						; clear CM disable bits
 ;	lda	#%10010011						; enable color math on BG1/2 + sprites, subtract color
-;	sta	$2131
+;	sta	REG_CGADSUB
 
 ;	jmp	Forever
 
@@ -253,23 +253,23 @@ AreaEnter:
 	sta	REG_INIDISP
 
 	lda	#ADDR_CGRAM_AREA					; set CGRAM address for BG1 tiles palette
-	sta	$2121
+	sta	REG_CGADD
 
 	ldx	#0
 -	lda.l	SRC_Palette_Area001, x
 	eor	#$FF
-	sta	$2122
+	sta	REG_CGDATA
 	inx
 	cpx	#32
 	bne	-
 
 	lda	#$80							; set CGRAM address to #256 (word address) for sprites
-	sta	$2121
+	sta	REG_CGADD
 
 	ldx	#0
 -	lda.l	SRC_Palette_Spritesheet_Char1, x
 	eor	#$FF
-	sta	$2122
+	sta	REG_CGDATA
 	inx
 	cpx	#32
 	bne	-
@@ -281,15 +281,15 @@ AreaEnter:
 
 	Accu8
 
-	stz	$2121							; backdrop color to subtract
+	stz	REG_CGADD						; backdrop color to subtract
 	lda	#$52
-	sta	$2122
+	sta	REG_CGDATA
 	lda	#$1E
-	sta	$2122
+	sta	REG_CGDATA
 	lda	#%00000010						; clear CM disable bits, enable BGs/OBJs on subscreen
-	sta	$2130
+	sta	REG_CGWSEL
 	lda	#%10100000						; enable color math on backdrop, subtract color
-	sta	$2131
+	sta	REG_CGADSUB
 
 	lda	#$0F
 	sta	REG_INIDISP
@@ -302,14 +302,14 @@ AreaEnter:
 
 ; EFFECT
 ;	lda	#%00000010						; clear color math disable bits (4-5), enable BGs/OBJs on subscreen
-;	sta	$2130
+;	sta	REG_CGWSEL
 ;	lda	#%00100000						; enable color math on backdrop only
-;	sta	$2131
+;	sta	REG_CGADSUB
 
-;	stz	$2121							; set backdrop color to overlay the whole image
-;	stz	$2122							; $6C00 = bright blue
+;	stz	REG_CGADD						; set backdrop color to overlay the whole image
+;	stz	REG_CGDATA						; $6C00 = bright blue
 ;	lda	#$6C
-;	sta	$2122
+;	sta	REG_CGDATA
 
 ;	Accu16
 
