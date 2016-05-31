@@ -322,6 +322,19 @@ InGameMenu:
 	cpx	#SRC_HDMA_ColMathMainMenu_End-SRC_HDMA_ColMathMainMenu
 	bne	-
 
+	stz	REG_BG1HOFS						; reset BG1 horizontal scroll
+	stz	REG_BG1HOFS
+	lda	#$FF							; set BG1 vertical scroll = -1
+	sta	REG_BG1VOFS
+	stz	REG_BG1VOFS
+	stz	REG_BG2HOFS						; reset BG2 horizontal scroll
+	stz	REG_BG2HOFS
+	sta	REG_BG2VOFS						; set BG2 vertical scroll = -1
+	stz	REG_BG2VOFS
+;	stz	REG_BG3HOFS						; reset BG3 horizontal scroll
+;	stz	REG_BG3HOFS
+;	sta	REG_BG3VOFS						; set BG3 vertical scroll = -1
+;	stz	REG_BG3VOFS
 	stz	REG_CGWSEL						; clear color math disable bits
 	lda	#%00100001						; enable color math on BG1 + backdrop
 	sta	REG_CGADSUB
