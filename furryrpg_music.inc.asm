@@ -137,6 +137,7 @@ SRC_TrackPtrBankTable:
 	.DW :SRC_track_08_pointers
 	.DW :SRC_track_09_pointers
 	.DW :SRC_track_10_pointers
+	.DW :SRC_track_10_pointers					; sic, track #11 uses the same instrument settings as #10 (for now)
 
 
 
@@ -152,6 +153,7 @@ SRC_TrackPtrOffsetTable:
 	.DW SRC_track_08_pointers
 	.DW SRC_track_09_pointers
 	.DW SRC_track_10_pointers
+	.DW SRC_track_10_pointers					; sic, track #11 uses the same instrument settings as #10 (for now)
 
 
 
@@ -167,6 +169,7 @@ SRC_TrackSmpBankTable:
 	.DW :SRC_track_08_samples
 	.DW :SRC_track_09_samples
 	.DW :SRC_track_10_samples
+	.DW :SRC_track_10_samples					; sic, track #11 uses the same instrument settings as #10 (for now)
 
 
 
@@ -182,6 +185,7 @@ SRC_TrackSmpOffsetTable:
 	.DW SRC_track_08_samples
 	.DW SRC_track_09_samples
 	.DW SRC_track_10_samples
+	.DW SRC_track_10_samples					; sic, track #11 uses the same instrument settings as #10 (for now)
 
 
 
@@ -197,6 +201,7 @@ SRC_TrackSmpLengthTable:
 	.DW SRC_track_08_samples_END-SRC_track_08_samples
 	.DW SRC_track_09_samples_END-SRC_track_09_samples
 	.DW SRC_track_10_samples_END-SRC_track_10_samples
+	.DW SRC_track_10_samples_END-SRC_track_10_samples		; sic, track #11 uses the same instrument settings as #10 (for now)
 
 
 
@@ -212,6 +217,7 @@ SRC_TrackNotBankTable:
 	.DW :SRC_track_08_notes
 	.DW :SRC_track_09_notes
 	.DW :SRC_track_10_notes
+	.DW :SRC_track_11_notes
 
 
 
@@ -227,6 +233,7 @@ SRC_TrackNotOffsetTable:
 	.DW SRC_track_08_notes+2
 	.DW SRC_track_09_notes+2
 	.DW SRC_track_10_notes+2
+	.DW SRC_track_11_notes+2
 
 
 
@@ -242,6 +249,7 @@ SRC_TrackNotSizeTable:
 	.INCBIN TRACK08_NOTES READ 2
 	.INCBIN TRACK09_NOTES READ 2
 	.INCBIN TRACK10_NOTES READ 2
+	.INCBIN TRACK11_NOTES READ 2
 
 
 
@@ -257,6 +265,7 @@ SRC_TrackPointerTable:
 	.DW STR_Track08
 	.DW STR_Track09
 	.DW STR_Track10
+	.DW STR_Track11
 
 SRC_TrackPointerTable_END:
 
@@ -297,6 +306,9 @@ STR_Track09:
 
 STR_Track10:
 	.DB "10 Temba's Theme           ", 0
+
+STR_Track11:
+	.DB "11 Triumph (Beta)          ", 0
 
 
 

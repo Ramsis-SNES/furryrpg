@@ -1,6 +1,18 @@
 FURRY RPG! (WORKING TITLE) -- CHANGES:
 --------------------------------------
 
+Build #00259:
+- added new BGM track ("Triumph", still beta)
+- minor bugfixes
+
+
+
+Build #00258:
+- added new BGM track ("Temba's Theme")
+- added first MSU1-based ambient track (nightingale, recorded on the night of May 1st, 2016, using a Canon DM-50 stereo mic)
+
+
+
 Build #00257:
 - changed code layout for better readability
 - additions to the dialog script (English only for now)

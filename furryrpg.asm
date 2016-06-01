@@ -44,6 +44,7 @@
 .DEFINE TRACK08_NOTES	".\\music\\08-caterwauling-music.bin"
 .DEFINE TRACK09_NOTES	".\\music\\09-contemplate-music.bin"
 .DEFINE TRACK10_NOTES	".\\music\\10-tembas-theme-music.bin"
+.DEFINE TRACK11_NOTES	".\\music\\11-triumph-beta-music.bin"
 
 .EMPTYFILL		$FF
 
@@ -166,7 +167,7 @@ STR_SoftwareBuild:
 	.DB "Build #"
 
 STR_SoftwareBuildNo:
-	.DB "00258"
+	.DB "00259"
 	.DB 0
 
 ;STR_Software_BuildNo_END:
@@ -466,6 +467,9 @@ SRC_track_10_samples_END:
 
 SRC_track_10_notes:
 .INCBIN TRACK10_NOTES
+
+SRC_track_11_notes:
+.INCBIN TRACK11_NOTES
 
 .ENDS
 
