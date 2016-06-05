@@ -1,6 +1,11 @@
 FURRY RPG! (WORKING TITLE) -- CHANGES:
 --------------------------------------
 
+Build #00260:
+- added new BGM track ("Furlorn Village")
+
+
+
 Build #00259:
 - added new BGM track ("Triumph", still beta)
 - minor bugfixes
