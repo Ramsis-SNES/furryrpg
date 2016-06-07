@@ -258,8 +258,8 @@
 .DEFINE ADDR_VRAM_BG2_Tilemap3	$7C00					; only $7F60-$7FFF used for text box
 
 .DEFINE PARAM_RingMenuCenterX	128
-.DEFINE PARAM_RingMenuCenterY	172
-.DEFINE PARAM_RingMenuRadius	120
+.DEFINE PARAM_RingMenuCenterY	112
+.DEFINE PARAM_RingMenuRadius	60
 
 .DEFINE PARAM_MODE7_SKY_LINES	72					; number of scanlines for sky above Mode 7 landscape
 

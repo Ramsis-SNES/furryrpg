@@ -369,7 +369,7 @@ MoveSpriteCircularTest:
 	stz	temp							; reset angle
 	stz	temp+1
 
-	lda	#70							; set radius
+	lda	#35							; set radius
 	sta	temp+2
 
 ; X := CenterX + sin(angle)*radius
@@ -390,49 +390,29 @@ __MSCTestLoop:
 
 	ldx	temp
 	lda.l	SRC_Mode7Sin, x
-	sta	REG_M7A
 	stz	REG_M7A
+	sta	REG_M7A
 	lda	temp+2							; radius
+	asl	a							; not sure why this is needed
 	sta	REG_M7B
-
-	lda	REG_MPYM
+	lda	REG_MPYH
 	clc
-	adc	#128
+	adc	#128							; add CenterX
 	sta	SpriteBuf1.Text						; X
 
-	lda	temp
-	cmp	#$81
-	bcc	+
-	
-	lda	SpriteBuf1.Text						; if angle > $80, subtract radius
-	sec
-	sbc	temp+2
-	sta	SpriteBuf1.Text						; X
-
-+	ldx	temp
+	ldx	temp
 	lda.l	SRC_Mode7Cos, x
-	sta	REG_M7A
 	stz	REG_M7A
+	sta	REG_M7A
 	lda	temp+2							; radius
+	asl	a							; not sure why this is needed
 	sta	REG_M7B
-
-	lda	REG_MPYM
+	lda	REG_MPYH
 	clc
-	adc	#112
+	adc	#112							; add CenterY
 	sta	SpriteBuf1.Text+1					; Y
 
-	lda	temp
-	cmp	#$C0
-	bcs	+
-	cmp	#$41
-	bcc	+
-
-	lda	SpriteBuf1.Text+1					; if $40 < angle < $C0, subtract radius
-	sec
-	sbc	temp+2
-	sta	SpriteBuf1.Text+1					; Y
-
-+	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
+	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
 
 	inc	temp

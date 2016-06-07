@@ -346,7 +346,7 @@ InGameMenu:
 ; -------------------------- ring menu sprites
 	lda	#PARAM_RingMenuCenterX-16				; X (subtract half of sprite width)
 	sta	SpriteBuf1.RingMenuCursor
-	lda	#PARAM_RingMenuCenterY-PARAM_RingMenuRadius		; Y (subtract radius)
+	lda	#PARAM_RingMenuCenterY-PARAM_RingMenuRadius		; Y (subtract radius to place the cursor at the top of the menu)
 	sta	SpriteBuf1.RingMenuCursor+1
 	lda	#$80							; tile num (cursor sprite)
 	sta	SpriteBuf1.RingMenuCursor+2
@@ -626,48 +626,26 @@ CalcRingMenuItemPos:
 
 	ldx	DP_RingMenuAngleOffset
 	lda.l	SRC_Mode7Sin, x
-	sta	REG_M7A
 	stz	REG_M7A
+	sta	REG_M7A
 	lda	#PARAM_RingMenuRadius
+	asl 	a							; not sure why this is needed (sin(angle)*radius*2 ??)
 	sta	REG_M7B
-	lda	REG_MPYM
+	lda	REG_MPYH
 	clc
-	adc	#PARAM_RingMenuCenterX-16				; subtract half of sprite width (as above)
-	pha
-
-	lda	DP_RingMenuAngleOffset
-	cmp	#$81
-	bcc	+
-	pla								; if angle > $80, subtract radius
-	sec
-	sbc	#PARAM_RingMenuRadius
-	pha
-
-+	pla
+	adc	#PARAM_RingMenuCenterX-16				; add CenterX, subtract half of sprite width (as with the cursor sprite)
 	sta	REG_WMDATA						; save X
 
 	ldx	DP_RingMenuAngleOffset
 	lda.l	SRC_Mode7Cos, x
-	sta	REG_M7A
 	stz	REG_M7A
+	sta	REG_M7A
 	lda	#PARAM_RingMenuRadius
+	asl 	a							; not sure why this is needed (cos(angle)*radius*2 ??)
 	sta	REG_M7B
-	lda	REG_MPYM
+	lda	REG_MPYH
 	clc
-	adc	#PARAM_RingMenuCenterY-(PARAM_RingMenuRadius/2)		; subtract radius/2 (as above)
-	pha
-
-	lda	DP_RingMenuAngleOffset
-	cmp	#$C0
-	bcs	+
-	cmp	#$41
-	bcc	+
-	pla								; if $40 < angle < $C0, subtract radius
-	sec
-	sbc	#PARAM_RingMenuRadius
-	pha
-
-+	pla
+	adc	#PARAM_RingMenuCenterY					; add CenterY
 	sta	REG_WMDATA						; save Y
 	rts
 
