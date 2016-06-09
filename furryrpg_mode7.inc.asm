@@ -277,23 +277,23 @@ TestMode7:
 
 
 Mode7Loop:
-;	PrintSpriteText 25, 22, "V-Line: $", 1
-;	PrintSpriteHexNum temp+7
+;	PrintSpriteText	25, 22, "V-Line: $", 1
+;	PrintSpriteHexNum	temp+7
 
-;	PrintSpriteText 23, 22, "Angle: $", 1
-;	PrintSpriteHexNum DP_Mode7_RotAngle
+;	PrintSpriteText	23, 22, "Angle: $", 1
+;	PrintSpriteHexNum	DP_Mode7_RotAngle
 
-;	PrintSpriteText 25, 18, "Center-X: $", 1
-;	PrintSpriteHexNum DP_Mode7_CenterCoordX+1
-;	PrintSpriteHexNum DP_Mode7_CenterCoordX
+;	PrintSpriteText	25, 18, "Center-X: $", 1
+;	PrintSpriteHexNum	DP_Mode7_CenterCoordX+1
+;	PrintSpriteHexNum	DP_Mode7_CenterCoordX
 
-;	PrintSpriteText 24, 21, "ScrX: $", 1
-;	PrintSpriteHexNum DP_Mode7_ScrollOffsetX+1
-;	PrintSpriteHexNum DP_Mode7_ScrollOffsetX
+;	PrintSpriteText	24, 21, "ScrX: $", 1
+;	PrintSpriteHexNum	DP_Mode7_ScrollOffsetX+1
+;	PrintSpriteHexNum	DP_Mode7_ScrollOffsetX
 
-;	PrintSpriteText 25, 21, "ScrY: $", 1
-;	PrintSpriteHexNum DP_Mode7_ScrollOffsetY+1
-;	PrintSpriteHexNum DP_Mode7_ScrollOffsetY
+;	PrintSpriteText	25, 21, "ScrY: $", 1
+;	PrintSpriteHexNum	DP_Mode7_ScrollOffsetY+1
+;	PrintSpriteHexNum	DP_Mode7_ScrollOffsetY
 
 	WaitFrames	1						; don't use WAI here as IRQ is enabled
 
@@ -564,9 +564,9 @@ __M7FlightY:
 	and	#$01							; mask off 7 open bus bits
 	sta	DP_CurrentScanline+1
 
-	PrintSpriteText 25, 21, "V-line: $", 1
-	PrintSpriteHexNum DP_CurrentScanline+1
-	PrintSpriteHexNum DP_CurrentScanline
+	PrintSpriteText	25, 21, "V-line: $", 1
+	PrintSpriteHexNum	DP_CurrentScanline+1
+	PrintSpriteHexNum	DP_CurrentScanline
 
 	jmp	Mode7Loop
 

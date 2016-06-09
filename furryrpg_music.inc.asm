@@ -399,10 +399,10 @@ __MSU1Found:
 	sta	$4200							; re-enable VBlank NMI
 	cli
 
-	SetCursorPos 0, 0
-	PrintString "Currently playing song #\n\n"
-	PrintString "Press A to toggle between songs.\n"
-	PrintString "Song #0 will be resumed if #1 has been playing."
+	SetTextPos	0, 0
+	PrintString	"Currently playing song #\n\n"
+	PrintString	"Press A to toggle between songs.\n"
+	PrintString	"Song #0 will be resumed if #1 has been playing."
 
 
 
@@ -416,8 +416,8 @@ BackTo0:
 	lda	#%00000011						; set play, repeat flags
 	sta	MSU_CONTROL
 
-	SetCursorPos 0, 12
-	PrintString "0"
+	SetTextPos	0, 12
+	PrintString	"0"
 
 	lda	#$00
 -	inc	a
@@ -454,8 +454,8 @@ MSUloop1:
 	lda	#%00000011						; set play, repeat flags
 	sta	MSU_CONTROL
 
-	SetCursorPos 0, 12
-	PrintString "1"
+	SetTextPos	0, 12
+	PrintString	"1"
 
 	lda	#$00
 -	inc	a

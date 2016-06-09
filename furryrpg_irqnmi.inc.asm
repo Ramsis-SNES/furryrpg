@@ -935,57 +935,63 @@ ErrorHandlerBRK:
 	sta	REG_TM							; on the mainscreen
 	sta	REG_TS							; and on the subscreen
 
-	PrintString 3, 2, "An error occurred!"
-	PrintString 5, 2, "Error type: BRK"
-	PrintString 6, 2, "Error address: $"
+	PrintString	3, 2, "An error occurred!"
+	PrintString	5, 2, "Error type: BRK"
+	PrintString	6, 2, "Error address: $"
 
 	lda	10, s
 	sta	temp
-	PrintHexNum temp
+
+	PrintHexNum	temp
 
 	lda	9, s
 	sta	temp
-	PrintHexNum temp
+
+	PrintHexNum	temp
 
 	lda	8, s
 	sta	temp
-	PrintHexNum temp
 
-	PrintString 7, 2, "Status register: $"
+	PrintHexNum	temp
+	PrintString	7, 2, "Status register: $"
 
 	lda	7, s
 	sta	temp
-	PrintHexNum temp
 
-	PrintString 9, 2, "Accuml.: $"
+	PrintHexNum	temp
+	PrintString	9, 2, "Accuml.: $"
 
 	lda	6, s
 	sta	temp
-	PrintHexNum temp
+
+	PrintHexNum	temp
 
 	lda	5, s
 	sta	temp
-	PrintHexNum temp
 
-	PrintString 10, 2, "X index: $"
+	PrintHexNum	temp
+	PrintString	10, 2, "X index: $"
 
 	lda	4, s
 	sta	temp
-	PrintHexNum temp
+
+	PrintHexNum	temp
 
 	lda	3, s
 	sta	temp
-	PrintHexNum temp
 
-	PrintString 11, 2, "Y index: $"
+	PrintHexNum	temp
+	PrintString	11, 2, "Y index: $"
 
 	lda	2, s
 	sta	temp
-	PrintHexNum temp
+
+	PrintHexNum	temp
 
 	lda	1, s
 	sta	temp
-	PrintHexNum temp
+
+	PrintHexNum	temp
 
 	SetNMI	TBL_NMI_Error
 
@@ -1076,57 +1082,63 @@ ErrorHandlerCOP:
 	sta	REG_TM							; on the mainscreen
 	sta	REG_TS							; and on the subscreen
 
-	PrintString 3, 2, "An error occurred!"
-	PrintString 5, 2, "Error type: COP"
-	PrintString 6, 2, "Error address: $"
+	PrintString	3, 2, "An error occurred!"
+	PrintString	5, 2, "Error type: COP"
+	PrintString	6, 2, "Error address: $"
 
 	lda	10, s
 	sta	temp
-	PrintHexNum temp
+
+	PrintHexNum	temp
 
 	lda	9, s
 	sta	temp
-	PrintHexNum temp
+
+	PrintHexNum	temp
 
 	lda	8, s
 	sta	temp
-	PrintHexNum temp
 
-	PrintString 7, 2, "Status register: $"
+	PrintHexNum	temp
+	PrintString	7, 2, "Status register: $"
 
 	lda	7, s
 	sta	temp
-	PrintHexNum temp
 
-	PrintString 9, 2, "Accuml.: $"
+	PrintHexNum	temp
+	PrintString	9, 2, "Accuml.: $"
 
 	lda	6, s
 	sta	temp
-	PrintHexNum temp
+
+	PrintHexNum	temp
 
 	lda	5, s
 	sta	temp
-	PrintHexNum temp
 
-	PrintString 10, 2, "X index: $"
+	PrintHexNum	temp
+	PrintString	10, 2, "X index: $"
 
 	lda	4, s
 	sta	temp
-	PrintHexNum temp
+
+	PrintHexNum	temp
 
 	lda	3, s
 	sta	temp
-	PrintHexNum temp
 
-	PrintString 11, 2, "Y index: $"
+	PrintHexNum	temp
+	PrintString	11, 2, "Y index: $"
 
 	lda	2, s
 	sta	temp
-	PrintHexNum temp
+
+	PrintHexNum	temp
 
 	lda	1, s
 	sta	temp
-	PrintHexNum temp
+
+	PrintHexNum	temp
 
 	SetNMI	TBL_NMI_Error
 

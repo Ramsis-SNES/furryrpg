@@ -211,11 +211,11 @@ AreaEnter:
 	sta	REG_NMITIMEN
 	cli								; re-enable interrupts
 
-;	PrintString 1, 2, "Gengen"
-;	PrintString 2, 2, "HP: 9999"
-;	PrintString 3, 2, "EP: 0000"
-	PrintString 23, 17, "-Green Greens-"
-;	PrintString 2, 19, "Time:"
+;	PrintString	1, 2, "Gengen"
+;	PrintString	2, 2, "HP: 9999"
+;	PrintString	3, 2, "EP: 0000"
+	PrintString	23, 17, "-Green Greens-"
+;	PrintString	2, 19, "Time:"
 
 	lda	#%01110111						; make sure BG1/2/3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
@@ -360,24 +360,24 @@ MainAreaLoop:
 ;	lda	DP_Shadow_NMITIMEN
 ;	sta	REG_NMITIMEN
 
-;	SetTextPos 2, 25
-;	PrintHexNum DP_GameTime_Hours
-;	PrintString 2, 27, ":"
-;	PrintHexNum DP_GameTime_Minutes
+;	SetTextPos	2, 25
+;	PrintHexNum	DP_GameTime_Hours
+;	PrintString	2, 27, ":"
+;	PrintHexNum	DP_GameTime_Minutes
 
 .IFDEF DEBUG
-;	PrintString 2, 26, "X="
-;	PrintHexNum DP_Char1PosYX
-;	PrintString 3, 26, "Y="
-;	PrintHexNum DP_Char1PosYX+1
+;	PrintString	2, 26, "X="
+;	PrintHexNum	DP_Char1PosYX
+;	PrintString	3, 26, "Y="
+;	PrintHexNum	DP_Char1PosYX+1
 
-	PrintString 2, 22, "ScrX="
-	PrintHexNum ARRAY_HDMA_BGScroll+2
-	PrintHexNum ARRAY_HDMA_BGScroll+1
+	PrintString	2, 22, "ScrX="
+	PrintHexNum	ARRAY_HDMA_BGScroll+2
+	PrintHexNum	ARRAY_HDMA_BGScroll+1
 
-	PrintString 3, 22, "ScrY="
-	PrintHexNum ARRAY_HDMA_BGScroll+4
-	PrintHexNum ARRAY_HDMA_BGScroll+3
+	PrintString	3, 22, "ScrY="
+	PrintHexNum	ARRAY_HDMA_BGScroll+4
+	PrintHexNum	ARRAY_HDMA_BGScroll+3
 
 	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates

@@ -538,14 +538,14 @@ VerifyROMIntegrity:
 	lda	#$07
 	sta	REG_CGDATA
 
-	PrintString 2, 3, "ROM integrity check"
-	PrintString 3, 3, "-------------------"
-	PrintString 5, 3, "This is done only once to"
-	PrintString 6, 3, "ensure the ROM is valid."
-	PrintString 8, 3, "Please wait ..."
+	PrintString	2, 3, "ROM integrity check"
+	PrintString	3, 3, "-------------------"
+	PrintString	5, 3, "This is done only once to"
+	PrintString	6, 3, "ensure the ROM is valid."
+	PrintString	8, 3, "Please wait ..."
 
 .IFDEF DEBUG
-	PrintString 9, 3, "Reading bank $"
+	PrintString	9, 3, "Reading bank $"
 .ENDIF
 
 	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
@@ -555,8 +555,8 @@ VerifyROMIntegrity:
 	sta	temp+7
 
 .IFDEF DEBUG
-	SetTextPos 9, 17
-	PrintHexNum temp+7
+	SetTextPos	9, 17
+	PrintHexNum	temp+7
 
 	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
@@ -593,8 +593,8 @@ VerifyROMIntegrity:
 
 --
 .IFDEF DEBUG
-	SetTextPos 9, 17
-	PrintHexNum temp+7
+	SetTextPos	9, 17
+	PrintHexNum	temp+7
 
 	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
@@ -638,8 +638,8 @@ VerifyROMIntegrity:
 	lda	#$13
 	sta	REG_CGDATA
 
-	PrintString 11, 3, "ROM integrity check passed!"
-	PrintString 12, 3, "Press any button ..."
+	PrintString	11, 3, "ROM integrity check passed!"
+	PrintString	12, 3, "Press any button ..."
 
 	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
@@ -661,8 +661,8 @@ __ROMIntegrityBad:
 	sta	REG_CGDATA
 	stz	REG_CGDATA
 
-	PrintString 11, 3, "Corrupt ROM, unable to"
-	PrintString 12, 3, "continue!"
+	PrintString	11, 3, "Corrupt ROM, unable to"
+	PrintString	12, 3, "continue!"
 
 	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates

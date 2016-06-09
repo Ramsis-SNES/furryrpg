@@ -135,24 +135,24 @@ DebugMenu:
 
 
 ; -------------------------- done, draw debug menu
-;	PrintString 2, 3, "FURRY RPG! (Build #00220)"
-;	PrintString 3, 3, "(c) by www.ManuLoewe.de"
+;	PrintString	2, 3, "FURRY RPG! (Build #00220)"
+;	PrintString	3, 3, "(c) by www.ManuLoewe.de"
 
-	PrintString 7, 3, "DEBUG MENU:"
-	PrintString 10, 3, "Alpha intro"
-	PrintString 11, 3, "Area/dialog test"
-	PrintString 12, 3, "Error test (BRK)"
-	PrintString 13, 3, "Error test (COP)"
-	PrintString 14, 3, "Mode3 world map"
-	PrintString 15, 3, "Mode7 world map"
-	PrintString 16, 3, "Move sprite on circular path"
-	PrintString 17, 3, "SNESGSS music test:"
-;	PrintString 16, 3, ""
-;	PrintString 17, 3, ""
+	PrintString	7, 3, "DEBUG MENU:"
+	PrintString	10, 3, "Alpha intro"
+	PrintString	11, 3, "Area/dialog test"
+	PrintString	12, 3, "Error test (BRK)"
+	PrintString	13, 3, "Error test (COP)"
+	PrintString	14, 3, "Mode3 world map"
+	PrintString	15, 3, "Mode7 world map"
+	PrintString	16, 3, "Move sprite on circular path"
+	PrintString	17, 3, "SNESGSS music test:"
+;	PrintString	16, 3, ""
+;	PrintString	17, 3, ""
 
 	stz	SprTextMon						; reset sprite text filling level so it won't draw more than 1 cursor ;-)
 
-	PrintSpriteText 10, 2, $10, 0					; put cursor on first line ($10 = cursor tile no.)
+	PrintSpriteText	10, 2, $10, 0					; put cursor on first line ($10 = cursor tile no.)
 
 	wai
 
@@ -180,7 +180,7 @@ DebugMenuLoop:
 	lda	#:SRC_TrackPointerTable
 	sta	DP_SubStrAddr+2
 
-	PrintString 18, 4, "%s"						; print current SNESGSS song title
+	PrintString	18, 4, "%s"					; print current SNESGSS song title
 
 	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
@@ -347,8 +347,8 @@ ShowCPUload:
 	and	#$01							; mask off 7 open bus bits
 	sta	DP_CurrentScanline+1
 
-	SetTextPos 2, 2
-	PrintNum DP_CurrentScanline
+	SetTextPos	2, 2
+	PrintNum	DP_CurrentScanline
 
 	jsr	PrintF
 	.DB "  ", 0							; clear trailing numbers from old values
@@ -375,7 +375,7 @@ MoveSpriteCircularTest:
 ; X := CenterX + sin(angle)*radius
 ; Y := CenterY + cos(angle)*radius
 
-	PrintString 2, 20, "Angle: $"
+	PrintString	2, 20, "Angle: $"
 
 
 
@@ -385,8 +385,8 @@ __MSCTestLoop:
 -	lda	REG_HVBJOY						; are we still on Vblank?
 	bmi	-							; yes, wait
 
-	SetTextPos 2, 28
-	PrintHexNum temp
+	SetTextPos	2, 28
+	PrintHexNum	temp
 
 	ldx	temp
 	lda.l	SRC_Mode7Sin, x

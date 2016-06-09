@@ -13,13 +13,13 @@
 .INDEX 16
 
 MainMenu:
-	DrawFrame 10, 9, 11, 7
-	PrintString 10, 11, "Inventory"
-	PrintString 11, 11, "Talent"
-	PrintString 12, 11, "Formation"
-	PrintString 13, 11, "Lily's log"
-	PrintString 14, 11, "Settings"
-	PrintString 15, 11, "Quit game"
+	DrawFrame	10, 9, 11, 7
+	PrintString	10, 11, "Inventory"
+	PrintString	11, 11, "Talent"
+	PrintString	12, 11, "Formation"
+	PrintString	13, 11, "Lily's log"
+	PrintString	14, 11, "Settings"
+	PrintString	15, 11, "Quit game"
 
 
 
@@ -159,14 +159,14 @@ MainMenuLoop:
 
 	jmp	++
 
-+	PrintString 9, 10, "             "
-	PrintString 10, 10, "             "
-	PrintString 11, 10, "             "
-	PrintString 12, 10, "             "
-	PrintString 13, 10, "             "
-	PrintString 14, 10, "             "
-	PrintString 15, 10, "             "
-	PrintString 16, 10, "             "
++	PrintString	9, 10, "             "
+	PrintString	10, 10, "             "
+	PrintString	11, 10, "             "
+	PrintString	12, 10, "             "
+	PrintString	13, 10, "             "
+	PrintString	14, 10, "             "
+	PrintString	15, 10, "             "
+	PrintString	16, 10, "             "
 
 
 	lda	#%00110000						; disable color math
@@ -398,40 +398,40 @@ InGameMenu:
 	stz	DP_RingMenuAngle+1
 	jsr	PutRingMenuItems
 
-	DrawFrame 7, 1, 17, 2
+	DrawFrame	7, 1, 17, 2
 
 
 
 .ENDASM
 
 ; -------------------------- menu "window" content
-	DrawFrame 1, 1, 13, 12
-	PrintString 2, 2, "Gengen"
-	PrintString 3, 2, "9999/9999 HP"
-	PrintString 4, 2, "9999/9999 EP"
-	PrintString 6, 5, "Warrior"
-	PrintString 7, 5, "Healthy"
+	DrawFrame	1, 1, 13, 12
+	PrintString	2, 2, "Gengen"
+	PrintString	3, 2, "9999/9999 HP"
+	PrintString	4, 2, "9999/9999 EP"
+	PrintString	6, 5, "Warrior"
+	PrintString	7, 5, "Healthy"
 
-	DrawFrame 17, 1, 13, 12
-	PrintString 2, 18, "Lily"
-	PrintString 3, 18, "9999/9999 HP"
-	PrintString 4, 18, "9999/9999 EP"
-	PrintString 6, 21, "Scholar"
-	PrintString 7, 21, "Healthy"
+	DrawFrame	17, 1, 13, 12
+	PrintString	2, 18, "Lily"
+	PrintString	3, 18, "9999/9999 HP"
+	PrintString	4, 18, "9999/9999 EP"
+	PrintString	6, 21, "Scholar"
+	PrintString	7, 21, "Healthy"
 
-	DrawFrame 1, 15, 13, 12
-	PrintString 16, 2, "Mickey"
-	PrintString 17, 2, "9999/9999 HP"
-	PrintString 18, 2, "9999/9999 EP"
-	PrintString 20, 5, "M. artist"
-	PrintString 21, 5, "Healthy"
+	DrawFrame	1, 15, 13, 12
+	PrintString	16, 2, "Mickey"
+	PrintString	17, 2, "9999/9999 HP"
+	PrintString	18, 2, "9999/9999 EP"
+	PrintString	20, 5, "M. artist"
+	PrintString	21, 5, "Healthy"
 
-	DrawFrame 17, 15, 13, 12
-	PrintString 16, 18, "Tara"
-	PrintString 17, 18, "9999/9999 HP"
-	PrintString 18, 18, "9999/9999 EP"
-	PrintString 20, 21, "Healer"
-	PrintString 21, 21, "Healthy"
+	DrawFrame	17, 15, 13, 12
+	PrintString	16, 18, "Tara"
+	PrintString	17, 18, "9999/9999 HP"
+	PrintString	18, 18, "9999/9999 EP"
+	PrintString	20, 21, "Healer"
+	PrintString	21, 21, "Healthy"
 
 ;	Accu16
 
@@ -489,45 +489,45 @@ __RingMenuLoopDpadRightDone:
 ; -------------------------- update headline based on angle
 	lda	DP_RingMenuAngle
 	bne	+
-	PrintString 2, 8, "    Settings    "
+	PrintString	2, 8, "    Settings    "
 	jmp	++
 
 +	cmp	#$20
 	bne	+
-	PrintString 2, 8, "   Quit Game    "
+	PrintString	2, 8, "   Quit Game    "
 	jmp	++
 
 +	cmp	#$40
 	bne	+
-	PrintString 2, 8, "      ???1      "
+	PrintString	2, 8, "      ???1      "
 	jmp	++
 
 +	cmp	#$60
 	bne	+
-	PrintString 2, 8, "      ???2      "
+	PrintString	2, 8, "      ???2      "
 	bra	++
 
 +	cmp	#$80
 	bne	+
-	PrintString 2, 8, "   Inventory    "
+	PrintString	2, 8, "   Inventory    "
 	bra	++
 
 +	cmp	#$A0
 	bne	+
-	PrintString 2, 8, "     Talent     "
+	PrintString	2, 8, "     Talent     "
 	bra	++
 
 +	cmp	#$C0
 	bne	+
-	PrintString 2, 8, "     Party      "
+	PrintString	2, 8, "     Party      "
 	bra	++
 
-+	PrintString 2, 8, "   Lily's log   "
++	PrintString	2, 8, "   Lily's log   "
 ++
 
 ;.IFDEF DEBUG
-;	PrintString 23, 2, "Angle: $"
-;	PrintHexNum DP_RingMenuAngle
+;	PrintString	23, 2, "Angle: $"
+;	PrintHexNum	DP_RingMenuAngle
 ;.ENDIF
 
 	lda	#%00000100						; make sure BG3 lo tilemap gets updated
@@ -695,8 +695,8 @@ CalcRingMenuItemPos:
 	lda	#$9A
 	sta	TileMapBG2 + 197
 
-	PrintString 5, 14, "Right:"
-	PrintString 6, 14, "Mode 1"
+	PrintString	5, 14, "Right:"
+	PrintString	6, 14, "Mode 1"
 
 
 
