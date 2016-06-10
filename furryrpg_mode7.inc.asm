@@ -23,6 +23,18 @@ TestMode7:
 
 
 
+; -------------------------- HDMA channel 3: color math
+	lda	#$02							; transfer mode (2 bytes --> $2132)
+	sta	$4330
+	lda	#$32							; PPU register $2132 (color math subscreen backdrop color)
+	sta	$4331
+	ldx	#ARRAY_HDMA_ColorMath
+	stx	$4332
+	lda	#$7E							; table in WRAM expected
+	sta	$4334
+
+
+
 ; -------------------------- HDMA channel 4: Mode 7 A
 	lda	#$42							; transfer mode (2 bytes --> $211B), indirect table mode
 	sta	$4340
@@ -536,7 +548,7 @@ __M7FlightY:
 
 	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 0		; clear VRAM
 
-	jmp	AreaEnter
+	jml	DebugMenu
 +
 
 

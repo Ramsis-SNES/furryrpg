@@ -76,7 +76,7 @@ __ReturnAdress\@:
 
 .MACRO ldb
 	xba
-	lda.b	\1
+	lda	\1
 	xba
 .ENDM
 

@@ -181,18 +181,6 @@ Boot:
 
 
 
-; -------------------------- HDMA channel 3: color math
-	lda	#$02							; transfer mode (2 bytes --> $2132)
-	sta	$4330
-	lda	#$32							; PPU register $2132 (color math subscreen backdrop color)
-	sta	$4331
-	ldx	#ARRAY_HDMA_ColorMath
-	stx	$4332
-	lda	#$7E							; table in WRAM expected
-	sta	$4334
-
-
-
 ; -------------------------- more hardware checks/initialization
 	jsl	BootSPC700						; boot APU with SNESGSS sound driver
 	jsl	CheckForMSU1						; check if MSU1 present

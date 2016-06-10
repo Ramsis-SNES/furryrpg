@@ -506,7 +506,7 @@ WorldMode3:
 
 	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 0		; clear VRAM
 
-	jml	AreaEnter
+	jml	DebugMenu
 
 
 

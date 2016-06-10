@@ -46,6 +46,50 @@ __TextBoxVblankDone:
 
 
 
+; -------------------------- update HUD if necessary
+	bit	DP_HUD_Status						; check HUD status
+	bmi	__ShowHUD
+	bvs	__HideHUD
+	bra	__UpdateHUDDone
+
+__ShowHUD:
+	lda	ARRAY_HDMA_HUDScroll+1
+	ldb	ARRAY_HDMA_HUDScroll+7
+-	dec	a							; make it appear faster than it disappears (hence multiple decrements)
+	dec	a
+	dec	a
+	bpl	+							; only positive value allowed (except for #$FF)
+	lda	#$FF							; underflow, set final scroll value
++	sta	ARRAY_HDMA_HUDScroll+1
+	xba
+	inc	a
+	inc	a
+	inc	a
+	bmi	+							; only negative values allowed
+	lda	#$FF							; overflow, set final scroll value
++	sta	ARRAY_HDMA_HUDScroll+7
+	cmp	#$FF							; final scroll value reached?
+	bne	__UpdateHUDDone
+	lda	#%00000001						; yes, set "HUD is being displayed" bit
+	sta	DP_HUD_Status
+	bra	__UpdateHUDDone
+
+__HideHUD:
+	lda	ARRAY_HDMA_HUDScroll+1
+	ldb	ARRAY_HDMA_HUDScroll+7
+-	inc	a
+	sta	ARRAY_HDMA_HUDScroll+1
+	xba
+	dec	a
+	sta	ARRAY_HDMA_HUDScroll+7
+	cmp	#$CF							; final scroll value reached?
+	bne	__UpdateHUDDone
+	stz	DP_HUD_Status						; yes, clear HUD status bits
+
+__UpdateHUDDone:
+
+
+
 ; -------------------------- animate playable character
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	REG_VMAIN

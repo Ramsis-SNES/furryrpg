@@ -130,7 +130,27 @@ AreaEnter:
 	cpx	#16
 	bne	-
 
+	ldx	#0
+-	lda.l	SRC_HDMA_HUDScroll, x
+	sta	ARRAY_HDMA_HUDScroll, x
+	inx
+	inx
+	cpx	#10
+	bne	-
+
 	Accu8
+
+
+
+; -------------------------- HDMA channel 3: BG3 HUD scroll
+	lda	#$02							; transfer mode (2 bytes --> $2112)
+	sta	$4330
+	lda	#$12							; PPU reg. $2112 (BG3 vertical scroll)
+	sta	$4331
+	ldx	#ARRAY_HDMA_HUDScroll
+	stx	$4332
+	lda	#$7E
+	sta	$4334
 
 
 
@@ -211,14 +231,11 @@ AreaEnter:
 	sta	REG_NMITIMEN
 	cli								; re-enable interrupts
 
-;	PrintString	1, 2, "Gengen"
-;	PrintString	2, 2, "HP: 9999"
-;	PrintString	3, 2, "EP: 0000"
-	PrintString	23, 17, "-Green Greens-"
-;	PrintString	2, 19, "Time:"
-
 	lda	#%01110111						; make sure BG1/2/3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
+
+	lda	#%00001000						; enable HDMA ch. 3 (BG3 HUD scroll)
+	tsb	DP_HDMAchannels
 
 	WaitFrames	4						; let the screen clear up
 
@@ -332,6 +349,15 @@ AreaEnter:
 
 
 
+; -------------------------- HUD contents
+	DrawFrame	5, 1, 21, 2
+	PrintString	2, 8, "   Temba Woods    "
+	PrintString	23, 1, "Gengen"
+	PrintString	24, 1, "HP: XXXX"
+	PrintString	24, 20, "Time: XX:XX"
+
+
+
 ; -------------------------- play music & ambient sound effect
 	lda	#10
 	sta	DP_NextTrack
@@ -360,10 +386,58 @@ MainAreaLoop:
 ;	lda	DP_Shadow_NMITIMEN
 ;	sta	REG_NMITIMEN
 
-;	SetTextPos	2, 25
-;	PrintHexNum	DP_GameTime_Hours
-;	PrintString	2, 27, ":"
-;	PrintHexNum	DP_GameTime_Minutes
+	Accu16
+
+	inc	DP_PlayerIdleCounter					; assume player is idle
+
+
+
+; -------------------------- HUD display logic
+	Accu8
+
+	lda	DP_HUD_Status						; check whether HUD is already being displayed
+	and	#%00000001
+	bne	__HUDIsVisible						; yes
+
+	Accu16								; no
+
+	lda	DP_PlayerIdleCounter					; check if player has been idle for at least 300 frames
+	cmp	#300
+	bcc	__HUDLogicDone
+
+	Accu8
+
+	lda	#%10000000						; yes, set "HUD should appear" bit
+	sta	DP_HUD_Status
+	bra	__HUDLogicDone
+
+__HUDIsVisible:
+	Accu16
+
+	lda	DP_HUD_DispCounter
+	inc	a
+	cmp	#300
+	bcc	+
+	bra	__HideHUDOrNot
++	sta	DP_HUD_DispCounter
+	bra	__HUDLogicDone
+
+.ACCU 16
+
+__HideHUDOrNot:
+	lda	DP_PlayerIdleCounter					; if player is still idle, don't do anything
+	cmp	#300
+	bcs	__HUDLogicDone
+
+	Accu8
+
+	lda	#%01000000						; otherwise, set "HUD should disappear" bit
+	sta	DP_HUD_Status
+
+__HUDLogicDone:
+	Accu8
+
+
 
 .IFDEF DEBUG
 ;	PrintString	2, 26, "X="
@@ -371,13 +445,13 @@ MainAreaLoop:
 ;	PrintString	3, 26, "Y="
 ;	PrintHexNum	DP_Char1PosYX+1
 
-	PrintString	2, 22, "ScrX="
-	PrintHexNum	ARRAY_HDMA_BGScroll+2
-	PrintHexNum	ARRAY_HDMA_BGScroll+1
+;	PrintString	2, 22, "ScrX="
+;	PrintHexNum	ARRAY_HDMA_BGScroll+2
+;	PrintHexNum	ARRAY_HDMA_BGScroll+1
 
-	PrintString	3, 22, "ScrY="
-	PrintHexNum	ARRAY_HDMA_BGScroll+4
-	PrintHexNum	ARRAY_HDMA_BGScroll+3
+;	PrintString	3, 22, "ScrY="
+;	PrintHexNum	ARRAY_HDMA_BGScroll+4
+;	PrintHexNum	ARRAY_HDMA_BGScroll+3
 
 	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
@@ -385,10 +459,29 @@ MainAreaLoop:
 
 
 
+; -------------------------- update HUD game time
+;	PrintString	24, 20, "Time: XX:XX"
+
+	SetTextPos	24, 26
+	PrintHexNum	DP_GameTime_Hours
+	SetTextPos	24, 29
+	PrintHexNum	DP_GameTime_Minutes
+
+
+
 ; -------------------------- check for B button = run :-)
 	lda	Joy1Press+1
 	and	#%10000000
 	beq	+
+
+	lda	DP_HUD_Status						; check whether HUD is already being displayed
+	and	#%00000001
+	beq	+
+	lda	#%01000000						; yes, set "HUD should disappear" bit
+	sta	DP_HUD_Status
+
+	stz	DP_PlayerIdleCounter
+	stz	DP_PlayerIdleCounter+1
 	lda	#2							; B pressed, set fast walking speed
 	bra	++
 
@@ -397,14 +490,23 @@ MainAreaLoop:
 
 
 
-; -------------------------- check for Y button = open menu
-;	lda	Joy1Press+1
-;	and	#%01000000
-;	beq	__MainAreaLoopYButtonDone
+; -------------------------- check for Y button = show HUD
+	lda	Joy1New+1
+	and	#%01000000
+	beq	__MainAreaLoopYButtonDone
 
-;	jmp	MainMenu
+	stz	DP_PlayerIdleCounter
+	stz	DP_PlayerIdleCounter+1
+	lda	DP_HUD_Status						; check if HUD is already being displayed
+	and	#%00000001
+	bne	__MainAreaLoopYButtonDone
 
-;__MainAreaLoopYButtonDone:
+	lda	#%10000000						; no, set "HUD should appear" bit
+	sta	DP_HUD_Status
+	stz	DP_HUD_DispCounter					; and reset "HUD visible" counter
+	stz	DP_HUD_DispCounter+1
+
+__MainAreaLoopYButtonDone:
 
 
 
@@ -425,6 +527,8 @@ __MainAreaLoopDpadNewDone:
 	and	#%00001000
 	beq	__MainAreaLoopDpadUpDone
 
+	stz	DP_PlayerIdleCounter
+	stz	DP_PlayerIdleCounter+1
 	lda	#TBL_Char1_up
 	sta	DP_Char1SpriteStatus
 
@@ -465,6 +569,8 @@ __MainAreaLoopDpadUpDone:
 	and	#%00000100
 	beq	__MainAreaLoopDpadDownDone
 
+	stz	DP_PlayerIdleCounter
+	stz	DP_PlayerIdleCounter+1
 	lda	#TBL_Char1_down
 	sta	DP_Char1SpriteStatus
 
@@ -504,6 +610,8 @@ __MainAreaLoopDpadDownDone:
 	and	#%00000010
 	beq	__MainAreaLoopDpadLeftDone
 
+	stz	DP_PlayerIdleCounter
+	stz	DP_PlayerIdleCounter+1
 	lda	#TBL_Char1_left
 	sta	DP_Char1SpriteStatus
 
@@ -542,6 +650,8 @@ __MainAreaLoopDpadLeftDone:
 	and	#%00000001
 	beq	__MainAreaLoopDpadRightDone
 
+	stz	DP_PlayerIdleCounter
+	stz	DP_PlayerIdleCounter+1
 	lda	#TBL_Char1_right
 	sta	DP_Char1SpriteStatus
 
@@ -580,6 +690,8 @@ __MainAreaLoopDpadRightDone:
 	and	#%10000000
 	beq	__MainAreaLoopAButtonDone
 
+	stz	DP_PlayerIdleCounter
+	stz	DP_PlayerIdleCounter+1
 	lda	#$80							; make character idle
 	tsb	DP_Char1SpriteStatus
 	lda	#$03
@@ -595,6 +707,8 @@ __MainAreaLoopAButtonDone:
 	and	#%01000000
 	beq	__MainAreaLoopXButtonDone
 
+	stz	DP_PlayerIdleCounter
+	stz	DP_PlayerIdleCounter+1
 	jmp	InGameMenu
 
 __MainAreaLoopXButtonDone:
@@ -606,6 +720,8 @@ __MainAreaLoopXButtonDone:
 	and	#%00010000
 	beq	__MainAreaLoopStButtonDone
 
+	stz	DP_PlayerIdleCounter
+	stz	DP_PlayerIdleCounter+1
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
 	jsr	EffectHSplitOut2
@@ -629,7 +745,7 @@ __MainAreaLoopXButtonDone:
 	jmp	DebugMenu
 
 __MainAreaLoopStButtonDone:
-	jsr	ShowCPUload
+;	jsr	ShowCPUload
 	jmp	MainAreaLoop
 
 

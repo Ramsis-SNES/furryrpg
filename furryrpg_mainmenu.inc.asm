@@ -303,6 +303,18 @@ InGameMenu:
 
 
 
+; -------------------------- HDMA channel 3: color math
+	lda	#$02							; transfer mode (2 bytes --> $2132)
+	sta	$4330
+	lda	#$32							; PPU register $2132 (color math subscreen backdrop color)
+	sta	$4331
+	ldx	#ARRAY_HDMA_ColorMath
+	stx	$4332
+	lda	#$7E							; table in WRAM expected
+	sta	$4334
+
+
+
 ; -------------------------- set up menu BG color & misc. screen registers
 	lda	#%01100011						; 16×16 (small) / 32×32 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
 	sta	REG_OBSEL
@@ -331,10 +343,10 @@ InGameMenu:
 	stz	REG_BG2HOFS
 	sta	REG_BG2VOFS						; set BG2 vertical scroll = -1
 	stz	REG_BG2VOFS
-;	stz	REG_BG3HOFS						; reset BG3 horizontal scroll
-;	stz	REG_BG3HOFS
-;	sta	REG_BG3VOFS						; set BG3 vertical scroll = -1
-;	stz	REG_BG3VOFS
+	stz	REG_BG3HOFS						; reset BG3 horizontal scroll
+	stz	REG_BG3HOFS
+	sta	REG_BG3VOFS						; set BG3 vertical scroll = -1
+	stz	REG_BG3VOFS
 	stz	REG_CGWSEL						; clear color math disable bits
 	lda	#%00100001						; enable color math on BG1 + backdrop
 	sta	REG_CGADSUB

@@ -420,6 +420,10 @@
 	DP_GameTime_Minutes	db
 	DP_GameTime_Hours	db
 
+	DP_HUD_DispCounter	dw					; holds frame count since HUD appeared
+	DP_HUD_Status		db					; adrrrrrp [a/d = HUD should (re-)appear/disappear, p = HUD is present on screen]
+	DP_PlayerIdleCounter	dw					; holds frame count since last button press
+
 	DP_RingMenuAngle	dw
 	DP_RingMenuAngleOffset	dw
 
@@ -463,7 +467,7 @@
 	DP_VWFBitsUsed		dw
 	DP_VWFBufferIndex	dw
 	DP_VWFLoop		db
-.ENDE									; 159 of 256 bytes used
+.ENDE									; 164 of 256 bytes used
 
 
 
@@ -581,6 +585,7 @@
 
 	ARRAY_HDMA_MainEffects		dsb 224
 	ARRAY_HDMA_BGScroll		dsb 16
+	ARRAY_HDMA_HUDScroll		dsb 10
 
 	VAR_TextBox_TSTM		dw				; shadow copies of subscreen (high) & mainscreen (low) designation registers ($212C/212D) for text box area
 .ENDE									; $XXX bytes + $XXX = $XXX bytes used (stack resides at $1FFF)
