@@ -268,6 +268,31 @@ SRC_HDMA_ResetBGScroll:
 
 
 
+SRC_HDMA_WorldMapCG1:
+	.DB $2C
+	.DW SRC_HDMA_WorldMapCG2
+	.DB $10
+	.DW SRC_HDMA_WorldMapCG3
+	.DB $20
+	.DW SRC_HDMA_WorldMapCG4
+	.DB $30
+	.DW SRC_HDMA_WorldMapCG5
+	.DB $00
+
+SRC_HDMA_WorldMapCG2:
+	.DB $01, $01, $00, $00
+
+SRC_HDMA_WorldMapCG3:
+	.DB $01, $01, $21, $04
+
+SRC_HDMA_WorldMapCG4:
+	.DB $01, $01, $42, $08
+
+SRC_HDMA_WorldMapCG5:
+	.DB $01, $01, $63, $0C
+
+
+
 SRC_HDMA_test5:
 	.DB 112|$80
 

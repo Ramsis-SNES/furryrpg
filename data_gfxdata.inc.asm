@@ -35,12 +35,6 @@
 .DEFINE MENU_SPRITES		".\\gfx\\menu-sprites.pic"
 .DEFINE MENU_SPRITES_PAL	".\\gfx\\menu-sprites.pal"
 
-;.DEFINE PLAYFIELD_001		".\\gfx\\playfield_001.pic"
-;.DEFINE PLAYFIELD_001_MAP	".\\gfx\\playfield_001.map"
-
-;.DEFINE PLAYFIELD_001_PAL	".\\gfx\\playfield_001.pal"
-.DEFINE PLAYFIELD_001_PAL	".\\gfx\\pitcairn.pal"
-
 .DEFINE SPRITESHEET_CHAR1	".\\gfx\\Gengen2.pic"
 .DEFINE SPRITESHEET_CHAR1_PAL	".\\gfx\\Gengen2.pal"
 
@@ -70,9 +64,6 @@ SRC_Palettes_Text:
 	.DW $03FF							; font (yellow)
 
 .INCBIN FONT_BIGSPRITES_PAL						; 32 bytes
-
-SRC_Palette_Playfield_001:
-.INCBIN PLAYFIELD_001_PAL SKIP 64 READ 224				; 112 colors
 
 SRC_Palette_Portrait_Char1:
 .INCBIN PORTRAIT_CHAR1_PAL						; 32 bytes

@@ -168,7 +168,7 @@ STR_SoftwareBuild:
 	.DB "Build #"
 
 STR_SoftwareBuildNo:
-	.DB "00261"
+	.DB "00262"
 	.DB 0
 
 ;STR_Software_BuildNo_END:
@@ -193,7 +193,7 @@ SRC_VblankJumpTable:
 	jml	Vblank_DebugMenu
 	jml	Vblank_Error
 	jml	Vblank_Mode7
-	jml	Vblank_Playfield
+	jml	Vblank_WorldMap
 	jml	Vblank_Intro
 
 
@@ -219,6 +219,7 @@ SRC_IRQJumpTable:
 .INCLUDE "furryrpg_music.inc.asm"					; music handler
 .INCLUDE "furryrpg_sram.inc.asm"					; SRAM handler
 .INCLUDE "furryrpg_text.inc.asm"					; text printing routines
+.INCLUDE "furryrpg_worldmap.inc.asm"					; world map handler
 
 .ENDS
 
@@ -399,21 +400,19 @@ GFX_StartPic:
 .BANK CurrentBank SLOT 0
 .ORG 0
 
-.SECTION "Playfield GFX"
+.SECTION "World Map GFX data"
 
-GFX_Playfield_001:
-;.INCBIN ".\\gfx\\playfield_001.pic"
-.INCBIN ".\\gfx\\pitcairn.pic"
+GFX_WorldMap:
+;.INCBIN ".\\thg.zst" SKIP $20C13 READ $8000
+.INCBIN ".\\gfx\\thg.pic"
 
-GFX_Playfield_001_END:
+SRC_Palette_WorldMap:
+;.INCBIN ".\\thg.zst" SKIP $618 READ 512
+.INCBIN ".\\gfx\\thg.pal"
 
-
-
-SRC_Playfield_001_MAP:
-;.INCBIN ".\\gfx\\playfield_001.map"
-.INCBIN ".\\gfx\\pitcairn.map"
-
-SRC_Playfield_001_MAP_END:
+SRC_Tilemap_WorldMap:
+;.INCBIN ".\\thg.zst" SKIP $28C13 READ $2000
+.INCBIN ".\\gfx\\thg.map"
 
 .ENDS
 

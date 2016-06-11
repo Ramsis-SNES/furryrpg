@@ -424,7 +424,7 @@ Vblank_Mode7:
 
 
 
-Vblank_Playfield:
+Vblank_WorldMap:
 	AccuIndex16
 
 	pha								; push 16 bit registers onto stack

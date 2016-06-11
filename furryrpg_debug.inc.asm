@@ -143,7 +143,7 @@ DebugMenu:
 	PrintString	11, 3, "Area/dialog test"
 	PrintString	12, 3, "Error test (BRK)"
 	PrintString	13, 3, "Error test (COP)"
-	PrintString	14, 3, "Mode3 world map"
+	PrintString	14, 3, "Mode1 world map"
 	PrintString	15, 3, "Mode7 world map"
 	PrintString	16, 3, "Move sprite on circular path"
 	PrintString	17, 3, "SNESGSS music test:"
@@ -303,7 +303,7 @@ DebugMenuLoop:
 +	cmp	#110
 	bne	+
 
-	jmp	WorldMode3
+	jmp	LoadWorldMap
 
 +	cmp	#118
 	bne	+
@@ -429,84 +429,6 @@ __MSCTestLoop:
 
 	jsr	ShowCPUload
 	jmp	__MSCTestLoop
-
-
-
-WorldMode3:
-	lda	#$80							; enter forced blank
-	sta	REG_INIDISP
-	stz	DP_HDMAchannels						; disable HDMA
-
-	wai								; wait for reg $420C to get cleared
-
-	DisableIRQs
-
-
-
-; -------------------------- load map data
-	lda	#$80							; increment VRAM address by 1 after writing to $2119
-	sta	REG_VMAIN
-	ldx	#$0000							; reset VRAM address
-	stx	REG_VMADDL
-
-	DMA_CH0 $01, :GFX_Playfield_001, GFX_Playfield_001, $18, GFX_Playfield_001_END-GFX_Playfield_001	; 45,120 bytes
-
-	ldx	#$7C00							; set VRAM address of new BG1 tilemap (has to be greater than GFX length!!)
-	stx	REG_VMADDL
-
-	DMA_CH0 $01, :SRC_Playfield_001_MAP, SRC_Playfield_001_MAP, $18, 2048
-
-
-
-; -------------------------- load palette
-	lda	#ADDR_CGRAM_WORLDMAP
-	sta	REG_CGADD
-
-	DMA_CH0 $02, :SRC_Palette_Playfield_001, SRC_Palette_Playfield_001, $22, 224	; 112 colors
-
-
-
-; -------------------------- set up NMI/misc. parameters
-	SetNMI	TBL_NMI_Playfield
-
-	lda	#$7C							; set BG1's Tile Map VRAM offset to $7C00 (word address)
-	sta	REG_BG1SC						; and the Tile Map size to 32×32 tiles
-	lda	#$81							; enable NMI and auto-joypad read
-	sta	DP_Shadow_NMITIMEN
-	sta	REG_NMITIMEN
-	cli
-
-
-
-; -------------------------- set some more parameters
-	lda	#$03							; set BG Mode 3 for playfield
-	sta	REG_BGMODE
-	lda	#%00000001						; turn on BG1 only
-	sta	REG_TM							; on the mainscreen
-	sta	REG_TS							; and on the subscreen
-	lda	#CMD_EffectSpeed3
-	sta	DP_EffectSpeed
-	jsr	EffectHSplitIn
-
-	WaitUserInput
-
-	lda	#CMD_EffectSpeed3
-	sta	DP_EffectSpeed
-	jsr	EffectHSplitOut2
-	ldx	#(TileMapBG3 & $FFFF)					; clear text
-	stx	REG_WMADDL
-	stz	REG_WMADDH
-
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024
-
-	lda	#$80							; increment VRAM address by 1 after writing to $2119
-	sta	REG_VMAIN
-	stz	REG_VMADDL						; reset VRAM address
-	stz	REG_VMADDH
-
-	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 0		; clear VRAM
-
-	jml	DebugMenu
 
 
 
