@@ -142,14 +142,14 @@ AreaEnter:
 
 
 
-; -------------------------- HDMA channel 3: BG3 HUD scroll
-	lda	#$02							; transfer mode (2 bytes --> $2112)
+; -------------------------- HDMA channel 3: color math
+	lda	#$02							; transfer mode (2 bytes --> $2132)
 	sta	$4330
-	lda	#$12							; PPU reg. $2112 (BG3 vertical scroll)
+	lda	#$32							; PPU register $2132 (color math subscreen backdrop color)
 	sta	$4331
-	ldx	#ARRAY_HDMA_HUDScroll
+	ldx	#ARRAY_HDMA_ColorMath
 	stx	$4332
-	lda	#$7E
+	lda	#$7E							; table in WRAM expected
 	sta	$4334
 
 
@@ -175,6 +175,18 @@ AreaEnter:
 	stx	$4352
 	lda	#$7E
 	sta	$4354
+
+
+
+; -------------------------- HDMA channel 6: BG3 HUD scroll
+	lda	#$02							; transfer mode (2 bytes --> $2112)
+	sta	$4360
+	lda	#$12							; PPU reg. $2112 (BG3 vertical scroll)
+	sta	$4361
+	ldx	#ARRAY_HDMA_HUDScroll
+	stx	$4362
+	lda	#$7E
+	sta	$4364
 
 
 
@@ -234,7 +246,7 @@ AreaEnter:
 	lda	#%01110111						; make sure BG1/2/3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
 
-	lda	#%00001000						; enable HDMA ch. 3 (BG3 HUD scroll)
+	lda	#%01000000						; enable HDMA ch. 1 (BG3 HUD scroll)
 	tsb	DP_HDMAchannels
 
 	WaitFrames	4						; let the screen clear up
