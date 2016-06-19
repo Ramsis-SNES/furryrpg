@@ -246,7 +246,7 @@ AreaEnter:
 	lda	#%01110111						; make sure BG1/2/3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
 
-	lda	#%01000000						; enable HDMA ch. 1 (BG3 HUD scroll)
+	lda	#%01000000						; enable HDMA ch. 6 (BG3 HUD scroll)
 	tsb	DP_HDMAchannels
 
 	WaitFrames	4						; let the screen clear up

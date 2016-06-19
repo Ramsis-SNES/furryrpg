@@ -57,7 +57,6 @@ OpenTextBox:
 	ldx	#$0000
 -	lda.l	SRC_HDMA_ColMathDialogSel, x
 	sta	ARRAY_HDMA_ColorMath, x
-
 	inx
 	cpx	#SRC_HDMA_ColMathDialogSel_End-SRC_HDMA_ColMathDialogSel
 	bne	-

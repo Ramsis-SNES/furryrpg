@@ -58,7 +58,7 @@ __ShowHUD:
 -	dec	a							; make it appear faster than it disappears (hence multiple decrements)
 	dec	a
 	dec	a
-	bpl	+							; only positive value allowed (except for #$FF)
+	bpl	+							; only positive values allowed (except for #$FF)
 	lda	#$FF							; underflow, set final scroll value
 +	sta	ARRAY_HDMA_HUDScroll+1
 	xba

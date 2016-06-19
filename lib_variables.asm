@@ -168,7 +168,7 @@
 
 ; ************************ NMI/IRQ jump tables *************************
 
-; -------------------------- IRQ routine table (for use with SetIRQRoutine macro)
+; -------------------------- IRQ routine table (for use with SetIRQ macro)
 .ENUM $00
 	TBL_HIRQ_MainMenu	db
 	TBL_VIRQ_Area		db
@@ -177,13 +177,13 @@
 
 
 
-; -------------------------- Vblank routine table (for use with SetVblankRoutine macro)
+; -------------------------- Vblank routine table (for use with SetNMI macro)
 .ENUM $00
 	TBL_NMI_Area		db
 	TBL_NMI_DebugMenu	db
 	TBL_NMI_Error		db
 	TBL_NMI_Mode7		db
-	TBL_NMI_Playfield	db
+	TBL_NMI_WorldMap	db
 	TBL_NMI_Intro		db
 .ENDE
 

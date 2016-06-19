@@ -242,7 +242,7 @@ __WorldMapLoopDpadRightDone:
 	jml	DebugMenu
 
 __WorldMapLoopStButtonDone:
-	jmp WorldMapLoop
+	jmp	WorldMapLoop
 
 
 

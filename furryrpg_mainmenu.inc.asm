@@ -713,7 +713,7 @@ CalcRingMenuItemPos:
 
 
 ; -------------------------- set new IRQ vector
-	SetIRQRoutine TBL_IRQ_MainMenu
+	SetIRQ	TBL_IRQ_MainMenu
 
 
 
