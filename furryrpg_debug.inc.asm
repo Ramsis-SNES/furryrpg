@@ -180,7 +180,7 @@ DebugMenuLoop:
 	lda	#:SRC_TrackPointerTable
 	sta	DP_SubStrAddr+2
 
-	PrintString	18, 4, "%s"					; print current SNESGSS song title
+	PrintString	19, 4, "%s"					; print current SNESGSS song title
 
 	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
@@ -201,7 +201,7 @@ DebugMenuLoop:
 
 	bra	++
 
-+	lda	#134
++	lda	#142
 	sta	SpriteBuf1.Text+1
 
 ++
@@ -214,7 +214,7 @@ DebugMenuLoop:
 	beq	++
 
 	lda	SpriteBuf1.Text+1
-	cmp	#134
+	cmp	#142
 	beq	+
 	clc
 	adc	#8
@@ -235,7 +235,7 @@ DebugMenuLoop:
 	beq	++
 
 	lda	SpriteBuf1.Text+1					; only do anything if cursor is on music test
-	cmp	#134
+	cmp	#142
 	bne	++
 
 	lda	DP_NextTrack						; go to previous track
@@ -315,6 +315,11 @@ DebugMenuLoop:
 
 	jmp	MoveSpriteCircularTest
 
++	cmp	#134
+	bne	+
+
+	jmp	ShowSpriteGallery
+
 +	jsl	PlayTrack						; else, cursor must be on music test
 
 ++
@@ -332,6 +337,126 @@ DebugMenuLoop:
 
 	jsr	ShowCPUload
 	jmp	DebugMenuLoop
+
+
+
+ShowSpriteGallery:
+	lda	#$80							; enter forced blank
+	sta	REG_INIDISP
+
+	DisableIRQs
+
+	ldx	#(TileMapBG3 & $FFFF)
+	stx	REG_WMADDL
+	stz	REG_WMADDH
+
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 2048		; clear BG3 tile map
+
+	jsr	SpriteInit						; purge OAM
+	ldx	#ADDR_VRAM_SPR_Tiles					; set VRAM address for sprite tiles
+	stx	REG_VMADDL
+
+	DMA_CH0 $01, :GFX_Sprites_Gallery, GFX_Sprites_Gallery, $18, 2048
+
+	lda	#$80							; set CGRAM address to #256 (word address) for sprites
+	sta	REG_CGADD
+
+	DMA_CH0 $02, :SRC_Palettes_Sprites_Gallery, SRC_Palettes_Sprites_Gallery, $22, 160
+
+	Accu16
+
+
+
+; -------------------------- fennec puppet
+	lda	#$2020							; x (low), y (high)
+	sta	SpriteBuf1.NPCs
+	lda	#$0000							; tile no (low), attributes (high)
+	sta	SpriteBuf1.NPCs+2
+	lda	#$2030							; x (low), y (high)
+	sta	SpriteBuf1.NPCs+4
+	lda	#$0002							; tile no (low), attributes (high)
+	sta	SpriteBuf1.NPCs+6
+	lda	#$3020							; x (low), y (high)
+	sta	SpriteBuf1.NPCs+8
+	lda	#$0020							; tile no (low), attributes (high)
+	sta	SpriteBuf1.NPCs+10
+	lda	#$3030							; x (low), y (high)
+	sta	SpriteBuf1.NPCs+12
+	lda	#$0022							; tile no (low), attributes (high)
+	sta	SpriteBuf1.NPCs+14
+
+
+
+; -------------------------- fox
+	lda	#$2050							; x (low), y (high)
+	sta	SpriteBuf1.NPCs+16
+	lda	#$0204							; tile no (low), attributes (high)
+	sta	SpriteBuf1.NPCs+18
+	lda	#$3050							; x (low), y (high)
+	sta	SpriteBuf1.NPCs+20
+	lda	#$0224							; tile no (low), attributes (high)
+	sta	SpriteBuf1.NPCs+22
+
+
+
+; -------------------------- wolf 1
+	lda	#$2070							; x (low), y (high)
+	sta	SpriteBuf1.NPCs+24
+	lda	#$0406							; tile no (low), attributes (high)
+	sta	SpriteBuf1.NPCs+26
+	lda	#$3070							; x (low), y (high)
+	sta	SpriteBuf1.NPCs+28
+	lda	#$0426							; tile no (low), attributes (high)
+	sta	SpriteBuf1.NPCs+30
+
+
+
+; -------------------------- wolf 2
+	lda	#$2090							; x (low), y (high)
+	sta	SpriteBuf1.NPCs+32
+	lda	#$0608							; tile no (low), attributes (high)
+	sta	SpriteBuf1.NPCs+34
+	lda	#$3090							; x (low), y (high)
+	sta	SpriteBuf1.NPCs+36
+	lda	#$0628							; tile no (low), attributes (high)
+	sta	SpriteBuf1.NPCs+38
+
+
+
+; -------------------------- wolf 2
+	lda	#$20B0							; x (low), y (high)
+	sta	SpriteBuf1.NPCs+40
+	lda	#$080A							; tile no (low), attributes (high)
+	sta	SpriteBuf1.NPCs+42
+	lda	#$30B0							; x (low), y (high)
+	sta	SpriteBuf1.NPCs+44
+	lda	#$082A							; tile no (low), attributes (high)
+	sta	SpriteBuf1.NPCs+46
+
+
+
+; -------------------------- registers
+;	lda	#%0001000000010000					; turn on sprites only on mainscreen and subscreen
+;	sta	REG_TM
+;	sta	DP_Shadow_TSTM						; copy to shadow variable
+
+	Accu8
+
+	PrintString	1, 3, "Sprites contributed by\n   Tantalus:"
+	PrintString	9, 3, "Dorothy   Wolf1   Wolf3"
+	PrintString	10, 10, "Fox    Wolf2"
+
+	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
+	tsb	DP_DMAUpdates
+	lda	#$81							; reenable NMI
+	sta	REG_NMITIMEN
+	lda	#$0F							; turn screen back on
+	sta	REG_INIDISP
+
+	WaitUserInput
+
+	jsr	SpriteInit						; purge OAM
+	jmp	DebugMenu
 
 
 

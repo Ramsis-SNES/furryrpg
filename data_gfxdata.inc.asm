@@ -134,6 +134,54 @@ SRC_Palette_Clouds:
 ;SRC_Tilemap_Clouds:
 ;.INCBIN ".\\gfx\\cloud.map"
 
+GFX_Sprites_Gallery:
+.INCBIN ".\\gfx\\tantalus\\fennec2.pic" READ 128			; only read first row of tiles for now
+.INCBIN ".\\gfx\\tantalus\\fox2.pic" READ 64
+.INCBIN ".\\gfx\\tantalus\\wolf1.pic" READ 64
+.INCBIN ".\\gfx\\tantalus\\wolf2.pic" READ 64
+.INCBIN ".\\gfx\\tantalus\\wolfclawblack.pic" READ 64
+
+.REPEAT 128								; fill empty space before reading the next tile row
+	.DB $00
+.ENDR
+
+.INCBIN ".\\gfx\\tantalus\\fennec2.pic" SKIP 128 READ 128
+.INCBIN ".\\gfx\\tantalus\\fox2.pic" SKIP 64 READ 64
+.INCBIN ".\\gfx\\tantalus\\wolf1.pic" SKIP 64 READ 64
+.INCBIN ".\\gfx\\tantalus\\wolf2.pic" SKIP 64 READ 64
+.INCBIN ".\\gfx\\tantalus\\wolfclawblack.pic" SKIP 64 READ 64
+
+.REPEAT 128
+	.DB $00
+.ENDR
+
+.INCBIN ".\\gfx\\tantalus\\fennec2.pic" SKIP 256 READ 128
+.INCBIN ".\\gfx\\tantalus\\fox2.pic" SKIP 128 READ 64
+.INCBIN ".\\gfx\\tantalus\\wolf1.pic" SKIP 128 READ 64
+.INCBIN ".\\gfx\\tantalus\\wolf2.pic" SKIP 128 READ 64
+.INCBIN ".\\gfx\\tantalus\\wolfclawblack.pic" SKIP 128 READ 64
+
+.REPEAT 128
+	.DB $00
+.ENDR
+
+.INCBIN ".\\gfx\\tantalus\\fennec2.pic" SKIP 384 READ 128
+.INCBIN ".\\gfx\\tantalus\\fox2.pic" SKIP 192 READ 64
+.INCBIN ".\\gfx\\tantalus\\wolf1.pic" SKIP 192 READ 64
+.INCBIN ".\\gfx\\tantalus\\wolf2.pic" SKIP 192 READ 64
+.INCBIN ".\\gfx\\tantalus\\wolfclawblack.pic" SKIP 192 READ 64
+
+.REPEAT 128
+	.DB $00
+.ENDR
+
+SRC_Palettes_Sprites_Gallery:
+.INCBIN ".\\gfx\\tantalus\\fennec2.pal"
+.INCBIN ".\\gfx\\tantalus\\fox2.pal"
+.INCBIN ".\\gfx\\tantalus\\wolf1.pal"
+.INCBIN ".\\gfx\\tantalus\\wolf2.pal"
+.INCBIN ".\\gfx\\tantalus\\wolfclawblack.pal"
+
 
 
 ; ***************************** Logo data ******************************
