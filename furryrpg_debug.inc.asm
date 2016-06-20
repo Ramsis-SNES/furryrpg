@@ -146,7 +146,8 @@ DebugMenu:
 	PrintString	14, 3, "Mode1 world map"
 	PrintString	15, 3, "Mode7 world map"
 	PrintString	16, 3, "Move sprite on circular path"
-	PrintString	17, 3, "SNESGSS music test:"
+	PrintString	17, 3, "Show sprite gallery"
+	PrintString	18, 3, "SNESGSS music test:"
 ;	PrintString	16, 3, ""
 ;	PrintString	17, 3, ""
 
