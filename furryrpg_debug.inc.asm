@@ -249,13 +249,13 @@ DebugMenuLoop:
 
 
 
-; -------------------------- check for dpad left
+; -------------------------- check for dpad right
 	lda	Joy1New+1
 	and	#%00000001
 	beq	++
 
 	lda	SpriteBuf1.Text+1					; only do anything if cursor is on music test
-	cmp	#134
+	cmp	#142
 	bne	++
 
 	lda	DP_NextTrack						; go to next track
