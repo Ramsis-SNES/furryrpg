@@ -545,6 +545,15 @@ __ProcessTextLoop:
 
 
 ; -------------------------- control code encountered, check type (order: very likely > less likely)
++	cmp	#CC_Portrait						; char portrait?
+	bne	+
+	iny								; increment string pointer to portrait no.
+	lda	[DP_TextString], y					; read portrait no. (0-127)
+	ora	#$80							; set "change portrait" bit
+	sta	DP_TextBoxCharPortrait					; save to "change portrait" request variable
+	inc	DP_TextStringCounter					; increment to next ASCII string character
+	jmp	__ProcessTextJumpOut
+
 +	cmp	#CC_Indent						; indention?
 	bne	+
 

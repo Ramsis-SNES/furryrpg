@@ -291,17 +291,18 @@
 
 
 ; -------------------------- text box control codes
+.DEFINE CC_Portrait		0
+.DEFINE CC_BoxBlue		1
+.DEFINE CC_BoxRed		2
+.DEFINE CC_BoxPink		3
+.DEFINE CC_BoxEvil		4
+.DEFINE CC_BoxPissed		5
+.DEFINE CC_ClearTextBox		6
+.DEFINE CC_Indent		7
+.DEFINE CC_NewLine		8
+.DEFINE CC_Selection		9
+.DEFINE NO_CC			10					; this has to be greater than the last control code
 .DEFINE CC_End			$FF					; end-of-string marker
-.DEFINE CC_BoxBlue		4					; from here on, CCs are relocatable
-.DEFINE CC_BoxRed		5
-.DEFINE CC_BoxPink		6
-.DEFINE CC_BoxEvil		7
-.DEFINE CC_BoxPissed		8
-.DEFINE CC_ClearTextBox		9
-.DEFINE CC_Indent		10
-.DEFINE CC_NewLine		11
-.DEFINE CC_Selection		12
-.DEFINE NO_CC			13					; this has to be greater than the last control code
 
 
 
@@ -444,7 +445,7 @@
 	DP_Shadow_TSTM		dw					; shadow copies of subscreen (high) & mainscreen (low) designation registers ($212C/212D)
 
 	DP_TextASCIIChar	dw					; holds current ASCII character no.
-	DP_TextBoxCharPortrait	db					; nrrppppp [n = don't change character portrait, p = change portrait: 0 = no portrait (max. 31 portraits), r = reserved]
+	DP_TextBoxCharPortrait	db					; pnnnnnnn [n = change character portrait, n = no. of portrait (0-127)
 	DP_TextBoxSelection	db					; holds selection option chosen by player
 	DP_TextBoxSelMax	db					; for HDMA selection bar
 	DP_TextBoxSelMin	db					; ditto

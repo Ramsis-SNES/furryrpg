@@ -25,9 +25,8 @@ Vblank_Area:
 
 
 ; -------------------------- update text box
-	lda	DP_TextBoxCharPortrait					; check for "don't change character portrait" flag
-	bmi	+
-
+	lda	DP_TextBoxCharPortrait					; check for "change character portrait" flag
+	bpl	+
 	jsr	UpdateCharPortrait
 	jmp	__SkipRefreshes3					; changing the portrait involves 2 DMAs, so skip other stuff for now
 
@@ -788,76 +787,55 @@ UpdateCharPortrait:
 	sta	REG_VMAIN
 	ldx	#ADDR_VRAM_Portrait					; set VRAM address to char portrait
 	stx	REG_VMADDL
+	lda	#ADDR_CGRAM_PORTRAIT					; set CGRAM address for character portrait
+	sta	REG_CGADD
 
 	lda	DP_TextBoxCharPortrait
-	and	#%00011111						; check for portrait no., 0 = no portrait
+	and	#$7F							; check for portrait no., 0 = no portrait
 	bne	+
 
-	lda	#ADDR_CGRAM_PORTRAIT					; set CGRAM address for character portrait, zero out palette
-	sta	REG_CGADD
-
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $22, 32
-
-	jmp	__CharPortraitUpdated
-
-+	cmp	#1
-	bne	+
-
-	DMA_CH0 $01, :GFX_Portrait_Char1, GFX_Portrait_Char1, $18, 1920
-
-	lda	#ADDR_CGRAM_PORTRAIT					; set CGRAM address for character portrait
-	sta	REG_CGADD
-
-	DMA_CH0 $02, :SRC_Palette_Portrait_Char1, SRC_Palette_Portrait_Char1, $22, 32
-
-	jmp	__CharPortraitUpdated
-
-+	cmp	#2
-	bne	+
-
-	DMA_CH0 $01, :GFX_Portrait_Char2, GFX_Portrait_Char2, $18, 1920
-
-	lda	#ADDR_CGRAM_PORTRAIT					; set CGRAM address for character portrait
-	sta	REG_CGADD
-
-	DMA_CH0 $02, :SRC_Palette_Portrait_Char2, SRC_Palette_Portrait_Char2, $22, 32
-
-	jmp	__CharPortraitUpdated
-
-+	cmp	#3
-	bne	+
-
-	DMA_CH0 $01, :GFX_Portrait_Char3, GFX_Portrait_Char3, $18, 1920
-
-	lda	#ADDR_CGRAM_PORTRAIT					; set CGRAM address for character portrait
-	sta	REG_CGADD
-
-	DMA_CH0 $02, :SRC_Palette_Portrait_Char3, SRC_Palette_Portrait_Char3, $22, 32
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $22, 32		; no portrait wanted, so just zero out palette // FIXME, add masking tiles
 
 	bra	__CharPortraitUpdated
 
-+	cmp	#4
-	bne	+
++	Accu16								; portrait no. in A
 
-	DMA_CH0 $01, :GFX_Portrait_Char4, GFX_Portrait_Char4, $18, 1920
+	and	#$00FF							; remove garbage in high byte
+	asl	a
+	tax								; make portrait no. = index in GFX offset table
+	lda.l	SRC_CharPortaitGFXTable, x
+	sta	$4302							; data offset
+	ldy	#$1801							; low byte: DMA mode, high byte: B bus register ($2118/VMDATA)
+ 	sty	$4300
 
-	lda	#ADDR_CGRAM_PORTRAIT					; set CGRAM address for character portrait
-	sta	REG_CGADD
+	Accu8
 
-	DMA_CH0 $02, :SRC_Palette_Portrait_Char4, SRC_Palette_Portrait_Char4, $22, 32
+	lda	#:GFX_Portrait_Char1					; data bank (all portraits need to be in the same bank)
+	sta	$4304
+	ldy	#1920							; data length
+	sty	$4305
+	lda	#%00000001						; initiate DMA transfer (channel 0)
+	sta	REG_MDMAEN
 
-;	bra	__CharPortraitUpdated
+	Accu16
 
-+;	cmp	#5
-;	bne	+
-	; load char portrait #5
-;	bra	__CharPortraitUpdated
+	lda.l	SRC_CharPortaitPaletteTable, x				; index is still in X, use that for correct palette
+	sta	$4302							; data offset
+	ldx	#$2202							; low byte: DMA mode, high byte: B bus register ($2122/CGDATA)
+ 	stx	$4300
+
+	Accu8
+
+	lda	#:SRC_Palette_Portrait_Char1				; data bank (all portrait palettes need to be in the same bank)
+	sta	$4304
+	ldx	#32							; data length (16 colors)
+	stx	$4305
+	lda	#%00000001						; initiate DMA transfer (channel 0)
+	sta	REG_MDMAEN
 
 __CharPortraitUpdated:
-	lda	#%10000000						; portrait updated, remember that for next Vblank
-	tsb	DP_TextBoxCharPortrait
-
-__CharPortraitDone:
+	lda	#%10000000						; portrait updated, clear request flag
+	trb	DP_TextBoxCharPortrait
 	rts
 
 

@@ -706,8 +706,6 @@ __MainAreaLoopDpadRightDone:
 	stz	DP_PlayerIdleCounter+1
 	lda	#$80							; make character idle
 	tsb	DP_Char1SpriteStatus
-	lda	#$03
-	sta	DP_TextBoxCharPortrait					; set char portrait #3
 	jsr	OpenTextBox
 
 __MainAreaLoopAButtonDone:
