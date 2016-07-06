@@ -565,7 +565,7 @@ HIRQ_MainMenu:
 
 	lda	#$01|$08						; switch to BG Mode 1 (BG3 priority)
 	sta	REG_BGMODE
-
+	stz	REG_BG12NBA						; reset BG1/2 character data area designation to $0000
 	lda	REG_TIMEUP						; acknowledge IRQ
 
 	Accu16

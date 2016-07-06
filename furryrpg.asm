@@ -149,7 +149,7 @@ DummyCOP:
 .SECTION "VersionStrings" FORCE
 
 STR_Software_Title:
-	.DB "FURRY RPG! (WORKING TITLE)"
+	.DB "FURRY RPG! (Working title)"
 
 STR_SoftwareVersion:
 	.DB " v"
@@ -161,7 +161,7 @@ STR_SoftwareVersionNo:
 ;STR_SoftwareVersionNo_END:
 
 STR_SoftwareMaker:
-	.DB $A9, " 2016 by www.ManuLoewe.de"				; $A9 = copyright symbol
+	.DB "Copyright (c) 2016 by Ramsis - http://manuloewe.de/"
 	.DB 0
 
 STR_SoftwareBuild:
@@ -259,7 +259,7 @@ Startup:
 .BANK CurrentBank SLOT 0
 .ORG 0
 
-.SECTION "CharacterData"
+.SECTION "CharacterData 1"
 
 .INCLUDE "data_gfxdata.inc.asm"						; sprites, fonts, palettes
 .INCLUDE "data_fontwidthtables.inc.asm"					; font width table for sprite VWF

@@ -33,19 +33,7 @@ DebugMenu:
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 2048
-
-	ldx	#(TileMapBG2 & $FFFF)
-	stx	REG_WMADDL
-	stz	REG_WMADDH
-
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 2048
-
-	ldx	#(TileMapBG3 & $FFFF)
-	stx	REG_WMADDL
-	stz	REG_WMADDH
-
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 2048
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 2048*3
 
 	lda	#%01110111						; make sure BG1/2/3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
@@ -420,7 +408,7 @@ ShowSpriteGallery:
 
 
 
-; -------------------------- wolf 2
+; -------------------------- wolf 3
 	lda	#$20B0							; x (low), y (high)
 	sta	SpriteBuf1.NPCs+40
 	lda	#$080A							; tile no (low), attributes (high)
@@ -480,6 +468,8 @@ ShowCPUload:
 
 
 ; ******************************* Tests ********************************
+
+.ENDASM
 
 MoveSpriteCircularTest:
 	ldx	#(TileMapBG3 & $FFFF)					; clear BG3 tilemap
@@ -551,6 +541,8 @@ __MSCTestLoop:
 
 	jsr	ShowCPUload
 	jmp	__MSCTestLoop
+
+.ASM
 
 
 

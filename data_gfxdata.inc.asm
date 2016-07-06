@@ -257,7 +257,7 @@ SRC_Tilemap_Area003:
 ; ************************* GFX pointer tables *************************
 
 SRC_CharPortaitGFXTable:
-	.DW 0								; dummy bytes  (needed for correct table index)
+	.DW 0								; dummy bytes (needed for correct table index)
 	.DW GFX_Portrait_Char1
 	.DW GFX_Portrait_Char2
 	.DW GFX_Portrait_Char3

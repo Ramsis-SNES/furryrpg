@@ -429,6 +429,7 @@ __TBHSLoop:
 	WaitFrames	1						; don't use WAI here as IRQ is enabled
 
 
+
 ; -------------------------- check for dpad up
 	lda	Joy1New+1
 	and	#%00001000
@@ -1469,7 +1470,7 @@ _defaultF:
 
 FillTextBuffer:								; expectations: A = 8 bit, X/Y = 16 bit
 	ldx	Cursor
-	sta	TileMapBG3, x						; write character to the BG1 text buffer
+	sta	TileMapBG3, x						; write character to the BG3 text buffer
 	inx								; advance text cursor position
 	stx	Cursor
 	rts

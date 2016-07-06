@@ -204,7 +204,13 @@ MainMenuLoop:
 ; ***************************** Main menu ******************************
 
 InGameMenu:
-	lda	#$80							; enter forced blank
+	jsl	music_stop						; stop music // REMOVEME when done with menu
+	lda	DP_MSU1present
+	beq	+
+	stz	MSU_CONTROL						; stop MSU1 track
+	stz	MSU_VOLUME
+
++	lda	#$80							; enter forced blank
 	sta	REG_INIDISP
 	stz	DP_HDMAchannels						; disable HDMA
 	wai								; wait

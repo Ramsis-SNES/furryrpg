@@ -254,6 +254,23 @@ SRC_HDMA_M7D:
 
 
 
+SRC_HDMA_Mode5:
+	.DB 112|$80
+
+.REPEAT 112
+	.DB $05
+.ENDR
+
+	.DB 112|$80
+
+.REPEAT 112
+	.DB $05
+.ENDR
+
+	.DB 0
+
+
+
 SRC_HDMA_ResetBGScroll:
 	.DB 127								; 127 + 49 = 176 scanlines = playfield
 	.DW $0000, $00FF						; horiz. scroll = $0000, vert. scroll = $00FF (values to be manipulated in WRAM)
@@ -290,23 +307,6 @@ SRC_HDMA_WorldMapCG4:
 
 SRC_HDMA_WorldMapCG5:
 	.DB $01, $01, $63, $0C
-
-
-
-SRC_HDMA_test5:
-	.DB 112|$80
-
-.REPEAT 112
-	.DB $05
-.ENDR
-
-	.DB 112|$80
-
-.REPEAT 112
-	.DB $05
-.ENDR
-
-	.DB 0
 
 
 
