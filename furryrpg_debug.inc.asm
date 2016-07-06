@@ -135,9 +135,6 @@ DebugMenu:
 
 
 ; -------------------------- done, draw debug menu
-;	PrintString	2, 3, "FURRY RPG! (Build #00220)"
-;	PrintString	3, 3, "(c) by www.ManuLoewe.de"
-
 	PrintString	7, 3, "DEBUG MENU:"
 	PrintString	10, 3, "Alpha intro"
 	PrintString	11, 3, "Area/dialog test"

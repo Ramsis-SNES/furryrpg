@@ -20,12 +20,8 @@
 .DEFINE PORTRAIT_CHAR4		".\\gfx\\portrait_linkwolf.pic"
 .DEFINE PORTRAIT_CHAR4_PAL	".\\gfx\\portrait_linkwolf.pal"
 
-.DEFINE FONT_BIGSPRITES		".\\gfx\\font_sprites_big.pic"
-.DEFINE FONT_BIGSPRITES_PAL	".\\gfx\\font_sprites_big.pal"
-
 .DEFINE FONT_HUD		".\\gfx\\font_hud.pic"			; 2048 bytes
 .DEFINE FONT_MODE5		".\\gfx\\font_mode5_vwf2.pic"		; 4096 bytes
-
 .DEFINE FONT_SPRITES		".\\gfx\\font_spr.pic"
 
 .DEFINE LOGO			".\\gfx\\logo-gr.pic"
@@ -63,7 +59,6 @@ SRC_Palettes_Text:
 	.DW $0000							; unused color
 	.DW $03FF							; font (yellow)
 
-.INCBIN FONT_BIGSPRITES_PAL						; 32 bytes
 
 SRC_Palette_Portrait_Char1:
 .INCBIN PORTRAIT_CHAR1_PAL						; 32 bytes
@@ -112,9 +107,6 @@ GFX_Portrait_Char4:
 
 
 ; *********************** Sprite character data ************************
-
-GFX_Sprites_Bigfont:
-.INCBIN FONT_BIGSPRITES							; 4096 bytes
 
 GFX_Sprites_Smallfont:
 .INCBIN FONT_SPRITES							; 4096 bytes

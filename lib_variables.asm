@@ -292,10 +292,6 @@
 
 ; -------------------------- text box control codes
 .DEFINE CC_End			$FF					; end-of-string marker
-;.DEFINE CC_FONT_WHITE		0					; font color control codes = palette numbers (i.e., don't relocate these)
-;.DEFINE CC_FONT_RED		1
-;.DEFINE CC_FONT_GREEN		2
-;.DEFINE CC_FONT_YELLOW		3
 .DEFINE CC_BoxBlue		4					; from here on, CCs are relocatable
 .DEFINE CC_BoxRed		5
 .DEFINE CC_BoxPink		6

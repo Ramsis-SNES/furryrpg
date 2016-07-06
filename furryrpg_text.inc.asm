@@ -601,7 +601,6 @@ __ProcessTextLoop:
 __OtherControlCode:
 	cmp	#CC_BoxBlue
 	bcs	+
-;	sta	DP_TextPalette						; 0-3 = switch palette font
 	bra	__ProcessTextLoop
 
 +	jsr	ChangeTextBoxBG
@@ -749,9 +748,7 @@ __ProcessTextDone:
 
 	lda	#%01000000						; clear "more text pending" flag
 	trb	DP_TextBoxStatus
-
-;	stz	DP_TextPalette						; reset string parameters
-	stz	DP_TextStringCounter
+	stz	DP_TextStringCounter					; reset string parameters
 
 	Accu16
 
@@ -772,8 +769,7 @@ ClearTextBox:
 
 	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 184*16		; 184 tiles
 
-;	stz	DP_TextPalette						; reset string parameters
-	stz	DP_TextStringCounter
+	stz	DP_TextStringCounter					; reset string parameters
 
 	Accu16
 
