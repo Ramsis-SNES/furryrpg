@@ -62,15 +62,15 @@ OpenTextBox:
 	bne	-
 
 	lda	#%00010000						; set color math enable bits (4-5) to "MathWindow"
-	sta	$2130
-	lda	#%00100000						; enable color math on mainscreen backdrop (color math isn't supported on BGs in Mode 5 anyway)
-	sta	$2131
+	sta	REG_CGWSEL
+	lda	#%00100011						; enable color math on BG1/2 & mainscreen backdrop
+	sta	REG_CGADSUB
 	lda	#50							; color "window" left pos
-	sta	$2126
+	sta	REG_WH0
 	lda	#244							; color "window" right pos
-	sta	$2127
+	sta	REG_WH1
 	lda	#%00100000						; color math window 1 area = outside (why does this work??)
-	sta	$2125
+	sta	REG_WOBJSEL
 
 	Accu16
 
