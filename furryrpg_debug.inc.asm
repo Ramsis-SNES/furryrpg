@@ -325,13 +325,12 @@ DebugMenuLoop:
 
 
 ; -------------------------- check for Start
-;	lda	Joy1Press+1
-;	and	#%00010000
-;	beq	+
+	lda	Joy1Press+1
+	and	#%00010000
+	beq	+
 
-;	DoSomething
-
-;+
+	jsr	CreateRandomNr
++
 
 	jsr	ShowCPUload
 	jmp	DebugMenuLoop
