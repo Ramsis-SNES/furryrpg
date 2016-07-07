@@ -764,7 +764,7 @@ VerifyROMIntegrity:
 	lda	temp+7							; increment bank byte
 	inc	a
 	sta	temp+7
-	cmp	#$D3							; last bank + 1 reached?
+	cmp	#$C0 + TotalROMBanks					; all banks checked?
 	bcc	--
 
 	Accu16

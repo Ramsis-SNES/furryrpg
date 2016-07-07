@@ -435,6 +435,7 @@ ShowSpriteGallery:
 	tsb	DP_DMAUpdates
 	lda	#$81							; reenable NMI
 	sta	REG_NMITIMEN
+	cli
 	lda	#$0F							; turn screen back on
 	sta	REG_INIDISP
 

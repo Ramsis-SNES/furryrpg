@@ -448,7 +448,7 @@
 	DP_Shadow_TSTM		dw					; shadow copies of subscreen (high) & mainscreen (low) designation registers ($212C/212D)
 
 	DP_TextASCIIChar	dw					; holds current ASCII character no.
-	DP_TextBoxCharPortrait	db					; pnnnnnnn [n = change character portrait, n = no. of portrait (0-127)
+	DP_TextBoxCharPortrait	db					; pnnnnnnn [p = change character portrait, n = no. of portrait (0-127)
 	DP_TextBoxSelection	db					; holds selection option chosen by player
 	DP_TextBoxSelMax	db					; for HDMA selection bar
 	DP_TextBoxSelMin	db					; ditto
@@ -597,12 +597,12 @@
 ; ********************** Variables in upper WRAM ***********************
 
 .ENUM $7E2000
-	TileMapBG1	INSTANCEOF tilemap_bg1				; 1024 bytes
-	TileMapBG1Hi	INSTANCEOF tilemap_bg1_hi			; 1024 bytes
-	TileMapBG2	INSTANCEOF tilemap_bg2				; 1024 bytes
-	TileMapBG2Hi	INSTANCEOF tilemap_bg2_hi			; 1024 bytes
-	TileMapBG3	INSTANCEOF tilemap_bg3				; 1024 bytes
-	TileMapBG3Hi	INSTANCEOF tilemap_bg3_hi			; 1024 bytes
+	TileMapBG1			INSTANCEOF tilemap_bg1		; each tile map is 1024 bytes in size
+	TileMapBG1Hi			INSTANCEOF tilemap_bg1_hi
+	TileMapBG2			INSTANCEOF tilemap_bg2
+	TileMapBG2Hi			INSTANCEOF tilemap_bg2_hi
+	TileMapBG3			INSTANCEOF tilemap_bg3
+	TileMapBG3Hi			INSTANCEOF tilemap_bg3_hi
 
 	ARRAY_HDMA_BackgrPlayfield	dsb 704				; 16-bit palette index & 16-bit color entry for 176 scanlines
 	ARRAY_HDMA_BackgrTextBox	dsb 192				; ditto for 48 scanlines

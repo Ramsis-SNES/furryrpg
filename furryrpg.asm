@@ -75,7 +75,7 @@
 	HIROM
 	FASTROM
 	CARTRIDGETYPE	$02
-	ROMSIZE		$09
+	ROMSIZE		$0B
 	SRAMSIZE	$03
 	COUNTRY		$01
 	LICENSEECODE	$33
@@ -817,10 +817,6 @@ SRC_track_09_notes:
 .INCBIN TRACK09_NOTES
 
 .ENDS
-
-
-
-; *************************** 19 BANKS USED ****************************
 
 
 

@@ -9,6 +9,23 @@
 
 
 
+SRC_HDMA_BG12CharData:
+	.DB 112|$80
+
+.REPEAT 112
+	.DB $40
+.ENDR
+
+	.DB 112|$80
+
+.REPEAT 112
+	.DB $40
+.ENDR
+
+	.DB 0
+
+
+
 SRC_HDMA_ColMathMode7:
 	.DB PARAM_MODE7_SKY_LINES					; for the sky,
 	.DB $E0, $E0							; apply black (i.e., don't affect display)
