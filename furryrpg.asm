@@ -15,8 +15,8 @@
 
 .DEFINE DEBUG
 ;.DEFINE NOMUSIC							; activate this to disable music // FIXME (make this actually work)
-
 .DEFINE CurrentBank	0
+.DEFINE TotalROMBanks	20						; self-reminder: increase value when using more banks (crucial for ROM integrity check)
 .DEFINE START_OFFSET	$F000						; start code offset in bank $C0
 
 .DEFINE SPC700_DRV	".\\music\\spc700-driver-v1.4.bin"
@@ -275,6 +275,22 @@ Startup:
 .BANK CurrentBank SLOT 0
 .ORG 0
 
+.SECTION "CharacterData 2"
+
+GFX_Items_Eng:
+.INCBIN ".\\gfx\\items_eng.pic"						; English item names (2bpp gfx, 40,960 bytes)
+
+.ENDS
+
+
+
+; ****************************** NEW BANK ******************************
+
+.REDEFINE CurrentBank	CurrentBank+1
+
+.BANK CurrentBank SLOT 0
+.ORG 0
+
 .SECTION "English dialog" FORCE
 
 .INCLUDE "data_dialogpointers_eng.inc.asm"				; pointers to English dialog
@@ -284,9 +300,11 @@ Startup:
 
 .ORG $8000
 
-.SECTION "English items" FORCE
+.SECTION "English misc. text" FORCE
 
 .INCLUDE "data_items_eng.inc.asm"					; English item names
+
+.INCLUDE "data_text_mainmenu_eng.inc.asm"				; English main menu strings
 
 .ENDS
 

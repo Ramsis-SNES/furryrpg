@@ -59,6 +59,11 @@ SRC_Palettes_Text:
 	.DW $0000							; unused color
 	.DW $03FF							; font (yellow)
 
+SRC_Palettes_Items:							; 4-color palette for item name gfx
+	.DW $0000
+	.DW $2108
+	.DW $4210
+	.DW $7FFF
 
 SRC_Palette_Portrait_Char1:
 .INCBIN PORTRAIT_CHAR1_PAL						; 32 bytes

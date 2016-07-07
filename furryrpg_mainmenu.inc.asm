@@ -12,6 +12,8 @@
 .ACCU 8
 .INDEX 16
 
+.ENDASM
+
 MainMenu:
 	DrawFrame	10, 9, 11, 7
 	PrintString	10, 11, "Inventory"
@@ -199,6 +201,8 @@ MainMenuLoop:
 
 	jmp	MainMenuLoop
 
+.ASM
+
 
 
 ; ***************************** Main menu ******************************
@@ -274,7 +278,7 @@ InGameMenu:
 ; -------------------------- palettes --> CGRAM
 	stz	REG_CGADD						; reset CGRAM address
 
-	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
+	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 40
 
 	lda	#ADDR_CGRAM_AREA					; set CGRAM address for BG1 tiles palette
 	sta	REG_CGADD
@@ -322,17 +326,6 @@ InGameMenu:
 
 
 ; -------------------------- set up menu BG color & misc. screen registers
-	lda	#%01100011						; 16×16 (small) / 32×32 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
-	sta	REG_OBSEL
-
-	Accu16
-
-	lda	#%0001011100010111					; turn on BG1/2/3 & sprites on mainscreen and	subscreen
-	sta	REG_TM
-	sta	DP_Shadow_TSTM						; copy to shadow variable (not yet used)
-
-	Accu8
-
 	ldx	#0
 -	lda.l	SRC_HDMA_ColMathMainMenu, x
 	sta	ARRAY_HDMA_ColorMath, x
@@ -340,6 +333,20 @@ InGameMenu:
 	cpx	#SRC_HDMA_ColMathMainMenu_End-SRC_HDMA_ColMathMainMenu
 	bne	-
 
+	lda	#$01|$08						; set BG Mode 1 (BG3 priority)
+	sta	REG_BGMODE
+	lda	#%01100011						; 16×16 (small) / 32×32 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
+	sta	REG_OBSEL
+	lda	#$50|$01						; BG1 tile map VRAM offset: $5000, Tile Map size: 64×32 tiles
+	sta	REG_BG1SC
+	lda	#$58|$01						; BG2 tile map VRAM offset: $5800, Tile Map size: 64×32 tiles
+	sta	REG_BG2SC
+	lda	#$48|$01						; BG3 tile map VRAM offset: $4800, Tile Map size: 64×32 tiles
+	sta	REG_BG3SC
+;	lda	#$00							; BG1/BG2 character data VRAM offset: $0000
+	stz	REG_BG12NBA
+	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
+	sta	REG_BG34NBA
 	stz	REG_BG1HOFS						; reset BG1 horizontal scroll
 	stz	REG_BG1HOFS
 	lda	#$FF							; set BG1 vertical scroll = -1
@@ -356,6 +363,15 @@ InGameMenu:
 	stz	REG_CGWSEL						; clear color math disable bits
 	lda	#%00100001						; enable color math on BG1 + backdrop
 	sta	REG_CGADSUB
+
+	Accu16
+
+	lda	#%0001011100010111					; turn on BG1/2/3 & sprites on mainscreen and subscreen
+	sta	REG_TM
+	sta	DP_Shadow_TSTM						; copy to shadow variable (not yet used)
+
+	Accu8
+
 	lda	#%00001000						; enable HDMA channels 3 (color math)
 	tsb	DP_HDMAchannels
 
@@ -551,7 +567,43 @@ __RingMenuLoopDpadRightDone:
 	lda	#%00000100						; make sure BG3 lo tilemap gets updated
 	tsb	DP_DMAUpdates
 
+
+
+; -------------------------- check for A button = make selection
+	lda	Joy1New
+	and	#%10000000
+	beq	__RingMenuLoopAButtonDone
+
+	lda	DP_RingMenuAngle					; make selection based on ring menu angle
+	lsr	a							; shift into lower nibble
+	lsr	a
+	lsr	a
+	lsr	a
+
+	Accu16
+
+	and #$000F							; remove garbage data
+	tax
+
+	Accu8
+
+	jmp	(SRC_MainMenuSelTbl, x)
+
+__RingMenuLoopAButtonDone:
+
 	jmp	RingMenuLoop
+
+
+
+SRC_MainMenuSelTbl:
+	.DW	GotoSettings
+	.DW	GotoQuitGame
+	.DW	Goto???1
+	.DW	Goto???2
+	.DW	GotoInventory
+	.DW	GotoTalent
+	.DW	GotoParty
+	.DW	GotoLilysLog
 
 
 
@@ -669,114 +721,339 @@ CalcRingMenuItemPos:
 
 
 
-.ENDASM
+; ************************ Sub menu: Inventory *************************
+
+GotoQuitGame:
+
+Goto???1:
+
+Goto???2:
+
+GotoTalent:
+
+GotoParty:
+
+GotoLilysLog:
+
+GotoSettings:
+
+GotoInventory:
+	lda	#$80							; enter forced blank
+	sta	REG_INIDISP
+
+	DisableIRQs
+
+	stz	REG_HDMAEN						; disable HDMA
+
+
+
+; -------------------------- clear tilemap buffers, init sprites, load new font/GFX data
+;	ldx	#(TileMapBG1 & $FFFF)
+;	stx	REG_WMADDL
+;	stz	REG_WMADDH
+
+;	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024*5		; clear all tile map buffers (except BG3-hi)
+
+	jsr	SpriteInit						; purge OAM
+
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	REG_VMAIN
-	ldx	#ADDR_VRAM_BG2_TILES + $480				; set VRAM address for BG2 font tiles
+	ldx	#$3000 ;ADDR_VRAM_BG3_Tiles
 	stx	REG_VMADDL
 
-	ldx	#$04C0							; "L"
-	jsr	SaveTextBoxTileToVRAM
-	ldx	#$0650							; "e"
-	jsr	SaveTextBoxTileToVRAM
-	ldx	#$0660							; "f"
-	jsr	SaveTextBoxTileToVRAM
-	ldx	#$0740							; "t"
-	jsr	SaveTextBoxTileToVRAM
-	ldx	#$03A0							; ":"
-	jsr	SaveTextBoxTileToVRAM
-	ldx	#$0200							; " "
-	jsr	SaveTextBoxTileToVRAM
-	ldx	#$04D0							; "M"
-	jsr	SaveTextBoxTileToVRAM
-	ldx	#$06F0							; "o"
-	jsr	SaveTextBoxTileToVRAM
-	ldx	#$0640							; "d"
-	jsr	SaveTextBoxTileToVRAM
-	ldx	#$0650							; "e"
-	jsr	SaveTextBoxTileToVRAM
-	ldx	#$0200							; " "
-	jsr	SaveTextBoxTileToVRAM
-	ldx	#$0350							; "5"
-	jsr	SaveTextBoxTileToVRAM
-
-	lda	#$90
-	sta	TileMapBG2 + 163
-	lda	#$92
-	sta	TileMapBG2 + 164
-	lda	#$94
-	sta	TileMapBG2 + 165
-	lda	#$96
-	sta	TileMapBG2 + 195
-	lda	#$98
-	sta	TileMapBG2 + 196
-	lda	#$9A
-	sta	TileMapBG2 + 197
-
-	PrintString	5, 14, "Right:"
-	PrintString	6, 14, "Mode 1"
+	DMA_CH0 $01, :GFX_FontHUD, GFX_FontHUD, $18, 2048
+	DMA_CH0 $01, :GFX_Items_Eng, GFX_Items_Eng, $18, 160*30
 
 
 
-; -------------------------- set new IRQ vector
-	SetIRQ	TBL_IRQ_MainMenu
+; -------------------------- build BG3 tile map for item list area
+	lda	#$30							; palette no. 4 | priority bit
+	xba
+	lda	#15							; no. of item rows
+	sta	temp
+	lda	#$80							; first tile of item list
+	ldx	#228							; start of item list area in tile map
+
+__MakeBG3ItemTileMap:
+	ldy	#10							; max. no. of tiles for an item name
+-	sta	TileMapBG3, x
+	xba
+	sta	TileMapBG3Hi, x
+	xba
+
+	Accu16
+
+	inc	a
+
+	Accu8
+
+	inx
+	dey
+	bne	-
+
+	inx								; space between column 1 and 2: 5 tiles
+	inx
+	inx
+	inx
+	inx
+
+	ldy	#10							; max. no. of tiles for an item name
+-	sta	TileMapBG3, x
+	xba
+	sta	TileMapBG3Hi, x
+	xba
+
+	Accu16
+
+	inc	a
+
+	Accu8
+
+	inx
+	dey
+	bne	-
+
+	Accu16
+
+	pha
+	txa
+	clc
+	adc	#7							; go to next line in item list
+	tax
+	pla
+
+	Accu8
+
+	dec	temp
+	bne	__MakeBG3ItemTileMap
+
+	DrawFrame	1, 5, 29, 18
 
 
 
-; -------------------------- set up HDMA channel 5 for screen mode
-	ldx	#SRC_HDMA_test5
-	stx	$4352
-	lda	#:SRC_HDMA_test5
-	sta	$4354
-	lda	#$05							; PPU reg. $2105 (BGMODE)
-	sta	$4351
+; -------------------------- screen registers/misc. parameters
+	lda	#$03							; switch BG3 char data area designation to $3000 // FIXME
+	sta	REG_BG34NBA
+	lda	#%01110111						; make sure BG1-3 lo/hi tilemaps get updated
+	tsb	DP_DMAUpdates
+	lda	#$81							; enable NMI and auto-joypad read
+	sta	DP_Shadow_NMITIMEN
+	sta	REG_NMITIMEN
+	cli
+	lda	#$0F							; turn screen back on
+	sta	REG_INIDISP
+
+-	bra	-
+
+
+
+; **********************************************************************
+
+.ENDASM
+
+GotoInventoryV-Split:
+	lda	#$80							; enter forced blank
+	sta	REG_INIDISP
+
+	DisableIRQs
+
+	stz	REG_HDMAEN						; disable HDMA
+
+
+
+; -------------------------- clear tilemap buffers, init sprites, load new font/GFX data
+	ldx	#(TileMapBG1 & $FFFF)
+	stx	REG_WMADDL
+	stz	REG_WMADDH
+
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024*5		; clear all tile map buffers (except BG3-hi)
+
+	jsr	SpriteInit						; purge OAM
+	jsr	MakeMode5Fonts
+
+
+
+; -------------------------- palettes --> CGRAM
+	stz	REG_CGADD						; reset CGRAM address
+
+	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
+
+;	lda	#$80							; set CGRAM address to #256 (word address) for sprites
+;	sta	REG_CGADD
+
+;	DMA_CH0 $02, :SRC_Palette_Sprites_InGameMenu, SRC_Palette_Sprites_InGameMenu, $22, 32
+
+
+
+; -------------------------- set up HDMA channel 6 for char data area designation
+	ldx	#SRC_HDMA_BG12CharData
+	stx	$4362
+	lda	#:SRC_HDMA_BG12CharData
+	sta	$4364
+	lda	#$0B							; PPU reg. $210B (BG12NBA)
+	sta	$4361
 	lda	#$00							; transfer mode (1 byte)
-	sta	$4350
+	sta	$4360
 
-	lda	#%00100000						; enable HDMA channel 5 (temp screen mode)
-	sta	DP_HDMAchannels
 
-	lda	#$28							; H-IRQ setup: dot number for interrupt
+
+; -------------------------- set up HDMA channel 7 for screen mode (inventory sub-menu)
+	ldx	#SRC_HDMA_Mode5
+	stx	$4372
+	lda	#:SRC_HDMA_Mode5
+	sta	$4374
+	lda	#$05							; PPU reg. $2105 (BGMODE)
+	sta	$4371
+	lda	#$00							; transfer mode (1 byte)
+	sta	$4370
+
+
+
+; -------------------------- screen regs, additional parameters
+	lda	#$40							; BG1/BG2 character data VRAM offset: $0000/$4000
+	sta	REG_BG12NBA
+	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
+	sta	REG_BG34NBA
+	lda	#%00100000						; enable color math on backdrop only
+	sta	REG_CGADSUB
+
+	SetIRQ	TBL_HIRQ_MainMenu
+
+	lda	#44							; H-IRQ setup: dot number for interrupt
 	sta	REG_HTIMEL						; set low byte of H-timer
 	stz	REG_HTIMEH						; set high byte of H-timer
+
+	lda	#%11000000						; enable HDMA channels 6 (BG1/2 char data area designation), 7 (BG Mode 5)
+	tsb	DP_HDMAchannels
 
 	lda	#$91							; enable H-IRQ, NMI, and auto-joypad read
 	sta	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
 	cli
 
-	lda	#%00000110						; turn on BG2/3
-	sta	REG_TM							; on the mainscreen
-	sta	REG_TS							; and on the subscreen
-	lda	#$0F							; turn screen back on
+	lda	#$0F
 	sta	REG_INIDISP
 
-	WaitUserInput
+	SetTextPos	2, 2
 
-	lda	#$80							; enter forced blank
-	sta	REG_INIDISP
-	stz	DP_HDMAchannels						; disable HDMA
-	lda	#$81							; enable Vblank NMI + Auto Joypad Read (no H-IRQ any more)
-	sta	DP_Shadow_NMITIMEN
-	sta	REG_NMITIMEN
+	ldx	#STR_ItemEng000
+	stx	strBank
+	lda	#:STR_ItemEng000
+	sta	strBank+2
+	lda	#24
+	sta	temp+3
 
-	wai								; wait for reg $420C to get cleared
+__RenderItem:
+	lda	#16
+	sta	DP_HiResPrintLen
+	jsr	PrintHiResFWF
 
-	lda	#$01|$08						; set BG Mode 1 (BG3 priority)
-	sta	REG_BGMODE
+	Accu16
 
-	lda	#$00							; clear BG2 tilemap
-	sta	TileMapBG2 + 163
-	sta	TileMapBG2 + 164
-	sta	TileMapBG2 + 165
-	sta	TileMapBG2 + 195
-	sta	TileMapBG2 + 196
-	sta	TileMapBG2 + 197
+	lda	strBank
+	clc
+	adc	#16
+	sta	strBank
+	lda	Cursor
+	clc
+	adc	#24
+	sta	Cursor
 
-;	lda	#$20							; set BG1's Character VRAM offset to $0000 (word address)
-;	sta	REG_BG12NBA						; and BG2's Character VRAM offset to $2000 (word address)
+	Accu8
 
-	jml	DebugMenu
+	dec	temp+3
+	bne	__RenderItem
+
+	SetTextPos	2, 16
+
+	ldx	#STR_MainMenuEng000
+	stx	strBank
+	lda	#:STR_MainMenuEng000
+	sta	strBank+2
+
+	ldy	#0
+-	lda	[strBank], y
+	beq	+
+	asl	a							; double char no. because font tiles were "expanded" for hi-res mode
+	inc	a							; increment char no. because Mode 5 BG2 font tiles sit on the "right"
+	jsr	FillTextBuffer
+	iny
+	bra	-
++
+
+;	ldx	#(TileMapBG3 & $FFFF)
+;	stx	REG_WMADDL
+;	stz	REG_WMADDH
+
+;	ldx	#0
+;	lda	#$83
+;-	sta	REG_WMDATA						; fill BG3 tile map (for testing)
+;	inx
+;	cpx	#1024
+;	bne	-
+
+	lda	#%00110111						; make sure BG1-3 lo and BG1/2 hi tilemaps get updated
+	tsb	DP_DMAUpdates
+
+-	bra	-
+
+
+
+MakeMode5Fonts:
+	lda	#$80							; increment VRAM address by one word after writing to $2119
+	sta	$2115
+	ldx	#ADDR_VRAM_BG1_Tiles					; set VRAM address for BG1 font tiles
+	stx	$2116
+
+	Accu16
+
+	ldx	#0
+
+__BuildFontBG1:
+	ldy	#0
+-	lda.l	GFX_FontHUD, x						; first, copy font tile (font tiles sit on the "left")
+	sta	$2118
+	inx
+	inx
+	iny
+	cpy	#8							; 16 bytes (8 double bytes) per tile
+	bne	-
+
+	ldy	#0
+-	stz	$2118							; next, add 3 blank tiles (1 blank tile because Mode 5 forces 16×8 tiles
+	iny								; and 2 blank tiles because BG1 is 4bpp)
+	cpy	#24							; 16 bytes (8 double bytes) per tile
+	bne	-
+
+	cpx	#2048							; 2 KiB font done?
+	bne	__BuildFontBG1
+
+	lda	#ADDR_VRAM_BG3_Tiles					; set VRAM address for BG2 font tiles (Mode 5 BG2 uses the same char data as Mode 1 BG3)
+	sta	$2116
+	ldx	#0
+
+__BuildFontBG2:
+	ldy	#0
+-	stz	$2118							; first, add 1 blank tile (Mode 5 forces 16×8 tiles,
+	iny								; no more blank tiles because BG2 is 2bpp)
+	cpy	#8							; 16 bytes (8 double bytes) per tile
+	bne	-
+
+	ldy	#0
+-	lda.l	GFX_FontHUD, x						; next, copy 8×8 font tile (font tiles sit on the "right")
+	sta	$2118
+	inx
+	inx
+	iny
+	cpy	#8							; 16 bytes (8 double bytes) per tile
+	bne	-
+
+	cpx	#2048							; 2 KiB font done?
+	bne	__BuildFontBG2
+
+	Accu8
+
+	rts
 
 
 

@@ -128,9 +128,9 @@ DebugMenu:
 	PrintString	11, 3, "Area/dialog test"
 	PrintString	12, 3, "Error test (BRK)"
 	PrintString	13, 3, "Error test (COP)"
-	PrintString	14, 3, "Mode1 world map"
-	PrintString	15, 3, "Mode7 world map"
-	PrintString	16, 3, "Move sprite on circular path"
+	PrintString	14, 3, "In-game menu"
+	PrintString	15, 3, "Mode1 world map"
+	PrintString	16, 3, "Mode7 world map"
 	PrintString	17, 3, "Show sprite gallery"
 	PrintString	18, 3, "SNESGSS music test:"
 ;	PrintString	16, 3, ""
@@ -289,17 +289,17 @@ DebugMenuLoop:
 +	cmp	#110
 	bne	+
 
-	jmp	LoadWorldMap
+	jmp	InGameMenu
 
 +	cmp	#118
 	bne	+
 
-	jmp	TestMode7
+	jmp	LoadWorldMap
 
 +	cmp	#126
 	bne	+
 
-	jmp	MoveSpriteCircularTest
+	jmp	TestMode7
 
 +	cmp	#134
 	bne	+
