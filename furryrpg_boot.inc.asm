@@ -255,42 +255,214 @@ AlphaIntro:
 
 	DisableIRQs
 
-	lda	#$03							; set BG Mode 3
+	ldx	#(TileMapBG1 & $FFFF)					; clear BG1/2 tile map buffers
+	stx	REG_WMADDL
+	stz	REG_WMADDH
+
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 2048*2
+
+	lda	#$80							; increment VRAM address by one word after writing to $2119
+	sta	REG_VMAIN
+	ldx	#$0000
+	stx	REG_VMADDL
+
+	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 0		; clear VRAM
+
+	lda	#5							; set BG Mode 5
 	sta	REG_BGMODE
-	lda	#$50							; set BG1's Tile Map VRAM offset to $5000 (word address)
+	lda	#$50							; set BG1's Tile Map VRAM offset to $5000
 	sta	REG_BG1SC						; and the Tile Map size to 32×32 tiles
-	lda	#$20							; set BG1's Character VRAM offset to $0000 (word address)
-	sta	REG_BG12NBA						; (ignore BG2 bits)
+	lda	#$54							; set BG2's Tile Map VRAM offset to $5400
+	sta	REG_BG2SC						; and the Tile Map size to 32×32 tiles
+	lda	#$20							; set BG1's Character VRAM offset to $0000, BG2 to $2000
+	sta	REG_BG12NBA
 	stz	REG_BG1HOFS						; reset BG1 horizontal scroll
 	stz	REG_BG1HOFS
-	lda	#$FF							; set BG1 vertical scroll = -1 (reminder: 0 would mean 1st scanline invisible!)
+	stz	REG_BG2HOFS						; reset BG2 horizontal scroll
+	stz	REG_BG2HOFS
+	lda	#$FF							; scroll BG1 down by 1 px
 	sta	REG_BG1VOFS
 	stz	REG_BG1VOFS
+;	lda	#$FF							; scroll BG2 down by 1 px
+	sta	REG_BG2VOFS
+	stz	REG_BG2VOFS
+
+	Accu16
+
+	lda	#%0000001100000011					; turn on BG1 and 2 only
+	sta	REG_TM							; on mainscreen and subscreen
+	sta	DP_Shadow_TSTM						; copy to shadow variable
+
+	Accu8
+
+	stz	REG_CGADD						; reset CGRAM address
+	stz	REG_CGDATA						; $3C00 = blue background color
+	lda	#$3C
+	sta	REG_CGDATA
+
+	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text+2, $22, 30	; skip background color (2 bytes)
+
+	lda	#$80							; increment VRAM address by one word after writing to $2119
+	sta	REG_VMAIN
+	ldx	#$0000							; set VRAM address for BG1 font tiles
+	stx	REG_VMADDL
+
+	Accu16
+
+	ldx	#0
+
+__BuildFontBG1:
+	ldy	#0
+-	lda.l	GFX_FontHUD, x						; first, copy font tile (font tiles sit on the "left")
+	sta	REG_VMDATAL
+	inx
+	inx
+	iny
+	cpy	#8							; 16 bytes (8 double bytes) per tile
+	bne	-
+
+	ldy	#0
+-	stz	REG_VMDATAL						; next, add 3 blank tiles (1 blank tile because Mode 5 forces 16×8 tiles
+	iny								; and 2 blank tiles because BG1 is 4bpp)
+	cpy	#24							; 16 bytes (8 double bytes) per tile
+	bne	-
+
+	cpx	#2048							; 2 KiB font done?
+	bne	__BuildFontBG1
+
+	lda	#$2000							; set VRAM address for BG2 font tiles
+	sta	REG_VMADDL
+	ldx	#0
+
+__BuildFontBG2:
+	ldy	#0
+-	stz	REG_VMDATAL						; first, add 1 blank tile (Mode 5 forces 16×8 tiles,
+	iny								; no more blank tiles because BG2 is 2bpp)
+	cpy	#8							; 16 bytes (8 double bytes) per tile
+	bne	-
+
+	ldy	#0
+-	lda.l	GFX_FontHUD, x						; next, copy 8×8 font tile (font tiles sit on the "right")
+	sta	REG_VMDATAL
+	inx
+	inx
+	iny
+	cpy	#8							; 16 bytes (8 double bytes) per tile
+	bne	-
+
+	cpx	#2048							; 2 KiB font done?
+	bne	__BuildFontBG2
+
+	Accu8
+
+	SetTextPos	2, 2
+
+	ldx	#STR_Software_Title
+	stx	strBank
+	lda	#:STR_Software_Title
+	sta	strBank+2
+	jsr	PrintHiResFWF
+
+	lda	#' '							; add a space before the build no.
+	sta	ARRAY_TempString
+	stz	ARRAY_TempString+1
+	ldx	#ARRAY_TempString
+	stx	strBank
+	lda	#$7E
+	sta	strBank+2
+	jsr	PrintHiResFWF
+
+	ldx	#STR_SoftwareBuild
+	stx	strBank
+	lda	#:STR_SoftwareBuild
+	sta	strBank+2
+	jsr	PrintHiResFWF
+
+	SetTextPos	3, 2
+
+	ldx	#STR_SoftwareMaker
+	stx	strBank
+	lda	#:STR_SoftwareMaker
+	sta	strBank+2
+	jsr	PrintHiResFWF
+
+	SetTextPos	4, 2
+
+	ldx	#STR_SoftwareBuildTimestamp
+	stx	strBank
+	lda	#:STR_SoftwareBuildTimestamp
+	sta	strBank+2
+	jsr	PrintHiResFWF
+
+	SetTextPos	6, 2
+
+	ldx	#STR_DisclaimerWallofText
+	stx	strBank
+	lda	#:STR_DisclaimerWallofText
+	sta	strBank+2
+	jsr	PrintHiResFWF
+
+	stz	REG_VMAIN						; increment VRAM address by one word after writing to $2118
+	ldx	#$5000							; set VRAM address for BG1 tile map
+	stx	REG_VMADDL
+
+	DMA_CH0 $02, $7E, (TileMapBG1 & $FFFF), $18, 1024		; update tile maps
+
+	ldx	#$5400							; set VRAM address for BG2 tile map
+	stx	REG_VMADDL
+
+	DMA_CH0 $02, $7E, (TileMapBG2 & $FFFF), $18, 1024
+
+	SetNMI	TBL_NMI_Intro
+
+	lda	DP_Shadow_NMITIMEN					; reenable interrupts
+	sta	REG_NMITIMEN
+	cli
+
+	lda	#$FF
+	ldx	#0
+-	wai
+	inc	a
+	inc	a
+	sta	REG_INIDISP
+	inx
+	cpx	#8
+	bne	-
+
+	WaitFrames	80
+
+	lda	#$0F
+	ldx	#0
+-	wai
+	dec	a
+	dec	a
+	sta	REG_INIDISP
+	inx
+	cpx	#8
+	bne	-
+
+	lda	#$80							; enter forced blank
+	sta	REG_INIDISP
+	lda	#$03							; set BG Mode 3
+	sta	REG_BGMODE
 
 	Accu16
 
 	lda	#%0000000100000001					; turn on BG1 only
 	sta	REG_TM							; on mainscreen and subscreen
 	sta	DP_Shadow_TSTM						; copy to shadow variable
-
-	Accu8
-
-	SetNMI	TBL_NMI_Intro
-
-	Accu16
-
-	lda	#7
+	lda	#7							; set music track // CHANGEME
 	sta	DP_NextTrack
 
 	Accu8
 
 	jsl	PlayTrack
-
-;StartScreenProc:
 	stz	REG_CGADD						; reset CGRAM address
 
 	DMA_CH0 $02, :SRC_RamsisPal, SRC_RamsisPal, $22, 512
 
+	lda	#$80							; increment VRAM address by one word after writing to $2119
+	sta	REG_VMAIN
 	ldx	#$0000
 	stx	REG_VMADDL
 
@@ -325,9 +497,6 @@ AlphaIntro:
 
 	lda	#$80							; enter forced blank
 	sta	REG_INIDISP
-
-	WaitFrames	10
-
 	stz	REG_CGADD						; reset CGRAM address
 
 	DMA_CH0 $02, :SRC_RamsisPresentsPal, SRC_RamsisPresentsPal, $22, 512
@@ -366,9 +535,6 @@ AlphaIntro:
 
 	lda	#$80							; enter forced blank
 	sta	REG_INIDISP
-
-	WaitFrames	10
-
 	stz	REG_CGADD						; reset CGRAM address
 
 	DMA_CH0 $02, :SRC_StartPal, SRC_StartPal, $22, 512
@@ -407,9 +573,6 @@ AlphaIntro:
 
 	lda	#$80							; enter forced blank
 	sta	REG_INIDISP
-
-	WaitFrames	10
-
 	stz	REG_CGADD						; reset CGRAM address
 
 	DMA_CH0 $02, :SRC_SoundEnginesPal, SRC_SoundEnginesPal, $22, 512
@@ -461,19 +624,16 @@ AlphaIntro:
 
 	Accu8
 
-	lda	REG_RDNMI						; clear NMI flag
-	lda	#$81							; reenable interrupts
-	sta	REG_NMITIMEN
-	sta	DP_Shadow_NMITIMEN
-	cli
-
-	WaitFrames	20
-
 	ldx	#$0000
 	stx	REG_VMADDL
 
 	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 0		; clear VRAM
 
+	lda	REG_RDNMI						; clear NMI flag
+	lda	#$81							; reenable interrupts
+	sta	REG_NMITIMEN
+	sta	DP_Shadow_NMITIMEN
+	cli
 	jml	DebugMenu
 
 

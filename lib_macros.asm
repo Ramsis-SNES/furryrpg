@@ -360,6 +360,7 @@ __CheckJoypad\@:
 .MACRO SetTextPos
 	ldx	#32*\1 + \2
 	stx	Cursor
+	stz	DP_HiResPrintMon					; reset BG monitor value
 .ENDM
 
 

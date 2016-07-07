@@ -417,6 +417,9 @@
 	DP_GameTime_Minutes	db
 	DP_GameTime_Hours	db
 
+	DP_HiResPrintLen	db					; holds length of menu hi-res string to print
+	DP_HiResPrintMon	db					; keep track of BG we're printing on: $00 = BG1 (start), $01 = BG2
+
 	DP_HUD_DispCounter	dw					; holds frame count since HUD appeared
 	DP_HUD_Status		db					; adrrrrrp [a/d = HUD should (re-)appear/disappear, p = HUD is present on screen]
 	DP_PlayerIdleCounter	dw					; holds frame count since last button press
@@ -583,6 +586,8 @@
 	ARRAY_HDMA_MainEffects		dsb 224
 	ARRAY_HDMA_BGScroll		dsb 16
 	ARRAY_HDMA_HUDScroll		dsb 10
+
+	ARRAY_TempString		dsb 32				; for temp strings
 
 	VAR_TextBox_TSTM		dw				; shadow copies of subscreen (high) & mainscreen (low) designation registers ($212C/212D) for text box area
 .ENDE									; $XXX bytes + $XXX = $XXX bytes used (stack resides at $1FFF)

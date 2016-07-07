@@ -1477,6 +1477,69 @@ FillTextBuffer:								; expectations: A = 8 bit, X/Y = 16 bit
 
 
 
+; -------------------------- Mode-5-based fixed-width printing
+PrintHiResFWF:
+	php
+
+	Accu8
+	Index16
+
+	ldy	#0
+
+PrintHiResLoop:
+	lda	[strBank], y						; read next format string character
+	beq	PrintHiResDone						; check for NUL terminator
+	iny								; increment input pointer
+	jsr	FillHiResTextBuffer					; write character to text buffer
+;	dec	DP_HiResPrintLen
+;	bne	PrintHiResLoop
+	bra	PrintHiResLoop
+
+PrintHiResDone:
+	plp
+	rts
+
+
+
+; This alternately writes doubled values of ASCII characters to the
+; BG1/BG2 text buffer while keeping track of which BG to use next via
+; the BGPrintMon variable (start = $00 = BG1, $01 = BG2).
+
+; The ASCII values need to be doubled because both fonts have empty 8x8
+; tiles before or after each character. By not advancing the text cursor
+; position when using BG1, all of this makes it possible to work around
+; Mode 5's 16×8 tile size limitation, with the main drawback that the
+; text engine uses up both available BG layers.
+
+; In: A -- ASCII code to print
+; Out: none
+; Modifies: P
+
+FillHiResTextBuffer:							; expectations: A = 8 bit, X/Y = 16 bit
+	asl	a							; character code × 2 so it matches hi-res font tile location
+	xba								; preserve character code
+	ldx	Cursor
+	lda	DP_HiResPrintMon
+	bne	__FillHiResTextBufferBG2				; if BG monitor value is not zero, use BG2
+
+__FillHiResTextBufferBG1:
+	inc	DP_HiResPrintMon					; otherwise, change value and use BG1
+	xba								; restore character code
+	sta	TileMapBG1, x						; write it to the BG1 text buffer
+	bra	__FillHiResTextBufferDone				; ... and done
+
+__FillHiResTextBufferBG2:
+	stz	DP_HiResPrintMon					; reset BG monitor value
+	xba								; restore character code
+	sta	TileMapBG2, x						; write it to the BG2 text buffer
+	inx								; ... and advance text cursor position
+	stx	Cursor
+
+__FillHiResTextBufferDone:
+	rts
+
+
+
 ; *********************** Sprite-based printing ************************
 
 ; A very basic sprite-based font renderer by ManuLöwe.
