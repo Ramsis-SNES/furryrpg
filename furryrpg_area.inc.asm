@@ -371,6 +371,7 @@ AreaEnter:
 
 
 ; -------------------------- play music & ambient sound effect
+.IFNDEF NOMUSIC
 	lda	#10
 	sta	DP_NextTrack
 	stz	DP_NextTrack+1
@@ -389,6 +390,7 @@ AreaEnter:
 	lda	#$FF
 	sta	MSU_VOLUME
 +
+.ENDIF
 
 
 
@@ -746,11 +748,13 @@ __MainAreaLoopXButtonDone:
 
 	WaitFrames	1
 
+.IFNDEF NOMUSIC
 	jsl	music_stop						; stop music
 	lda	DP_MSU1present
 	beq	+
 	stz	MSU_CONTROL						; stop ambient soundtrack
 +
+.ENDIF
 
 	jmp	DebugMenu
 

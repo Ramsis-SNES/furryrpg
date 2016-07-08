@@ -456,7 +456,10 @@ __BuildFontBG2:
 
 	Accu8
 
+.IFNDEF NOMUSIC
 	jsl	PlayTrack
+.ENDIF
+
 	stz	REG_CGADD						; reset CGRAM address
 
 	DMA_CH0 $02, :SRC_RamsisPal, SRC_RamsisPal, $22, 512
@@ -615,6 +618,7 @@ __BuildFontBG2:
 	DisableIRQs
 	SetNMI	TBL_NMI_DebugMenu
 
+.IFNDEF NOMUSIC
 	Accu16
 
 	lda	#$0010							; fade-out intro song
@@ -623,6 +627,7 @@ __BuildFontBG2:
 	jsl	spc_global_volume
 
 	Accu8
+.ENDIF
 
 	ldx	#$0000
 	stx	REG_VMADDL

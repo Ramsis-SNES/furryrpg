@@ -14,7 +14,7 @@
 .BASE $C0
 
 .DEFINE DEBUG
-;.DEFINE NOMUSIC							; activate this to disable music // FIXME (make this actually work)
+;.DEFINE NOMUSIC							; activate this to disable music
 .DEFINE CurrentBank	0
 .DEFINE TotalROMBanks	20						; self-reminder: increase value when using more banks (crucial for ROM integrity check)
 .DEFINE START_OFFSET	$F000						; start code offset in bank $C0

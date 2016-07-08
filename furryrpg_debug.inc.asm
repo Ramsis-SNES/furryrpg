@@ -306,7 +306,11 @@ DebugMenuLoop:
 
 	jmp	ShowSpriteGallery
 
-+	jsl	PlayTrack						; else, cursor must be on music test
++
+
+.IFNDEF NOMUSIC
+	jsl	PlayTrack						; else, cursor must be on music test
+.ENDIF
 
 ++
 

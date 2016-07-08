@@ -208,11 +208,15 @@ MainMenuLoop:
 ; ***************************** Main menu ******************************
 
 InGameMenu:
+
+.IFNDEF NOMUSIC
 	jsl	music_stop						; stop music // REMOVEME when done with menu
 	lda	DP_MSU1present
 	beq	+
 	stz	MSU_CONTROL						; stop MSU1 track
 	stz	MSU_VOLUME
++
+.ENDIF
 
 +	lda	#$80							; enter forced blank
 	sta	REG_INIDISP
