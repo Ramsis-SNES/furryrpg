@@ -10,7 +10,7 @@
 
 
 SRC_Mode7Scaling:
-.INCBIN "data_mode7_scaling_tables.bin"
+.INCBIN ".\\data\\tbl_mode7_scaling.bin"
 
 
 

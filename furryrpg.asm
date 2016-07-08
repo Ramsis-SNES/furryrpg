@@ -291,8 +291,8 @@ Startup:
 
 .SECTION "CharacterData 1"
 
-.INCLUDE "data_gfxdata.inc.asm"						; sprites, fonts, palettes
-.INCLUDE "data_fontwidthtables.inc.asm"					; font width table for sprite VWF
+.INCLUDE ".\\data\\gfx.inc.asm"						; sprites, fonts, palettes
+.INCLUDE ".\\data\\tbl_fontwidth.inc.asm"				; font width table for sprite VWF
 
 .ENDS
 
@@ -323,8 +323,8 @@ GFX_Items_Eng:
 
 .SECTION "English dialog" FORCE
 
-.INCLUDE "data_dialogpointers_eng.inc.asm"				; pointers to English dialog
-.INCLUDE "data_dialog_eng.inc.asm"					; English dialog
+.INCLUDE ".\\data\\ptr_dialog_eng.inc.asm"				; pointers to English dialog
+.INCLUDE ".\\data\\text_dialog_eng.inc.asm"				; English dialog
 
 .ENDS
 
@@ -332,9 +332,8 @@ GFX_Items_Eng:
 
 .SECTION "English misc. text" FORCE
 
-.INCLUDE "data_items_eng.inc.asm"					; English item names
-
-.INCLUDE "data_text_mainmenu_eng.inc.asm"				; English main menu strings
+.INCLUDE ".\\data\\text_items_eng.inc.asm"				; English item names
+.INCLUDE ".\\data\\text_mainmenu_eng.inc.asm"				; English main menu strings
 
 .ENDS
 
@@ -349,8 +348,8 @@ GFX_Items_Eng:
 
 .SECTION "German dialog" FORCE
 
-.INCLUDE "data_dialogpointers_ger.inc.asm"				; pointers to German dialog
-.INCLUDE "data_dialog_ger.inc.asm"					; German dialog
+.INCLUDE ".\\data\\ptr_dialog_ger.inc.asm"				; pointers to German dialog
+.INCLUDE ".\\data\\text_dialog_ger.inc.asm"				; German dialog
 
 .ENDS
 
@@ -358,7 +357,8 @@ GFX_Items_Eng:
 
 .SECTION "German items" FORCE
 
-.INCLUDE "data_items_ger.inc.asm"					; German item names
+.INCLUDE ".\\data\\text_items_ger.inc.asm"				; German item names
+.INCLUDE ".\\data\\text_mainmenu_ger.inc.asm"				; German main menu strings
 
 .ENDS
 
@@ -373,8 +373,8 @@ GFX_Items_Eng:
 
 .SECTION "Source tables"
 
-.INCLUDE "data_hdmatables.inc.asm"					; HDMA tables
-.INCLUDE "data_mode7tables.inc.asm"					; Mode 7 scaling/rotation tables
+.INCLUDE ".\\data\\tbl_hdma.inc.asm"					; HDMA tables
+.INCLUDE ".\\data\\tbl_mode7.inc.asm"					; Mode 7 scaling/rotation tables
 
 .ENDS
 

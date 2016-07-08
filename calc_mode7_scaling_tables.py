@@ -11,7 +11,7 @@
 
 import struct
 
-tables = open('data_mode7_scaling_tables.bin', 'wb')
+tables = open('data/tbl_mode7_scaling.bin', 'wb')
 dividend=0x800
 #divisor=0x20
 
