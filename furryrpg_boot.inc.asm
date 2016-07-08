@@ -797,10 +797,15 @@ VerifyROMIntegrity:
 	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
 
-	lda	#$01							; remember that ROM integrity check was passed // FIXME, move all SRAM writing to SRAM handler
-	sta	ADDR_SRAM_ROMGOOD
-
-	jsr	FixSRAMChecksum
+	lda	#$01							; remember that ROM integrity check was passed
+	sta	temp							; source data in temp
+	ldx	#temp							; source data offset
+	stx	DP_DataSrcAddress
+	lda	#$7E							; source data bank
+	sta	DP_DataSrcAddress+2
+	ldx	#(ADDR_SRAM_ROMGOOD & $FFFF) + 1			; destination offset + data length
+	ldy	#1							; data length
+	jsl	WriteDataToSRAM
 
 	WaitUserInput
 

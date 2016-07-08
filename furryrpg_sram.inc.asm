@@ -72,6 +72,21 @@ __SRAMGood:
 
 
 
+WriteDataToSRAM:							; this routine expects the 24-bit source data address in DP_DataSrcAddress, destination offset (with data length added) in X, and data length in Y
+	dex								; decrement X for actual dest offset of last data byte
+	dey								; decrement Y for actual src offset of last data byte
+-	lda	[DP_DataSrcAddress], y
+	sta.l	$B00000, x
+	dex
+	dey
+	cpy	#$FFFF							; all bytes written?
+	bne	-
+
+	jsr	FixSRAMChecksum
+	rtl
+
+
+
 FixSRAMChecksum:
 	lda	#ADDR_SRAM_BANK						; set start address to SRAM data
 	sta	temp+7

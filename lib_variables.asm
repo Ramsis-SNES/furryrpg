@@ -404,6 +404,7 @@
 	DP_Char1SpriteStatus	db					; irrrrddd [i = not walking (idle), ddd = walking direction (0 = down, 1 = up, 2 = left, 3 = right)]
 	DP_Char1WalkingSpd	dw
 
+	DP_DataSrcAddress	dsb 3					; holds a 24-bit source address e.g. for data transfers to SRAM
 	DP_DMAUpdates		dw					; rrrrrrrrdcba4321 [1234 = BG no. that needs to have its lower tilemap updated on next Vblank, abcd = same thing for upper tilemaps, r = reserved]
 
 	DP_EffectSpeed		db
