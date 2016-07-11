@@ -382,15 +382,6 @@ InGameMenu:
 
 
 ; -------------------------- ring menu sprites
-	lda	#PARAM_RingMenuCenterX-16				; X (subtract half of sprite width)
-	sta	SpriteBuf1.RingMenuCursor
-	lda	#PARAM_RingMenuCenterY-PARAM_RingMenuRadius		; Y (subtract radius to place the cursor at the top of the menu)
-	sta	SpriteBuf1.RingMenuCursor+1
-	lda	#$80							; tile num (cursor sprite)
-	sta	SpriteBuf1.RingMenuCursor+2
-	lda	#%00110000						; attributes (tile num & priority bits only)
-	sta	SpriteBuf1.RingMenuCursor+3
-
 	lda	#$00							; tile num ("Inventory" sprite)
 	sta	SpriteBuf1.RingMenuItem1+2
 	lda	#%00110000						; attributes (tile num & priority bits only)
@@ -431,10 +422,44 @@ InGameMenu:
 	lda	#%00110000						; attributes (tile num & priority bits only)
 	sta	SpriteBuf1.RingMenuItem8+3
 
-	lda	#$80							; set angle for cursor & 1st item on ring menu ($80 = 12:00 o'clock)
+	lda	#$0F							; turn on screen
+	sta	REG_INIDISP
+
+	lda	#$80							; set angle for 1st item on ring menu ($80 = 12:00 o'clock)
 	sta	DP_RingMenuAngle
 	stz	DP_RingMenuAngle+1
+	lda	#PARAM_RingMenuRadiusMin
+	sta	DP_RingMenuRadius
+
+__RingMenuOpenAnimation:
 	jsr	PutRingMenuItems
+	wai
+	lda	DP_RingMenuAngle
+	sec
+	sbc	#8
+	sta	DP_RingMenuAngle
+	lda	DP_RingMenuRadius					; 20 frames for moving sprites from RadiusMin (0) to RadiusMax (60)
+	clc
+	adc	#2
+	sta	DP_RingMenuRadius
+	cmp	#64
+	bcc	__RingMenuOpenAnimation
+
+	lda	#PARAM_RingMenuRadiusMax
+	sta	DP_RingMenuRadius
+	jsr	PutRingMenuItems
+
+
+
+; -------------------------- ring menu cursor sprite
+	lda	#PARAM_RingMenuCenterX-16				; X (subtract half of sprite width)
+	sta	SpriteBuf1.RingMenuCursor
+	lda	#PARAM_RingMenuCenterY-PARAM_RingMenuRadiusMax		; Y (subtract radius to place the cursor at the top of the menu)
+	sta	SpriteBuf1.RingMenuCursor+1
+	lda	#$80							; tile num (cursor sprite)
+	sta	SpriteBuf1.RingMenuCursor+2
+	lda	#%00110000						; attributes (tile num & priority bits only)
+	sta	SpriteBuf1.RingMenuCursor+3
 
 	DrawFrame	7, 1, 17, 2
 
@@ -479,9 +504,6 @@ InGameMenu:
 ;	Accu8
 
 .ASM
-
-	lda	#$0F							; turn on screen
-	sta	REG_INIDISP
 
 RingMenuLoop:
 	wai
@@ -702,7 +724,7 @@ CalcRingMenuItemPos:
 	lda.l	SRC_Mode7Sin, x
 	stz	REG_M7A
 	sta	REG_M7A
-	lda	#PARAM_RingMenuRadius
+	lda	DP_RingMenuRadius
 	asl 	a							; not sure why this is needed (sin(angle)*radius*2 ??)
 	sta	REG_M7B
 	lda	REG_MPYH
@@ -714,7 +736,7 @@ CalcRingMenuItemPos:
 	lda.l	SRC_Mode7Cos, x
 	stz	REG_M7A
 	sta	REG_M7A
-	lda	#PARAM_RingMenuRadius
+	lda	DP_RingMenuRadius
 	asl 	a							; not sure why this is needed (cos(angle)*radius*2 ??)
 	sta	REG_M7B
 	lda	REG_MPYH

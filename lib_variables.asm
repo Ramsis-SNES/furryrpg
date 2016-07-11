@@ -254,7 +254,8 @@
 
 .DEFINE PARAM_RingMenuCenterX	128
 .DEFINE PARAM_RingMenuCenterY	112
-.DEFINE PARAM_RingMenuRadius	60
+.DEFINE PARAM_RingMenuRadiusMin	0
+.DEFINE PARAM_RingMenuRadiusMax	60
 
 .DEFINE PARAM_MODE7_SKY_LINES	72					; number of scanlines for sky above Mode 7 landscape
 
@@ -422,6 +423,7 @@
 
 	DP_RingMenuAngle	dw
 	DP_RingMenuAngleOffset	dw
+	DP_RingMenuRadius	db
 
 	DP_Mode7_Altitude	db
 	DP_Mode7_AltTabOffset	dsb 3					; holds a 24-bit address
