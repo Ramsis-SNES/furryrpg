@@ -11,8 +11,6 @@
 
 ; ****************************** Defines *******************************
 
-.BASE $C0
-
 .DEFINE DEBUG
 ;.DEFINE NOMUSIC							; activate this to disable music
 .DEFINE CurrentBank	0
@@ -52,6 +50,8 @@
 
 
 ; ********************** ROM makeup, SNES header ***********************
+
+.BASE $C0
 
 .MEMORYMAP
 	DEFAULTSLOT	0

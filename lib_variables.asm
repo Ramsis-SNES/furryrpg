@@ -218,20 +218,15 @@
 .DEFINE ADDR_CGRAM_WORLDMAP	$20
 
 .DEFINE ADDR_SRAM_BANK		$B0
-
 .DEFINE ADDR_SRAM_ROMGOOD	$B06000					; $01 = ROM integrity test passed
 .DEFINE ADDR_SRAM_CHKSUMCMPL	$B0600C					; SRAM checksum & complement
 .DEFINE ADDR_SRAM_CHKSUM	$B0600E
-
 .DEFINE ADDR_SRAM_SLOT1		$B06000					; 16 bytes reserved
 .DEFINE ADDR_SRAM_SLOT1DATA	$B06010
-
 .DEFINE ADDR_SRAM_SLOT2		$B06800					; ditto
 .DEFINE ADDR_SRAM_SLOT2DATA	$B06810
-
 .DEFINE ADDR_SRAM_SLOT3		$B07000					; ditto
 .DEFINE ADDR_SRAM_SLOT3DATA	$B07010
-
 .DEFINE ADDR_SRAM_SLOT4		$B07800					; ditto
 .DEFINE ADDR_SRAM_SLOT4DATA	$B07810
 
@@ -340,7 +335,7 @@
 
 .ENUM $00
 	DP_VblankJump		dsb 4					; holds a 4-byte instruction like jml SomeVblankRoutine (NMI vector points here)
-	DP_IRQJump		dsb 4					; holds a 4-byte instruction like jml SomeVblankRoutine (IRQ vector points here)
+	DP_IRQJump		dsb 4					; holds a 4-byte instruction like jml SomeIRQRoutine (IRQ vector points here)
 
 	strPtr			dw
 	strBank			dsb 3

@@ -218,7 +218,7 @@ InGameMenu:
 +
 .ENDIF
 
-+	lda	#$80							; enter forced blank
+	lda	#$80							; enter forced blank
 	sta	REG_INIDISP
 	stz	DP_HDMAchannels						; disable HDMA
 	wai								; wait
@@ -840,6 +840,7 @@ __MakeBG3ItemTileMap:
 	sta	REG_BG34NBA
 	lda	#%01110111						; make sure BG1-3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
+	lda	REG_RDNMI						; clear NMI flag
 	lda	#$81							; enable NMI and auto-joypad read
 	sta	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN

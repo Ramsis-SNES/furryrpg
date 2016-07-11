@@ -117,7 +117,7 @@ PlayTrack:
 
 	Accu8
 
-	lda.l	REG_RDNMI						; clear NMI flag to prevent graphics glitches (see Fullsnes, 4210h/RDNMI)
+	lda.l	REG_RDNMI						; clear NMI flag
 	lda.l	DP_Shadow_NMITIMEN					; reenable interrupts
 	sta.l	REG_NMITIMEN
 	cli

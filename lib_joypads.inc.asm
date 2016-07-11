@@ -21,12 +21,11 @@ JoyInit:
 	ldx	#$0000
 	stx	Joy1Press
 	stx	Joy2Press
-
+	lda	REG_RDNMI						; clear NMI flag
 	lda	#$81
 	sta	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN						; enable JoyPad Read and NMI
 	cli								; clear interrupt disable bit
-
 	wai								; wait for NMI to fill the variables with real JoyPad data
 	rts
 

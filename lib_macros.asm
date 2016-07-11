@@ -261,7 +261,7 @@ __DrawLowerBorder\@:
 	asl	a							; value × 4 (the table consists of 4-byte entries)
 	asl	a
 	tax
-	lda.l	SRC_IRQJumpTable, x					; holds a 4-byte instruction like jml SomeVblankRoutine
+	lda.l	SRC_IRQJumpTable, x					; holds a 4-byte instruction like jml SomeIRQRoutine
 	sta	DP_IRQJump						; IRQ vector points here
 	inx
 	inx

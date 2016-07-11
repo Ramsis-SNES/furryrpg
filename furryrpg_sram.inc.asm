@@ -68,7 +68,7 @@ __SRAMBad:
 __SRAMGood:
 	Accu8
 
-	rts
+	rtl
 
 
 

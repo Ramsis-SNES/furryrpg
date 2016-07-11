@@ -245,7 +245,6 @@ AreaEnter:
 
 	lda	#%01110111						; make sure BG1/2/3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
-
 	lda	#%01000000						; enable HDMA ch. 6 (BG3 HUD scroll)
 	tsb	DP_HDMAchannels
 
@@ -270,7 +269,6 @@ AreaEnter:
 ;	stz	REG_CGWSEL						; clear CM disable bits
 ;	lda	#%10010011						; enable color math on BG1/2 + sprites, subtract color
 ;	sta	REG_CGADSUB
-
 ;	jmp	Forever
 
 
@@ -280,7 +278,6 @@ AreaEnter:
 ; NIGHT W/ SPRITES, XORed palette req.
 	lda	#$80							; enter forced blank
 	sta	REG_INIDISP
-
 	lda	#ADDR_CGRAM_AREA					; set CGRAM address for BG1 tiles palette
 	sta	REG_CGADD
 
@@ -319,10 +316,8 @@ AreaEnter:
 	sta	REG_CGWSEL
 	lda	#%10100000						; enable color math on backdrop, subtract color
 	sta	REG_CGADSUB
-
 	lda	#$0F
 	sta	REG_INIDISP
-
 	jmp	Forever
 
 .ASM
@@ -493,7 +488,6 @@ __HUDLogicDone:
 	beq	+
 	lda	#%01000000						; yes, set "HUD should disappear" bit
 	sta	DP_HUD_Status
-
 	stz	DP_PlayerIdleCounter
 	stz	DP_PlayerIdleCounter+1
 	lda	#2							; B pressed, set fast walking speed

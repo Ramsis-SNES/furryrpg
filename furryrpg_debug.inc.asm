@@ -437,6 +437,7 @@ ShowSpriteGallery:
 
 	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
+	lda	REG_RDNMI						; clear NMI flag
 	lda	#$81							; reenable NMI
 	sta	REG_NMITIMEN
 	cli

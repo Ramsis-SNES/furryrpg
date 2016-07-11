@@ -257,16 +257,13 @@ TestMode7:
 
 	SetIRQ	TBL_VIRQ_Mode7
 
-	lda	REG_RDNMI						; clear NMI flag, this is necessary to prevent occasional graphics glitches (see Fullsnes, 4210h/RDNMI)
-
+	lda	#%11111100						; enable HDMA channels 2-7
+	sta	DP_HDMAchannels
+	lda	REG_RDNMI						; clear NMI flag
 	lda	#%10110001						; enable NMI, auto-joypad read, and IRQ at H=HTIMEL and V=VTIMEL
 	sta	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
 	cli
-
-	lda	#%11111100						; enable HDMA channels 2-7
-	sta	DP_HDMAchannels
-
 	jsr	ResetMode7Matrix
 
 	WaitFrames	2						; wait for altitude setting to take effect (FIXME, doesn't work with just 1 frame?!)

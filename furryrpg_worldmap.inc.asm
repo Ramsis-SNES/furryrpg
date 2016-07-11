@@ -94,6 +94,7 @@ LoadWorldMap:
 
 	lda	#$43							; set BG1's Tile Map VRAM offset to $4000 (word address)
 	sta	REG_BG1SC						; and the Tile Map size to 64×64 tiles
+	lda	REG_RDNMI						; clear NMI flag
 	lda	#$81							; enable NMI and auto-joypad read
 	sta	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN

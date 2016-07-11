@@ -161,8 +161,7 @@ Boot:
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 0		; WRAM (length $0000 = 65536 bytes = lower 64K of WRAM)
 
 	lda	#$01							; WRAM address in $2181-$2183 has reached $10000 now,
-	sta	$420B							; so re-initiate DMA transfer for the upper 64K of WRAM
-
+	sta	REG_MDMAEN						; so re-initiate DMA transfer for the upper 64K of WRAM
 	jsr	SpriteInit						; set up the sprite buffer
 
 
@@ -184,7 +183,7 @@ Boot:
 ; -------------------------- more hardware checks/initialization
 	jsl	BootSPC700						; boot APU with SNESGSS sound driver
 	jsl	CheckForMSU1						; check if MSU1 present
-	jsr	CheckSRAM						; check SRAM integrity
+	jsl	CheckSRAM						; check SRAM integrity
 
 
 
@@ -415,6 +414,7 @@ __BuildFontBG2:
 
 	SetNMI	TBL_NMI_Intro
 
+	lda	REG_RDNMI						; clear NMI flag
 	lda	DP_Shadow_NMITIMEN					; reenable interrupts
 	sta	REG_NMITIMEN
 	cli
