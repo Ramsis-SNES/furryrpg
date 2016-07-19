@@ -17,8 +17,6 @@
 .DEFINE TotalROMBanks	20						; self-reminder: increase value when using more banks (crucial for ROM integrity check)
 .DEFINE START_OFFSET	$F000						; start code offset in bank $C0
 
-
-.EMPTYFILL		$FF
 .DEFINE SPC700_DRV	"music/spc700-driver-v1.4.bin"
 
 .DEFINE TRACK00_SMP	"music/00-sun-wind-and-rain-spc700.bin"
@@ -52,6 +50,7 @@
 ; ********************** ROM makeup, SNES header ***********************
 
 .BASE $C0
+.EMPTYFILL		$FF
 
 .MEMORYMAP
 	DEFAULTSLOT	0
@@ -59,15 +58,11 @@
 	SLOT 0		$0000
 .ENDME
 
-
-
 .ROMBANKMAP
 	BANKSTOTAL	24
 	BANKSIZE	$10000						; ROM banks are 64 KBytes in size
 	BANKS		24						; 24 ROM banks = 12 Mbit
 .ENDRO
-
-
 
 .SNESHEADER								; this also calculates ROM checksum & complement
 	ID		"SNES"

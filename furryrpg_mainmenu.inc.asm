@@ -438,7 +438,7 @@ __RingMenuOpenAnimation:
 	sec
 	sbc	#8
 	sta	DP_RingMenuAngle
-	lda	DP_RingMenuRadius					; 20 frames for moving sprites from RadiusMin (0) to RadiusMax (60)
+	lda	DP_RingMenuRadius					; 32 frames for moving sprites from RadiusMin (0) to RadiusMax (60)
 	clc
 	adc	#2
 	sta	DP_RingMenuRadius
