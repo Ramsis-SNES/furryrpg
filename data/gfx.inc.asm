@@ -11,28 +11,28 @@
 
 ; ****************************** Defines *******************************
 
-.DEFINE PORTRAIT_CHAR1		".\\gfx\\portrait_kimahri.pic"
-.DEFINE PORTRAIT_CHAR1_PAL	".\\gfx\\portrait_kimahri.pal"
-.DEFINE PORTRAIT_CHAR2		".\\gfx\\portrait_zakari.pic"
-.DEFINE PORTRAIT_CHAR2_PAL	".\\gfx\\portrait_zakari.pal"
-.DEFINE PORTRAIT_CHAR3		".\\gfx\\portrait_gengen.pic"
-.DEFINE PORTRAIT_CHAR3_PAL	".\\gfx\\portrait_gengen.pal"
-.DEFINE PORTRAIT_CHAR4		".\\gfx\\portrait_linkwolf.pic"
-.DEFINE PORTRAIT_CHAR4_PAL	".\\gfx\\portrait_linkwolf.pal"
+.DEFINE PORTRAIT_CHAR1		"gfx/portrait_kimahri.pic"
+.DEFINE PORTRAIT_CHAR1_PAL	"gfx/portrait_kimahri.pal"
+.DEFINE PORTRAIT_CHAR2		"gfx/portrait_zakari.pic"
+.DEFINE PORTRAIT_CHAR2_PAL	"gfx/portrait_zakari.pal"
+.DEFINE PORTRAIT_CHAR3		"gfx/portrait_gengen.pic"
+.DEFINE PORTRAIT_CHAR3_PAL	"gfx/portrait_gengen.pal"
+.DEFINE PORTRAIT_CHAR4		"gfx/portrait_linkwolf.pic"
+.DEFINE PORTRAIT_CHAR4_PAL	"gfx/portrait_linkwolf.pal"
 
-.DEFINE FONT_HUD		".\\gfx\\font_hud.pic"			; 2048 bytes
-.DEFINE FONT_MODE5		".\\gfx\\font_mode5_vwf2.pic"		; 4096 bytes
-.DEFINE FONT_SPRITES		".\\gfx\\font_spr.pic"
+.DEFINE FONT_HUD		"gfx/font_hud.pic"			; 2048 bytes
+.DEFINE FONT_MODE5		"gfx/font_mode5_vwf2.pic"		; 4096 bytes
+.DEFINE FONT_SPRITES		"gfx/font_spr.pic"
 
-.DEFINE LOGO			".\\gfx\\logo-gr.pic"
-.DEFINE LOGO_MAP		".\\gfx\\logo-gr.map"
-.DEFINE LOGO_PAL		".\\gfx\\logo-gr.pal"
+.DEFINE LOGO			"gfx/logo-gr.pic"
+.DEFINE LOGO_MAP		"gfx/logo-gr.map"
+.DEFINE LOGO_PAL		"gfx/logo-gr.pal"
 
-.DEFINE MENU_SPRITES		".\\gfx\\menu-sprites.pic"
-.DEFINE MENU_SPRITES_PAL	".\\gfx\\menu-sprites.pal"
+.DEFINE MENU_SPRITES		"gfx/menu-sprites.pic"
+.DEFINE MENU_SPRITES_PAL	"gfx/menu-sprites.pal"
 
-.DEFINE SPRITESHEET_CHAR1	".\\gfx\\Gengen2.pic"
-.DEFINE SPRITESHEET_CHAR1_PAL	".\\gfx\\Gengen2.pal"
+.DEFINE SPRITESHEET_CHAR1	"gfx/Gengen2.pic"
+.DEFINE SPRITESHEET_CHAR1_PAL	"gfx/Gengen2.pal"
 
 
 
@@ -123,61 +123,61 @@ GFX_Sprites_InGameMenu:
 .INCBIN MENU_SPRITES
 
 GFX_Sprites_Clouds:
-.INCBIN ".\\gfx\\cloud1.pic"
+.INCBIN "gfx/cloud1.pic"
 
 SRC_Palette_Clouds:
-.INCBIN ".\\gfx\\cloud1.pal"
+.INCBIN "gfx/cloud1.pal"
 
 ;SRC_Tilemap_Clouds:
-;.INCBIN ".\\gfx\\cloud.map"
+;.INCBIN "gfx/cloud.map"
 
 GFX_Sprites_Gallery:
-.INCBIN ".\\gfx\\tantalus\\fennec2.pic" READ 128			; only read first row of tiles for now
-.INCBIN ".\\gfx\\tantalus\\fox2.pic" READ 64
-.INCBIN ".\\gfx\\tantalus\\wolf1.pic" READ 64
-.INCBIN ".\\gfx\\tantalus\\wolf2.pic" READ 64
-.INCBIN ".\\gfx\\tantalus\\wolfclawblack.pic" READ 64
+.INCBIN "gfx/tantalus/fennec2.pic" READ 128				; only read first row of tiles for now
+.INCBIN "gfx/tantalus/fox2.pic" READ 64
+.INCBIN "gfx/tantalus/wolf1.pic" READ 64
+.INCBIN "gfx/tantalus/wolf2.pic" READ 64
+.INCBIN "gfx/tantalus/wolfclawblack.pic" READ 64
 
 .REPEAT 128								; fill empty space before reading the next tile row
 	.DB $00
 .ENDR
 
-.INCBIN ".\\gfx\\tantalus\\fennec2.pic" SKIP 128 READ 128
-.INCBIN ".\\gfx\\tantalus\\fox2.pic" SKIP 64 READ 64
-.INCBIN ".\\gfx\\tantalus\\wolf1.pic" SKIP 64 READ 64
-.INCBIN ".\\gfx\\tantalus\\wolf2.pic" SKIP 64 READ 64
-.INCBIN ".\\gfx\\tantalus\\wolfclawblack.pic" SKIP 64 READ 64
+.INCBIN "gfx/tantalus/fennec2.pic" SKIP 128 READ 128
+.INCBIN "gfx/tantalus/fox2.pic" SKIP 64 READ 64
+.INCBIN "gfx/tantalus/wolf1.pic" SKIP 64 READ 64
+.INCBIN "gfx/tantalus/wolf2.pic" SKIP 64 READ 64
+.INCBIN "gfx/tantalus/wolfclawblack.pic" SKIP 64 READ 64
 
 .REPEAT 128
 	.DB $00
 .ENDR
 
-.INCBIN ".\\gfx\\tantalus\\fennec2.pic" SKIP 256 READ 128
-.INCBIN ".\\gfx\\tantalus\\fox2.pic" SKIP 128 READ 64
-.INCBIN ".\\gfx\\tantalus\\wolf1.pic" SKIP 128 READ 64
-.INCBIN ".\\gfx\\tantalus\\wolf2.pic" SKIP 128 READ 64
-.INCBIN ".\\gfx\\tantalus\\wolfclawblack.pic" SKIP 128 READ 64
+.INCBIN "gfx/tantalus/fennec2.pic" SKIP 256 READ 128
+.INCBIN "gfx/tantalus/fox2.pic" SKIP 128 READ 64
+.INCBIN "gfx/tantalus/wolf1.pic" SKIP 128 READ 64
+.INCBIN "gfx/tantalus/wolf2.pic" SKIP 128 READ 64
+.INCBIN "gfx/tantalus/wolfclawblack.pic" SKIP 128 READ 64
 
 .REPEAT 128
 	.DB $00
 .ENDR
 
-.INCBIN ".\\gfx\\tantalus\\fennec2.pic" SKIP 384 READ 128
-.INCBIN ".\\gfx\\tantalus\\fox2.pic" SKIP 192 READ 64
-.INCBIN ".\\gfx\\tantalus\\wolf1.pic" SKIP 192 READ 64
-.INCBIN ".\\gfx\\tantalus\\wolf2.pic" SKIP 192 READ 64
-.INCBIN ".\\gfx\\tantalus\\wolfclawblack.pic" SKIP 192 READ 64
+.INCBIN "gfx/tantalus/fennec2.pic" SKIP 384 READ 128
+.INCBIN "gfx/tantalus/fox2.pic" SKIP 192 READ 64
+.INCBIN "gfx/tantalus/wolf1.pic" SKIP 192 READ 64
+.INCBIN "gfx/tantalus/wolf2.pic" SKIP 192 READ 64
+.INCBIN "gfx/tantalus/wolfclawblack.pic" SKIP 192 READ 64
 
 .REPEAT 128
 	.DB $00
 .ENDR
 
 SRC_Palettes_Sprites_Gallery:
-.INCBIN ".\\gfx\\tantalus\\fennec2.pal"
-.INCBIN ".\\gfx\\tantalus\\fox2.pal"
-.INCBIN ".\\gfx\\tantalus\\wolf1.pal"
-.INCBIN ".\\gfx\\tantalus\\wolf2.pal"
-.INCBIN ".\\gfx\\tantalus\\wolfclawblack.pal"
+.INCBIN "gfx/tantalus/fennec2.pal"
+.INCBIN "gfx/tantalus/fox2.pal"
+.INCBIN "gfx/tantalus/wolf1.pal"
+.INCBIN "gfx/tantalus/wolf2.pal"
+.INCBIN "gfx/tantalus/wolfclawblack.pal"
 
 
 
@@ -212,41 +212,41 @@ SRC_Tilemap_Logo:
 ; ***************************** Area data ******************************
 
 GFX_Area000:
-;.INCBIN ".\\gfx\\area-000-chessbd.pic"
+;.INCBIN "gfx/area-000-chessbd.pic"
 
 SRC_Palette_Area000:
-;.INCBIN ".\\gfx\\area-000-chessbd.pal"
+;.INCBIN "gfx/area-000-chessbd.pal"
 
 SRC_Tilemap_Area000:
-;.INCBIN ".\\gfx\\area-000-chessbd.map"
+;.INCBIN "gfx/area-000-chessbd.map"
 
 
 
 GFX_Area001:
-;.INCBIN ".\\gfx\\area-001-sandbox2.pic"
+;.INCBIN "gfx/area-001-sandbox2.pic"
 
 SRC_Palette_Area001:
-;.INCBIN ".\\gfx\\area-001-sandbox2.pal"
+;.INCBIN "gfx/area-001-sandbox2.pal"
 
 SRC_Tilemap_Area001:
-;.INCBIN ".\\gfx\\area-001-sandbox2.map"
+;.INCBIN "gfx/area-001-sandbox2.map"
 
 
 
 GFX_Area003:
-.INCBIN ".\\gfx\\area-003-green.pic" SKIP 32				; gfx2snes erroneously adds 1 blank tile at the beginning
+.INCBIN "gfx/area-003-green.pic"
 
 SRC_Palette_Area003:
-.INCBIN ".\\gfx\\area-003-green.pal"
+.INCBIN "gfx/area-003-green.pal" READ 32
 
 SRC_Tilemap_Area003:
-.INCBIN ".\\gfx\\area-003-green.map"
+.INCBIN "gfx/area-003-green.map"
 
 ;.REDEFINE SkipTileNo -2						; "deinterleave" tile maps output by gfx2snes
 
 ;.REPEAT 2048
 ;	.REDEFINE SkipTileNo SkipTileNo+2				; SkipTileNo += 2
-;	.INCBIN ".\\gfx\\area-003.map" SKIP SkipTileNo READ 1		; read even bytes
+;	.INCBIN "gfx/area-003.map" SKIP SkipTileNo READ 1		; read even bytes
 ;.ENDR
 
 ;SRC_Tilemap_Area003Hi:
@@ -254,7 +254,7 @@ SRC_Tilemap_Area003:
 
 ;.REPEAT 2048
 ;	.REDEFINE SkipTileNo SkipTileNo+2
-;	.INCBIN ".\\gfx\\area-003.map" SKIP SkipTileNo READ 1		; read odd bytes
+;	.INCBIN "gfx/area-003.map" SKIP SkipTileNo READ 1		; read odd bytes
 ;.ENDR
 
 

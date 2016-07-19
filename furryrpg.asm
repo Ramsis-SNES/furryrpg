@@ -17,35 +17,35 @@
 .DEFINE TotalROMBanks	20						; self-reminder: increase value when using more banks (crucial for ROM integrity check)
 .DEFINE START_OFFSET	$F000						; start code offset in bank $C0
 
-.DEFINE SPC700_DRV	".\\music\\spc700-driver-v1.4.bin"
-
-.DEFINE TRACK00_SMP	".\\music\\00-sun-wind-and-rain-spc700.bin"
-.DEFINE TRACK01_SMP	".\\music\\01-through-darkness-spc700.bin"
-.DEFINE TRACK02_SMP	".\\music\\02-theme-of-despair-spc700.bin"
-.DEFINE TRACK03_SMP	".\\music\\03-three-buskers-spc700.bin"
-.DEFINE TRACK04_SMP	".\\music\\04-and-one-buffoon-spc700.bin"
-.DEFINE TRACK05_SMP	".\\music\\05-troubled-mind-spc700.bin"
-.DEFINE TRACK06_SMP	".\\music\\06-fanfare1-spc700.bin"
-.DEFINE TRACK07_SMP	".\\music\\07-allons-ensemble-spc700.bin"
-.DEFINE TRACK08_SMP	".\\music\\08-caterwauling-spc700.bin"
-.DEFINE TRACK09_SMP	".\\music\\09-contemplate-spc700.bin"
-.DEFINE TRACK10_SMP	".\\music\\10-tembas-theme-spc700.bin"
-
-.DEFINE TRACK00_NOTES	".\\music\\00-sun-wind-and-rain-music.bin"
-.DEFINE TRACK01_NOTES	".\\music\\01-through-darkness-music.bin"
-.DEFINE TRACK02_NOTES	".\\music\\02-theme-of-despair-music.bin"
-.DEFINE TRACK03_NOTES	".\\music\\03-three-buskers-music.bin"
-.DEFINE TRACK04_NOTES	".\\music\\04-and-one-buffoon-music.bin"
-.DEFINE TRACK05_NOTES	".\\music\\05-troubled-mind-music.bin"
-.DEFINE TRACK06_NOTES	".\\music\\06-fanfare1-music.bin"
-.DEFINE TRACK07_NOTES	".\\music\\07-allons-ensemble-music.bin"
-.DEFINE TRACK08_NOTES	".\\music\\08-caterwauling-music.bin"
-.DEFINE TRACK09_NOTES	".\\music\\09-contemplate-music.bin"
-.DEFINE TRACK10_NOTES	".\\music\\10-tembas-theme-music.bin"
-.DEFINE TRACK11_NOTES	".\\music\\11-triumph-beta-music.bin"
-.DEFINE TRACK12_NOTES	".\\music\\12-furlorn-village-music.bin"
 
 .EMPTYFILL		$FF
+.DEFINE SPC700_DRV	"music/spc700-driver-v1.4.bin"
+
+.DEFINE TRACK00_SMP	"music/00-sun-wind-and-rain-spc700.bin"
+.DEFINE TRACK01_SMP	"music/01-through-darkness-spc700.bin"
+.DEFINE TRACK02_SMP	"music/02-theme-of-despair-spc700.bin"
+.DEFINE TRACK03_SMP	"music/03-three-buskers-spc700.bin"
+.DEFINE TRACK04_SMP	"music/04-and-one-buffoon-spc700.bin"
+.DEFINE TRACK05_SMP	"music/05-troubled-mind-spc700.bin"
+.DEFINE TRACK06_SMP	"music/06-fanfare1-spc700.bin"
+.DEFINE TRACK07_SMP	"music/07-allons-ensemble-spc700.bin"
+.DEFINE TRACK08_SMP	"music/08-caterwauling-spc700.bin"
+.DEFINE TRACK09_SMP	"music/09-contemplate-spc700.bin"
+.DEFINE TRACK10_SMP	"music/10-tembas-theme-spc700.bin"
+
+.DEFINE TRACK00_NOTES	"music/00-sun-wind-and-rain-music.bin"
+.DEFINE TRACK01_NOTES	"music/01-through-darkness-music.bin"
+.DEFINE TRACK02_NOTES	"music/02-theme-of-despair-music.bin"
+.DEFINE TRACK03_NOTES	"music/03-three-buskers-music.bin"
+.DEFINE TRACK04_NOTES	"music/04-and-one-buffoon-music.bin"
+.DEFINE TRACK05_NOTES	"music/05-troubled-mind-music.bin"
+.DEFINE TRACK06_NOTES	"music/06-fanfare1-music.bin"
+.DEFINE TRACK07_NOTES	"music/07-allons-ensemble-music.bin"
+.DEFINE TRACK08_NOTES	"music/08-caterwauling-music.bin"
+.DEFINE TRACK09_NOTES	"music/09-contemplate-music.bin"
+.DEFINE TRACK10_NOTES	"music/10-tembas-theme-music.bin"
+.DEFINE TRACK11_NOTES	"music/11-triumph-beta-music.bin"
+.DEFINE TRACK12_NOTES	"music/12-furlorn-village-music.bin"
 
 
 
@@ -291,8 +291,8 @@ Startup:
 
 .SECTION "CharacterData 1"
 
-.INCLUDE ".\\data\\gfx.inc.asm"						; sprites, fonts, palettes
-.INCLUDE ".\\data\\tbl_fontwidth.inc.asm"				; font width table for sprite VWF
+.INCLUDE "data/gfx.inc.asm"						; sprites, fonts, palettes
+.INCLUDE "data/tbl_fontwidth.inc.asm"					; font width table for sprite VWF
 
 .ENDS
 
@@ -308,7 +308,7 @@ Startup:
 .SECTION "CharacterData 2"
 
 GFX_Items_Eng:
-.INCBIN ".\\gfx\\items_eng.pic"						; English item names (2bpp gfx, 40,960 bytes)
+.INCBIN "gfx/items_eng.pic"						; English item names (2bpp gfx, 40,960 bytes)
 
 .ENDS
 
@@ -323,8 +323,8 @@ GFX_Items_Eng:
 
 .SECTION "English dialog" FORCE
 
-.INCLUDE ".\\data\\ptr_dialog_eng.inc.asm"				; pointers to English dialog
-.INCLUDE ".\\data\\text_dialog_eng.inc.asm"				; English dialog
+.INCLUDE "data/ptr_dialog_eng.inc.asm"					; pointers to English dialog
+.INCLUDE "data/text_dialog_eng.inc.asm"					; English dialog
 
 .ENDS
 
@@ -332,8 +332,8 @@ GFX_Items_Eng:
 
 .SECTION "English misc. text" FORCE
 
-.INCLUDE ".\\data\\text_items_eng.inc.asm"				; English item names
-.INCLUDE ".\\data\\text_mainmenu_eng.inc.asm"				; English main menu strings
+.INCLUDE "data/text_items_eng.inc.asm"					; English item names
+.INCLUDE "data/text_mainmenu_eng.inc.asm"				; English main menu strings
 
 .ENDS
 
@@ -348,8 +348,8 @@ GFX_Items_Eng:
 
 .SECTION "German dialog" FORCE
 
-.INCLUDE ".\\data\\ptr_dialog_ger.inc.asm"				; pointers to German dialog
-.INCLUDE ".\\data\\text_dialog_ger.inc.asm"				; German dialog
+.INCLUDE "data/ptr_dialog_ger.inc.asm"					; pointers to German dialog
+.INCLUDE "data/text_dialog_ger.inc.asm"					; German dialog
 
 .ENDS
 
@@ -357,8 +357,8 @@ GFX_Items_Eng:
 
 .SECTION "German items" FORCE
 
-.INCLUDE ".\\data\\text_items_ger.inc.asm"				; German item names
-.INCLUDE ".\\data\\text_mainmenu_ger.inc.asm"				; German main menu strings
+.INCLUDE "data/text_items_ger.inc.asm"					; German item names
+.INCLUDE "data/text_mainmenu_ger.inc.asm"				; German main menu strings
 
 .ENDS
 
@@ -373,8 +373,8 @@ GFX_Items_Eng:
 
 .SECTION "Source tables"
 
-.INCLUDE ".\\data\\tbl_hdma.inc.asm"					; HDMA tables
-.INCLUDE ".\\data\\tbl_mode7.inc.asm"					; Mode 7 scaling/rotation tables
+.INCLUDE "data/tbl_hdma.inc.asm"					; HDMA tables
+.INCLUDE "data/tbl_mode7.inc.asm"					; Mode 7 scaling/rotation tables
 
 .ENDS
 
@@ -390,28 +390,28 @@ GFX_Items_Eng:
 .SECTION "Intro GFX"
 
 SRC_RamsisPresentsMap:
-.INCBIN ".\\gfx\\ramsis-presents-256.map"
+.INCBIN "gfx/ramsis-presents-256.map"
 
 SRC_RamsisPresentsPal:
-.INCBIN ".\\gfx\\ramsis-presents-256.pal"
+.INCBIN "gfx/ramsis-presents-256.pal"
 
 GFX_RamsisPresentsPic:
-.INCBIN ".\\gfx\\ramsis-presents-256.pic"
+.INCBIN "gfx/ramsis-presents-256.pic"
 
 SRC_RamsisMap:
-.INCBIN ".\\gfx\\ramsis-256.map"
+.INCBIN "gfx/ramsis-256.map"
 
 SRC_RamsisPal:
-.INCBIN ".\\gfx\\ramsis-256.pal"
+.INCBIN "gfx/ramsis-256.pal"
 
 GFX_RamsisPic:
-.INCBIN ".\\gfx\\ramsis-256.pic"
+.INCBIN "gfx/ramsis-256.pic"
 
 SRC_SoundEnginesPal:
-.INCBIN ".\\gfx\\sound-engines-256.pal"
+.INCBIN "gfx/sound-engines-256.pal"
 
 GFX_SoundEnginesPic:
-.INCBIN ".\\gfx\\sound-engines-256.pic"
+.INCBIN "gfx/sound-engines-256.pic"
 
 .ENDS
 
@@ -427,16 +427,16 @@ GFX_SoundEnginesPic:
 .SECTION "Intro GFX 2"
 
 SRC_SoundEnginesMap:
-.INCBIN ".\\gfx\\sound-engines-256.map"
+.INCBIN "gfx/sound-engines-256.map"
 
 SRC_StartMap:
-.INCBIN ".\\gfx\\start2-256.map"
+.INCBIN "gfx/start2-256.map"
 
 SRC_StartPal:
-.INCBIN ".\\gfx\\start2-256.pal"
+.INCBIN "gfx/start2-256.pal"
 
 GFX_StartPic:
-.INCBIN ".\\gfx\\start2-256.pic"
+.INCBIN "gfx/start2-256.pic"
 
 .ENDS
 
@@ -452,16 +452,16 @@ GFX_StartPic:
 .SECTION "World Map GFX data"
 
 GFX_WorldMap:
-;.INCBIN ".\\thg.zst" SKIP $20C13 READ $8000
-.INCBIN ".\\gfx\\thg.pic"
+;.INCBIN "thg.zst" SKIP $20C13 READ $8000
+.INCBIN "gfx/thg.pic"
 
 SRC_Palette_WorldMap:
-;.INCBIN ".\\thg.zst" SKIP $618 READ 512
-.INCBIN ".\\gfx\\thg.pal"
+;.INCBIN "thg.zst" SKIP $618 READ 512
+.INCBIN "gfx/thg.pal"
 
 SRC_Tilemap_WorldMap:
-;.INCBIN ".\\thg.zst" SKIP $28C13 READ $2000
-.INCBIN ".\\gfx\\thg.map"
+;.INCBIN "thg.zst" SKIP $28C13 READ $2000
+.INCBIN "gfx/thg.map"
 
 .ENDS
 
@@ -477,12 +477,12 @@ SRC_Tilemap_WorldMap:
 .SECTION "Mode 7 GFX 2"
 
 SRC_Sommappal:
-.INCBIN ".\\gfx\\iot.pal" ;som_map.pal"
-;.INCBIN ".\\SOM.zst" SKIP $618 READ 512
+.INCBIN "gfx/iot.pal" ;som_map.pal"
+;.INCBIN "SOM.zst" SKIP $618 READ 512
 
 GFX_Sommappic:
-.INCBIN ".\\gfx\\iot.bin" ;som_map.pic"
-;.INCBIN ".\\SOM.zst" SKIP $20C13 READ $8000
+.INCBIN "gfx/iot.bin" ;som_map.pic"
+;.INCBIN "SOM.zst" SKIP $20C13 READ $8000
 
 GFX_Sommappic_END:
 
