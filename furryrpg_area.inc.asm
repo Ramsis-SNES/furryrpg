@@ -31,7 +31,7 @@ AreaEnter:
 	stx	REG_VMADDL
 
 ;	DMA_CH0 $01, :GFX_Area001, GFX_Area001, $18, 2080
-	DMA_CH0 $01, :GFX_Area003, GFX_Area003, $18, 12320
+	DMA_CH0 $01, :GFX_Area003, GFX_Area003, $18, 4544 ;4576
 
 	ldx	#(TileMapBG1 & $FFFF)					; put 24-bit address of BG1 tile maps into temp for upcoming Y indexing
 	stx	temp
@@ -47,7 +47,6 @@ AreaEnter:
 -	Accu16
 
 	lda.l	SRC_Tilemap_Area003, x
-	dec	a							; make up for empty tile skipped in pic data
 	clc								; add offset (font, portrait)
 	adc	#(ADDR_VRAM_AreaBG1 >> 4)				; 172 tiles
 
@@ -55,6 +54,7 @@ AreaEnter:
 
 	sta	[temp], y
 	xba
+	ora	#$08							; set palette #2
 	sta	[temp+3], y
 	inx
 	inx
@@ -70,7 +70,6 @@ AreaEnter:
 -	Accu16
 
 	lda.l	SRC_Tilemap_Area003, x
-	dec	a
 	clc								; add offset
 	adc	#(ADDR_VRAM_AreaBG1 >> 4)
 
@@ -78,6 +77,7 @@ AreaEnter:
 
 	sta	REG_VMDATAL
 	xba
+	ora	#$08							; set palette #2
 	sta	REG_VMDATAH
 	inx
 	inx
