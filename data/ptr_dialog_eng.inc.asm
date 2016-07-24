@@ -170,6 +170,42 @@ SRC_DiagPointerEng:
 	.DW STR_DialogEng0148
 	.DW STR_DialogEng0149
 	.DW STR_DialogEng0150
+	.DW STR_DialogEng0151
+	.DW STR_DialogEng0152
+	.DW STR_DialogEng0153
+	.DW STR_DialogEng0154
+	.DW STR_DialogEng0155
+	.DW STR_DialogEng0156
+	.DW STR_DialogEng0157
+	.DW STR_DialogEng0158
+	.DW STR_DialogEng0159
+	.DW STR_DialogEng0160
+	.DW STR_DialogEng0161
+	.DW STR_DialogEng0162
+	.DW STR_DialogEng0163
+	.DW STR_DialogEng0164
+	.DW STR_DialogEng0165
+	.DW STR_DialogEng0166
+	.DW STR_DialogEng0167
+	.DW STR_DialogEng0168
+	.DW STR_DialogEng0169
+	.DW STR_DialogEng0170
+	.DW STR_DialogEng0171
+	.DW STR_DialogEng0172
+	.DW STR_DialogEng0173
+	.DW STR_DialogEng0174
+	.DW STR_DialogEng0175
+	.DW STR_DialogEng0176
+	.DW STR_DialogEng0177
+	.DW STR_DialogEng0178
+	.DW STR_DialogEng0179
+	.DW STR_DialogEng0180
+	.DW STR_DialogEng0181
+	.DW STR_DialogEng0182
+	.DW STR_DialogEng0183
+	.DW STR_DialogEng0184
+	.DW STR_DialogEng0185
+	.DW STR_DialogEng0186
 
 SRC_DiagPointerEng_END:
 
