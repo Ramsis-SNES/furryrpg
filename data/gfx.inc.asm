@@ -21,7 +21,7 @@
 .DEFINE PORTRAIT_CHAR4_PAL	"gfx/portrait_linkwolf.pal"
 
 .DEFINE FONT_HUD		"gfx/font_hud.pic"			; 2048 bytes
-.DEFINE FONT_MODE5		"gfx/font_mode5_vwf2.pic"		; 4096 bytes
+.DEFINE FONT_MODE5		"gfx/font_mode5_vwf.pic"		; 4096 bytes
 .DEFINE FONT_SPRITES		"gfx/font_spr.pic"
 
 .DEFINE LOGO			"gfx/logo-gr.pic"
