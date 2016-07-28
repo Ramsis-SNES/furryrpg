@@ -457,7 +457,7 @@
 	DP_TextPointerNo	dw
 	DP_TextString		dw
 	DP_TextStringBank	db
-	DP_TextStringCounter	db					; holds current ASCII string position
+	DP_TextStringCounter	dw					; holds current ASCII string position
 	DP_TextTileDataCounter	dw					; holds current VRAM tile data address
 
 	DP_CurrentScanline	dw					; holds no. of current scanline (for CPU load meter)
@@ -465,7 +465,7 @@
 	DP_VWFBitsUsed		dw
 	DP_VWFBufferIndex	dw
 	DP_VWFLoop		db
-.ENDE									; 164 of 256 bytes used
+.ENDE									; 165 of 256 bytes used
 
 
 

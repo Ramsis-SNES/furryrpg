@@ -123,6 +123,8 @@ __ProcessNextDialog:
 	lda.l	SRC_DiagPointerGer, x					; DP_TextLanguage is 1 --> German
 ++	sta	DP_TextString
 
+	stz	DP_TextStringCounter					; reset string counter
+
 	Accu8
 
 	lda	#%01000010						; set text box open, text pending flags
@@ -161,17 +163,6 @@ __PrintDialogTextDone:
 	jsr	TextBoxHandleSelection
 
 __DrawSelBarDone:
-
-
-
-; -------------------------- check for A button = close text box, return
-	lda	Joy1New
-	and	#%10000000
-	beq	__MainTextBoxLoopAButtonDone
-
-	jmp	__CloseTextBox
-
-__MainTextBoxLoopAButtonDone:
 
 
 
@@ -341,6 +332,17 @@ __MainTextBoxLoopLButtonDone:
 	jmp	__ProcessNextDialog
 
 __MainTextBoxLoopRButtonDone:
+
+
+
+; -------------------------- check for B button = close text box, return
+	lda	Joy1New+1
+;	and	#%10000000
+	bpl	__MainTextBoxLoopBButtonDone
+
+	jmp	__CloseTextBox
+
+__MainTextBoxLoopBButtonDone:
 	jmp	MainTextBoxLoop
 
 
@@ -468,6 +470,11 @@ __TBHSLoopDpadDownDone:
 	lda	Joy1New+1
 	bpl	__TBHSLoop
 
+-	WaitFrames	1
+
+	lda	Joy1New+1						; wait for player to release button so the text box won't instantly close
+	bmi	-
+
 __TBHSDone:
 	lda	#%00111100						; clear selection bits
 	trb	DP_TextBoxStatus
@@ -524,16 +531,16 @@ VWFTileBufferFull:
 ProcessNextText:
 
 __ProcessTextLoop:
-	lda	DP_TextStringCounter
-
 	Accu16
 
-	and	#$00FF							; remove garbage in high byte
-	tay
+__ProcessTextLoop2:
+	lda	DP_TextStringCounter
+	tay								; transfer string position to Y index
+	inc	a							; increment to next ASCII string character
+	sta	DP_TextStringCounter					; (N.B.: inc a, sta dp is 1 cycle faster than inc dp)
 
 	Accu8
 
-	inc	DP_TextStringCounter					; increment to next ASCII string character
 	lda	[DP_TextString], y					; read ASCII string character
 	cmp	#CC_End							; end of string reached?
 	bne	+
@@ -552,8 +559,13 @@ __ProcessTextLoop:
 	lda	[DP_TextString], y					; read portrait no. (0-127)
 	ora	#$80							; set "change portrait" bit
 	sta	DP_TextBoxCharPortrait					; save to "change portrait" request variable
+
+	Accu16
+
 	inc	DP_TextStringCounter					; increment to next ASCII string character
 	jmp	__ProcessTextJumpOut
+
+.ACCU 8
 
 +	cmp	#CC_Indent						; indention?
 	bne	+
@@ -609,11 +621,10 @@ __ProcessTextLoop:
 	bra	__ProcessTextLoop
 
 __OtherControlCode:
-	cmp	#CC_BoxBlue
-	bcs	+
-	bra	__ProcessTextLoop
+	cmp	#CC_BoxBlue						; self-reminder: This only works because we've already checked for all other CCs!
+	bcc	__ProcessTextLoop
 
-+	jsr	ChangeTextBoxBG
+	jsr	ChangeTextBoxBG
 	jmp	__ProcessTextJumpOut
 
 __CarriageReturn:
@@ -629,7 +640,7 @@ __CarriageReturn:
 	cmp	#46*8							; line 1?
 	bne	+
 
-	jmp	__ProcessTextJumpOut					; do nothing if carriage return requested after exactly 46 chars
+	jmp	__ProcessTextJumpOut					; do nothing if carriage return requested after exactly 23 (16×8) tiles
 +	bcs	+
 
 	lda	#46*8							; go to line 2
@@ -641,7 +652,7 @@ __CarriageReturn:
 +	cmp	#92*8							; line 2?
 	bne	+
 
-	jmp	__ProcessTextJumpOut					; do nothing if carriage return requested after exactly 92 chars
+	jmp	__ProcessTextJumpOut					; do nothing if carriage return requested after exactly 46 (16×8) tiles
 +	bcs	+
 
 	lda	#92*8							; go to line 3
@@ -679,18 +690,14 @@ __ClearTextBoxMidString:
 	beq	-
 
 	lda	#%10000000						; lastly, set "clear text box" bit
-	sta	DP_TextBoxStatus
+	tsb	DP_TextBoxStatus
 
 	WaitFrames	1
 
 	Accu16
 
-	inc	DP_TextPointerNo					; increment to next text pointer
-	pla								; pull 16 bits of garbage off the stack as there's no rts from jsr ProcessNextText
-
-	Accu8
-
-	jmp	__ProcessNextDialog
+	stz	DP_TextTileDataCounter					; reset tile counter
+	jmp	__ProcessTextJumpOut
 
 
 
@@ -715,9 +722,7 @@ __ProcessTextNormal:
 	cmp	#2
 	bcs	+
 
-	Accu8
-
-	jmp	__ProcessTextLoop
+	jmp	__ProcessTextLoop2
 
 +	Accu8
 
@@ -758,7 +763,6 @@ __ProcessTextDone:
 
 	lda	#%01000000						; clear "more text pending" flag
 	trb	DP_TextBoxStatus
-	stz	DP_TextStringCounter					; reset string parameters
 
 	Accu16
 
@@ -778,8 +782,6 @@ ClearTextBox:
 	stx	REG_VMADDL
 
 	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 184*16		; 184 tiles
-
-	stz	DP_TextStringCounter					; reset string parameters
 
 	Accu16
 
