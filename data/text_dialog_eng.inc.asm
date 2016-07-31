@@ -135,8 +135,8 @@ STR_DialogEng0017:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "Ummmmm ...", CC_NewLine
-	.DB CC_Selection, CC_Indent, "Well, as you said, it's just milk.", CC_NewLine		; show 0021, skip 0022 thru 0024
-	.DB CC_Selection, CC_Indent, "Yuck. What's next on the menu, parsnip stew?", CC_End	; skip 0021
+	.DB CC_Selection, CC_Indent, "Well, as you said, it's just milk.", CC_NewLine		; show 0018, skip 0019 thru 0021
+	.DB CC_Selection, CC_Indent, "Yuck. What's next on the menu, parsnip stew?", CC_End	; skip 0018
 
 STR_DialogEng0018:
 	.DB CC_Portrait, 2, CC_BoxPink
@@ -193,9 +193,9 @@ STR_DialogEng0026:
 STR_DialogEng0027:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
-	.DB CC_Selection, CC_Indent, "Of course!", CC_NewLine			; show 0033, skip 0034
-	.DB CC_Selection, CC_Indent, "No idea what you mean!", CC_NewLine	; skip 0033
-	.DB CC_Selection, CC_Indent, "Give me a hint, please.", CC_End		; skip 0033, 0034
+	.DB CC_Selection, CC_Indent, "Of course!", CC_NewLine			; show 0028, skip 0029
+	.DB CC_Selection, CC_Indent, "No idea what you mean!", CC_NewLine	; skip 0028
+	.DB CC_Selection, CC_Indent, "Give me a hint, please.", CC_End		; skip 0028, 0029
 
 STR_DialogEng0028:
 	.DB CC_Portrait, 0, CC_BoxBlue
@@ -247,7 +247,7 @@ STR_DialogEng0034:
 STR_DialogEng0035:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
-	.DB CC_Selection, CC_Indent, "So what's the mayor's reward?", CC_NewLine	; skip 0043, 0044
+	.DB CC_Selection, CC_Indent, "So what's the mayor's reward?", CC_NewLine	; skip 0036, 0037
 	.DB CC_Selection, CC_Indent, "I'd love to hunt some ghost!", CC_End		; continue
 
 STR_DialogEng0036:
@@ -449,7 +449,7 @@ STR_DialogEng0070:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "So ...", CC_NewLine
-	.DB CC_Selection, CC_Indent, "Why did you end up here in Librefur?", CC_NewLine		; skip 0082
+	.DB CC_Selection, CC_Indent, "Why did you end up here in Librefur?", CC_NewLine		; skip 0071
 	.DB CC_Selection, CC_Indent, "You're a deserter then?", CC_End				; continue
 
 STR_DialogEng0071:
@@ -664,7 +664,7 @@ STR_DialogEng0105:
 	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "Well? What do we do?", CC_NewLine
 	.DB CC_Selection, CC_Indent, "(Be on the run!)", CC_NewLine	; no change in dialogue // FIXME, this choice doesn't really make sense
-	.DB CC_Selection, CC_Indent, "(Stay and explore)", CC_End	
+	.DB CC_Selection, CC_Indent, "(Stay and explore)", CC_End
 
 STR_DialogEng0106:
 	.DB CC_Portrait, 0, CC_BoxBlue
@@ -710,8 +710,8 @@ STR_DialogEng0113:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
 	.DB CC_Selection, CC_Indent, "I'm Alec, and these are my friends.", CC_NewLine		; continue
-	.DB CC_Selection, CC_Indent, "I should ask you the same thing, Redcoat!", CC_NewLine	; skip 0129, 0130 // FIXME, add 1 alt. fox line
-	.DB CC_Selection, CC_Indent, "(Have Lily reply instead)", CC_End			; skip 0129 // FIXME, add 1 Lily line
+	.DB CC_Selection, CC_Indent, "I should ask you the same thing, Redcoat!", CC_NewLine	; skip 0114, 0115 // FIXME, add 1 alt. fox line
+	.DB CC_Selection, CC_Indent, "(Have Lily reply instead)", CC_End			; skip 0114 // FIXME, add 1 Lily line
 
 STR_DialogEng0114:
 	.DB CC_Portrait, 0, CC_BoxBlue
@@ -876,7 +876,7 @@ STR_DialogEng0138:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "Now that he's gone ...", CC_NewLine
-	.DB CC_Selection, CC_Indent, "(I'll sneak up on him, and tickle him all night! ", SYM_heart, ")", CC_NewLine	; skip 0161 thru 0170
+	.DB CC_Selection, CC_Indent, "(I'll sneak up on him, and tickle him all night! ", SYM_heart, ")", CC_NewLine	; skip 0139 thru 0148
 	.DB CC_Selection, CC_Indent, "(I'd better make it up to Lily for being a meanie.)", CC_End			; continue (don't skip later Primus cut scene)
 
 STR_DialogEng0139:
@@ -978,8 +978,8 @@ STR_DialogEng0156:
 STR_DialogEng0157:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
-	.DB CC_Selection, CC_Indent, "Good night, Primus. Sleep well.", CC_NewLine			; skip 0180
-	.DB CC_Selection, CC_Indent, "Look how your ears shimmer in the moonlight ...", CC_End		; show 0180, skip 0181, 0182
+	.DB CC_Selection, CC_Indent, "Good night, Primus. Sleep well.", CC_NewLine			; skip 0158
+	.DB CC_Selection, CC_Indent, "Look how your ears shimmer in the moonlight ...", CC_End		; show 0158, skip 0159, 0160
 
 STR_DialogEng0158:
 	.DB CC_Portrait, 0, CC_BoxBlue
