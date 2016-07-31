@@ -26,10 +26,6 @@
 
 ; ******************************* Dialog *******************************
 
-; For TextPad (with "Regular expression" checked):
-; Search for  : STR_DialogGer....
-; Replace with: STR_DialogGer\i{0,1,4,0}
-
 STR_DiagTestGer:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "DIALOG-TEST", CC_NewLine

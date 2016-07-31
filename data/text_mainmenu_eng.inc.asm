@@ -26,10 +26,6 @@
 
 ; *************************** Item pointers ****************************
 
-; For TextPad (with "Regular expression" checked):
-; Search for  : STR_MainMenuEng...
-; Replace with: STR_MainMenuEng\i{0,1,3,0}
-
 	.DW STR_MainMenuEng000
 	.DW STR_MainMenuEng001
 	.DW STR_MainMenuEng002

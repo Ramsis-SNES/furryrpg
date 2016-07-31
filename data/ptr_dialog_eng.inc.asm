@@ -11,11 +11,6 @@
 
 ; *************************** Pointer table ****************************
 
-; To create sequential numbers (4 digits, leading zeroes) using TextPad:
-; Search for: STR_DialogEng....
-; Replace with: STR_DialogEng\i{0,1,4,0}
-; ("Regular expression" must be checked, of course)
-
 SRC_DiagPointerEng:
 	.DW STR_DiagTestEng
 

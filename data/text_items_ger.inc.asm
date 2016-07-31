@@ -26,12 +26,6 @@
 
 ; ******************************* Items ********************************
 
-; For TextPad (with "Regular expression" checked):
-; Search for  : STR_ItemGer...
-; Replace with: STR_ItemGer\i{0,1,3,0}
-; Search for  : Item............
-; Replace with: Item\i{0,1,12,0}
-
 STR_ItemGer000:
 	.DB "Item000000000000"
 
