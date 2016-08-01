@@ -1,6 +1,40 @@
 FURRY RPG! (WORKING TITLE) -- CHANGES:
 --------------------------------------
 
+Build #00268:
+- added hi-res splash screen to intro (for disclaimer or whatever)
+- added opening animation to ring menu
+- more work on both English and German dialog
+- improved "clear text box" control code behavior
+- minor fixes
+
+
+
+Build #00266:
+- more work on the in-game menu (inventory sub-menu)
+
+
+
+Build #00264:
+- added gallery with sprites contributed so far, courtesy of Tantalus (thank you!)
+
+
+
+Build #00263:
+- minor bugfixes
+
+
+
+Build #00262:
+- scrapped static Mode 3 world map as it will be implemented in Mode 1 instead
+
+
+
+Build #00261:
+- made BG3 HUD dynamically (re-/dis-)appear (still a bit buggy though)
+
+
+
 Build #00260:
 - added new BGM track ("Furlorn Village")
 
