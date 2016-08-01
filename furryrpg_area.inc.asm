@@ -226,7 +226,7 @@ AreaEnter:
 
 	Accu16
 
-	lda	#210							; dot number for interrupt (256 = too late, 204 = too early)
+	lda	#211							; dot number for interrupt (256 = too late, 204 = too early)
 	sta	REG_HTIMEL
 	lda	#176							; scanline number for interrupt: 176 (i.e., let IRQ fire in Hblank between scanlines 176 and 177)
 	sta	REG_VTIMEL

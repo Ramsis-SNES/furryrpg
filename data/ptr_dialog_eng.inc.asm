@@ -184,23 +184,25 @@ SRC_DiagPointerEng:
 	.DW STR_DialogEng0167
 	.DW STR_DialogEng0168
 	.DW STR_DialogEng0169
-	.DW STR_DialogEng0170
-	.DW STR_DialogEng0171
-	.DW STR_DialogEng0172
-	.DW STR_DialogEng0173
-	.DW STR_DialogEng0174
-	.DW STR_DialogEng0175
-	.DW STR_DialogEng0176
-	.DW STR_DialogEng0177
-	.DW STR_DialogEng0178
-	.DW STR_DialogEng0179
-	.DW STR_DialogEng0180
-	.DW STR_DialogEng0181
-	.DW STR_DialogEng0182
-	.DW STR_DialogEng0183
-	.DW STR_DialogEng0184
-	.DW STR_DialogEng0185
-	.DW STR_DialogEng0186
+;	.DW STR_DialogEng0170
+;	.DW STR_DialogEng0171
+;	.DW STR_DialogEng0172
+;	.DW STR_DialogEng0173
+;	.DW STR_DialogEng0174
+;	.DW STR_DialogEng0175
+;	.DW STR_DialogEng0176
+;	.DW STR_DialogEng0177
+;	.DW STR_DialogEng0178
+;	.DW STR_DialogEng0179
+;	.DW STR_DialogEng0180
+;	.DW STR_DialogEng0181
+;	.DW STR_DialogEng0182
+;	.DW STR_DialogEng0183
+;	.DW STR_DialogEng0184
+;	.DW STR_DialogEng0185
+;	.DW STR_DialogEng0186
+;	.DW STR_DialogEng0187
+;	.DW STR_DialogEng0188
 
 SRC_DiagPointerEng_END:
 
