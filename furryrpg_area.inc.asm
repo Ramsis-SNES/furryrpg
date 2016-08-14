@@ -480,36 +480,30 @@ LoadArea:
 
 	lda	DP_NextTrack
 	cmp	#$FF
-	beq	__NoAreaGSSTrack
+	beq	__AreaGSSTrackDone
 
 +	jsl	PlayTrack
 
-__NoAreaGSSTrack:
+__AreaGSSTrackDone:
 	lda	DP_MSU1present
-	beq	++
+	beq	__AreaMSU1TrackDone
 
 	Accu16
 
-	lda	DP_MSU1NextTrack					; MSU1 present
+	lda	DP_MSU1NextTrack					; MSU1 present, set track
 	cmp	#$FFFF							; $FFFF = don't play any MSU1 track
-	bne	+
+	beq	++
+	sta	MSU_TRACK
+-	lda	MSU_STATUS						; wait for Audio Busy bit to clear
+	and	#%0000000001000000
+	bne	-
 
-	Accu8
-
-	bra	++
-
-+	sta	MSU_TRACK
-
-	Accu8
-
--	bit	MSU_STATUS						; wait for Audio Busy bit to clear
-	bvs	-
-
-	lda	#%00000011						; set play, repeat flags
-	sta	MSU_CONTROL
-	lda	#$FF
+	lda	#%0000001111111111					; set play, repeat flags, max. volume (16-bit write)
 	sta	MSU_VOLUME
-++
+
+++	Accu8
+
+__AreaMSU1TrackDone:
 .ENDIF
 
 
