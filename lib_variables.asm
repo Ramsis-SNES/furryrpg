@@ -395,13 +395,18 @@
 	DP_SPC_VOL_CURRENT	dw
 	DP_SPC_VOL_FADESPD	dw
 
+	DP_AreaCurrent		dw					; holds no. of current area
+	DP_AreaNamePointer	dw
+	DP_AreaProperties	dw					; 0000000000bayxss [s = screen size, as in BGXSC regs, x/y = area is scrollable horizontally/vertically, a/b = auto-scroll area horizontally/vertically, 0 = reserved]
+
 	DP_Char1FrameCounter	db
 	DP_Char1PosYX		dw					; high byte = Y position, low byte = X position
 	DP_Char1SpriteStatus	db					; irrrrddd [i = not walking (idle), ddd = walking direction (0 = down, 1 = up, 2 = left, 3 = right)]
 	DP_Char1WalkingSpd	dw
 
 	DP_DataSrcAddress	dsb 3					; holds a 24-bit source address e.g. for data transfers to SRAM
-	DP_DMAUpdates		dw					; rrrrrrrrdcba4321 [1234 = BG no. that needs to have its lower tilemap updated on next Vblank, abcd = same thing for upper tilemaps, r = reserved]
+
+	DP_DMAUpdates		dw					; rrrcbbaarrr32211 [123 = BG no. that needs to have its tile map(s) updated on next Vblank (low bytes), abc = same thing for high bytes, r = reserved. The lower bit of each BG represents the first half of a 64×32/32×64 tile map, the higher one represents the second half.]
 
 	DP_EffectSpeed		db
 
@@ -435,6 +440,7 @@
 	DP_Mode7_FrameCounter	db
 
 	DP_MSU1present		db
+	DP_MSU1NextTrack	dw
 
 	DP_Multi5_Reg0lo	db
 	DP_Multi5_Reg0hi	db
@@ -465,7 +471,7 @@
 	DP_VWFBitsUsed		dw
 	DP_VWFBufferIndex	dw
 	DP_VWFLoop		db
-.ENDE									; 165 of 256 bytes used
+.ENDE									; 173 of 256 bytes used
 
 
 
@@ -568,8 +574,10 @@
 ; ******************* Variables in lower 8K of WRAM ********************
 
 .ENUM $0200
-	SpriteBuf1	INSTANCEOF oam_low				; 512 bytes
-	SpriteBuf2	INSTANCEOF oam_high				; 32 bytes
+	RAM_Code			dsb 256				; for modifiable routines
+
+	ARRAY_SpriteBuf1		INSTANCEOF oam_low		; 512 bytes
+	ARRAY_SpriteBuf2		INSTANCEOF oam_high		; 32 bytes
 
 	ARRAY_VWFTileBuffer		dsb 32
 	ARRAY_VWFTileBuffer2		dsb 32
@@ -588,22 +596,37 @@
 	ARRAY_TempString		dsb 32				; for temp strings
 
 	VAR_TextBox_TSTM		dw				; shadow copies of subscreen (high) & mainscreen (low) designation registers ($212C/212D) for text box area
-.ENDE									; $XXX bytes + $XXX = $XXX bytes used (stack resides at $1FFF)
+.ENDE									; $BDC bytes + $200 = $DDC bytes used (stack resides at $1FFF)
+
+
+
+.DEFINE VAR_DMAModeBBusReg		RAM_Code+14
+.DEFINE VAR_DMASourceOffset		RAM_Code+20
+.DEFINE VAR_DMASourceBank		RAM_Code+26
+.DEFINE VAR_DMATransferLength		RAM_Code+31
 
 
 
 ; ********************** Variables in upper WRAM ***********************
 
 .ENUM $7E2000
-	TileMapBG1			INSTANCEOF tilemap_bg1		; each tile map is 1024 bytes in size
-	TileMapBG1Hi			INSTANCEOF tilemap_bg1_hi
-	TileMapBG2			INSTANCEOF tilemap_bg2
-	TileMapBG2Hi			INSTANCEOF tilemap_bg2_hi
-	TileMapBG3			INSTANCEOF tilemap_bg3
-	TileMapBG3Hi			INSTANCEOF tilemap_bg3_hi
+	ARRAY_BG1TileMap1		INSTANCEOF tilemap_bg1		; each tile map is 1024 bytes in size (32×32 tiles)
+	ARRAY_BG1TileMap2		dsb 1024
+	ARRAY_BG1TileMap1Hi		INSTANCEOF tilemap_bg1_hi
+	ARRAY_BG1TileMap2Hi		dsb 1024
+
+	ARRAY_BG2TileMap1		INSTANCEOF tilemap_bg2
+	ARRAY_BG2TileMap2		dsb 1024
+	ARRAY_BG2TileMap1Hi		INSTANCEOF tilemap_bg2_hi
+	ARRAY_BG2TileMap2Hi		dsb 1024
+
+	ARRAY_BG3TileMap		INSTANCEOF tilemap_bg3
+	ARRAY_BG3TileMapHi		INSTANCEOF tilemap_bg3_hi
 
 	ARRAY_HDMA_BackgrPlayfield	dsb 704				; 16-bit palette index & 16-bit color entry for 176 scanlines
 	ARRAY_HDMA_BackgrTextBox	dsb 192				; ditto for 48 scanlines
+
+	ARRAY_ScratchSpace		dsb 16384
 .ENDE
 
 
@@ -611,7 +634,7 @@
 ; *************************** SRAM variables ***************************
 
 .ENUM $6000
-	SRAM		INSTANCEOF sram
+	SRAM				INSTANCEOF sram
 .ENDE									; max. 8192 bytes
 
 

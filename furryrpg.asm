@@ -193,7 +193,7 @@ STR_SoftwareBuild:
 	.DB "Build #"
 
 STR_SoftwareBuildNo:
-	.DB "00268"
+	.DB "00271"
 	.DB 0
 
 ;STR_Software_BuildNo_END:
@@ -250,6 +250,14 @@ SRC_IRQJumpTable:
 
 
 
+.SECTION "data" SEMIFREE						; FIXME, move to another bank (requires acknowledgement of bank byte in area properties)
+
+.INCLUDE "data/text_areanames_all.inc.asm"
+
+.ENDS
+
+
+
 .SECTION "libs" SEMIFREE
 
 .INCLUDE "lib_joypads.inc.asm"
@@ -288,6 +296,7 @@ Startup:
 
 .INCLUDE "data/gfx.inc.asm"						; sprites, fonts, palettes
 .INCLUDE "data/tbl_fontwidth.inc.asm"					; font width table for sprite VWF
+.INCLUDE "data/tbl_areaproperties.inc.asm"				; area property tables & pointers
 
 .ENDS
 

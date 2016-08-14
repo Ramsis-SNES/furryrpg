@@ -127,7 +127,7 @@ MainMenuLoop:
 	cmp	#80
 	bne	+
 
-	ldx	#(TileMapBG3 & $FFFF)					; clear text
+	ldx	#(ARRAY_BG3TileMap & $FFFF)				; clear text
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
@@ -228,11 +228,11 @@ InGameMenu:
 
 
 ; -------------------------- clear tilemap buffers, init sprites
-	ldx	#(TileMapBG1 & $FFFF)
+	ldx	#(ARRAY_BG1TileMap1 & $FFFF)
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024*6
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 10240
 
 	jsr	SpriteInit						; FIXME, sprite #0 isn't empty on menu sprites
 
@@ -254,7 +254,7 @@ InGameMenu:
 
 	DMA_CH0 $01, :GFX_Logo, GFX_Logo, $18, 8000
 
-	ldx	#(TileMapBG1 & $FFFF)
+	ldx	#(ARRAY_BG1TileMap1 & $FFFF)
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
@@ -272,7 +272,7 @@ InGameMenu:
 
 	ldx	#0
 	lda	#$20							; priority bit
--	sta	TileMapBG3Hi, x						; set priority bit for BG3 HUD
+-	sta	ARRAY_BG3TileMapHi, x					; set priority bit for BG3 HUD
 	inx
 	cpx	#1024
 	bne	-
@@ -293,7 +293,7 @@ InGameMenu:
 	lsr	a
 	lsr	a
 	ldx	#0
--	sta	TileMapBG1Hi, x						; store palette no.
+-	sta	ARRAY_BG1TileMap1Hi, x					; store palette no.
 	inx
 	cpx	#1024
 	bne	-
@@ -303,8 +303,9 @@ InGameMenu:
 
 	DMA_CH0 $02, :SRC_Palette_Sprites_InGameMenu, SRC_Palette_Sprites_InGameMenu, $22, 32
 
-	lda	#%01110111						; make sure BG1/2/3 lo/hi tilemaps get updated once NMI is reenabled
+	lda	#%00011111						; make sure BG1/2/3 lo/hi tilemaps get updated once NMI is reenabled
 	tsb	DP_DMAUpdates
+	tsb	DP_DMAUpdates+1
 
 	SetNMI	TBL_NMI_DebugMenu
 
@@ -383,44 +384,44 @@ InGameMenu:
 
 ; -------------------------- ring menu sprites
 	lda	#$00							; tile num ("Inventory" sprite)
-	sta	SpriteBuf1.RingMenuItem1+2
+	sta	ARRAY_SpriteBuf1.RingMenuItem1+2
 	lda	#%00110000						; attributes (tile num & priority bits only)
-	sta	SpriteBuf1.RingMenuItem1+3
+	sta	ARRAY_SpriteBuf1.RingMenuItem1+3
 
 	lda	#$04							; tile num ("Talent" sprite)
-	sta	SpriteBuf1.RingMenuItem2+2
+	sta	ARRAY_SpriteBuf1.RingMenuItem2+2
 	lda	#%00110000						; attributes (tile num & priority bits only)
-	sta	SpriteBuf1.RingMenuItem2+3
+	sta	ARRAY_SpriteBuf1.RingMenuItem2+3
 
 	lda	#$08							; tile num ("Party" sprite)
-	sta	SpriteBuf1.RingMenuItem3+2
+	sta	ARRAY_SpriteBuf1.RingMenuItem3+2
 	lda	#%00110000						; attributes (tile num & priority bits only)
-	sta	SpriteBuf1.RingMenuItem3+3
+	sta	ARRAY_SpriteBuf1.RingMenuItem3+3
 
 	lda	#$0C							; tile num ("Lily's log" sprite)
-	sta	SpriteBuf1.RingMenuItem4+2
+	sta	ARRAY_SpriteBuf1.RingMenuItem4+2
 	lda	#%00110000						; attributes (tile num & priority bits only)
-	sta	SpriteBuf1.RingMenuItem4+3
+	sta	ARRAY_SpriteBuf1.RingMenuItem4+3
 
 	lda	#$40							; tile num ("Settings" sprite)
-	sta	SpriteBuf1.RingMenuItem5+2
+	sta	ARRAY_SpriteBuf1.RingMenuItem5+2
 	lda	#%00110000						; attributes (tile num & priority bits only)
-	sta	SpriteBuf1.RingMenuItem5+3
+	sta	ARRAY_SpriteBuf1.RingMenuItem5+3
 
 	lda	#$44							; tile num ("Quit Game" sprite)
-	sta	SpriteBuf1.RingMenuItem6+2
+	sta	ARRAY_SpriteBuf1.RingMenuItem6+2
 	lda	#%00110000						; attributes (tile num & priority bits only)
-	sta	SpriteBuf1.RingMenuItem6+3
+	sta	ARRAY_SpriteBuf1.RingMenuItem6+3
 
 	lda	#$48							; tile num (1st "??" sprite)
-	sta	SpriteBuf1.RingMenuItem7+2
+	sta	ARRAY_SpriteBuf1.RingMenuItem7+2
 	lda	#%00110000						; attributes (tile num & priority bits only)
-	sta	SpriteBuf1.RingMenuItem7+3
+	sta	ARRAY_SpriteBuf1.RingMenuItem7+3
 
 	lda	#$4C							; tile num (2nd "??" sprite)
-	sta	SpriteBuf1.RingMenuItem8+2
+	sta	ARRAY_SpriteBuf1.RingMenuItem8+2
 	lda	#%00110000						; attributes (tile num & priority bits only)
-	sta	SpriteBuf1.RingMenuItem8+3
+	sta	ARRAY_SpriteBuf1.RingMenuItem8+3
 
 	lda	#$0F							; turn on screen
 	sta	REG_INIDISP
@@ -453,13 +454,13 @@ __RingMenuOpenAnimation:
 
 ; -------------------------- ring menu cursor sprite
 	lda	#PARAM_RingMenuCenterX-16				; X (subtract half of sprite width)
-	sta	SpriteBuf1.RingMenuCursor
+	sta	ARRAY_SpriteBuf1.RingMenuCursor
 	lda	#PARAM_RingMenuCenterY-PARAM_RingMenuRadiusMax		; Y (subtract radius to place the cursor at the top of the menu)
-	sta	SpriteBuf1.RingMenuCursor+1
+	sta	ARRAY_SpriteBuf1.RingMenuCursor+1
 	lda	#$80							; tile num (cursor sprite)
-	sta	SpriteBuf1.RingMenuCursor+2
+	sta	ARRAY_SpriteBuf1.RingMenuCursor+2
 	lda	#%00110000						; attributes (tile num & priority bits only)
-	sta	SpriteBuf1.RingMenuCursor+3
+	sta	ARRAY_SpriteBuf1.RingMenuCursor+3
 
 	DrawFrame	7, 1, 17, 2
 
@@ -590,7 +591,7 @@ __RingMenuLoopDpadRightDone:
 ;	PrintHexNum	DP_RingMenuAngle
 ;.ENDIF
 
-	lda	#%00000100						; make sure BG3 lo tilemap gets updated
+	lda	#%00010000						; make sure BG3 lo tile map gets updated
 	tsb	DP_DMAUpdates
 
 
@@ -637,7 +638,7 @@ PutRingMenuItems:
 	lda	DP_RingMenuAngle					; take angle for 1st item on ring menu ($80 = 12:00 o'clock)
 	sta	DP_RingMenuAngleOffset
 
-	ldx	#SpriteBuf1.RingMenuItem1				; set WRAM address for 1st item on ring menu
+	ldx	#ARRAY_SpriteBuf1.RingMenuItem1				; set WRAM address for 1st item on ring menu
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 	jsr	CalcRingMenuItemPos
@@ -647,7 +648,7 @@ PutRingMenuItems:
 	sbc	#$20
 	sta	DP_RingMenuAngleOffset
 
-	ldx	#SpriteBuf1.RingMenuItem2				; set WRAM address for 2nd item on ring menu
+	ldx	#ARRAY_SpriteBuf1.RingMenuItem2				; set WRAM address for 2nd item on ring menu
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 	jsr	CalcRingMenuItemPos
@@ -657,7 +658,7 @@ PutRingMenuItems:
 	sbc	#$40
 	sta	DP_RingMenuAngleOffset
 
-	ldx	#SpriteBuf1.RingMenuItem3				; set WRAM address for 3rd item on ring menu
+	ldx	#ARRAY_SpriteBuf1.RingMenuItem3				; set WRAM address for 3rd item on ring menu
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 	jsr	CalcRingMenuItemPos
@@ -667,7 +668,7 @@ PutRingMenuItems:
 	sbc	#$60
 	sta	DP_RingMenuAngleOffset
 
-	ldx	#SpriteBuf1.RingMenuItem4				; set WRAM address for 4th item on ring menu
+	ldx	#ARRAY_SpriteBuf1.RingMenuItem4				; set WRAM address for 4th item on ring menu
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 	jsr	CalcRingMenuItemPos
@@ -677,7 +678,7 @@ PutRingMenuItems:
 	sbc	#$80
 	sta	DP_RingMenuAngleOffset
 
-	ldx	#SpriteBuf1.RingMenuItem5				; set WRAM address for 5th item on ring menu
+	ldx	#ARRAY_SpriteBuf1.RingMenuItem5				; set WRAM address for 5th item on ring menu
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 	jsr	CalcRingMenuItemPos
@@ -687,7 +688,7 @@ PutRingMenuItems:
 	adc	#$60
 	sta	DP_RingMenuAngleOffset
 
-	ldx	#SpriteBuf1.RingMenuItem6				; set WRAM address for 6th item on ring menu
+	ldx	#ARRAY_SpriteBuf1.RingMenuItem6				; set WRAM address for 6th item on ring menu
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 	jsr	CalcRingMenuItemPos
@@ -697,7 +698,7 @@ PutRingMenuItems:
 	adc	#$40
 	sta	DP_RingMenuAngleOffset
 
-	ldx	#SpriteBuf1.RingMenuItem7				; set WRAM address for 7th item on ring menu
+	ldx	#ARRAY_SpriteBuf1.RingMenuItem7				; set WRAM address for 7th item on ring menu
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 	jsr	CalcRingMenuItemPos
@@ -707,7 +708,7 @@ PutRingMenuItems:
 	adc	#$20
 	sta	DP_RingMenuAngleOffset
 
-	ldx	#SpriteBuf1.RingMenuItem8				; set WRAM address for 8th item on ring menu
+	ldx	#ARRAY_SpriteBuf1.RingMenuItem8				; set WRAM address for 8th item on ring menu
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 	jsr	CalcRingMenuItemPos
@@ -774,11 +775,11 @@ GotoInventory:
 
 
 ; -------------------------- clear tilemap buffers, init sprites, load new font/GFX data
-;	ldx	#(TileMapBG1 & $FFFF)
+;	ldx	#(ARRAY_BG1TileMap1 & $FFFF)
 ;	stx	REG_WMADDL
 ;	stz	REG_WMADDH
 
-;	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024*5		; clear all tile map buffers (except BG3-hi)
+;	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024*9		; clear all tile map buffers (except BG3-hi)
 
 	jsr	SpriteInit						; purge OAM
 
@@ -802,9 +803,9 @@ GotoInventory:
 
 __MakeBG3ItemTileMap:
 	ldy	#10							; max. no. of tiles for an item name
--	sta	TileMapBG3, x
+-	sta	ARRAY_BG3TileMap, x
 	xba
-	sta	TileMapBG3Hi, x
+	sta	ARRAY_BG3TileMapHi, x
 	xba
 
 	Accu16
@@ -824,9 +825,9 @@ __MakeBG3ItemTileMap:
 	inx
 
 	ldy	#10							; max. no. of tiles for an item name
--	sta	TileMapBG3, x
+-	sta	ARRAY_BG3TileMap, x
 	xba
-	sta	TileMapBG3Hi, x
+	sta	ARRAY_BG3TileMapHi, x
 	xba
 
 	Accu16
@@ -860,8 +861,9 @@ __MakeBG3ItemTileMap:
 ; -------------------------- screen registers/misc. parameters
 	lda	#$03							; switch BG3 char data area designation to $3000 // FIXME
 	sta	REG_BG34NBA
-	lda	#%01110111						; make sure BG1-3 lo/hi tilemaps get updated
+	lda	#%00011111						; make sure BG1-3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
+	tsb	DP_DMAUpdates+1
 	lda	REG_RDNMI						; clear NMI flag
 	lda	#$81							; enable NMI and auto-joypad read
 	sta	DP_Shadow_NMITIMEN
@@ -889,11 +891,11 @@ GotoInventoryV-Split:
 
 
 ; -------------------------- clear tilemap buffers, init sprites, load new font/GFX data
-	ldx	#(TileMapBG1 & $FFFF)
+	ldx	#(ARRAY_BG1TileMap1 & $FFFF)
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024*5		; clear all tile map buffers (except BG3-hi)
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024*9		; clear all tile map buffers (except BG3-hi)
 
 	jsr	SpriteInit						; purge OAM
 	jsr	MakeMode5Fonts
@@ -1008,7 +1010,7 @@ __RenderItem:
 	bra	-
 +
 
-;	ldx	#(TileMapBG3 & $FFFF)
+;	ldx	#(ARRAY_BG3TileMap & $FFFF)
 ;	stx	REG_WMADDL
 ;	stz	REG_WMADDH
 
@@ -1019,8 +1021,10 @@ __RenderItem:
 ;	cpx	#1024
 ;	bne	-
 
-	lda	#%00110111						; make sure BG1-3 lo and BG1/2 hi tilemaps get updated
+	lda	#%00011111						; make sure BG1-3 lo and BG1/2 hi tilemaps get updated
 	tsb	DP_DMAUpdates
+	and	#%00001111
+	tsb	DP_DMAUpdates+1
 
 -	bra	-
 
@@ -1087,7 +1091,7 @@ __BuildFontBG2:
 LoadMenuCharPortraits:
 	ldx	#$01C0
 	lda	#$02
--	sta	TileMapBG1, x
+-	sta	ARRAY_BG1TileMap1, x
 	inx
 	inc	a
 	inc	a
@@ -1096,7 +1100,7 @@ LoadMenuCharPortraits:
 
 	ldx	#$01E0
 	lda	#$12
--	sta	TileMapBG1, x
+-	sta	ARRAY_BG1TileMap1, x
 	inx
 	inc	a
 	inc	a
@@ -1105,7 +1109,7 @@ LoadMenuCharPortraits:
 
 	ldx	#$0200
 	lda	#$22
--	sta	TileMapBG1, x
+-	sta	ARRAY_BG1TileMap1, x
 	inx
 	inc	a
 	inc	a
@@ -1114,7 +1118,7 @@ LoadMenuCharPortraits:
 
 	ldx	#$0220
 	lda	#$32
--	sta	TileMapBG1, x
+-	sta	ARRAY_BG1TileMap1, x
 	inx
 	inc	a
 	inc	a
@@ -1123,7 +1127,7 @@ LoadMenuCharPortraits:
 
 	ldx	#$0240
 	lda	#$42
--	sta	TileMapBG1, x
+-	sta	ARRAY_BG1TileMap1, x
 	inx
 	inc	a
 	inc	a
@@ -1132,7 +1136,7 @@ LoadMenuCharPortraits:
 
 	ldx	#$0260
 	lda	#$52
--	sta	TileMapBG1, x
+-	sta	ARRAY_BG1TileMap1, x
 	inx
 	inc	a
 	inc	a

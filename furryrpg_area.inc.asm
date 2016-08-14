@@ -9,7 +9,7 @@
 
 
 
-AreaEnter:
+LoadArea:
 	lda	#$80							; enter forced blank
 	sta	REG_INIDISP
 	jsr	SpriteInit						; purge OAM
@@ -21,68 +21,175 @@ AreaEnter:
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	REG_VMAIN
 	jsr	LoadTextBoxBorderTiles					; prepare some stuff for text box
-	jsr	MakeTextBoxTilemapBG1
-	jsr	MakeTextBoxTilemapBG2
+	jsr	MakeTextBoxTileMapBG1
+	jsr	MakeTextBoxTileMapBG2
 
 
 
-; -------------------------- area data --> VRAM/WRAM
-	ldx	#ADDR_VRAM_AreaBG1
-	stx	REG_VMADDL
+; -------------------------- look up area properties, load area gfx data
+	Accu16
 
-;	DMA_CH0 $01, :GFX_Area001, GFX_Area001, $18, 2080
-	DMA_CH0 $01, :GFX_Area003, GFX_Area003, $18, 4544 ;4576
+	lda	DP_AreaCurrent
+	asl	a
+	tax
+	lda.l	SRC_PointerAreaProperty, x				; set data offset for selected area
+	tax
+	lda.l	SRC_AreaProperties, x					; read area properties (16 bits of data)
+	sta	DP_AreaProperties
+	inx
+	inx
+	lda.l	SRC_AreaProperties, x					; read gfx source offset (16 bits of data)
+	sta	VAR_DMASourceOffset
+	inx
+	inx
 
-	ldx	#(TileMapBG1 & $FFFF)					; put 24-bit address of BG1 tile maps into temp for upcoming Y indexing
-	stx	temp
-	ldx	#(TileMapBG1Hi & $FFFF)
-	stx	temp+3
+	Accu8
+
+	lda.l	SRC_AreaProperties, x					; read gfx source bank (8 bits of data)
+	sta	VAR_DMASourceBank
+	inx
+
+	Accu16
+
+	lda.l	SRC_AreaProperties, x					; read size of gfx (16 bits of data)
+	sta	VAR_DMATransferLength
+	inx
+	inx
+	lda	#$1801							; set DMA mode & B bus register (VMDATAL)
+	sta	VAR_DMAModeBBusReg
+	lda	#ADDR_VRAM_AreaBG1					; set VRAM address
+	sta	REG_VMADDL
+	jsl	RAM_Code
+
+
+
+; -------------------------- load area tile map data
+	lda.l	SRC_AreaProperties, x					; read tile map source offset (16 bits of data)
+	sta	VAR_DMASourceOffset
+	inx
+	inx
+
+	Accu8
+
+	lda.l	SRC_AreaProperties, x					; read tile map source bank (8 bits of data)
+	sta	VAR_DMASourceBank
+	inx
+
+	Accu16
+
+	lda.l	SRC_AreaProperties, x					; read size of tile map (16 bits of data)
+	sta	VAR_DMATransferLength
+	inx
+	inx
+	lda	#$8000							; set DMA mode & B bus register (WMDATA)
+	sta	VAR_DMAModeBBusReg
+
+	Accu8
+
+	ldy	#(ARRAY_ScratchSpace & $FFFF)				; set WRAM address to scratch space
+	sty	REG_WMADDL
+	stz	REG_WMADDH
+	jsl	RAM_Code
+
+
+
+; -------------------------- "deinterleave" tile map, add tile no. offset
+	phx								; preserve area data pointer
+	ldx	#(ARRAY_ScratchSpace & $FFFF)				; set DP_DataSrcAddress to scratch space for postindexed long addressing
+	stx	DP_DataSrcAddress
 	lda	#$7E
-	sta	temp+2
-	sta	temp+5
-
+	sta	DP_DataSrcAddress+2
 	ldx	#0
 	ldy	#0
 
 -	Accu16
 
-	lda.l	SRC_Tilemap_Area003, x
+	lda	[DP_DataSrcAddress], y					; read original tile map data (16 bit)
+	iny
+	iny
 	clc								; add offset (font, portrait)
 	adc	#(ADDR_VRAM_AreaBG1 >> 4)				; 172 tiles
 
 	Accu8
 
-	sta	[temp], y
+	sta	ARRAY_BG1TileMap1, x					; store new data
 	xba
 	ora	#$08							; set palette #2
-	sta	[temp+3], y
+	sta	ARRAY_BG1TileMap1Hi, x
 	inx
-	inx
-	iny
-	cpy	#1024
+	cpx	#1024
 	bne	-
 
-	ldx	#ADDR_VRAM_BG1_Tilemap2					; FIXME, add tilemap buffer for BG1/2 second tilemaps
-	stx	REG_VMADDL
-
-	ldx	#2048
+	ldx	#0
 
 -	Accu16
 
-	lda.l	SRC_Tilemap_Area003, x
-	clc								; add offset
-	adc	#(ADDR_VRAM_AreaBG1 >> 4)
+	lda	[DP_DataSrcAddress], y					; read original tile map data (16 bit)
+	iny
+	iny
+	clc								; add offset (font, portrait)
+	adc	#(ADDR_VRAM_AreaBG1 >> 4)				; 172 tiles
 
 	Accu8
 
-	sta	REG_VMDATAL
+	sta	ARRAY_BG1TileMap2, x					; store new data
 	xba
 	ora	#$08							; set palette #2
-	sta	REG_VMDATAH
+	sta	ARRAY_BG1TileMap2Hi, x
 	inx
-	inx
-	cpx	#4096
+	cpx	#1024
 	bne	-
+
+	plx								; restore area data pointer
+
+
+
+; -------------------------- load area palette data
+	Accu16
+
+	lda.l	SRC_AreaProperties, x					; read palette source offset (16 bits of data)
+	sta	VAR_DMASourceOffset
+	inx
+	inx
+
+	Accu8
+
+	lda.l	SRC_AreaProperties, x					; read palette source bank (8 bits of data)
+	sta	VAR_DMASourceBank
+	inx
+
+	Accu16
+
+	lda.l	SRC_AreaProperties, x					; read palette size (16 bits of data)
+	sta	VAR_DMATransferLength
+	inx
+	inx
+	lda	#$2202							; set DMA mode & B bus register (CGDATA)
+	sta	VAR_DMAModeBBusReg
+
+	Accu8
+
+	lda	#ADDR_CGRAM_AREA					; set CGRAM address for BG1 tiles palette
+	sta	REG_CGADD
+	jsl	RAM_Code
+
+
+
+; -------------------------- load area soundtrack data and area name
+	Accu16
+
+	lda.l	SRC_AreaProperties, x					; read default SNESGSS music track
+	sta	DP_NextTrack
+	inx
+	inx
+	lda.l	SRC_AreaProperties, x					; read default MSU1 ambient track
+	sta	DP_MSU1NextTrack
+	inx
+	inx
+	lda.l	SRC_AreaProperties, x					; read pointer to area name
+	sta	DP_AreaNamePointer
+
+	Accu8
 
 
 
@@ -94,23 +201,17 @@ AreaEnter:
 
 	ldx	#0
 	lda	#$20							; priority bit
--	sta	TileMapBG3Hi, x						; set priority bit for BG3 HUD
+-	sta	ARRAY_BG3TileMapHi, x					; set priority bit for BG3 HUD
 	inx
 	cpx	#1024
 	bne	-
 
 
 
-; -------------------------- palettes --> CGRAM
+; -------------------------- misc. palettes --> CGRAM
 	stz	REG_CGADD						; reset CGRAM address
 
 	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
-
-	lda	#ADDR_CGRAM_AREA					; set CGRAM address for BG1 tiles palette
-	sta	REG_CGADD
-
-;	DMA_CH0 $02, :SRC_Palette_Area001, SRC_Palette_Area001, $22, 32
-	DMA_CH0 $02, :SRC_Palette_Area003, SRC_Palette_Area003, $22, 32
 
 	lda	#$80							; set CGRAM address to #256 (word address) for sprites
 	sta	REG_CGADD
@@ -193,14 +294,19 @@ AreaEnter:
 ; -------------------------- screen registers
 	lda	#%00000011						; 8×8 (small) / 16×16 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
 	sta	REG_OBSEL
-	lda	#$50|$01						; BG1 tile map VRAM offset: $5000, Tile Map size: 64×32 tiles
-	sta	REG_BG1SC
-	lda	#$58|$01						; BG2 tile map VRAM offset: $5800, Tile Map size: 64×32 tiles
-	sta	REG_BG2SC
-	lda	#$48|$01						; BG3 tile map VRAM offset: $4800, Tile Map size: 64×32 tiles
+;	lda	DP_AreaProperties					; set tile map size according to area properties // never mind, BG[12]SC are written during Vblank anyway
+;	and	#%00000011						; mask off bits not related to screen size
+;	ora	#$50							; BG1 tile map VRAM offset: $5000
+;	sta	REG_BG1SC
+;	lda	DP_AreaProperties
+;	and	#%00000011
+;	ora	#$58							; BG2 tile map VRAM offset: $5800
+;	sta	REG_BG2SC
+;	lda	DP_AreaProperties
+;	and	#%00000011
+	lda	#$48							; BG3 tile map VRAM offset: $4800
 	sta	REG_BG3SC
-;	lda	#$00							; BG1/BG2 character data VRAM offset: $0000
-	stz	REG_BG12NBA
+	stz	REG_BG12NBA						; BG1/BG2 character data VRAM offset: $0000
 	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
 	sta	REG_BG34NBA
 
@@ -243,8 +349,9 @@ AreaEnter:
 	sta	REG_NMITIMEN
 	cli								; re-enable interrupts
 
-	lda	#%01110111						; make sure BG1/2/3 lo/hi tilemaps get updated
+	lda	#%00011111						; make sure BG1/2/3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
+	tsb	DP_DMAUpdates+1
 	lda	#%01000000						; enable HDMA ch. 6 (BG3 HUD scroll)
 	tsb	DP_HDMAchannels
 
@@ -357,8 +464,8 @@ AreaEnter:
 
 
 ; -------------------------- HUD contents
-	DrawFrame	5, 1, 21, 2
-	PrintString	2, 8, "   Temba Woods    "
+	DrawFrame	3, 1, 25, 2
+;	PrintString	2, 4, "XXXXXXXXXXXXXXXXXXXXXXXX"		; area name
 	PrintString	23, 1, "Gengen"
 	PrintString	24, 1, "HP: XXXX"
 	PrintString	24, 20, "Time: XX:XX"
@@ -367,16 +474,34 @@ AreaEnter:
 
 ; -------------------------- play music & ambient sound effect
 .IFNDEF NOMUSIC
-	lda	#10
-	sta	DP_NextTrack
-	stz	DP_NextTrack+1
-	jsl	PlayTrack
+	lda	DP_NextTrack+1
+	cmp	#$FF							; DP_NextTrack = $FFFF --> don't play any music
+	bne	+
 
+	lda	DP_NextTrack
+	cmp	#$FF
+	beq	__NoAreaGSSTrack
+
++	jsl	PlayTrack
+
+__NoAreaGSSTrack:
 	lda	DP_MSU1present
-	beq	+
+	beq	++
 
-	ldx	#$0001							; MSU1 present, play track #1
-	stx	MSU_TRACK
+	Accu16
+
+	lda	DP_MSU1NextTrack					; MSU1 present
+	cmp	#$FFFF							; $FFFF = don't play any MSU1 track
+	bne	+
+
+	Accu8
+
+	bra	++
+
++	sta	MSU_TRACK
+
+	Accu8
+
 -	bit	MSU_STATUS						; wait for Audio Busy bit to clear
 	bvs	-
 
@@ -384,7 +509,7 @@ AreaEnter:
 	sta	MSU_CONTROL
 	lda	#$FF
 	sta	MSU_VOLUME
-+
+++
 .ENDIF
 
 
@@ -448,6 +573,31 @@ __HUDLogicDone:
 
 
 
+; -------------------------- HUD contents
+	lda	#:AreaNames
+	sta	DP_SubStrAddr+2
+
+	Accu16
+
+	lda	DP_TextLanguage						; check for selected language
+	and	#$00FF							; mask off garbage bits
+	tax
+	lda	DP_AreaNamePointer
+-	dex
+	cpx	#$FFFF
+	beq	+
+	clc
+	adc	#AreaNames_END-AreaNames				; add offset to sub-string address based on language
+	bra	-
+
++	sta	DP_SubStrAddr
+
+	Accu8
+
+	PrintString	2, 4, "%s"					; area name
+
+
+
 .IFDEF DEBUG
 ;	PrintString	2, 26, "X="
 ;	PrintHexNum	DP_Char1PosYX
@@ -461,9 +611,6 @@ __HUDLogicDone:
 ;	PrintString	3, 22, "ScrY="
 ;	PrintHexNum	ARRAY_HDMA_BGScroll+4
 ;	PrintHexNum	ARRAY_HDMA_BGScroll+3
-
-	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
-	tsb	DP_DMAUpdates
 .ENDIF
 
 
@@ -478,23 +625,26 @@ __HUDLogicDone:
 
 
 
-; -------------------------- check for B button = run :-)
+; -------------------------- check for B button = make HUD disappear/run
 	lda	Joy1Press+1
 	and	#%10000000
-	beq	+
+	bne	+
 
-	lda	DP_HUD_Status						; check whether HUD is already being displayed
+	lda	#1							; B not pressed, set slow walking speed
+	bra	__MainAreaLoopBButtonDone
+
++	lda	DP_HUD_Status						; check whether HUD is already being displayed
 	and	#%00000001
 	beq	+
 	lda	#%01000000						; yes, set "HUD should disappear" bit
 	sta	DP_HUD_Status
-	stz	DP_PlayerIdleCounter
+
++	stz	DP_PlayerIdleCounter
 	stz	DP_PlayerIdleCounter+1
 	lda	#2							; B pressed, set fast walking speed
-	bra	++
 
-+	lda	#1							; B released, set slow walking speed
-++	sta	DP_Char1WalkingSpd
+__MainAreaLoopBButtonDone:
+	sta	DP_Char1WalkingSpd
 
 
 
@@ -540,33 +690,40 @@ __MainAreaLoopDpadNewDone:
 	lda	#TBL_Char1_up
 	sta	DP_Char1SpriteStatus
 
-/*	Accu16
+	Accu16
 
-	lda	DP_Char1WalkingSpd
+	lda	DP_AreaProperties					; check if area may be scrolled vertically
+	and	#%0000000000001000
+	bne	+
+
+	lda	DP_Char1WalkingSpd					; area not scrollable, move hero sprite instead
 	xba								; shift to high byte for Y value
 	eor	#$FFFF							; make negative
 	inc	a
 	clc
 	adc	DP_Char1PosYX						; Y = Y - DP_Char1WalkingSpd (add negative value)
 	sta	DP_Char1PosYX
+	bra	++
 
-	Accu8
+;	Accu8
 
-	lda	DP_Char1PosYX+1						; check for walking area border
-	cmp	#$B1
-	bcc	__MainAreaLoopDpadUpDone
+;	lda	DP_Char1PosYX+1						; check for walking area border
+;	cmp	#$B1
+;	bcc	__MainAreaLoopDpadUpDone
 
-	stz	DP_Char1PosYX+1
-*/
+;	stz	DP_Char1PosYX+1
 
-	Accu16
+;	Accu16
 
-	lda	ARRAY_HDMA_BGScroll+3
-	dec	a
++	lda	DP_Char1WalkingSpd
+	eor	#$FFFF							; make negative
+	inc	a
+	clc
+	adc	ARRAY_HDMA_BGScroll+3					; scroll area
 	and	#$3FFF
 	sta	ARRAY_HDMA_BGScroll+3
 
-	Accu8
+++	Accu8
 
 __MainAreaLoopDpadUpDone:
 
@@ -582,32 +739,38 @@ __MainAreaLoopDpadUpDone:
 	lda	#TBL_Char1_down
 	sta	DP_Char1SpriteStatus
 
-/*	Accu16
+	Accu16
 
-	lda	DP_Char1WalkingSpd
+	lda	DP_AreaProperties					; check if area may be scrolled vertically
+	and	#%0000000000001000
+	bne	+
+
+	lda	DP_Char1WalkingSpd					; area not scrollable, move hero sprite instead
 	xba								; shift to high byte for Y value
 	clc
 	adc	DP_Char1PosYX						; Y += DP_Char1WalkingSpd
 	sta	DP_Char1PosYX
+	bra	++
 
-	Accu8
+;	Accu8
 
-	lda	DP_Char1PosYX+1						; check for walking area border
-	cmp	#$B1
-	bcc	__MainAreaLoopDpadDownDone
+;	lda	DP_Char1PosYX+1						; check for walking area border
+;	cmp	#$B1
+;	bcc	__MainAreaLoopDpadDownDone
 
-	lda	#$B0
-	sta	DP_Char1PosYX+1
-*/
+;	lda	#$B0
+;	sta	DP_Char1PosYX+1
 
-	Accu16
 
-	lda	ARRAY_HDMA_BGScroll+3
-	inc	a
+;	Accu16
+
++	lda	DP_Char1WalkingSpd
+	clc
+	adc	ARRAY_HDMA_BGScroll+3					; scroll area
 	and	#$3FFF
 	sta	ARRAY_HDMA_BGScroll+3
 
-	Accu8
+++	Accu8
 
 __MainAreaLoopDpadDownDone:
 
@@ -623,31 +786,36 @@ __MainAreaLoopDpadDownDone:
 	lda	#TBL_Char1_left
 	sta	DP_Char1SpriteStatus
 
-/*	Accu16
+	Accu16
 
-	lda	DP_Char1PosYX
+	lda	DP_AreaProperties					; check if area may be scrolled horizontally
+	and	#%0000000000000100
+	bne	+
+
+	lda	DP_Char1PosYX						; area not scrollable, move hero sprite instead
 	sec
 	sbc	DP_Char1WalkingSpd					; X = X - DP_Char1WalkingSpd
 	sta	DP_Char1PosYX
+	bra	++
 
-	Accu8
+;	Accu8
 
-	lda	DP_Char1PosYX						; check for walking area border
-	cmp	#$10
-	bcs	__MainAreaLoopDpadLeftDone
+;	lda	DP_Char1PosYX						; check for walking area border
+;	cmp	#$10
+;	bcs	__MainAreaLoopDpadLeftDone
 
-	lda	#$10
-	sta	DP_Char1PosYX
-*/
+;	lda	#$10
+;	sta	DP_Char1PosYX
 
-	Accu16
+;	Accu16
 
-	lda	ARRAY_HDMA_BGScroll+1
-	dec	a
++	lda	ARRAY_HDMA_BGScroll+1					; scroll area
+	sec
+	sbc	DP_Char1WalkingSpd
 	and	#$3FFF
 	sta	ARRAY_HDMA_BGScroll+1
 
-	Accu8
+++	Accu8
 
 __MainAreaLoopDpadLeftDone:
 
@@ -663,31 +831,37 @@ __MainAreaLoopDpadLeftDone:
 	lda	#TBL_Char1_right
 	sta	DP_Char1SpriteStatus
 
-/*	Accu16
+	Accu16
 
-	lda	DP_Char1PosYX
+	lda	DP_AreaProperties					; check if area may be scrolled horizontally
+	and	#%0000000000000100
+	bne	+
+
+	lda	DP_Char1PosYX						; area not scrollable, move hero sprite instead
 	clc
 	adc	DP_Char1WalkingSpd					; X += DP_Char1WalkingSpd
 	sta	DP_Char1PosYX
+	bra	++
 
-	Accu8
+;	Accu8
 
-	lda	DP_Char1PosYX						; check for walking area border
-	cmp	#$E1
-	bcc	__MainAreaLoopDpadRightDone
+;	lda	DP_Char1PosYX						; check for walking area border
+;	cmp	#$E1
+;	bcc	__MainAreaLoopDpadRightDone
 
-	lda	#$E0
-	sta	DP_Char1PosYX
-*/
+;	lda	#$E0
+;	sta	DP_Char1PosYX
 
-	Accu16
 
-	lda	ARRAY_HDMA_BGScroll+1
-	inc	a
+;	Accu16
+
++	lda	ARRAY_HDMA_BGScroll+1					; scroll area
+	clc
+	adc	DP_Char1WalkingSpd
 	and	#$3FFF
 	sta	ARRAY_HDMA_BGScroll+1
 
-	Accu8
+++	Accu8
 
 __MainAreaLoopDpadRightDone:
 
@@ -754,6 +928,10 @@ __MainAreaLoopXButtonDone:
 
 __MainAreaLoopStButtonDone:
 ;	jsr	ShowCPUload
+
+	lda	#%00010000						; make sure BG3 lo tile map gets updated
+	tsb	DP_DMAUpdates
+
 	jmp	MainAreaLoop
 
 

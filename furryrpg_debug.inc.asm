@@ -29,14 +29,15 @@ DebugMenu:
 
 
 ; -------------------------- clear tilemap buffers
-	ldx	#(TileMapBG1 & $FFFF)
+	ldx	#(ARRAY_BG1TileMap1 & $FFFF)
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 2048*3
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 10240
 
-	lda	#%01110111						; make sure BG1/2/3 lo/hi tilemaps get updated
+	lda	#%00011111						; make sure BG1/2/3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
+	tsb	DP_DMAUpdates+1
 
 	WaitFrames	5						; wait for regs/tilemaps to get cleared
 
@@ -55,7 +56,7 @@ DebugMenu:
 
 	ldx	#0
 	lda	#$20							; priority bit
--	sta	TileMapBG3Hi, x						; set priority bit for BG3 HUD
+-	sta	ARRAY_BG3TileMapHi, x					; set priority bit for BG3 HUD
 	inx
 	cpx	#1024
 	bne	-
@@ -84,7 +85,7 @@ DebugMenu:
 
 	lda	#$02
 	ldx	#0
--	sta	SpriteBuf1.PlayableChar, x				; overwrite char sprite buffer area with some unused sprite font tiles
+-	sta	ARRAY_SpriteBuf1.PlayableChar, x			; overwrite char sprite buffer area with some unused sprite font tiles
 	inx
 	inx
 	cpx	#24
@@ -125,7 +126,7 @@ DebugMenu:
 ; -------------------------- done, draw debug menu
 	PrintString	7, 3, "DEBUG MENU:"
 	PrintString	10, 3, "Alpha intro"
-	PrintString	11, 3, "Area/dialog test"
+	PrintString	11, 3, "Load area: XXXX"
 	PrintString	12, 3, "Error test (BRK)"
 	PrintString	13, 3, "Error test (COP)"
 	PrintString	14, 3, "In-game menu"
@@ -166,10 +167,15 @@ DebugMenuLoop:
 	lda	#:SRC_TrackPointerTable
 	sta	DP_SubStrAddr+2
 
+	SetTextPos	11, 14
+	PrintHexNum	DP_AreaCurrent+1				; print no. of area to load
+	SetTextPos	11, 16
+	PrintHexNum	DP_AreaCurrent
 	PrintString	19, 4, "%s"					; print current SNESGSS song title
 
-	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
+	lda	#%00010000						; make sure BG3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
+	tsb	DP_DMAUpdates+1
 
 
 
@@ -178,17 +184,17 @@ DebugMenuLoop:
 	and	#%00001000
 	beq	++
 
-	lda	SpriteBuf1.Text+1					; Y coord of cursor
+	lda	ARRAY_SpriteBuf1.Text+1					; Y coord of cursor
 	cmp	#78
 	beq	+
 	sec
 	sbc	#8
-	sta	SpriteBuf1.Text+1
+	sta	ARRAY_SpriteBuf1.Text+1
 
 	bra	++
 
 +	lda	#142
-	sta	SpriteBuf1.Text+1
+	sta	ARRAY_SpriteBuf1.Text+1
 
 ++
 
@@ -199,17 +205,17 @@ DebugMenuLoop:
 	and	#%00000100
 	beq	++
 
-	lda	SpriteBuf1.Text+1
+	lda	ARRAY_SpriteBuf1.Text+1
 	cmp	#142
 	beq	+
 	clc
 	adc	#8
-	sta	SpriteBuf1.Text+1
+	sta	ARRAY_SpriteBuf1.Text+1
 
 	bra	++
 
 +	lda	#78
-	sta	SpriteBuf1.Text+1
+	sta	ARRAY_SpriteBuf1.Text+1
 
 ++
 
@@ -220,7 +226,19 @@ DebugMenuLoop:
 	and	#%00000010
 	beq	++
 
-	lda	SpriteBuf1.Text+1					; only do anything if cursor is on music test
+	lda	ARRAY_SpriteBuf1.Text+1					; only do anything if cursor is on area loader ...
+	cmp	#86
+	bne	+
+
+	Accu16
+
+	dec	DP_AreaCurrent
+
+	Accu8
+
+	bra	++
+
++	lda	ARRAY_SpriteBuf1.Text+1					; ... or on music test
 	cmp	#142
 	bne	++
 
@@ -239,7 +257,19 @@ DebugMenuLoop:
 	and	#%00000001
 	beq	++
 
-	lda	SpriteBuf1.Text+1					; only do anything if cursor is on music test
+	lda	ARRAY_SpriteBuf1.Text+1					; only do anything if cursor is on area loader ...
+	cmp	#86
+	bne	+
+
+	Accu16
+
+	inc	DP_AreaCurrent
+
+	Accu8
+
+	bra	++
+
++	lda	ARRAY_SpriteBuf1.Text+1					; ... or on music test
 	cmp	#142
 	bne	++
 
@@ -259,7 +289,7 @@ DebugMenuLoop:
 	and	#%10000000
 	beq	++
 
-	lda	SpriteBuf1.Text+1
+	lda	ARRAY_SpriteBuf1.Text+1
 	cmp	#78
 	bne	+
 
@@ -268,13 +298,13 @@ DebugMenuLoop:
 +	cmp	#86
 	bne	+
 
-	ldx	#(TileMapBG3 & $FFFF)					; clear text
+	ldx	#(ARRAY_BG3TileMap & $FFFF)				; clear text
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024
 
-	jmp	AreaEnter
+	jmp	LoadArea
 
 +	cmp	#94
 	bne	+
@@ -335,7 +365,7 @@ ShowSpriteGallery:
 
 	DisableIRQs
 
-	ldx	#(TileMapBG3 & $FFFF)
+	ldx	#(ARRAY_BG3TileMap & $FFFF)
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
@@ -358,69 +388,69 @@ ShowSpriteGallery:
 
 ; -------------------------- fennec puppet
 	lda	#$2020							; x (low), y (high)
-	sta	SpriteBuf1.NPCs
+	sta	ARRAY_SpriteBuf1.NPCs
 	lda	#$0000							; tile no (low), attributes (high)
-	sta	SpriteBuf1.NPCs+2
+	sta	ARRAY_SpriteBuf1.NPCs+2
 	lda	#$2030							; x (low), y (high)
-	sta	SpriteBuf1.NPCs+4
+	sta	ARRAY_SpriteBuf1.NPCs+4
 	lda	#$0002							; tile no (low), attributes (high)
-	sta	SpriteBuf1.NPCs+6
+	sta	ARRAY_SpriteBuf1.NPCs+6
 	lda	#$3020							; x (low), y (high)
-	sta	SpriteBuf1.NPCs+8
+	sta	ARRAY_SpriteBuf1.NPCs+8
 	lda	#$0020							; tile no (low), attributes (high)
-	sta	SpriteBuf1.NPCs+10
+	sta	ARRAY_SpriteBuf1.NPCs+10
 	lda	#$3030							; x (low), y (high)
-	sta	SpriteBuf1.NPCs+12
+	sta	ARRAY_SpriteBuf1.NPCs+12
 	lda	#$0022							; tile no (low), attributes (high)
-	sta	SpriteBuf1.NPCs+14
+	sta	ARRAY_SpriteBuf1.NPCs+14
 
 
 
 ; -------------------------- fox
 	lda	#$2050							; x (low), y (high)
-	sta	SpriteBuf1.NPCs+16
+	sta	ARRAY_SpriteBuf1.NPCs+16
 	lda	#$0204							; tile no (low), attributes (high)
-	sta	SpriteBuf1.NPCs+18
+	sta	ARRAY_SpriteBuf1.NPCs+18
 	lda	#$3050							; x (low), y (high)
-	sta	SpriteBuf1.NPCs+20
+	sta	ARRAY_SpriteBuf1.NPCs+20
 	lda	#$0224							; tile no (low), attributes (high)
-	sta	SpriteBuf1.NPCs+22
+	sta	ARRAY_SpriteBuf1.NPCs+22
 
 
 
 ; -------------------------- wolf 1
 	lda	#$2070							; x (low), y (high)
-	sta	SpriteBuf1.NPCs+24
+	sta	ARRAY_SpriteBuf1.NPCs+24
 	lda	#$0406							; tile no (low), attributes (high)
-	sta	SpriteBuf1.NPCs+26
+	sta	ARRAY_SpriteBuf1.NPCs+26
 	lda	#$3070							; x (low), y (high)
-	sta	SpriteBuf1.NPCs+28
+	sta	ARRAY_SpriteBuf1.NPCs+28
 	lda	#$0426							; tile no (low), attributes (high)
-	sta	SpriteBuf1.NPCs+30
+	sta	ARRAY_SpriteBuf1.NPCs+30
 
 
 
 ; -------------------------- wolf 2
 	lda	#$2090							; x (low), y (high)
-	sta	SpriteBuf1.NPCs+32
+	sta	ARRAY_SpriteBuf1.NPCs+32
 	lda	#$0608							; tile no (low), attributes (high)
-	sta	SpriteBuf1.NPCs+34
+	sta	ARRAY_SpriteBuf1.NPCs+34
 	lda	#$3090							; x (low), y (high)
-	sta	SpriteBuf1.NPCs+36
+	sta	ARRAY_SpriteBuf1.NPCs+36
 	lda	#$0628							; tile no (low), attributes (high)
-	sta	SpriteBuf1.NPCs+38
+	sta	ARRAY_SpriteBuf1.NPCs+38
 
 
 
 ; -------------------------- wolf 3
 	lda	#$20B0							; x (low), y (high)
-	sta	SpriteBuf1.NPCs+40
+	sta	ARRAY_SpriteBuf1.NPCs+40
 	lda	#$080A							; tile no (low), attributes (high)
-	sta	SpriteBuf1.NPCs+42
+	sta	ARRAY_SpriteBuf1.NPCs+42
 	lda	#$30B0							; x (low), y (high)
-	sta	SpriteBuf1.NPCs+44
+	sta	ARRAY_SpriteBuf1.NPCs+44
 	lda	#$082A							; tile no (low), attributes (high)
-	sta	SpriteBuf1.NPCs+46
+	sta	ARRAY_SpriteBuf1.NPCs+46
 
 
 
@@ -435,8 +465,9 @@ ShowSpriteGallery:
 	PrintString	9, 3, "Dorothy   Wolf1   Wolf3"
 	PrintString	10, 10, "Fox    Wolf2"
 
-	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
+	lda	#%00010000						; make sure BG3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
+	tsb	DP_DMAUpdates+1
 	lda	REG_RDNMI						; clear NMI flag
 	lda	#$81							; reenable NMI
 	sta	REG_NMITIMEN
@@ -478,7 +509,7 @@ ShowCPUload:
 .ENDASM
 
 MoveSpriteCircularTest:
-	ldx	#(TileMapBG3 & $FFFF)					; clear BG3 tilemap
+	ldx	#(ARRAY_BG3TileMap & $FFFF)				; clear BG3 tilemap
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
@@ -516,7 +547,7 @@ __MSCTestLoop:
 	lda	REG_MPYH
 	clc
 	adc	#128							; add CenterX
-	sta	SpriteBuf1.Text						; X
+	sta	ARRAY_SpriteBuf1.Text						; X
 
 	ldx	temp
 	lda.l	SRC_Mode7Cos, x
@@ -528,10 +559,11 @@ __MSCTestLoop:
 	lda	REG_MPYH
 	clc
 	adc	#112							; add CenterY
-	sta	SpriteBuf1.Text+1					; Y
+	sta	ARRAY_SpriteBuf1.Text+1					; Y
 
-	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
+	lda	#%00010000						; make sure BG3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
+	tsb	DP_DMAUpdates+1
 
 	inc	temp
 

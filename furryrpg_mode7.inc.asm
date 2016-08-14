@@ -532,7 +532,7 @@ __M7FlightY:
 	jsr	EffectHSplitOut2
 	jsr	SpriteInit						; purge OAM
 
-	ldx	#(TileMapBG3 & $FFFF)					; clear text
+	ldx	#(ARRAY_BG3TileMap & $FFFF)				; clear text
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 

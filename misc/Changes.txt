@@ -1,6 +1,11 @@
 FURRY RPG! (WORKING TITLE) -- CHANGES:
 --------------------------------------
 
+Build #00271:
+- added proper area loading handler based on area property tables (only 3 demo areas are available for now). Areas can be defined as either 32×32 or 64×32 tiles, scrollable horizontally and/or vertically. Area properties also include graphics pointers, default audio tracks, and an area name pointer. The format of the property table can be expanded in the future.
+
+
+
 Build #00268:
 - added hi-res splash screen to intro (for disclaimer or whatever)
 - added opening animation to ring menu

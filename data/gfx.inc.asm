@@ -212,41 +212,50 @@ SRC_Tilemap_Logo:
 ; ***************************** Area data ******************************
 
 GFX_Area000:
-;.INCBIN "gfx/area-000-chessbd.pic"
+.INCBIN "gfx/area-000-chessbd.pic"
+GFX_Area000_END:
 
 SRC_Palette_Area000:
-;.INCBIN "gfx/area-000-chessbd.pal"
+.INCBIN "gfx/area-000-chessbd.pal"
+SRC_Palette_Area000_END:
 
 SRC_Tilemap_Area000:
-;.INCBIN "gfx/area-000-chessbd.map"
+.INCBIN "gfx/area-000-chessbd.map"
+SRC_Tilemap_Area000_END:
 
 
 
 GFX_Area001:
-;.INCBIN "gfx/area-001-sandbox2.pic"
+.INCBIN "gfx/area-001-sandbox2.pic"
+GFX_Area001_END:
 
 SRC_Palette_Area001:
-;.INCBIN "gfx/area-001-sandbox2.pal"
+.INCBIN "gfx/area-001-sandbox2.pal"
+SRC_Palette_Area001_END:
 
 SRC_Tilemap_Area001:
-;.INCBIN "gfx/area-001-sandbox2.map"
+.INCBIN "gfx/area-001-sandbox2.map"
+SRC_Tilemap_Area001_END:
 
 
 
 GFX_Area003:
 .INCBIN "gfx/area-003-green.pic"
+GFX_Area003_END:
 
 SRC_Palette_Area003:
 .INCBIN "gfx/area-003-green.pal" READ 32
+SRC_Palette_Area003_END:
 
 SRC_Tilemap_Area003:
 .INCBIN "gfx/area-003-green.map"
+SRC_Tilemap_Area003_END:
 
 ;.REDEFINE SkipTileNo -2						; "deinterleave" tile maps output by gfx2snes
 
 ;.REPEAT 2048
 ;	.REDEFINE SkipTileNo SkipTileNo+2				; SkipTileNo += 2
-;	.INCBIN "gfx/area-003.map" SKIP SkipTileNo READ 1		; read even bytes
+;	.INCBIN "gfx/area-003-green.map" SKIP SkipTileNo READ 1		; read even bytes
 ;.ENDR
 
 ;SRC_Tilemap_Area003Hi:
@@ -254,8 +263,10 @@ SRC_Tilemap_Area003:
 
 ;.REPEAT 2048
 ;	.REDEFINE SkipTileNo SkipTileNo+2
-;	.INCBIN "gfx/area-003.map" SKIP SkipTileNo READ 1		; read odd bytes
+;	.INCBIN "gfx/area-003-green.map" SKIP SkipTileNo READ 1		; read odd bytes
 ;.ENDR
+
+;SRC_Tilemap_Area003_END:
 
 
 

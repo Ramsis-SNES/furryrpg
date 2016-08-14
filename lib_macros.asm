@@ -153,17 +153,17 @@ __ReturnAdress\@:
 ; -------------------------- draw upper border
 	ldx	#32*\2 + \1
 	lda	#$10							; upper left corner
-	sta	TileMapBG3, x
+	sta	ARRAY_BG3TileMap, x
 	lda	#$11							; horizontal line
 
 __DrawUpperBorder\@:
 	inx
-	sta	TileMapBG3, x
+	sta	ARRAY_BG3TileMap, x
 	cpx	#32*\2 + \1 + \3
 	bne	__DrawUpperBorder\@
 
 	lda	#$12							; upper right corner
-	sta	TileMapBG3, x
+	sta	ARRAY_BG3TileMap, x
 	bra	__GoToNextLine\@
 
 
@@ -171,7 +171,7 @@ __DrawUpperBorder\@:
 ; -------------------------- draw left & right border
 __DrawLRBorder\@:
 	lda	#$13							; left vertical line
-	sta	TileMapBG3, x
+	sta	ARRAY_BG3TileMap, x
 
 	Accu16
 
@@ -183,7 +183,7 @@ __DrawLRBorder\@:
 	Accu8
 
 	lda	#$14							; right vertical line
-	sta	TileMapBG3, x
+	sta	ARRAY_BG3TileMap, x
 
 __GoToNextLine\@:
 	Accu16
@@ -202,18 +202,18 @@ __GoToNextLine\@:
 
 ; -------------------------- draw lower border
 	lda	#$15							; lower left corner
-	sta	TileMapBG3, x
+	sta	ARRAY_BG3TileMap, x
 	inx
 	lda	#$16							; horizontal line
 
 __DrawLowerBorder\@:
-	sta	TileMapBG3, x
+	sta	ARRAY_BG3TileMap, x
 	inx
 	cpx	#32*(\2+\4) + \1 + \3
 	bne	__DrawLowerBorder\@
 
 	lda	#$17							; lower right corner
-	sta	TileMapBG3, x
+	sta	ARRAY_BG3TileMap, x
 .ENDM
 
 

@@ -187,6 +187,15 @@ Boot:
 
 
 
+; -------------------------- copy DMA routine to WRAM
+	ldx	#RAM_Code						; set WRAM address to RAM code section
+	stx	REG_WMADDL
+	stz	REG_WMADDH
+
+	DMA_CH0 $00, :RAM_DoDMA, RAM_DoDMA, $80, RAM_DoDMA_END-RAM_DoDMA
+
+
+
 ; -------------------------- load gfx & palettes for debug screen
 	ldx	#ADDR_VRAM_BG3_Tiles					; set VRAM address for BG3 tiles
 	stx	REG_VMADDL
@@ -195,7 +204,7 @@ Boot:
 
 	ldx	#0
 	lda	#$20							; priority bit
--	sta	TileMapBG3Hi, x						; set priority bit for BG3 HUD
+-	sta	ARRAY_BG3TileMapHi, x					; set priority bit for BG3 HUD
 	inx
 	cpx	#1024
 	bne	-
@@ -254,11 +263,11 @@ AlphaIntro:
 
 	DisableIRQs
 
-	ldx	#(TileMapBG1 & $FFFF)					; clear BG1/2 tile map buffers
+	ldx	#(ARRAY_BG1TileMap1 & $FFFF)				; clear BG1/2 tile map buffers
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 2048*2
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 8192
 
 	lda	#$80							; increment VRAM address by one word after writing to $2119
 	sta	REG_VMAIN
@@ -405,12 +414,12 @@ __BuildFontBG2:
 	ldx	#$5000							; set VRAM address for BG1 tile map
 	stx	REG_VMADDL
 
-	DMA_CH0 $02, $7E, (TileMapBG1 & $FFFF), $18, 1024		; update tile maps
+	DMA_CH0 $02, $7E, (ARRAY_BG1TileMap1 & $FFFF), $18, 1024	; update tile maps
 
 	ldx	#$5400							; set VRAM address for BG2 tile map
 	stx	REG_VMADDL
 
-	DMA_CH0 $02, $7E, (TileMapBG2 & $FFFF), $18, 1024
+	DMA_CH0 $02, $7E, (ARRAY_BG2TileMap1 & $FFFF), $18, 1024
 
 	SetNMI	TBL_NMI_Intro
 
@@ -701,8 +710,9 @@ VerifyROMIntegrity:
 	PrintString	9, 3, "Reading bank $"
 .ENDIF
 
-	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
+	lda	#%00010000						; make sure BG3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
+	tsb	DP_DMAUpdates+1
 
 	lda	#$C0							; set start address to $C00000
 	sta	temp+7
@@ -711,7 +721,8 @@ VerifyROMIntegrity:
 	SetTextPos	9, 17
 	PrintHexNum	temp+7
 
-	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
+	lda	#%00010000						; make sure BG3 lo/hi tilemaps get updated
+	tsb	DP_DMAUpdates
 	tsb	DP_DMAUpdates
 .ENDIF
 
@@ -749,8 +760,9 @@ VerifyROMIntegrity:
 	SetTextPos	9, 17
 	PrintHexNum	temp+7
 
-	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
+	lda	#%00010000						; make sure BG3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
+	tsb	DP_DMAUpdates+1
 .ENDIF
 
 	Accu16
@@ -794,8 +806,9 @@ VerifyROMIntegrity:
 	PrintString	11, 3, "ROM integrity check passed!"
 	PrintString	12, 3, "Press any button ..."
 
-	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
+	lda	#%00010000						; make sure BG3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
+	tsb	DP_DMAUpdates+1
 
 	lda	#$01							; remember that ROM integrity check was passed
 	sta	temp							; source data in temp
@@ -822,8 +835,9 @@ __ROMIntegrityBad:
 	PrintString	11, 3, "Corrupt ROM, unable to"
 	PrintString	12, 3, "continue!"
 
-	lda	#%01000100						; make sure BG3 lo/hi tilemaps get updated
+	lda	#%00010000						; make sure BG3 lo/hi tilemaps get updated
 	tsb	DP_DMAUpdates
+	tsb	DP_DMAUpdates+1
 
 	jmp	Forever
 
@@ -843,11 +857,11 @@ SpriteInit:
 
 __Init_OAM_lo:
 	lda	#$F0F8
-	sta	SpriteBuf1, x						; initialize all sprites to be off the screen
+	sta	ARRAY_SpriteBuf1, x					; initialize all sprites to be off the screen
 	inx
 	inx
 	lda	#$0000
-	sta	SpriteBuf1, x
+	sta	ARRAY_SpriteBuf1, x
 	inx
 	inx
 	cpx	#$0200
@@ -859,7 +873,7 @@ __Init_OAM_lo:
 	ldx	#$0000
 
 __Init_OAM_hi1:
-	sta	SpriteBuf2, x
+	sta	ARRAY_SpriteBuf2, x
 	inx
 	cpx	#24							; see .STRUCT oam_high
 	bne	__Init_OAM_hi1
@@ -867,13 +881,53 @@ __Init_OAM_hi1:
 	lda	#%00000000						; small sprites
 
 __Init_OAM_hi2:
-	sta	SpriteBuf2, x
+	sta	ARRAY_SpriteBuf2, x
 	inx
 	cpx	#32
 	bne	__Init_OAM_hi2
 
 	plp
 	rts
+
+
+
+; **************************** RAM routines ****************************
+
+RAM_DoDMA:
+	php								; preserve registers
+	phb
+
+	AccuIndex16
+
+	pha
+	phx
+	phy
+
+	Accu8
+
+	SetDBR	$00							; set Data Bank = $00 for easy register access
+
+	ldx	#$FFFF							; DMA mode (low byte), B bus register (high byte) // RAM_Code + 14
+ 	stx	$4300
+	ldx	#$FFFF							; data offset (16 bit) // RAM_Code + 20
+	stx	$4302
+	lda	#$FF							; data bank (8 bit) // RAM_Code + 26
+	sta	$4304
+	ldx	#$FFFF							; data length (16 bit) // RAM_Code + 31
+	stx	$4305
+	lda	#%00000001						; initiate DMA transfer (channel 0)
+	sta	REG_MDMAEN
+
+	AccuIndex16
+
+	ply								; restore registers
+	plx
+	pla
+	plb
+	plp
+	rtl
+
+RAM_DoDMA_END:
 
 
 

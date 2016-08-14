@@ -809,7 +809,7 @@ ClearTextBox:
 
 
 
-MakeTextBoxTilemapBG1:
+MakeTextBoxTileMapBG1:
 	ldx	#ADDR_VRAM_BG1_Tilemap3+PARAM_TextBox			; set VRAM address within new BG1 tilemap
 	stx	REG_VMADDL
 
@@ -926,7 +926,7 @@ MakeTextBoxTilemapBG1:
 
 
 
-MakeTextBoxTilemapBG2:
+MakeTextBoxTileMapBG2:
 ; We use a fixed tilemap and generate Mode 5 compatible tile data based on the given text string on-the-fly in VRAM.
 
 	ldx	#ADDR_VRAM_BG2_Tilemap3+PARAM_TextBox			; set VRAM address within new BG2 tilemap
@@ -1472,7 +1472,7 @@ _defaultF:
 
 FillTextBuffer:								; expectations: A = 8 bit, X/Y = 16 bit
 	ldx	Cursor
-	sta	TileMapBG3, x						; write character to the BG3 text buffer
+	sta	ARRAY_BG3TileMap, x					; write character to the BG3 text buffer
 	inx								; advance text cursor position
 	stx	Cursor
 	rts
@@ -1527,13 +1527,13 @@ FillHiResTextBuffer:							; expectations: A = 8 bit, X/Y = 16 bit
 __FillHiResTextBufferBG1:
 	inc	DP_HiResPrintMon					; otherwise, change value and use BG1
 	xba								; restore character code
-	sta	TileMapBG1, x						; write it to the BG1 text buffer
+	sta	ARRAY_BG1TileMap1, x					; write it to the BG1 text buffer
 	bra	__FillHiResTextBufferDone				; ... and done
 
 __FillHiResTextBufferBG2:
 	stz	DP_HiResPrintMon					; reset BG monitor value
 	xba								; restore character code
-	sta	TileMapBG2, x						; write it to the BG2 text buffer
+	sta	ARRAY_BG2TileMap1, x					; write it to the BG2 text buffer
 	inx								; ... and advance text cursor position
 	stx	Cursor
 
@@ -1572,7 +1572,7 @@ __PrintSpriteTextLoop:
 	Accu8
 
 	lda	Cursor
-	sta	SpriteBuf1.Text, x					; X
+	sta	ARRAY_SpriteBuf1.Text, x				; X
 	phx								; preserve tilemap index
 
 	tyx								; adc doesn't support absolute long addressing indexed with Y, so we have to switch to X for that
@@ -1583,20 +1583,20 @@ __PrintSpriteTextLoop:
 	plx								; restore tilemap index
 	inx
 	lda	Cursor+1
-	sta	SpriteBuf1.Text, x					; Y
+	sta	ARRAY_SpriteBuf1.Text, x				; Y
 	inx
 
 	pla
 	ply
 ;	clc
 ;	adc	#$80							; diff between ASCII char and tile num
-	sta	SpriteBuf1.Text, x					; tile num
+	sta	ARRAY_SpriteBuf1.Text, x				; tile num
 	inx
 
 	lda	SprTextPalette
 	asl	a							; shift palette num to bit 1-3
 	ora	#$30							; set highest priority
-	sta	SpriteBuf1.Text, x					; tile attributes
+	sta	ARRAY_SpriteBuf1.Text, x				; tile attributes
 
 	inx
 	cpx	#$0080							; if sprite buffer is full, reset
@@ -1778,7 +1778,7 @@ FillSpriteTextBuf:
 	Accu8
 
 	lda	Cursor
-	sta	SpriteBuf1.Text, x					; X
+	sta	ARRAY_SpriteBuf1.Text, x				; X
 	phx								; preserve tilemap index
 
 	tyx								; adc doesn't support absolute long addressing indexed with Y, so we have to switch to X for that
@@ -1789,19 +1789,19 @@ FillSpriteTextBuf:
 	plx								; restore tilemap index
 	inx
 	lda	Cursor+1
-	sta	SpriteBuf1.Text, x					; Y
+	sta	ARRAY_SpriteBuf1.Text, x				; Y
 	inx
 
 	pla
 ;	clc
 ;	adc	#$80							; diff between ASCII char and tile num
-	sta	SpriteBuf1.Text, x					; tile num
+	sta	ARRAY_SpriteBuf1.Text, x				; tile num
 	inx
 
 	lda	SprTextPalette
 	asl	a							; shift palette num to bit 1-3
 	ora	#$30							; set highest priority
-	sta	SpriteBuf1.Text, x					; tile attributes
+	sta	ARRAY_SpriteBuf1.Text, x				; tile attributes
 	inx
 	cpx	#$0080							; if sprite buffer is full, reset
 	bcc	+
@@ -1822,7 +1822,7 @@ ClearSpriteText:
 	lda	#$F0F0
 	ldy	#$0000
 
--	sta	SpriteBuf1.Text, y					; Y, X
+-	sta	ARRAY_SpriteBuf1.Text, y				; Y, X
 	iny
 	iny
 	iny
