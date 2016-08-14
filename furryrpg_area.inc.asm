@@ -927,7 +927,7 @@ __MainAreaLoopXButtonDone:
 __MainAreaLoopStButtonDone:
 ;	jsr	ShowCPUload
 
-	lda	#%00010000						; make sure BG3 lo tile map gets updated
+	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMAUpdates
 
 	jmp	MainAreaLoop

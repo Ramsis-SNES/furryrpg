@@ -39,7 +39,7 @@ DebugMenu:
 	tsb	DP_DMAUpdates
 	tsb	DP_DMAUpdates+1
 
-	WaitFrames	5						; wait for regs/tilemaps to get cleared
+	WaitFrames	3						; wait for regs/tilemaps to get cleared
 
 	DisableIRQs
 	SetNMI	TBL_NMI_DebugMenu
@@ -173,9 +173,8 @@ DebugMenuLoop:
 	PrintHexNum	DP_AreaCurrent
 	PrintString	19, 4, "%s"					; print current SNESGSS song title
 
-	lda	#%00010000						; make sure BG3 lo/hi tilemaps get updated
+	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMAUpdates
-	tsb	DP_DMAUpdates+1
 
 
 
@@ -465,9 +464,8 @@ ShowSpriteGallery:
 	PrintString	9, 3, "Dorothy   Wolf1   Wolf3"
 	PrintString	10, 10, "Fox    Wolf2"
 
-	lda	#%00010000						; make sure BG3 lo/hi tilemaps get updated
+	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMAUpdates
-	tsb	DP_DMAUpdates+1
 	lda	REG_RDNMI						; clear NMI flag
 	lda	#$81							; reenable NMI
 	sta	REG_NMITIMEN
@@ -561,9 +559,8 @@ __MSCTestLoop:
 	adc	#112							; add CenterY
 	sta	ARRAY_SpriteBuf1.Text+1					; Y
 
-	lda	#%00010000						; make sure BG3 lo/hi tilemaps get updated
+	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMAUpdates
-	tsb	DP_DMAUpdates+1
 
 	inc	temp
 

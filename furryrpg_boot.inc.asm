@@ -710,9 +710,8 @@ VerifyROMIntegrity:
 	PrintString	9, 3, "Reading bank $"
 .ENDIF
 
-	lda	#%00010000						; make sure BG3 lo/hi tilemaps get updated
+	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMAUpdates
-	tsb	DP_DMAUpdates+1
 
 	lda	#$C0							; set start address to $C00000
 	sta	temp+7
@@ -721,8 +720,7 @@ VerifyROMIntegrity:
 	SetTextPos	9, 17
 	PrintHexNum	temp+7
 
-	lda	#%00010000						; make sure BG3 lo/hi tilemaps get updated
-	tsb	DP_DMAUpdates
+	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMAUpdates
 .ENDIF
 
@@ -760,9 +758,8 @@ VerifyROMIntegrity:
 	SetTextPos	9, 17
 	PrintHexNum	temp+7
 
-	lda	#%00010000						; make sure BG3 lo/hi tilemaps get updated
+	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMAUpdates
-	tsb	DP_DMAUpdates+1
 .ENDIF
 
 	Accu16
@@ -797,8 +794,8 @@ VerifyROMIntegrity:
 
 	Accu8
 
-	stz	REG_CGADD						; reset CGRAM address
-	lda	#$E4							; $131A = light green
+	stz	REG_CGADD						; reset CGRAM address (i.e., set it to mainscreen backdrop color)
+	lda	#$E4							; $13E4 = light green
 	sta	REG_CGDATA
 	lda	#$13
 	sta	REG_CGDATA
@@ -806,9 +803,8 @@ VerifyROMIntegrity:
 	PrintString	11, 3, "ROM integrity check passed!"
 	PrintString	12, 3, "Press any button ..."
 
-	lda	#%00010000						; make sure BG3 lo/hi tilemaps get updated
+	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMAUpdates
-	tsb	DP_DMAUpdates+1
 
 	lda	#$01							; remember that ROM integrity check was passed
 	sta	temp							; source data in temp
@@ -835,9 +831,8 @@ __ROMIntegrityBad:
 	PrintString	11, 3, "Corrupt ROM, unable to"
 	PrintString	12, 3, "continue!"
 
-	lda	#%00010000						; make sure BG3 lo/hi tilemaps get updated
+	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMAUpdates
-	tsb	DP_DMAUpdates+1
 
 	jmp	Forever
 
