@@ -522,22 +522,26 @@ MainAreaLoop:
 
 	Accu16
 
-	inc	DP_PlayerIdleCounter					; assume player is idle
+	lda	DP_PlayerIdleCounter
+	inc	a							; assume player is idle
+	cmp	#300
+	bcs	+							; only increment counter up to a value of #299
+	sta	DP_PlayerIdleCounter
+
++	Accu8
 
 
 
 ; -------------------------- HUD display logic
-	Accu8
-
 	lda	DP_HUD_Status						; check whether HUD is already being displayed
 	and	#%00000001
 	bne	__HUDIsVisible						; yes
 
-	Accu16								; no
+	Accu16
 
-	lda	DP_PlayerIdleCounter					; check if player has been idle for at least 300 frames
-	cmp	#300
-	bcc	__HUDLogicDone
+	lda	DP_PlayerIdleCounter					; no, check if player has been idle for at least 300 frames
+	cmp	#299
+	bcc	__HUDLogicJumpOut					; no, jump out
 
 	Accu8
 
@@ -550,26 +554,25 @@ __HUDIsVisible:
 
 	lda	DP_HUD_DispCounter
 	inc	a
-	cmp	#300
-	bcc	+
-	bra	__HideHUDOrNot
-+	sta	DP_HUD_DispCounter
-	bra	__HUDLogicDone
-
-.ACCU 16
+	cmp	#150							; show HUD for at least 150 frames before hiding it again
+	bcs	__HideHUDOrNot
+	sta	DP_HUD_DispCounter
+	bra	__HUDLogicJumpOut
 
 __HideHUDOrNot:
 	lda	DP_PlayerIdleCounter					; if player is still idle, don't do anything
-	cmp	#300
-	bcs	__HUDLogicDone
+	cmp	#299
+	bcs	__HUDLogicJumpOut
 
 	Accu8
 
 	lda	#%01000000						; otherwise, set "HUD should disappear" bit
 	sta	DP_HUD_Status
 
-__HUDLogicDone:
+__HUDLogicJumpOut:
 	Accu8
+
+__HUDLogicDone:
 
 
 
@@ -653,16 +656,17 @@ __MainAreaLoopBButtonDone:
 	and	#%01000000
 	beq	__MainAreaLoopYButtonDone
 
-	stz	DP_PlayerIdleCounter
+	stz	DP_PlayerIdleCounter					; reset both "player idle" and HUD display counters
 	stz	DP_PlayerIdleCounter+1
+	stz	DP_HUD_DispCounter
+	stz	DP_HUD_DispCounter+1
+
 	lda	DP_HUD_Status						; check if HUD is already being displayed
 	and	#%00000001
 	bne	__MainAreaLoopYButtonDone
 
 	lda	#%10000000						; no, set "HUD should appear" bit
 	sta	DP_HUD_Status
-	stz	DP_HUD_DispCounter					; and reset "HUD visible" counter
-	stz	DP_HUD_DispCounter+1
 
 __MainAreaLoopYButtonDone:
 

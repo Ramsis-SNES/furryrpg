@@ -71,6 +71,8 @@ __ShowHUD:
 	bne	__UpdateHUDDone
 	lda	#%00000001						; yes, set "HUD is being displayed" bit
 	sta	DP_HUD_Status
+	stz	DP_HUD_DispCounter					; and reset display counter values
+	stz	DP_HUD_DispCounter+1
 	bra	__UpdateHUDDone
 
 __HideHUD:
