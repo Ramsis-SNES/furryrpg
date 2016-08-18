@@ -178,7 +178,7 @@ __Char1WalkingDone:
 	adc	#$0020
 	sta	ARRAY_SpriteBuf1.PlayableChar+6				; tile no. (lower half of body = upper half + 2 rows of 16 tiles)
 
-	lda	DP_Char1PosYX
+	lda	DP_Char1ScreenPosYX
 	sta	ARRAY_SpriteBuf1.PlayableChar
 	clc
 	adc	#$1000							; Y += 10

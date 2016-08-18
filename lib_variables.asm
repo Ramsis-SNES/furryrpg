@@ -396,12 +396,17 @@
 	DP_SPC_VOL_FADESPD	dw
 
 	DP_AreaCurrent		dw					; holds no. of current area
+	DP_AreaMetaMapAddr	dsb 3					; holds 24-bit address of collision map
+	DP_AreaMetaMapIndex	dw
 	DP_AreaNamePointer	dw
 	DP_AreaProperties	dw					; 0000000000bayxss [s = screen size, as in BGXSC regs, x/y = area is scrollable horizontally/vertically, a/b = auto-scroll area horizontally/vertically, 0 = reserved]
 
 	DP_Char1FrameCounter	db
-	DP_Char1PosYX		dw					; high byte = Y position, low byte = X position
-	DP_Char1SpriteStatus	db					; irrrrddd [i = not walking (idle), ddd = walking direction (0 = down, 1 = up, 2 = left, 3 = right)]
+	DP_Char1MapPosX		dw					; in px
+	DP_Char1MapPosY		dw					; in px
+;	DP_Char1MapPosYX	dw					; high byte = Y position, low byte = X position (in 16×16 tiles)
+	DP_Char1ScreenPosYX	dw					; high byte = Y position, low byte = X position (in px)
+	DP_Char1SpriteStatus	db					; irrrrddd [i = not walking (idle), ddd = facing direction (0 = down, 1 = up, 2 = left, 3 = right)]
 	DP_Char1WalkingSpd	dw
 
 	DP_DataSrcAddress	dsb 3					; holds a 24-bit source address e.g. for data transfers to SRAM

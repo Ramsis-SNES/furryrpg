@@ -63,7 +63,7 @@ LoadArea:
 
 
 
-; -------------------------- load area tile map data
+; -------------------------- load area BG1 tile map data
 	lda.l	SRC_AreaProperties, x					; read tile map source offset (16 bits of data)
 	sta	VAR_DMASourceOffset
 	inx
@@ -93,7 +93,7 @@ LoadArea:
 
 
 
-; -------------------------- "deinterleave" tile map, add tile no. offset
+; -------------------------- "deinterleave" BG1 tile map, add tile no. offset
 	phx								; preserve area data pointer
 	ldx	#(ARRAY_ScratchSpace & $FFFF)				; set DP_DataSrcAddress to scratch space for postindexed long addressing
 	stx	DP_DataSrcAddress
@@ -144,6 +144,104 @@ LoadArea:
 
 
 
+; -------------------------- load area BG2 tile map data (optional)
+	Accu16
+
+	lda.l	SRC_AreaProperties, x					; read tile map source offset (16 bits of data)
+	cmp	#$FFFF
+	bne	+
+	inx								; skip 5 bytes of unused BG2 tile map pointers
+	inx
+	inx
+	inx
+	inx
+	jmp	__AreaBG2TileMapDone
+
++	sta	VAR_DMASourceOffset
+	inx
+	inx
+
+	Accu8
+
+	lda.l	SRC_AreaProperties, x					; read tile map source bank (8 bits of data)
+	cmp	#$FF
+	beq	__AreaBG2TileMapDone
+	sta	VAR_DMASourceBank
+	inx
+
+	Accu16
+
+	lda.l	SRC_AreaProperties, x					; read size of tile map (16 bits of data)
+	cmp	#$FFFF
+	beq	__AreaBG2TileMapDone
+	sta	VAR_DMATransferLength
+	inx
+	inx
+	lda	#$8000							; set DMA mode & B bus register (WMDATA)
+	sta	VAR_DMAModeBBusReg
+
+	Accu8
+
+	ldy	#(ARRAY_ScratchSpace & $FFFF)				; set WRAM address to scratch space
+	sty	REG_WMADDL
+	stz	REG_WMADDH
+	jsl	RAM_Code
+
+
+
+; -------------------------- "deinterleave" BG2 tile map, add tile no. offset
+	phx								; preserve area data pointer
+	ldx	#(ARRAY_ScratchSpace & $FFFF)				; set DP_DataSrcAddress to scratch space for postindexed long addressing
+	stx	DP_DataSrcAddress
+	lda	#$7E
+	sta	DP_DataSrcAddress+2
+	ldx	#0
+	ldy	#0
+
+-	Accu16
+
+	lda	[DP_DataSrcAddress], y					; read original tile map data (16 bit)
+	iny
+	iny
+	clc								; add offset (font, portrait)
+	adc	#(ADDR_VRAM_AreaBG1 >> 4)				; 172 tiles
+
+	Accu8
+
+	sta	ARRAY_BG1TileMap1, x					; store new data
+	xba
+	ora	#$08							; set palette #2
+	sta	ARRAY_BG1TileMap1Hi, x
+	inx
+	cpx	#1024
+	bne	-
+
+	ldx	#0
+
+-	Accu16
+
+	lda	[DP_DataSrcAddress], y					; read original tile map data (16 bit)
+	iny
+	iny
+	clc								; add offset (font, portrait)
+	adc	#(ADDR_VRAM_AreaBG1 >> 4)				; 172 tiles
+
+	Accu8
+
+	sta	ARRAY_BG1TileMap2, x					; store new data
+	xba
+	ora	#$08							; set palette #2
+	sta	ARRAY_BG1TileMap2Hi, x
+	inx
+	cpx	#1024
+	bne	-
+
+	plx								; restore area data pointer
+
+__AreaBG2TileMapDone:
+
+
+
 ; -------------------------- load area palette data
 	Accu16
 
@@ -175,6 +273,22 @@ LoadArea:
 
 
 
+; -------------------------- load & set collision map address
+	Accu16
+
+	lda.l	SRC_AreaProperties, x					; read meta map source offset (16 bits of data)
+	sta	DP_AreaMetaMapAddr
+	inx
+	inx
+
+	Accu8
+
+	lda.l	SRC_AreaProperties, x					; read meta map source bank (8 bits of data)
+	sta	DP_AreaMetaMapAddr+2
+	inx
+
+
+
 ; -------------------------- load area soundtrack data and area name
 	Accu16
 
@@ -188,8 +302,29 @@ LoadArea:
 	inx
 	lda.l	SRC_AreaProperties, x					; read pointer to area name
 	sta	DP_AreaNamePointer
+	inx
+	inx
+
+
+
+; -------------------------- load hero parameters for this area
+	lda.l	SRC_AreaProperties, x					; read hero screen position
+	sta	DP_Char1ScreenPosYX
+	inx
+	inx
+	lda.l	SRC_AreaProperties, x					; read hero map position (X)
+	sta	DP_Char1MapPosX
+	inx
+	inx
+	lda.l	SRC_AreaProperties, x					; read hero map position (Y)
+	sta	DP_Char1MapPosY
+	inx
+	inx
 
 	Accu8
+
+	lda.l	SRC_AreaProperties, x					; read hero sprite status
+	sta	DP_Char1SpriteStatus
 
 
 
@@ -315,10 +450,6 @@ LoadArea:
 ; -------------------------- character, Vblank, and effect parameters
 	Accu16
 
-	lda	#1							; set walking speed
-	sta	DP_Char1WalkingSpd
-	lda	#$5078							; set character position
-	sta	DP_Char1PosYX
 ;	sta	SpriteBuf1.PlayableChar
 ;	clc
 ;	adc	#$1000							; Y += 10
@@ -341,8 +472,6 @@ LoadArea:
 
 	SetIRQ	TBL_VIRQ_Area
 
-	lda	#$80							; make character idle
-	sta	DP_Char1SpriteStatus
 	lda	REG_RDNMI						; clear NMI flag
 	lda	#$81							; enable Vblank NMI + Auto Joypad Read
 	sta	DP_Shadow_NMITIMEN
@@ -597,9 +726,9 @@ __HUDLogicDone:
 
 .IFDEF DEBUG
 ;	PrintString	2, 26, "X="
-;	PrintHexNum	DP_Char1PosYX
+;	PrintHexNum	DP_Char1ScreenPosYX
 ;	PrintString	3, 26, "Y="
-;	PrintHexNum	DP_Char1PosYX+1
+;	PrintHexNum	DP_Char1ScreenPosYX+1
 
 ;	PrintString	2, 22, "ScrX="
 ;	PrintHexNum	ARRAY_HDMA_BGScroll+2
@@ -608,6 +737,14 @@ __HUDLogicDone:
 ;	PrintString	3, 22, "ScrY="
 ;	PrintHexNum	ARRAY_HDMA_BGScroll+4
 ;	PrintHexNum	ARRAY_HDMA_BGScroll+3
+
+	PrintString	7, 5, "MapPosX="
+	PrintHexNum	DP_Char1MapPosX+1
+	PrintHexNum	DP_Char1MapPosX
+
+	PrintString	8, 5, "MapPosY="
+	PrintHexNum	DP_Char1MapPosY+1
+	PrintHexNum	DP_Char1MapPosY
 .ENDIF
 
 
@@ -678,6 +815,42 @@ __MainAreaLoopDpadNewDone:
 
 
 
+; -------------------------- calculate collision map index
+	Accu16
+
+	lda	DP_Char1MapPosX
+	bit	#$0008
+	beq	+
+	and	#$FFF0
+	clc
+	adc	#16
+	bra	++
++	bit	#$0007
+	beq	++
+	and	#$FFF0
+++	lsr	a
+	lsr	a
+	lsr	a
+	lsr	a
+	sta	temp
+	lda	DP_Char1MapPosY
+	bit	#$0008
+	beq	+
+	and	#$FFF0
+	clc
+	adc	#16
+	bra	++
++	bit	#$0007
+	beq	++
+	and	#$FFF0
+++	clc
+	adc	temp
+	sta	DP_AreaMetaMapIndex
+
+	Accu8
+
+
+
 ; -------------------------- check for dpad up
 	lda	Joy1Press+1
 	and	#%00001000
@@ -690,6 +863,23 @@ __MainAreaLoopDpadNewDone:
 
 	Accu16
 
+	lda	DP_AreaMetaMapIndex
+;	sec								; subtract 16 = check row above character // never mind, it should check the row at the char's feet anyway
+;	sbc	#16
+	tay
+
+	Accu8
+
+	lda	[DP_AreaMetaMapAddr], y					; check for BG collision using meta map entries
+	bmi	__MainAreaLoopDpadUpDone
+
+	Accu16
+
+	lda	DP_Char1MapPosY
+	sec
+	sbc	DP_Char1WalkingSpd
+	sta	DP_Char1MapPosY
+
 	lda	DP_AreaProperties					; check if area may be scrolled vertically
 	and	#%0000000000001000
 	bne	+
@@ -699,19 +889,9 @@ __MainAreaLoopDpadNewDone:
 	eor	#$FFFF							; make negative
 	inc	a
 	clc
-	adc	DP_Char1PosYX						; Y = Y - DP_Char1WalkingSpd (add negative value)
-	sta	DP_Char1PosYX
+	adc	DP_Char1ScreenPosYX					; Y = Y - DP_Char1WalkingSpd (add negative value)
+	sta	DP_Char1ScreenPosYX
 	bra	++
-
-;	Accu8
-
-;	lda	DP_Char1PosYX+1						; check for walking area border
-;	cmp	#$B1
-;	bcc	__MainAreaLoopDpadUpDone
-
-;	stz	DP_Char1PosYX+1
-
-;	Accu16
 
 +	lda	DP_Char1WalkingSpd
 	eor	#$FFFF							; make negative
@@ -739,6 +919,23 @@ __MainAreaLoopDpadUpDone:
 
 	Accu16
 
+	lda	DP_AreaMetaMapIndex
+	clc								; add 32 = check row below character's feet
+	adc	#32
+	tay
+
+	Accu8
+
+	lda	[DP_AreaMetaMapAddr], y
+	bmi	__MainAreaLoopDpadDownDone
+
+	Accu16
+
+	lda	DP_Char1MapPosY
+	clc
+	adc	DP_Char1WalkingSpd
+	sta	DP_Char1MapPosY
+
 	lda	DP_AreaProperties					; check if area may be scrolled vertically
 	and	#%0000000000001000
 	bne	+
@@ -746,21 +943,9 @@ __MainAreaLoopDpadUpDone:
 	lda	DP_Char1WalkingSpd					; area not scrollable, move hero sprite instead
 	xba								; shift to high byte for Y value
 	clc
-	adc	DP_Char1PosYX						; Y += DP_Char1WalkingSpd
-	sta	DP_Char1PosYX
+	adc	DP_Char1ScreenPosYX					; Y += DP_Char1WalkingSpd
+	sta	DP_Char1ScreenPosYX
 	bra	++
-
-;	Accu8
-
-;	lda	DP_Char1PosYX+1						; check for walking area border
-;	cmp	#$B1
-;	bcc	__MainAreaLoopDpadDownDone
-
-;	lda	#$B0
-;	sta	DP_Char1PosYX+1
-
-
-;	Accu16
 
 +	lda	DP_Char1WalkingSpd
 	clc
@@ -786,26 +971,32 @@ __MainAreaLoopDpadDownDone:
 
 	Accu16
 
+	lda	DP_AreaMetaMapIndex
+	clc								; add 16, subtract 1 = check column left of character's feet
+	adc	#15
+	tay
+
+	Accu8
+
+	lda	[DP_AreaMetaMapAddr], y
+	bmi	__MainAreaLoopDpadLeftDone
+
+	Accu16
+
+	lda	DP_Char1MapPosX
+	sec
+	sbc	DP_Char1WalkingSpd
+	sta	DP_Char1MapPosX
+
 	lda	DP_AreaProperties					; check if area may be scrolled horizontally
 	and	#%0000000000000100
 	bne	+
 
-	lda	DP_Char1PosYX						; area not scrollable, move hero sprite instead
+	lda	DP_Char1ScreenPosYX					; area not scrollable, move hero sprite instead
 	sec
 	sbc	DP_Char1WalkingSpd					; X = X - DP_Char1WalkingSpd
-	sta	DP_Char1PosYX
+	sta	DP_Char1ScreenPosYX
 	bra	++
-
-;	Accu8
-
-;	lda	DP_Char1PosYX						; check for walking area border
-;	cmp	#$10
-;	bcs	__MainAreaLoopDpadLeftDone
-
-;	lda	#$10
-;	sta	DP_Char1PosYX
-
-;	Accu16
 
 +	lda	ARRAY_HDMA_BGScroll+1					; scroll area
 	sec
@@ -831,27 +1022,32 @@ __MainAreaLoopDpadLeftDone:
 
 	Accu16
 
+	lda	DP_AreaMetaMapIndex
+	clc								; add 16, add 1 = check column right of character's feet
+	adc	#17
+	tay
+
+	Accu8
+
+	lda	[DP_AreaMetaMapAddr], y
+	bmi	__MainAreaLoopDpadRightDone
+
+	Accu16
+
+	lda	DP_Char1MapPosX
+	clc
+	adc	DP_Char1WalkingSpd
+	sta	DP_Char1MapPosX
+
 	lda	DP_AreaProperties					; check if area may be scrolled horizontally
 	and	#%0000000000000100
 	bne	+
 
-	lda	DP_Char1PosYX						; area not scrollable, move hero sprite instead
+	lda	DP_Char1ScreenPosYX					; area not scrollable, move hero sprite instead
 	clc
 	adc	DP_Char1WalkingSpd					; X += DP_Char1WalkingSpd
-	sta	DP_Char1PosYX
+	sta	DP_Char1ScreenPosYX
 	bra	++
-
-;	Accu8
-
-;	lda	DP_Char1PosYX						; check for walking area border
-;	cmp	#$E1
-;	bcc	__MainAreaLoopDpadRightDone
-
-;	lda	#$E0
-;	sta	DP_Char1PosYX
-
-
-;	Accu16
 
 +	lda	ARRAY_HDMA_BGScroll+1					; scroll area
 	clc

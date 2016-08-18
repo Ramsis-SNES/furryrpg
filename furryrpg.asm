@@ -193,7 +193,7 @@ STR_SoftwareBuild:
 	.DB "Build #"
 
 STR_SoftwareBuildNo:
-	.DB "00271"
+	.DB "00272"
 	.DB 0
 
 ;STR_Software_BuildNo_END:
@@ -252,7 +252,8 @@ SRC_IRQJumpTable:
 
 .SECTION "data" SEMIFREE						; FIXME, move to another bank (requires acknowledgement of bank byte in area properties)
 
-.INCLUDE "data/text_areanames_all.inc.asm"
+.INCLUDE "data/text_areanames_all.inc.asm"				; area names
+.INCLUDE "data/tbl_areametamaps.inc.asm"				; area meta maps
 
 .ENDS
 

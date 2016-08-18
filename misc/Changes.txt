@@ -1,8 +1,14 @@
 FURRY RPG! (WORKING TITLE) -- CHANGES:
 --------------------------------------
 
+Build #00272:
+- added hero-to-BG collision detection based on meta tables for each area. It still feels very buggy, but hey, it's my first attempt at implementing any form of collision detection at all! :p
+- added more parameters to the area property tables (e.g., pointers to BG 2 tile map and "meta map" data, and parameters related to the hero sprite)
+
+
+
 Build #00271:
-- added proper area loading handler based on area property tables (only 3 demo areas are available for now). Areas can be defined as either 32×32 or 64×32 tiles, scrollable horizontally and/or vertically. Area properties also include graphics pointers, default audio tracks, and an area name pointer. The format of the property table can be expanded in the future.
+- added proper area loading handler based on area property tables (only 3 demo areas are available for now). Areas can be defined as either 32×32 or 64×32 tiles, and as scrollable horizontally and/or vertically. Area properties also include graphics pointers, default audio tracks, and an area name pointer. The format of the property table can be expanded in the future.
 
 
 
