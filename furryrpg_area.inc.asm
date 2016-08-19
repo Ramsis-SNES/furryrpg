@@ -148,7 +148,7 @@ LoadArea:
 	Accu16
 
 	lda.l	SRC_AreaProperties, x					; read tile map source offset (16 bits of data)
-	cmp	#$FFFF
+	cmp	#$FFFF							; $FFFF = no BG2 tile map for this area
 	bne	+
 	inx								; skip 5 bytes of unused BG2 tile map pointers
 	inx
@@ -164,16 +164,16 @@ LoadArea:
 	Accu8
 
 	lda.l	SRC_AreaProperties, x					; read tile map source bank (8 bits of data)
-	cmp	#$FF
-	beq	__AreaBG2TileMapDone
+;	cmp	#$FF							; never mind checking those again
+;	beq	__AreaBG2TileMapDone
 	sta	VAR_DMASourceBank
 	inx
 
 	Accu16
 
 	lda.l	SRC_AreaProperties, x					; read size of tile map (16 bits of data)
-	cmp	#$FFFF
-	beq	__AreaBG2TileMapDone
+;	cmp	#$FFFF
+;	beq	__AreaBG2TileMapDone
 	sta	VAR_DMATransferLength
 	inx
 	inx
@@ -208,10 +208,10 @@ LoadArea:
 
 	Accu8
 
-	sta	ARRAY_BG1TileMap1, x					; store new data
+	sta	ARRAY_BG2TileMap1, x					; store new data
 	xba
 	ora	#$08							; set palette #2
-	sta	ARRAY_BG1TileMap1Hi, x
+	sta	ARRAY_BG2TileMap1Hi, x
 	inx
 	cpx	#1024
 	bne	-
@@ -228,10 +228,10 @@ LoadArea:
 
 	Accu8
 
-	sta	ARRAY_BG1TileMap2, x					; store new data
+	sta	ARRAY_BG2TileMap2, x					; store new data
 	xba
 	ora	#$08							; set palette #2
-	sta	ARRAY_BG1TileMap2Hi, x
+	sta	ARRAY_BG2TileMap2Hi, x
 	inx
 	cpx	#1024
 	bne	-
@@ -819,30 +819,30 @@ __MainAreaLoopDpadNewDone:
 	Accu16
 
 	lda	DP_Char1MapPosX
-	bit	#$0008
+	bit	#$0008							; if bit 4 is set ...
 	beq	+
-	and	#$FFF0
+	and	#$FFF0							; ... round number up to next multible of 16
 	clc
 	adc	#16
 	bra	++
-+	bit	#$0007
-	beq	++
-	and	#$FFF0
-++	lsr	a
++;	bit	#$0007
+;	beq	++
+	and	#$FFF0							; otherwise, rund number down 
+++	lsr	a							; divide by 16 as each entry in the meta map is a block of 2×2 tiles (16×16 px)
 	lsr	a
 	lsr	a
 	lsr	a
 	sta	temp
 	lda	DP_Char1MapPosY
-	bit	#$0008
+	bit	#$0008							; do rounding as above
 	beq	+
 	and	#$FFF0
 	clc
 	adc	#16
 	bra	++
-+	bit	#$0007
-	beq	++
-	and	#$FFF0
++;	bit	#$0007
+;	beq	++
+	and	#$FFF0							; no need to divide number for 16 entries per row // FIXME for areas larger than 32×32 tiles
 ++	clc
 	adc	temp
 	sta	DP_AreaMetaMapIndex

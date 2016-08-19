@@ -404,7 +404,6 @@
 	DP_Char1FrameCounter	db
 	DP_Char1MapPosX		dw					; in px
 	DP_Char1MapPosY		dw					; in px
-;	DP_Char1MapPosYX	dw					; high byte = Y position, low byte = X position (in 16×16 tiles)
 	DP_Char1ScreenPosYX	dw					; high byte = Y position, low byte = X position (in px)
 	DP_Char1SpriteStatus	db					; irrrrddd [i = not walking (idle), ddd = facing direction (0 = down, 1 = up, 2 = left, 3 = right)]
 	DP_Char1WalkingSpd	dw
@@ -476,7 +475,7 @@
 	DP_VWFBitsUsed		dw
 	DP_VWFBufferIndex	dw
 	DP_VWFLoop		db
-.ENDE									; 173 of 256 bytes used
+.ENDE									; 188 of 256 bytes used
 
 
 

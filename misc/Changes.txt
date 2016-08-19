@@ -1,5 +1,13 @@
-FURRY RPG! (WORKING TITLE) -- CHANGES:
---------------------------------------
+===========================================================================================
+  
+    "FURRY RPG" (WORKING TITLE)
+    (c) 2016 by Ramsis a.k.a. ManuLöwe (http://www.manuloewe.de/)
+ 
+ 	*** CHANGES ***
+ 
+===========================================================================================
+
+
 
 Build #00272:
 - added hero-to-BG collision detection based on meta tables for each area. It still feels very buggy, but hey, it's my first attempt at implementing any form of collision detection at all! :p
@@ -390,3 +398,7 @@ Build #00152:
 - Mode 7 test screen (press Select)
 - 16x16 sprite font (for Mode 7 landmarks/"FIGHT!!", or whatever)
 - some SNESMod tune to go with it all, composed by myself :-)
+
+
+
+********************************* EOF **********************************
