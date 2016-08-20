@@ -18,13 +18,13 @@ DebugMenu:
 
 	Accu16
 
-	stz	ARRAY_HDMA_BGScroll+1					; reset BG scroll values
+	stz	ARRAY_HDMA_BG_Scroll+1					; reset BG scroll values
 	lda	#$00FF
-	sta	ARRAY_HDMA_BGScroll+3
+	sta	ARRAY_HDMA_BG_Scroll+3
 
 	Accu8
 
-	stz	DP_HDMAchannels						; disable HDMA
+	stz	DP_HDMA_Channels					; disable HDMA
 
 
 
@@ -36,8 +36,8 @@ DebugMenu:
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 10240
 
 	lda	#%00011111						; make sure BG1/2/3 lo/hi tilemaps get updated
-	tsb	DP_DMAUpdates
-	tsb	DP_DMAUpdates+1
+	tsb	DP_DMA_Updates
+	tsb	DP_DMA_Updates+1
 
 	WaitFrames	3						; wait for regs/tilemaps to get cleared
 
@@ -61,7 +61,7 @@ DebugMenu:
 	cpx	#1024
 	bne	-
 
-	ldx	#ADDR_VRAM_SPR_Tiles					; set VRAM address for sprite tiles
+	ldx	#ADDR_VRAM_SpriteTiles					; set VRAM address for sprite tiles
 	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_Sprites_Smallfont, GFX_Sprites_Smallfont, $18, 4096
@@ -174,7 +174,7 @@ DebugMenuLoop:
 	PrintString	19, 4, "%s"					; print current SNESGSS song title
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
-	tsb	DP_DMAUpdates
+	tsb	DP_DMA_Updates
 
 
 
@@ -371,7 +371,7 @@ ShowSpriteGallery:
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 2048		; clear BG3 tile map
 
 	jsr	SpriteInit						; purge OAM
-	ldx	#ADDR_VRAM_SPR_Tiles					; set VRAM address for sprite tiles
+	ldx	#ADDR_VRAM_SpriteTiles					; set VRAM address for sprite tiles
 	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_Sprites_Gallery, GFX_Sprites_Gallery, $18, 2048
@@ -465,7 +465,7 @@ ShowSpriteGallery:
 	PrintString	10, 10, "Fox    Wolf2"
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
-	tsb	DP_DMAUpdates
+	tsb	DP_DMA_Updates
 	lda	REG_RDNMI						; clear NMI flag
 	lda	#$81							; reenable NMI
 	sta	REG_NMITIMEN
@@ -560,7 +560,7 @@ __MSCTestLoop:
 	sta	ARRAY_SpriteBuf1.Text+1					; Y
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
-	tsb	DP_DMAUpdates
+	tsb	DP_DMA_Updates
 
 	inc	temp
 

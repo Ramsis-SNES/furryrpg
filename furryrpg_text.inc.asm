@@ -76,18 +76,18 @@ OpenTextBox:
 
 	lda	#%0000001100000011					; turn on BG1/2 only (i.e., disable BG3 and sprites) for text box
 	sta	VAR_TextBox_TSTM
-	lda	ARRAY_HDMA_BGScroll+1					; copy BG scroll reg values to second half of playfield
-	sta	ARRAY_HDMA_BGScroll+6
-	lda	ARRAY_HDMA_BGScroll+3
-	sta	ARRAY_HDMA_BGScroll+8
-	stz	ARRAY_HDMA_BGScroll+11					; reset scrolling parameters for text box area
+	lda	ARRAY_HDMA_BG_Scroll+1					; copy BG scroll reg values to second half of playfield
+	sta	ARRAY_HDMA_BG_Scroll+6
+	lda	ARRAY_HDMA_BG_Scroll+3
+	sta	ARRAY_HDMA_BG_Scroll+8
+	stz	ARRAY_HDMA_BG_Scroll+11					; reset scrolling parameters for text box area
 	lda	#$00FF
-	sta	ARRAY_HDMA_BGScroll+13
+	sta	ARRAY_HDMA_BG_Scroll+13
 
 	Accu8
 
 	lda	#%00110100						; activate HDMA ch. 2 (backdrop color), 4, 5 (BG scrolling regs)
-	tsb	DP_HDMAchannels
+	tsb	DP_HDMA_Channels
 	lda	#%00110000						; enable IRQ at H=$4207 and V=$4209
 	tsb	DP_Shadow_NMITIMEN
 
@@ -351,16 +351,16 @@ __CloseTextBox:
 	lda	#%00110000						; clear IRQ enable bits
 	trb	DP_Shadow_NMITIMEN
 	lda	#%00110100						; deactivate used HDMA channels
-	trb	DP_HDMAchannels
+	trb	DP_HDMA_Channels
 
 	WaitFrames	1
 
 	Accu16
 
-	lda	ARRAY_HDMA_BGScroll+1					; restore scrolling parameters
-	sta	ARRAY_HDMA_BGScroll+11
-	lda	ARRAY_HDMA_BGScroll+3
-	sta	ARRAY_HDMA_BGScroll+13
+	lda	ARRAY_HDMA_BG_Scroll+1					; restore scrolling parameters
+	sta	ARRAY_HDMA_BG_Scroll+11
+	lda	ARRAY_HDMA_BG_Scroll+3
+	sta	ARRAY_HDMA_BG_Scroll+13
 
 	Accu8
 
@@ -423,7 +423,7 @@ TextBoxHandleSelection:
 	sta	DP_TextBoxSelMax
 
 	lda	#%00001000						; enable HDMA channel 3 (color math)
-	tsb	DP_HDMAchannels
+	tsb	DP_HDMA_Channels
 
 
 
@@ -479,7 +479,7 @@ __TBHSDone:
 	lda	#%00111100						; clear selection bits
 	trb	DP_TextBoxStatus
 	lda	#%00001000						; disable HDMA channel 3 (color math) // FIXME for CM on playfield!!
-	trb	DP_HDMAchannels
+	trb	DP_HDMA_Channels
 	rts
 
 
@@ -496,7 +496,7 @@ VWFTileBufferFull:
 	sta	REG_VMADDL						; store as new VRAM address
 
 	ldy	#0							; transfer VWF tile buffer to VRAM
--	lda	ARRAY_VWFTileBuffer, y					; copy font tiles
+-	lda	ARRAY_VWF_TileBuffer, y					; copy font tiles
 	sta	REG_VMDATAL
 	iny
 	iny
@@ -504,21 +504,21 @@ VWFTileBufferFull:
 	bne	-
 
 	ldy	#0
--	lda	ARRAY_VWFTileBuffer2, y					; next, copy font tiles from upper buffer to lower buffer
-	sta	ARRAY_VWFTileBuffer, y
+-	lda	ARRAY_VWF_TileBuffer2, y				; next, copy font tiles from upper buffer to lower buffer
+	sta	ARRAY_VWF_TileBuffer, y
 	iny
 	iny
 	cpy	#32							; 2 tiles
 	bne	-
 
 	lda	#0
--	sta	ARRAY_VWFTileBuffer, y					; lastly, clear upper buffer (sic, as Y index wasn't reset to zero)
+-	sta	ARRAY_VWF_TileBuffer, y					; lastly, clear upper buffer (sic, as Y index wasn't reset to zero)
 	iny
 	iny
 	cpy	#64
 	bne	-
 
-	stz	DP_VWFBufferIndex					; reset buffer index
+	stz	DP_VWF_BufferIndex					; reset buffer index
 
 	Accu8
 
@@ -635,7 +635,7 @@ __CarriageReturn:
 
 	Accu16
 
-	stz	DP_VWFBitsUsed						; reset VWF bit counter
+	stz	DP_VWF_BitsUsed						; reset VWF bit counter
 	lda	DP_TextTileDataCounter					; check what line we've been on
 	cmp	#46*8							; line 1?
 	bne	+
@@ -670,10 +670,10 @@ __CarriageReturn:
 __ClearTextBoxMidString:
 	Accu16
 
-	lda	DP_VWFBitsUsed						; check if bit counter <> 0
+	lda	DP_VWF_BitsUsed						; check if bit counter <> 0
 	bne	+
 
-	lda	DP_VWFBufferIndex					; check if VWF buffer index <> 0
+	lda	DP_VWF_BufferIndex					; check if VWF buffer index <> 0
 	beq	++
 
 +	Accu8
@@ -714,7 +714,7 @@ __ProcessTextNormal:
 
 	Accu16
 
-	lda	DP_VWFBufferIndex					; check if 2 buffer tiles full
+	lda	DP_VWF_BufferIndex					; check if 2 buffer tiles full
 	lsr	a							; buffer index / 16 = tile no.
 	lsr	a
 	lsr	a
@@ -746,10 +746,10 @@ __ProcessTextIncTileCounter:
 __ProcessTextDone:
 	Accu16
 
-	lda	DP_VWFBitsUsed						; check if bit counter <> 0
+	lda	DP_VWF_BitsUsed						; check if bit counter <> 0
 	bne	+
 
-	lda	DP_VWFBufferIndex					; check if VWF buffer index <> 0
+	lda	DP_VWF_BufferIndex					; check if VWF buffer index <> 0
 	beq	++
 
 +	Accu8
@@ -786,7 +786,7 @@ ClearTextBox:
 	Accu16
 
 	stz	DP_TextTileDataCounter					; reset tile data counter
-	stz	DP_VWFBitsUsed
+	stz	DP_VWF_BitsUsed
 
 	Accu8
 
@@ -810,7 +810,7 @@ ClearTextBox:
 
 
 MakeTextBoxTileMapBG1:
-	ldx	#ADDR_VRAM_BG1_Tilemap3+PARAM_TextBox			; set VRAM address within new BG1 tilemap
+	ldx	#ADDR_VRAM_BG1_TileMap3+PARAM_TextBox			; set VRAM address within new BG1 tilemap
 	stx	REG_VMADDL
 
 	Accu16
@@ -929,7 +929,7 @@ MakeTextBoxTileMapBG1:
 MakeTextBoxTileMapBG2:
 ; We use a fixed tilemap and generate Mode 5 compatible tile data based on the given text string on-the-fly in VRAM.
 
-	ldx	#ADDR_VRAM_BG2_Tilemap3+PARAM_TextBox			; set VRAM address within new BG2 tilemap
+	ldx	#ADDR_VRAM_BG2_TileMap3+PARAM_TextBox			; set VRAM address within new BG2 tilemap
 	stx	REG_VMADDL
 
 	Accu16
@@ -953,7 +953,7 @@ MakeTextBoxTileMapBG2:
 	lda	#17							; upper border tiles
 -	sta	REG_VMDATAL
 	inx
-	cpx	#PARAM_TEXTBOX_UL+PARAM_TEXTBOX_WIDTH			; position: upper right corner
+	cpx	#PARAM_TextBoxUL+PARAM_TextBoxWidth			; position: upper right corner
 	bne	-
 
 	lda	#18							; upper right corner tiles
@@ -982,7 +982,7 @@ MakeTextBoxTileMapBG2:
 	inc	a							; tile no. += 2 (Mode 5 always shows two 8×8 tiles at once, resulting in a single 16×8 tile)
 	inc	a
 	inx
-	cpx	#PARAM_TextBox_Line1+PARAM_TEXTBOX_WIDTH-1
+	cpx	#PARAM_TextBoxLine1+PARAM_TextBoxWidth-1
 	bne	-
 
 	pha								; preserve no. of text string tile
@@ -1013,7 +1013,7 @@ MakeTextBoxTileMapBG2:
 	inc	a							; tile no. += 2
 	inc	a
 	inx								; position in tilemap += 1
-	cpx	#PARAM_TextBox_Line2+PARAM_TEXTBOX_WIDTH-1
+	cpx	#PARAM_TextBoxLine2+PARAM_TextBoxWidth-1
 	bne	-
 
 	pha								; preserve no. of text string tile
@@ -1046,7 +1046,7 @@ MakeTextBoxTileMapBG2:
 	inc	a							; tile no. += 2
 	inc	a
 	inx								; position in tilemap += 1
-	cpx	#PARAM_TextBox_Line3+PARAM_TEXTBOX_WIDTH-1
+	cpx	#PARAM_TextBoxLine3+PARAM_TextBoxWidth-1
 	bne	-
 
 	pha								; preserve no. of text string tile
@@ -1077,7 +1077,7 @@ MakeTextBoxTileMapBG2:
 	inc	a							; tile no. += 2
 	inc	a
 	inx								; position in tilemap += 1
-	cpx	#PARAM_TextBox_Line4+PARAM_TEXTBOX_WIDTH-1
+	cpx	#PARAM_TextBoxLine4+PARAM_TextBoxWidth-1
 	bne	-
 
 	lda	#21							; right border tiles
@@ -1104,7 +1104,7 @@ MakeTextBoxTileMapBG2:
 	lda	#24							; lower border tiles
 -	sta	REG_VMDATAL
 	inx
-	cpx	#PARAM_TEXTBOX_UL+PARAM_TEXTBOX_WIDTH+160		; lower right corner reached?
+	cpx	#PARAM_TextBoxUL+PARAM_TextBoxWidth+160			; lower right corner reached?
 	bne	-
 
 	lda	#25							; lower right corner tiles
@@ -1130,39 +1130,39 @@ ProcessVWFTiles:
 
 	Accu8
 
-	ldy	DP_VWFBufferIndex
+	ldy	DP_VWF_BufferIndex
 	lda	#16							; loop through 16 bytes per tile
-	sta	DP_VWFLoop
+	sta	DP_VWF_Loop
 
 __VWFTilesLoop:
 	lda.l	GFX_FontMode5, x
 	xba								; move to high byte
 	lda	#$00
 	jsr	VWFShiftBits						; shift tile data if necessary
-	ora	ARRAY_VWFTileBuffer+16, y				; store upper 8 bit
-	sta	ARRAY_VWFTileBuffer+16, y
+	ora	ARRAY_VWF_TileBuffer+16, y				; store upper 8 bit
+	sta	ARRAY_VWF_TileBuffer+16, y
 	xba
-	ora	ARRAY_VWFTileBuffer, y					; store lower 8 bit
-	sta	ARRAY_VWFTileBuffer, y
+	ora	ARRAY_VWF_TileBuffer, y					; store lower 8 bit
+	sta	ARRAY_VWF_TileBuffer, y
 	inx
 	iny
-	dec	DP_VWFLoop
+	dec	DP_VWF_Loop
 	bne	__VWFTilesLoop
 
 	ldx	DP_TextASCIIChar					; ASCII char no. --> font width table index
 	lda.l	SRC_FWTDialogue, x
 	clc
-	adc	DP_VWFBitsUsed
+	adc	DP_VWF_BitsUsed
 	cmp	#8
 	bcs	+
-	sta	DP_VWFBitsUsed
+	sta	DP_VWF_BitsUsed
 
 	Accu16
 
 	tya
 	sec
 	sbc	#16
-	sta	DP_VWFBufferIndex
+	sta	DP_VWF_BufferIndex
 
 	Accu8
 
@@ -1170,8 +1170,8 @@ __VWFTilesLoop:
 
 +	sec
 	sbc	#8
-	sta	DP_VWFBitsUsed
-	sty	DP_VWFBufferIndex
+	sta	DP_VWF_BitsUsed
+	sty	DP_VWF_BufferIndex
 
 __ProcessVWFTilesDone:
 	rts
@@ -1185,7 +1185,7 @@ VWFShiftBits:
 	Accu16
 
 	pha
-	lda	DP_VWFBitsUsed
+	lda	DP_VWF_BitsUsed
 	bne	+
 
 	pla
@@ -1259,13 +1259,13 @@ ClearVWFBuffer:
 
 	lda	#0
 	ldy	#0
--	sta	ARRAY_VWFTileBuffer, y					; copy font tiles
+-	sta	ARRAY_VWF_TileBuffer, y					; copy font tiles
 	iny
 	iny
 	cpy	#64							; 4 tiles, 16 bytes per tile
 	bne	-
 
-	stz	DP_VWFBufferIndex					; reset buffer index
+	stz	DP_VWF_BufferIndex					; reset buffer index
 
 	Accu8
 

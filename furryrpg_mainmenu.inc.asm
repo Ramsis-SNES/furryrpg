@@ -46,7 +46,7 @@ MainMenu:
 	sta	REG_WOBJSEL
 
 	lda	#%00001000						; enable HDMA channel 3 (color math)
-	tsb	DP_HDMAchannels
+	tsb	DP_HDMA_Channels
 
 	Accu16
 
@@ -175,7 +175,7 @@ MainMenuLoop:
 	sta	REG_CGWSEL
 	stz	REG_WOBJSEL						; disable color math window
 	lda	#%00001000						; disable HDMA channel 3 (color math)
-	trb	DP_HDMAchannels
+	trb	DP_HDMA_Channels
 
 	Accu16
 
@@ -211,7 +211,7 @@ InGameMenu:
 
 .IFNDEF NOMUSIC
 	jsl	music_stop						; stop music // REMOVEME when done with menu
-	lda	DP_MSU1present
+	lda	DP_MSU1_Present
 	beq	+
 	stz	MSU_CONTROL						; stop MSU1 track
 	stz	MSU_VOLUME
@@ -220,7 +220,7 @@ InGameMenu:
 
 	lda	#$80							; enter forced blank
 	sta	REG_INIDISP
-	stz	DP_HDMAchannels						; disable HDMA
+	stz	DP_HDMA_Channels					; disable HDMA
 	wai								; wait
 
 	DisableIRQs
@@ -260,7 +260,7 @@ InGameMenu:
 
 	DMA_CH0 $00, :SRC_Tilemap_Logo, SRC_Tilemap_Logo, $80, 1024
 
-	ldx	#ADDR_VRAM_SPR_Tiles					; set VRAM address for sprite tiles
+	ldx	#ADDR_VRAM_SpriteTiles					; set VRAM address for sprite tiles
 	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_Sprites_InGameMenu, GFX_Sprites_InGameMenu, $18, 8192
@@ -284,12 +284,12 @@ InGameMenu:
 
 	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 40
 
-	lda	#ADDR_CGRAM_AREA					; set CGRAM address for BG1 tiles palette
+	lda	#ADDR_CGRAM_Area					; set CGRAM address for BG1 tiles palette
 	sta	REG_CGADD
 
 	DMA_CH0 $02, :SRC_Palette_Logo, SRC_Palette_Logo, $22, 32
 
-	lda	#ADDR_CGRAM_AREA					; palette no. = CGRAM address RSH 2
+	lda	#ADDR_CGRAM_Area					; palette no. = CGRAM address RSH 2
 	lsr	a
 	lsr	a
 	ldx	#0
@@ -304,8 +304,8 @@ InGameMenu:
 	DMA_CH0 $02, :SRC_Palette_Sprites_InGameMenu, SRC_Palette_Sprites_InGameMenu, $22, 32
 
 	lda	#%00011111						; make sure BG1/2/3 lo/hi tilemaps get updated once NMI is reenabled
-	tsb	DP_DMAUpdates
-	tsb	DP_DMAUpdates+1
+	tsb	DP_DMA_Updates
+	tsb	DP_DMA_Updates+1
 
 	SetNMI	TBL_NMI_DebugMenu
 
@@ -378,7 +378,7 @@ InGameMenu:
 	Accu8
 
 	lda	#%00001000						; enable HDMA channels 3 (color math)
-	tsb	DP_HDMAchannels
+	tsb	DP_HDMA_Channels
 
 
 
@@ -592,7 +592,7 @@ __RingMenuLoopDpadRightDone:
 ;.ENDIF
 
 	lda	#%00010000						; make sure BG3 lo tile map gets updated
-	tsb	DP_DMAUpdates
+	tsb	DP_DMA_Updates
 
 
 
@@ -862,8 +862,8 @@ __MakeBG3ItemTileMap:
 	lda	#$03							; switch BG3 char data area designation to $3000 // FIXME
 	sta	REG_BG34NBA
 	lda	#%00011111						; make sure BG1-3 lo/hi tilemaps get updated
-	tsb	DP_DMAUpdates
-	tsb	DP_DMAUpdates+1
+	tsb	DP_DMA_Updates
+	tsb	DP_DMA_Updates+1
 	lda	REG_RDNMI						; clear NMI flag
 	lda	#$81							; enable NMI and auto-joypad read
 	sta	DP_Shadow_NMITIMEN
@@ -953,7 +953,7 @@ GotoInventoryV-Split:
 	stz	REG_HTIMEH						; set high byte of H-timer
 
 	lda	#%11000000						; enable HDMA channels 6 (BG1/2 char data area designation), 7 (BG Mode 5)
-	tsb	DP_HDMAchannels
+	tsb	DP_HDMA_Channels
 
 	lda	#$91							; enable H-IRQ, NMI, and auto-joypad read
 	sta	DP_Shadow_NMITIMEN
@@ -1022,9 +1022,9 @@ __RenderItem:
 ;	bne	-
 
 	lda	#%00011111						; make sure BG1-3 lo and BG1/2 hi tilemaps get updated
-	tsb	DP_DMAUpdates
+	tsb	DP_DMA_Updates
 	and	#%00001111
-	tsb	DP_DMAUpdates+1
+	tsb	DP_DMA_Updates+1
 
 -	bra	-
 

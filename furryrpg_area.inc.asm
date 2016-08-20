@@ -16,7 +16,7 @@ LoadArea:
 
 	DisableIRQs
 
-	stz	DP_HDMAchannels						; disable HDMA
+	stz	DP_HDMA_Channels					; disable HDMA
 	stz	REG_HDMAEN
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	REG_VMAIN
@@ -267,7 +267,7 @@ __AreaBG2TileMapDone:
 
 	Accu8
 
-	lda	#ADDR_CGRAM_AREA					; set CGRAM address for BG1 tiles palette
+	lda	#ADDR_CGRAM_Area					; set CGRAM address for BG1 tiles palette
 	sta	REG_CGADD
 	jsl	RAM_Code
 
@@ -297,7 +297,7 @@ __AreaBG2TileMapDone:
 	inx
 	inx
 	lda.l	SRC_AreaProperties, x					; read default MSU1 ambient track
-	sta	DP_MSU1NextTrack
+	sta	DP_MSU1_NextTrack
 	inx
 	inx
 	lda.l	SRC_AreaProperties, x					; read pointer to area name
@@ -360,15 +360,15 @@ __AreaBG2TileMapDone:
 
 	ldx	#0
 -	lda.l	SRC_HDMA_ResetBGScroll, x
-	sta	ARRAY_HDMA_BGScroll, x
+	sta	ARRAY_HDMA_BG_Scroll, x
 	inx
 	inx
 	cpx	#16
 	bne	-
 
 	ldx	#0
--	lda.l	SRC_HDMA_HUDScroll, x
-	sta	ARRAY_HDMA_HUDScroll, x
+-	lda.l	SRC_HDMA_HUD_Scroll, x
+	sta	ARRAY_HDMA_HUD_Scroll, x
 	inx
 	inx
 	cpx	#10
@@ -395,7 +395,7 @@ __AreaBG2TileMapDone:
 	sta	$4340
 	lda	#$0D							; PPU reg. $210D
 	sta	$4341
-	ldx	#ARRAY_HDMA_BGScroll
+	ldx	#ARRAY_HDMA_BG_Scroll
 	stx	$4342
 	lda	#$7E
 	sta	$4344
@@ -407,7 +407,7 @@ __AreaBG2TileMapDone:
 	sta	$4350
 	lda	#$0F							; PPU reg. $210F
 	sta	$4351
-	ldx	#ARRAY_HDMA_BGScroll
+	ldx	#ARRAY_HDMA_BG_Scroll
 	stx	$4352
 	lda	#$7E
 	sta	$4354
@@ -419,7 +419,7 @@ __AreaBG2TileMapDone:
 	sta	$4360
 	lda	#$12							; PPU reg. $2112 (BG3 vertical scroll)
 	sta	$4361
-	ldx	#ARRAY_HDMA_HUDScroll
+	ldx	#ARRAY_HDMA_HUD_Scroll
 	stx	$4362
 	lda	#$7E
 	sta	$4364
@@ -479,10 +479,10 @@ __AreaBG2TileMapDone:
 	cli								; re-enable interrupts
 
 	lda	#%00011111						; make sure BG1/2/3 lo/hi tilemaps get updated
-	tsb	DP_DMAUpdates
-	tsb	DP_DMAUpdates+1
+	tsb	DP_DMA_Updates
+	tsb	DP_DMA_Updates+1
 	lda	#%01000000						; enable HDMA ch. 6 (BG3 HUD scroll)
-	tsb	DP_HDMAchannels
+	tsb	DP_HDMA_Channels
 
 	WaitFrames	4						; let the screen clear up
 
@@ -614,12 +614,12 @@ __AreaBG2TileMapDone:
 +	jsl	PlayTrack
 
 __AreaGSSTrackDone:
-	lda	DP_MSU1present
+	lda	DP_MSU1_Present
 	beq	__AreaMSU1TrackDone
 
 	Accu16
 
-	lda	DP_MSU1NextTrack					; MSU1 present, set track
+	lda	DP_MSU1_NextTrack					; MSU1 present, set track
 	cmp	#$FFFF							; $FFFF = don't play any MSU1 track
 	beq	++
 	sta	MSU_TRACK
@@ -821,7 +821,7 @@ __MainAreaLoopDpadNewDone:
 	lda	DP_Char1MapPosX
 	bit	#$0008							; if bit 4 is set ...
 	beq	+
-	and	#$FFF0							; ... round number up to next multible of 16
+	and	#$FFF0							; ... round number up to next multiple of 16
 	clc
 	adc	#16
 	bra	++
@@ -897,9 +897,9 @@ __MainAreaLoopDpadNewDone:
 	eor	#$FFFF							; make negative
 	inc	a
 	clc
-	adc	ARRAY_HDMA_BGScroll+3					; scroll area
+	adc	ARRAY_HDMA_BG_Scroll+3					; scroll area
 	and	#$3FFF
-	sta	ARRAY_HDMA_BGScroll+3
+	sta	ARRAY_HDMA_BG_Scroll+3
 
 ++	Accu8
 
@@ -949,9 +949,9 @@ __MainAreaLoopDpadUpDone:
 
 +	lda	DP_Char1WalkingSpd
 	clc
-	adc	ARRAY_HDMA_BGScroll+3					; scroll area
+	adc	ARRAY_HDMA_BG_Scroll+3					; scroll area
 	and	#$3FFF
-	sta	ARRAY_HDMA_BGScroll+3
+	sta	ARRAY_HDMA_BG_Scroll+3
 
 ++	Accu8
 
@@ -998,11 +998,11 @@ __MainAreaLoopDpadDownDone:
 	sta	DP_Char1ScreenPosYX
 	bra	++
 
-+	lda	ARRAY_HDMA_BGScroll+1					; scroll area
++	lda	ARRAY_HDMA_BG_Scroll+1					; scroll area
 	sec
 	sbc	DP_Char1WalkingSpd
 	and	#$3FFF
-	sta	ARRAY_HDMA_BGScroll+1
+	sta	ARRAY_HDMA_BG_Scroll+1
 
 ++	Accu8
 
@@ -1049,11 +1049,11 @@ __MainAreaLoopDpadLeftDone:
 	sta	DP_Char1ScreenPosYX
 	bra	++
 
-+	lda	ARRAY_HDMA_BGScroll+1					; scroll area
++	lda	ARRAY_HDMA_BG_Scroll+1					; scroll area
 	clc
 	adc	DP_Char1WalkingSpd
 	and	#$3FFF
-	sta	ARRAY_HDMA_BGScroll+1
+	sta	ARRAY_HDMA_BG_Scroll+1
 
 ++	Accu8
 
@@ -1112,7 +1112,7 @@ __MainAreaLoopXButtonDone:
 
 .IFNDEF NOMUSIC
 	jsl	music_stop						; stop music
-	lda	DP_MSU1present
+	lda	DP_MSU1_Present
 	beq	+
 	stz	MSU_CONTROL						; stop ambient soundtrack
 +
@@ -1124,7 +1124,7 @@ __MainAreaLoopStButtonDone:
 ;	jsr	ShowCPUload
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
-	tsb	DP_DMAUpdates
+	tsb	DP_DMA_Updates
 
 	jmp	MainAreaLoop
 

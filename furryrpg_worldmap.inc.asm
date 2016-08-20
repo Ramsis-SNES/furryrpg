@@ -15,7 +15,7 @@
 LoadWorldMap:
 	lda	#$80							; enter forced blank
 	sta	REG_INIDISP
-	stz	DP_HDMAchannels						; disable HDMA
+	stz	DP_HDMA_Channels					; disable HDMA
 
 	wai								; wait for reg $420C to get cleared
 
@@ -50,7 +50,7 @@ LoadWorldMap:
 
 	ldx	#0
 -	lda.l	SRC_HDMA_ResetBGScroll, x
-	sta	ARRAY_HDMA_BGScroll, x
+	sta	ARRAY_HDMA_BG_Scroll, x
 	inx
 	inx
 	cpx	#16
@@ -65,7 +65,7 @@ LoadWorldMap:
 	sta	$4340
 	lda	#$0D							; PPU reg. $210D
 	sta	$4341
-	ldx	#ARRAY_HDMA_BGScroll
+	ldx	#ARRAY_HDMA_BG_Scroll
 	stx	$4342
 	lda	#$7E
 	sta	$4344
@@ -88,7 +88,7 @@ LoadWorldMap:
 
 ; -------------------------- set up NMI/misc. parameters
 	lda	#%00110000						; enable HDMA ch. 4 (BG1 scroll) & 5 (CGRAM address & data)
-	tsb	DP_HDMAchannels
+	tsb	DP_HDMA_Channels
 
 	SetNMI	TBL_NMI_WorldMap
 
@@ -131,12 +131,12 @@ WorldMapLoop:
 
 	Accu16
 
-	lda	ARRAY_HDMA_BGScroll+3
+	lda	ARRAY_HDMA_BG_Scroll+3
 	dec	a
 	and	#$3FFF
-	sta	ARRAY_HDMA_BGScroll+3
-	sta	ARRAY_HDMA_BGScroll+8
-	sta	ARRAY_HDMA_BGScroll+13
+	sta	ARRAY_HDMA_BG_Scroll+3
+	sta	ARRAY_HDMA_BG_Scroll+8
+	sta	ARRAY_HDMA_BG_Scroll+13
 
 	Accu8
 
@@ -156,12 +156,12 @@ __WorldMapLoopDpadUpDone:
 
 	Accu16
 
-	lda	ARRAY_HDMA_BGScroll+3
+	lda	ARRAY_HDMA_BG_Scroll+3
 	inc	a
 	and	#$3FFF
-	sta	ARRAY_HDMA_BGScroll+3
-	sta	ARRAY_HDMA_BGScroll+8
-	sta	ARRAY_HDMA_BGScroll+13
+	sta	ARRAY_HDMA_BG_Scroll+3
+	sta	ARRAY_HDMA_BG_Scroll+8
+	sta	ARRAY_HDMA_BG_Scroll+13
 
 	Accu8
 
@@ -181,12 +181,12 @@ __WorldMapLoopDpadDownDone:
 
 	Accu16
 
-	lda	ARRAY_HDMA_BGScroll+1
+	lda	ARRAY_HDMA_BG_Scroll+1
 	dec	a
 	and	#$3FFF
-	sta	ARRAY_HDMA_BGScroll+1
-	sta	ARRAY_HDMA_BGScroll+6
-	sta	ARRAY_HDMA_BGScroll+11
+	sta	ARRAY_HDMA_BG_Scroll+1
+	sta	ARRAY_HDMA_BG_Scroll+6
+	sta	ARRAY_HDMA_BG_Scroll+11
 
 	Accu8
 
@@ -206,12 +206,12 @@ __WorldMapLoopDpadLeftDone:
 
 	Accu16
 
-	lda	ARRAY_HDMA_BGScroll+1
+	lda	ARRAY_HDMA_BG_Scroll+1
 	inc	a
 	and	#$3FFF
-	sta	ARRAY_HDMA_BGScroll+1
-	sta	ARRAY_HDMA_BGScroll+6
-	sta	ARRAY_HDMA_BGScroll+11
+	sta	ARRAY_HDMA_BG_Scroll+1
+	sta	ARRAY_HDMA_BG_Scroll+6
+	sta	ARRAY_HDMA_BG_Scroll+11
 
 	Accu8
 

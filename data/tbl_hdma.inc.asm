@@ -27,7 +27,7 @@ SRC_HDMA_BG12CharData:
 
 
 SRC_HDMA_ColMathMode7:
-	.DB PARAM_MODE7_SKY_LINES					; for the sky,
+	.DB PARAM_Mode7SkyLines						; for the sky,
 	.DB $E0, $E0							; apply black (i.e., don't affect display)
 
 	.DB 1								; apply b/w values for blur effect
@@ -202,7 +202,7 @@ SRC_HDMA_ColMathMainMenu_End:
 
 
 
-SRC_HDMA_HUDScroll:
+SRC_HDMA_HUD_Scroll:
 	.DB 48								; 48 scanlines = 6 lines of text at top of the screen
 	.DW $002F							; scroll HUD up by $30 lines (value to be manipulated in WRAM)
 

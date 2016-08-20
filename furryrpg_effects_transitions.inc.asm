@@ -41,7 +41,7 @@ EffectHSplitIn:								; FIXME (occasional gfx glitches on real SNES)
 	bne	-
 
 	lda	#%00000010						; activate HDMA channel 1
-	tsb	DP_HDMAchannels
+	tsb	DP_HDMA_Channels
 
 
 
@@ -101,7 +101,7 @@ __HSplitInSubLoop2:							; loop 2: go towards start of table
 	bne	__HSplitInMainLoop
 
 	lda	#%00000010						; deactivate channel 1
-	trb	DP_HDMAchannels
+	trb	DP_HDMA_Channels
 	rts
 
 
@@ -135,7 +135,7 @@ EffectHSplitOut:							; split out from the middle of the screen // FIXME (occas
 	bne	-
 
 	lda	#%00000010						; activate HDMA channel 1
-	tsb	DP_HDMAchannels
+	tsb	DP_HDMA_Channels
 
 
 
@@ -192,7 +192,7 @@ __HSplitOutSubLoop2:							; loop 2: go towards start of table
 	bne	__HSplitOutMainLoop
 
 	lda	#%00000010						; deactivate channel 1
-	trb	DP_HDMAchannels
+	trb	DP_HDMA_Channels
 
 	WaitFrames	1						; wait for HDMA register update
 
@@ -229,7 +229,7 @@ EffectHSplitOut2:							; split out towards the middle of the screen // FIXME (o
 	bne	-
 
 	lda	#%00000010						; activate HDMA channel 1
-	tsb	DP_HDMAchannels
+	tsb	DP_HDMA_Channels
 
 
 
@@ -286,7 +286,7 @@ __HSplitOut2SubLoop2:
 	bne	__HSplitOut2MainLoop
 
 	lda	#%00000010						; deactivate channel 1
-	trb	DP_HDMAchannels
+	trb	DP_HDMA_Channels
 
 	WaitFrames	1						; wait for HDMA register update
 

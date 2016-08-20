@@ -383,12 +383,12 @@ CheckForMSU1:
 	beq	__MSU1Found
 
 __NoMSU1:
-	stz	DP_MSU1present
+	stz	DP_MSU1_Present
 	bra	+
 
 __MSU1Found:
 	lda	#$01
-	sta	DP_MSU1present
+	sta	DP_MSU1_Present
 +	rtl
 
 

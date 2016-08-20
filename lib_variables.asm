@@ -213,22 +213,22 @@
 ; ************************** Misc. constants ***************************
 
 ; -------------------------- Memory map
-.DEFINE ADDR_CGRAM_PORTRAIT	$10
-.DEFINE ADDR_CGRAM_AREA		$20
-.DEFINE ADDR_CGRAM_WORLDMAP	$20
+.DEFINE ADDR_CGRAM_Portrait	$10
+.DEFINE ADDR_CGRAM_Area		$20
+.DEFINE ADDR_CGRAM_WorldMap	$20
 
-.DEFINE ADDR_SRAM_BANK		$B0
-.DEFINE ADDR_SRAM_ROMGOOD	$B06000					; $01 = ROM integrity test passed
-.DEFINE ADDR_SRAM_CHKSUMCMPL	$B0600C					; SRAM checksum & complement
-.DEFINE ADDR_SRAM_CHKSUM	$B0600E
-.DEFINE ADDR_SRAM_SLOT1		$B06000					; 16 bytes reserved
-.DEFINE ADDR_SRAM_SLOT1DATA	$B06010
-.DEFINE ADDR_SRAM_SLOT2		$B06800					; ditto
-.DEFINE ADDR_SRAM_SLOT2DATA	$B06810
-.DEFINE ADDR_SRAM_SLOT3		$B07000					; ditto
-.DEFINE ADDR_SRAM_SLOT3DATA	$B07010
-.DEFINE ADDR_SRAM_SLOT4		$B07800					; ditto
-.DEFINE ADDR_SRAM_SLOT4DATA	$B07810
+.DEFINE ADDR_SRAM_Bank		$B0
+.DEFINE ADDR_SRAM_GoodROM	$B06000					; $01 = ROM integrity test passed
+.DEFINE ADDR_SRAM_ChksumCmpl	$B0600C					; SRAM checksum & complement
+.DEFINE ADDR_SRAM_Chksum	$B0600E
+.DEFINE ADDR_SRAM_Slot1		$B06000					; 16 bytes reserved
+.DEFINE ADDR_SRAM_Slot1Data	$B06010
+.DEFINE ADDR_SRAM_Slot2		$B06800					; ditto
+.DEFINE ADDR_SRAM_Slot2Data	$B06810
+.DEFINE ADDR_SRAM_Slot3		$B07000					; ditto
+.DEFINE ADDR_SRAM_Slot3Data	$B07010
+.DEFINE ADDR_SRAM_Slot4		$B07800					; ditto
+.DEFINE ADDR_SRAM_Slot4Data	$B07810
 
 .DEFINE ADDR_VRAM_BG1_Tiles	$0000
 .DEFINE ADDR_VRAM_BG2_Tiles	$0000
@@ -239,35 +239,35 @@
 .DEFINE ADDR_VRAM_AreaBG2	$3800					; area tiles for BG2 (might need to start at an earlier address)
 
 .DEFINE ADDR_VRAM_BG3_Tiles	$4000
-.DEFINE ADDR_VRAM_BG3_Tilemap1	$4800
-.DEFINE ADDR_VRAM_BG3_Tilemap2	$4C00
+.DEFINE ADDR_VRAM_BG3_TileMap1	$4800
+.DEFINE ADDR_VRAM_BG3_TileMap2	$4C00
 
-.DEFINE ADDR_VRAM_BG1_Tilemap1	$5000
-.DEFINE ADDR_VRAM_BG1_Tilemap2	$5400
-.DEFINE ADDR_VRAM_BG2_Tilemap1	$5800
-.DEFINE ADDR_VRAM_BG2_Tilemap2	$5C00
+.DEFINE ADDR_VRAM_BG1_TileMap1	$5000
+.DEFINE ADDR_VRAM_BG1_TileMap2	$5400
+.DEFINE ADDR_VRAM_BG2_TileMap1	$5800
+.DEFINE ADDR_VRAM_BG2_TileMap2	$5C00
 
-.DEFINE ADDR_VRAM_SPR_Tiles	$6000					; sprite tiles can go up to $7B5F, and also from $7C00-$7F5F
+.DEFINE ADDR_VRAM_SpriteTiles	$6000					; sprite tiles can go up to $7B5F, and also from $7C00-$7F5F
 
-.DEFINE ADDR_VRAM_BG1_Tilemap3	$7800					; only $7B60-$7BFF used for text box
-.DEFINE ADDR_VRAM_BG2_Tilemap3	$7C00					; only $7F60-$7FFF used for text box
+.DEFINE ADDR_VRAM_BG1_TileMap3	$7800					; only $7B60-$7BFF used for text box
+.DEFINE ADDR_VRAM_BG2_TileMap3	$7C00					; only $7F60-$7FFF used for text box
 
 .DEFINE PARAM_RingMenuCenterX	128
 .DEFINE PARAM_RingMenuCenterY	112
 .DEFINE PARAM_RingMenuRadiusMin	0
 .DEFINE PARAM_RingMenuRadiusMax	60
 
-.DEFINE PARAM_MODE7_SKY_LINES	72					; number of scanlines for sky above Mode 7 landscape
+.DEFINE PARAM_Mode7SkyLines	72					; number of scanlines for sky above Mode 7 landscape
 
 .DEFINE PARAM_TextBox		$02C0					; tilemap entry for start of whole text box area
 ;.DEFINE PARAM_TextBoxInside	$02E0					; tilemap entry for inside of text box
-.DEFINE PARAM_TextBox_Line1	$02E7					; tilemap entry for start of line 1 in text box
-.DEFINE PARAM_TextBox_Line2	$0307					; tilemap entry for start of line 2 in text box
-.DEFINE PARAM_TextBox_Line3	$0327					; tilemap entry for start of line 3 in text box
-.DEFINE PARAM_TextBox_Line4	$0347					; tilemap entry for start of line 4 in text box
+.DEFINE PARAM_TextBoxLine1	$02E7					; tilemap entry for start of line 1 in text box
+.DEFINE PARAM_TextBoxLine2	$0307					; tilemap entry for start of line 2 in text box
+.DEFINE PARAM_TextBoxLine3	$0327					; tilemap entry for start of line 3 in text box
+.DEFINE PARAM_TextBoxLine4	$0347					; tilemap entry for start of line 4 in text box
 
-.DEFINE PARAM_TEXTBOX_UL	$02C6					; tilemap entry for upper left corner of text box
-.DEFINE PARAM_TEXTBOX_WIDTH	24					; in "full" (i.e., 16×8) hi-res tiles
+.DEFINE PARAM_TextBoxUL		$02C6					; tilemap entry for upper left corner of text box
+.DEFINE PARAM_TextBoxWidth	24					; in "full" (i.e., 16×8) hi-res tiles
 
 
 
@@ -410,11 +410,11 @@
 
 	DP_DataSrcAddress	dsb 3					; holds a 24-bit source address e.g. for data transfers to SRAM
 
-	DP_DMAUpdates		dw					; rrrcbbaarrr32211 [123 = BG no. that needs to have its tile map(s) updated on next Vblank (low bytes), abc = same thing for high bytes, r = reserved. The lower bit of each BG represents the first half of a 64×32/32×64 tile map, the higher one represents the second half.]
+	DP_DMA_Updates		dw					; rrrcbbaarrr32211 [123 = BG no. that needs to have its tile map(s) updated on next Vblank (low bytes), abc = same thing for high bytes, r = reserved. The lower bit of each BG represents the first half of a 64×32/32×64 tile map, the higher one represents the second half.]
 
 	DP_EffectSpeed		db
 
-	DP_HDMAchannels		db					; DCBAcbsr [ABCD = M7A/M7B/M7C/M7D, c = color math, b = background color gradient, s = screen mode, r = reserved]. Variable is transferred to $420C during Vblank
+	DP_HDMA_Channels	db					; DCBAcbsr [ABCD = M7A/M7B/M7C/M7D, c = color math, b = background color gradient, s = screen mode, r = reserved]. Variable is transferred to $420C during Vblank
 
 
 	DP_GameMode		db					; 7rrrrrrr [7 = Mode7 on/off, r = reserved]
@@ -443,8 +443,8 @@
 	DP_Mode7_CenterCoordY	dw
 	DP_Mode7_FrameCounter	db
 
-	DP_MSU1present		db
-	DP_MSU1NextTrack	dw
+	DP_MSU1_Present		db
+	DP_MSU1_NextTrack	dw
 
 	DP_Multi5_Reg0lo	db
 	DP_Multi5_Reg0hi	db
@@ -472,9 +472,9 @@
 
 	DP_CurrentScanline	dw					; holds no. of current scanline (for CPU load meter)
 
-	DP_VWFBitsUsed		dw
-	DP_VWFBufferIndex	dw
-	DP_VWFLoop		db
+	DP_VWF_BitsUsed		dw
+	DP_VWF_BufferIndex	dw
+	DP_VWF_Loop		db
 .ENDE									; 188 of 256 bytes used
 
 
@@ -583,8 +583,8 @@
 	ARRAY_SpriteBuf1		INSTANCEOF oam_low		; 512 bytes
 	ARRAY_SpriteBuf2		INSTANCEOF oam_high		; 32 bytes
 
-	ARRAY_VWFTileBuffer		dsb 32
-	ARRAY_VWFTileBuffer2		dsb 32
+	ARRAY_VWF_TileBuffer		dsb 32
+	ARRAY_VWF_TileBuffer2		dsb 32
 
 	ARRAY_HDMA_ColorMath		dsb 96
 
@@ -594,8 +594,8 @@
 	ARRAY_HDMA_M7D			dsb 448
 
 	ARRAY_HDMA_MainEffects		dsb 224
-	ARRAY_HDMA_BGScroll		dsb 16
-	ARRAY_HDMA_HUDScroll		dsb 10
+	ARRAY_HDMA_BG_Scroll		dsb 16
+	ARRAY_HDMA_HUD_Scroll		dsb 10
 
 	ARRAY_TempString		dsb 32				; for temp strings
 

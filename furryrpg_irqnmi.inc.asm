@@ -52,21 +52,21 @@ __TextBoxVblankDone:
 	bra	__UpdateHUDDone
 
 __ShowHUD:
-	lda	ARRAY_HDMA_HUDScroll+1
-	ldb	ARRAY_HDMA_HUDScroll+7
+	lda	ARRAY_HDMA_HUD_Scroll+1
+	ldb	ARRAY_HDMA_HUD_Scroll+7
 -	dec	a							; make it appear faster than it disappears (hence multiple decrements)
 	dec	a
 	dec	a
 	bpl	+							; only positive values allowed (except for #$FF)
 	lda	#$FF							; underflow, set final scroll value
-+	sta	ARRAY_HDMA_HUDScroll+1
++	sta	ARRAY_HDMA_HUD_Scroll+1
 	xba
 	inc	a
 	inc	a
 	inc	a
 	bmi	+							; only negative values allowed
 	lda	#$FF							; overflow, set final scroll value
-+	sta	ARRAY_HDMA_HUDScroll+7
++	sta	ARRAY_HDMA_HUD_Scroll+7
 	cmp	#$FF							; final scroll value reached?
 	bne	__UpdateHUDDone
 	lda	#%00000001						; yes, set "HUD is being displayed" bit
@@ -76,13 +76,13 @@ __ShowHUD:
 	bra	__UpdateHUDDone
 
 __HideHUD:
-	lda	ARRAY_HDMA_HUDScroll+1
-	ldb	ARRAY_HDMA_HUDScroll+7
+	lda	ARRAY_HDMA_HUD_Scroll+1
+	ldb	ARRAY_HDMA_HUD_Scroll+7
 -	inc	a
-	sta	ARRAY_HDMA_HUDScroll+1
+	sta	ARRAY_HDMA_HUD_Scroll+1
 	xba
 	dec	a
-	sta	ARRAY_HDMA_HUDScroll+7
+	sta	ARRAY_HDMA_HUD_Scroll+7
 	cmp	#$CF							; final scroll value reached?
 	bne	__UpdateHUDDone
 	stz	DP_HUD_Status						; yes, clear HUD status bits
@@ -94,7 +94,7 @@ __UpdateHUDDone:
 ; -------------------------- animate playable character
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	REG_VMAIN
-	ldx	#ADDR_VRAM_SPR_Tiles					; set VRAM address for sprite tiles
+	ldx	#ADDR_VRAM_SpriteTiles					; set VRAM address for sprite tiles
 	stx	REG_VMADDL
 
 	lda	DP_Char1SpriteStatus
@@ -230,27 +230,27 @@ __SkipRefreshes3:
 ; -------------------------- misc. tasks
 	jsr	GetInput
 
-	lda	ARRAY_HDMA_BGScroll+1					; BG1 horizontal scroll
+	lda	ARRAY_HDMA_BG_Scroll+1					; BG1 horizontal scroll
 	sta	REG_BG1HOFS
-	lda	ARRAY_HDMA_BGScroll+2
+	lda	ARRAY_HDMA_BG_Scroll+2
 	sta	REG_BG1HOFS
-	lda	ARRAY_HDMA_BGScroll+1					; BG2 horizontal scroll
+	lda	ARRAY_HDMA_BG_Scroll+1					; BG2 horizontal scroll
 	sta	REG_BG2HOFS
-	lda	ARRAY_HDMA_BGScroll+2
+	lda	ARRAY_HDMA_BG_Scroll+2
 	sta	REG_BG2HOFS
-	lda	ARRAY_HDMA_BGScroll+3					; BG1 vertical scroll
+	lda	ARRAY_HDMA_BG_Scroll+3					; BG1 vertical scroll
 	sta	REG_BG1VOFS
-	lda	ARRAY_HDMA_BGScroll+4
+	lda	ARRAY_HDMA_BG_Scroll+4
 	sta	REG_BG1VOFS
-	lda	ARRAY_HDMA_BGScroll+3					; BG2 vertical scroll
+	lda	ARRAY_HDMA_BG_Scroll+3					; BG2 vertical scroll
 	sta	REG_BG2VOFS
-	lda	ARRAY_HDMA_BGScroll+4
+	lda	ARRAY_HDMA_BG_Scroll+4
 	sta	REG_BG2VOFS
 	lda	#$FF							; fixed BG3 vertical scroll = -1
 	sta	REG_BG3VOFS
 	stz	REG_BG3VOFS
 
-	lda	DP_HDMAchannels						; initiate HDMA transfers
+	lda	DP_HDMA_Channels					; initiate HDMA transfers
 	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
 	sta	REG_HDMAEN
 
@@ -290,7 +290,7 @@ Vblank_DebugMenu:
 ; -------------------------- misc. tasks
 	jsr	GetInput
 
-	lda	DP_HDMAchannels						; initiate HDMA transfers
+	lda	DP_HDMA_Channels					; initiate HDMA transfers
 	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
 	sta	REG_HDMAEN
 
@@ -414,7 +414,7 @@ Vblank_Mode7:
 ; -------------------------- misc. tasks
 	jsr	GetInput
 
-	lda	DP_HDMAchannels						; initiate HDMA transfers
+	lda	DP_HDMA_Channels					; initiate HDMA transfers
 	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
 	sta	REG_HDMAEN
 
@@ -453,7 +453,7 @@ Vblank_WorldMap:
 ; -------------------------- misc. tasks
 	jsr	GetInput
 
-	lda	DP_HDMAchannels						; initiate HDMA transfers
+	lda	DP_HDMA_Channels					; initiate HDMA transfers
 	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
 	sta	REG_HDMAEN
 
@@ -481,7 +481,7 @@ Vblank_Error:
 
 ; -------------------------- refresh BG3 (low tilemap bytes)
 	stz	REG_VMAIN						; increment VRAM address by 1 after writing to $2118
-	ldx	#ADDR_VRAM_BG3_Tilemap1					; set VRAM address to BG3 tile map
+	ldx	#ADDR_VRAM_BG3_TileMap1					; set VRAM address to BG3 tile map
 	stx	REG_VMADDL
 
 	DMA_CH0 $00, $7E, ARRAY_BG3TileMap, $18, 1024
@@ -491,7 +491,7 @@ Vblank_Error:
 ; -------------------------- refresh BG3 (high tilemap bytes)
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	REG_VMAIN
-	ldx	#ADDR_VRAM_BG3_Tilemap1					; set VRAM address to BG3 tile map
+	ldx	#ADDR_VRAM_BG3_TileMap1					; set VRAM address to BG3 tile map
 	stx	REG_VMADDL
 
 	DMA_CH0 $00, $7E, ARRAY_BG3TileMapHi, $19, 1024
@@ -541,7 +541,7 @@ Vblank_Intro:
 ; -------------------------- misc. tasks
 	jsr	GetInput
 
-	lda	DP_HDMAchannels						; initiate HDMA transfers
+	lda	DP_HDMA_Channels					; initiate HDMA transfers
 	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
 	sta	REG_HDMAEN
 	lda	REG_RDNMI						; acknowledge NMI
@@ -653,40 +653,40 @@ VIRQ_Mode7:
 .ACCU 8
 .INDEX 16
 
-RefreshBGs:								; refresh BGs according to DP_DMAUpdates
+RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 	ldy	#4							; DMA counter, do max. 4 DMAs per Vblank
 	stz	REG_VMAIN						; increment VRAM address by 1 after writing to $2118
 
 
 
 ; -------------------------- check/refresh BG1 (low tilemap bytes)
-	lda	DP_DMAUpdates
+	lda	DP_DMA_Updates
 	and	#%00000001						; check for 1st BG1 tile map (low bytes)
 	beq	+
 
-	ldx	#ADDR_VRAM_BG1_Tilemap1					; set VRAM address to BG1 tile map
+	ldx	#ADDR_VRAM_BG1_TileMap1					; set VRAM address to BG1 tile map
 	stx	REG_VMADDL
 
 	DMA_CH0 $00, $7E, ARRAY_BG1TileMap1, $18, 1024
 
 	lda	#%00000001						; clear respective DMA update bit
-	trb	DP_DMAUpdates
+	trb	DP_DMA_Updates
 	dey								; decrement DMA counter
 	bne	+
 
 	jmp	__DMAUpdatesDone
 
-+	lda	DP_DMAUpdates
++	lda	DP_DMA_Updates
 	and	#%00000010						; check for 2nd BG1 tile map (low bytes)
 	beq	+
 
-	ldx	#ADDR_VRAM_BG1_Tilemap2					; set VRAM address to BG1 tile map
+	ldx	#ADDR_VRAM_BG1_TileMap2					; set VRAM address to BG1 tile map
 	stx	REG_VMADDL
 
 	DMA_CH0 $00, $7E, ARRAY_BG1TileMap2, $18, 1024
 
 	lda	#%00000010						; clear respective DMA update bit
-	trb	DP_DMAUpdates
+	trb	DP_DMA_Updates
 	dey								; decrement DMA counter
 	bne	+
 
@@ -695,33 +695,33 @@ RefreshBGs:								; refresh BGs according to DP_DMAUpdates
 
 
 ; -------------------------- check/refresh BG2 (low tilemap bytes)
-+	lda	DP_DMAUpdates
++	lda	DP_DMA_Updates
 	and	#%00000100						; check for 1st BG2 tile map (low bytes)
 	beq	+
 
-	ldx	#ADDR_VRAM_BG2_Tilemap1					; set VRAM address to BG2 tile map
+	ldx	#ADDR_VRAM_BG2_TileMap1					; set VRAM address to BG2 tile map
 	stx	REG_VMADDL
 
 	DMA_CH0 $00, $7E, ARRAY_BG2TileMap1, $18, 1024
 
 	lda	#%00000100						; clear respective DMA update bit
-	trb	DP_DMAUpdates
+	trb	DP_DMA_Updates
 	dey								; decrement DMA counter
 	bne	+
 
 	jmp	__DMAUpdatesDone
 
-+	lda	DP_DMAUpdates
++	lda	DP_DMA_Updates
 	and	#%00001000						; check for 2nd BG2 tile map (low bytes)
 	beq	+
 
-	ldx	#ADDR_VRAM_BG2_Tilemap2					; set VRAM address to BG2 tile map
+	ldx	#ADDR_VRAM_BG2_TileMap2					; set VRAM address to BG2 tile map
 	stx	REG_VMADDL
 
 	DMA_CH0 $00, $7E, ARRAY_BG2TileMap2, $18, 1024
 
 	lda	#%00001000						; clear respective DMA update bit
-	trb	DP_DMAUpdates
+	trb	DP_DMA_Updates
 	dey								; decrement DMA counter
 	bne	+
 
@@ -730,17 +730,17 @@ RefreshBGs:								; refresh BGs according to DP_DMAUpdates
 
 
 ; -------------------------- check/refresh BG3 (low tilemap bytes)
-+	lda	DP_DMAUpdates
++	lda	DP_DMA_Updates
 	and	#%00010000						; check for BG3 tile map (low bytes)
 	beq	+
 
-	ldx	#ADDR_VRAM_BG3_Tilemap1					; set VRAM address to BG3 tile map
+	ldx	#ADDR_VRAM_BG3_TileMap1					; set VRAM address to BG3 tile map
 	stx	REG_VMADDL
 
 	DMA_CH0 $00, $7E, ARRAY_BG3TileMap, $18, 1024
 
 	lda	#%00010000						; clear respective DMA update bit
-	trb	DP_DMAUpdates
+	trb	DP_DMA_Updates
 	dey
 	bne	+
 
@@ -752,33 +752,33 @@ RefreshBGs:								; refresh BGs according to DP_DMAUpdates
 
 
 ; -------------------------- check/refresh BG1 (high tilemap bytes)
-	lda	DP_DMAUpdates+1
+	lda	DP_DMA_Updates+1
 	and	#%00000001						; check for 1st BG1 tile map (high bytes)
 	beq	+
 
-	ldx	#ADDR_VRAM_BG1_Tilemap1					; set VRAM address to BG1 tile map
+	ldx	#ADDR_VRAM_BG1_TileMap1					; set VRAM address to BG1 tile map
 	stx	REG_VMADDL
 
 	DMA_CH0 $00, $7E, ARRAY_BG1TileMap1Hi, $19, 1024
 
 	lda	#%00000001						; clear respective DMA update bit
-	trb	DP_DMAUpdates+1
+	trb	DP_DMA_Updates+1
 	dey								; decrement DMA counter
 	bne	+
 
 	jmp	__DMAUpdatesDone
 
-+	lda	DP_DMAUpdates+1
++	lda	DP_DMA_Updates+1
 	and	#%00000010						; check for 2nd BG1 tile map (high bytes)
 	beq	+
 
-	ldx	#ADDR_VRAM_BG1_Tilemap2					; set VRAM address to BG1 tile map
+	ldx	#ADDR_VRAM_BG1_TileMap2					; set VRAM address to BG1 tile map
 	stx	REG_VMADDL
 
 	DMA_CH0 $00, $7E, ARRAY_BG1TileMap2Hi, $19, 1024
 
 	lda	#%00000010						; clear respective DMA update bit
-	trb	DP_DMAUpdates+1
+	trb	DP_DMA_Updates+1
 	dey								; decrement DMA counter
 	bne	+
 
@@ -787,50 +787,50 @@ RefreshBGs:								; refresh BGs according to DP_DMAUpdates
 
 
 ; -------------------------- check/refresh BG2 (high tilemap bytes)
-+	lda	DP_DMAUpdates+1
++	lda	DP_DMA_Updates+1
 	and	#%00000100						; check for 1st BG2 tile map (high bytes)
 	beq	+
 
-	ldx	#ADDR_VRAM_BG2_Tilemap1					; set VRAM address to BG2 tile map
+	ldx	#ADDR_VRAM_BG2_TileMap1					; set VRAM address to BG2 tile map
 	stx	REG_VMADDL
 
 	DMA_CH0 $00, $7E, ARRAY_BG2TileMap1Hi, $19, 1024
 
 	lda	#%00000100						; clear respective DMA update bit
-	trb	DP_DMAUpdates+1
+	trb	DP_DMA_Updates+1
 	dey								; decrement DMA counter
 	bne	+
 
 	jmp	__DMAUpdatesDone
 
-+	lda	DP_DMAUpdates+1
++	lda	DP_DMA_Updates+1
 	and	#%00001000						; check for 2nd BG2 tile map (high bytes)
 	beq	+
 
-	ldx	#ADDR_VRAM_BG2_Tilemap2					; set VRAM address to BG2 tile map
+	ldx	#ADDR_VRAM_BG2_TileMap2					; set VRAM address to BG2 tile map
 	stx	REG_VMADDL
 
 	DMA_CH0 $00, $7E, ARRAY_BG2TileMap2Hi, $19, 1024
 
 	lda	#%00001000						; clear respective DMA update bit
-	trb	DP_DMAUpdates+1
+	trb	DP_DMA_Updates+1
 	dey								; decrement DMA counter
 	beq	__DMAUpdatesDone
 
 
 
 ; -------------------------- check/refresh BG3 (high tilemap bytes)
-+	lda	DP_DMAUpdates+1
++	lda	DP_DMA_Updates+1
 	and	#%00010000						; check for BG3 tile map (high bytes)
 	beq	__DMAUpdatesDone
 
-	ldx	#ADDR_VRAM_BG3_Tilemap1					; set VRAM address to BG3 tile map
+	ldx	#ADDR_VRAM_BG3_TileMap1					; set VRAM address to BG3 tile map
 	stx	REG_VMADDL
 
 	DMA_CH0 $00, $7E, ARRAY_BG3TileMapHi, $19, 1024
 
 	lda	#%00010000						; clear respective DMA update bit
-	trb	DP_DMAUpdates+1
+	trb	DP_DMA_Updates+1
 
 __DMAUpdatesDone:
 	rts
@@ -842,7 +842,7 @@ UpdateCharPortrait:
 	sta	REG_VMAIN
 	ldx	#ADDR_VRAM_Portrait					; set VRAM address to char portrait
 	stx	REG_VMADDL
-	lda	#ADDR_CGRAM_PORTRAIT					; set CGRAM address for character portrait
+	lda	#ADDR_CGRAM_Portrait					; set CGRAM address for character portrait
 	sta	REG_CGADD
 
 	lda	DP_TextBoxCharPortrait

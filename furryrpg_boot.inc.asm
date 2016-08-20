@@ -209,7 +209,7 @@ Boot:
 	cpx	#1024
 	bne	-
 
-	ldx	#ADDR_VRAM_SPR_Tiles					; set VRAM address for sprite tiles
+	ldx	#ADDR_VRAM_SpriteTiles					; set VRAM address for sprite tiles
 	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_Sprites_Smallfont, GFX_Sprites_Smallfont, $18, 4096
@@ -246,7 +246,7 @@ Boot:
 	SetNMI	TBL_NMI_DebugMenu
 
 	jsr	JoyInit							; initialize joypads and enable NMI
-	lda	ADDR_SRAM_ROMGOOD					; if byte is $01, then ROM integrity check was already passed
+	lda	ADDR_SRAM_GoodROM					; if byte is $01, then ROM integrity check was already passed
 	cmp	#$01
 	beq	+
 	lda	#$0F							; turn on the screen
@@ -711,7 +711,7 @@ VerifyROMIntegrity:
 .ENDIF
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
-	tsb	DP_DMAUpdates
+	tsb	DP_DMA_Updates
 
 	lda	#$C0							; set start address to $C00000
 	sta	temp+7
@@ -721,7 +721,7 @@ VerifyROMIntegrity:
 	PrintHexNum	temp+7
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
-	tsb	DP_DMAUpdates
+	tsb	DP_DMA_Updates
 .ENDIF
 
 	Accu16
@@ -759,7 +759,7 @@ VerifyROMIntegrity:
 	PrintHexNum	temp+7
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
-	tsb	DP_DMAUpdates
+	tsb	DP_DMA_Updates
 .ENDIF
 
 	Accu16
@@ -804,7 +804,7 @@ VerifyROMIntegrity:
 	PrintString	12, 3, "Press any button ..."
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
-	tsb	DP_DMAUpdates
+	tsb	DP_DMA_Updates
 
 	lda	#$01							; remember that ROM integrity check was passed
 	sta	temp							; source data in temp
@@ -812,7 +812,7 @@ VerifyROMIntegrity:
 	stx	DP_DataSrcAddress
 	lda	#$7E							; source data bank
 	sta	DP_DataSrcAddress+2
-	ldx	#(ADDR_SRAM_ROMGOOD & $FFFF) + 1			; destination offset + data length
+	ldx	#(ADDR_SRAM_GoodROM & $FFFF) + 1			; destination offset + data length
 	ldy	#1							; data length
 	jsl	WriteDataToSRAM
 
@@ -832,7 +832,7 @@ __ROMIntegrityBad:
 	PrintString	12, 3, "continue!"
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
-	tsb	DP_DMAUpdates
+	tsb	DP_DMA_Updates
 
 	jmp	Forever
 

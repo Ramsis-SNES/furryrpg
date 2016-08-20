@@ -15,7 +15,7 @@
 TestMode7:
 	lda	#$80							; enter forced blank
 	sta	REG_INIDISP
-	stz	DP_HDMAchannels						; disable HDMA
+	stz	DP_HDMA_Channels					; disable HDMA
 
 	wai								; wait for OAM to refresh
 
@@ -135,7 +135,7 @@ TestMode7:
 ; -------------------------- load font & cloud sprites
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	REG_VMAIN
-	ldx	#ADDR_VRAM_SPR_Tiles					; set VRAM address for sprite tiles
+	ldx	#ADDR_VRAM_SpriteTiles					; set VRAM address for sprite tiles
 	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_Sprites_Smallfont, GFX_Sprites_Smallfont, $18, 4096
@@ -250,7 +250,7 @@ TestMode7:
 
 	lda	#220							; dot number for interrupt (256 = too late, 204 = too early)
 	sta	REG_HTIMEL
-	lda	#PARAM_MODE7_SKY_LINES					; scanline number for interrupt
+	lda	#PARAM_Mode7SkyLines					; scanline number for interrupt
 	sta	REG_VTIMEL
 
 	Accu8
@@ -258,7 +258,7 @@ TestMode7:
 	SetIRQ	TBL_VIRQ_Mode7
 
 	lda	#%11111100						; enable HDMA channels 2-7
-	sta	DP_HDMAchannels
+	sta	DP_HDMA_Channels
 	lda	REG_RDNMI						; clear NMI flag
 	lda	#%10110001						; enable NMI, auto-joypad read, and IRQ at H=HTIMEL and V=VTIMEL
 	sta	DP_Shadow_NMITIMEN
@@ -681,14 +681,14 @@ CalcMode7Matrix:
 	lda	temp+3							; end result positive, add (interim 1 >> 8) to interim 2
 	clc
 	adc	temp+1
-++	sta	ARRAY_HDMA_M7A+(PARAM_MODE7_SKY_LINES*2), x
-	sta	ARRAY_HDMA_M7D+(PARAM_MODE7_SKY_LINES*2), x
+++	sta	ARRAY_HDMA_M7A+(PARAM_Mode7SkyLines*2), x
+	sta	ARRAY_HDMA_M7D+(PARAM_Mode7SkyLines*2), x
 
 	Accu8
 
 	inx
 	inx
-	cpx	#448-(PARAM_MODE7_SKY_LINES*2)
+	cpx	#448-(PARAM_Mode7SkyLines*2)
 	bne	-
 
 
@@ -764,16 +764,16 @@ CalcMode7Matrix:
 	lda	temp+3							; end result positive, add (interim 1 >> 8) to interim 2
 	clc
 	adc	temp+1
-++	sta	ARRAY_HDMA_M7C+(PARAM_MODE7_SKY_LINES*2), x
+++	sta	ARRAY_HDMA_M7C+(PARAM_Mode7SkyLines*2), x
 	eor	#$FFFF							; make M7C parameter negative and store in M7B
 	inc	a
-	sta	ARRAY_HDMA_M7B+(PARAM_MODE7_SKY_LINES*2), x
+	sta	ARRAY_HDMA_M7B+(PARAM_Mode7SkyLines*2), x
 
 	Accu8
 
 	inx
 	inx
-	cpx	#448-(PARAM_MODE7_SKY_LINES*2)
+	cpx	#448-(PARAM_Mode7SkyLines*2)
 	bne	-
 	rts
 
@@ -1184,7 +1184,7 @@ __DecY1:
 	and	#$1FFF							; max scroll value (CHECKME)
 	sta	DP_Mode7_ScrollOffsetY
 	clc
-	adc	#$0400 + (PARAM_MODE7_SKY_LINES*8)
+	adc	#$0400 + (PARAM_Mode7SkyLines*8)
 	sta	DP_Mode7_CenterCoordY
 
 	Accu8
@@ -1319,7 +1319,7 @@ __IncY1:
 	and	#$1FFF							; max scroll value (CHECKME)
 	sta	DP_Mode7_ScrollOffsetY
 	clc
-	adc	#$0400 + (PARAM_MODE7_SKY_LINES*8)
+	adc	#$0400 + (PARAM_Mode7SkyLines*8)
 	sta	DP_Mode7_CenterCoordY
 
 	Accu8
@@ -1335,7 +1335,7 @@ ResetMode7Matrix:
 	stz	DP_Mode7_ScrollOffsetY
 	lda	#$0400							; 16-bit values
 	sta	DP_Mode7_CenterCoordX
-	lda	#$0400 + (PARAM_MODE7_SKY_LINES*8)
+	lda	#$0400 + (PARAM_Mode7SkyLines*8)
 	sta	DP_Mode7_CenterCoordY
 
 	Accu8
