@@ -447,7 +447,11 @@ __AreaBG2TileMapDone:
 
 
 
-; -------------------------- character, Vblank, and effect parameters
+; -------------------------- misc. settings
+	stz	DP_HUD_DispCounter					; reset HUD status
+	stz	DP_HUD_DispCounter+1
+	stz	DP_HUD_Status
+
 	Accu16
 
 ;	sta	SpriteBuf1.PlayableChar
