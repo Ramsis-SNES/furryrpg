@@ -469,7 +469,12 @@ ShowCPUload:
 	SetTextPos	2, 2
 	PrintNum	DP_CurrentScanline
 
+	stz	DP_StringBank
+	stz	DP_StringBank+1
+	lda	#:ShowCPUload
+	sta	DP_StringBank+2
 	jsr	PrintF
+
 	.DB "  ", 0							; clear trailing numbers from old values
 
 	rts

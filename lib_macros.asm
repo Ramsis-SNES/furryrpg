@@ -348,6 +348,10 @@ __CheckJoypad\@:
 ; PrintString modified by ManuLöwe: PrintString y, x, "String"
 
 .MACRO PrintString
+	stz	DP_StringBank
+	stz	DP_StringBank+1
+	lda	#:StringOffset\@
+	sta	DP_StringBank+2
 	ldx	#32*\1 + \2
 	stx	DP_TextCursor
 	jsr	PrintF

@@ -9,6 +9,13 @@
 
 
 
+Build #00273:
+- fixed HUD glitching out when loading an area after another area has been left with HUD fully visible
+- added support for strings in any ROM bank (not just $C0) to the PrintString macro
+- minor code cleanups
+
+
+
 Build #00272:
 - added hero-to-BG collision detection based on meta tables for each area. It still feels very buggy, but hey, it's my first attempt at implementing any form of collision detection at all! :p
 - added more parameters to the area property tables (e.g., pointers to BG 2 tile map and "meta map" data, and parameters related to the hero sprite)

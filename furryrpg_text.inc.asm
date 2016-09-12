@@ -1340,10 +1340,6 @@ __ChangeTextBoxBGDone:
 PrintF:
 	ply								; pull return address from stack, which is actually the start of our string (minus one)
 	iny								; make y = start of string
-	stz	strBank
-	stz	strBank+1
-	lda	#$C0							; debug menu strings are all in bank $C0
-	sta	strBank+2
 
 PrintFStart:
 	PHP
