@@ -663,7 +663,6 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 	lda	DP_DMA_Updates
 	and	#%00000001						; check for 1st BG1 tile map (low bytes)
 	beq	+
-
 	ldx	#ADDR_VRAM_BG1_TileMap1					; set VRAM address to BG1 tile map
 	stx	REG_VMADDL
 
@@ -673,13 +672,11 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 	trb	DP_DMA_Updates
 	dey								; decrement DMA counter
 	bne	+
-
 	jmp	__DMAUpdatesDone
 
 +	lda	DP_DMA_Updates
 	and	#%00000010						; check for 2nd BG1 tile map (low bytes)
 	beq	+
-
 	ldx	#ADDR_VRAM_BG1_TileMap2					; set VRAM address to BG1 tile map
 	stx	REG_VMADDL
 
@@ -689,7 +686,6 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 	trb	DP_DMA_Updates
 	dey								; decrement DMA counter
 	bne	+
-
 	jmp	__DMAUpdatesDone
 
 
@@ -698,7 +694,6 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 +	lda	DP_DMA_Updates
 	and	#%00000100						; check for 1st BG2 tile map (low bytes)
 	beq	+
-
 	ldx	#ADDR_VRAM_BG2_TileMap1					; set VRAM address to BG2 tile map
 	stx	REG_VMADDL
 
@@ -708,13 +703,11 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 	trb	DP_DMA_Updates
 	dey								; decrement DMA counter
 	bne	+
-
 	jmp	__DMAUpdatesDone
 
 +	lda	DP_DMA_Updates
 	and	#%00001000						; check for 2nd BG2 tile map (low bytes)
 	beq	+
-
 	ldx	#ADDR_VRAM_BG2_TileMap2					; set VRAM address to BG2 tile map
 	stx	REG_VMADDL
 
@@ -724,7 +717,6 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 	trb	DP_DMA_Updates
 	dey								; decrement DMA counter
 	bne	+
-
 	jmp	__DMAUpdatesDone
 
 
@@ -733,7 +725,6 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 +	lda	DP_DMA_Updates
 	and	#%00010000						; check for BG3 tile map (low bytes)
 	beq	+
-
 	ldx	#ADDR_VRAM_BG3_TileMap1					; set VRAM address to BG3 tile map
 	stx	REG_VMADDL
 
@@ -743,7 +734,6 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 	trb	DP_DMA_Updates
 	dey
 	bne	+
-
 	jmp	__DMAUpdatesDone
 
 +	lda	#$80							; increment VRAM address by 1 after writing to $2119
@@ -755,7 +745,6 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 	lda	DP_DMA_Updates+1
 	and	#%00000001						; check for 1st BG1 tile map (high bytes)
 	beq	+
-
 	ldx	#ADDR_VRAM_BG1_TileMap1					; set VRAM address to BG1 tile map
 	stx	REG_VMADDL
 
@@ -765,13 +754,11 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 	trb	DP_DMA_Updates+1
 	dey								; decrement DMA counter
 	bne	+
-
 	jmp	__DMAUpdatesDone
 
 +	lda	DP_DMA_Updates+1
 	and	#%00000010						; check for 2nd BG1 tile map (high bytes)
 	beq	+
-
 	ldx	#ADDR_VRAM_BG1_TileMap2					; set VRAM address to BG1 tile map
 	stx	REG_VMADDL
 
@@ -781,7 +768,6 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 	trb	DP_DMA_Updates+1
 	dey								; decrement DMA counter
 	bne	+
-
 	jmp	__DMAUpdatesDone
 
 
@@ -790,7 +776,6 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 +	lda	DP_DMA_Updates+1
 	and	#%00000100						; check for 1st BG2 tile map (high bytes)
 	beq	+
-
 	ldx	#ADDR_VRAM_BG2_TileMap1					; set VRAM address to BG2 tile map
 	stx	REG_VMADDL
 
@@ -800,13 +785,11 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 	trb	DP_DMA_Updates+1
 	dey								; decrement DMA counter
 	bne	+
-
 	jmp	__DMAUpdatesDone
 
 +	lda	DP_DMA_Updates+1
 	and	#%00001000						; check for 2nd BG2 tile map (high bytes)
 	beq	+
-
 	ldx	#ADDR_VRAM_BG2_TileMap2					; set VRAM address to BG2 tile map
 	stx	REG_VMADDL
 
@@ -899,31 +882,31 @@ UpdateGameTime:
 	sed								; decimal mode on
 
 	clc
-	lda	DP_GameTime_Seconds
+	lda	DP_GameTimeSeconds
 	adc	#$01
-	sta	DP_GameTime_Seconds
+	sta	DP_GameTimeSeconds
 	cmp	#$60							; check if 60 frames = game time seconds have elapsed
 	bcc	__GameTimeUpdateMinutes
 
-	stz	DP_GameTime_Seconds					; carry bit set, reset seconds
+	stz	DP_GameTimeSeconds					; carry bit set, reset seconds
 
 __GameTimeUpdateMinutes:
-	lda	DP_GameTime_Minutes					; increment minutes via carry bit
+	lda	DP_GameTimeMinutes					; increment minutes via carry bit
 	adc	#$00
-	sta	DP_GameTime_Minutes
+	sta	DP_GameTimeMinutes
 	cmp	#$60							; check if 60 seconds have elapsed
 	bcc	__GameTimeUpdateHours
 
-	stz	DP_GameTime_Minutes					; carry bit set, reset minutes
+	stz	DP_GameTimeMinutes					; carry bit set, reset minutes
 
 __GameTimeUpdateHours:
-	lda	DP_GameTime_Hours					; increment hours via carry bit
+	lda	DP_GameTimeHours					; increment hours via carry bit
 	adc	#$00
-	sta	DP_GameTime_Hours
+	sta	DP_GameTimeHours
 	cmp	#$24							; check if 24 hours have elapsed
 	bcc	__GameTimeUpdateDone
 
-	stz	DP_GameTime_Hours					; carry bit set, reset hours
+	stz	DP_GameTimeHours					; carry bit set, reset hours
 
 __GameTimeUpdateDone:
 	cld								; decimal mode off

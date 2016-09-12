@@ -30,13 +30,13 @@ PlayTrack:
 	asl	a
 	tax
 	lda.l	SRC_TrackPtrBankTable, x				; read bank byte of pointers
-	sta	DP_SPC_DATA_BANK
+	sta	DP_SPC_DataBank
 	lda.l	SRC_TrackPtrOffsetTable, x				; read offset of pointers
-	sta	DP_SPC_DATA_OFFS
+	sta	DP_SPC_DataOffset
 	lda	#6							; data length = 3 16-bit pointers to ADSR table, SFX, and music
-	sta	DP_SPC_DATA_SIZE
+	sta	DP_SPC_DataSize
 	lda	#$0208							; store pointers to SPC700 memory address $208
-	sta	DP_SPC_DATA_ADDR
+	sta	DP_SPC_DataAddress
 	jsl	spc_load_data
 
 	Accu16
@@ -52,13 +52,13 @@ PlayTrack:
 	asl	a
 	tax
 	lda.l	SRC_TrackSmpBankTable, x				; read bank byte of sample pack
-	sta	DP_SPC_DATA_BANK
+	sta	DP_SPC_DataBank
 	lda.l	SRC_TrackSmpOffsetTable, x				; read offset of sample pack
-	sta	DP_SPC_DATA_OFFS
+	sta	DP_SPC_DataOffset
 	lda.l	SRC_TrackSmpLengthTable, x				; data length
-	sta	DP_SPC_DATA_SIZE
+	sta	DP_SPC_DataSize
 	lda	#$0B24							; store samples to SPC700 memory address $B24 ($200 + $924, where $924 = size of sound driver)
-	sta	DP_SPC_DATA_ADDR
+	sta	DP_SPC_DataAddress
 	jsl	spc_load_data
 
 	Accu16
@@ -74,15 +74,15 @@ PlayTrack:
 	asl	a
 	tax
 	lda.l	SRC_TrackNotBankTable, x				; read bank byte of notes data
-	sta	DP_SPC_DATA_BANK
+	sta	DP_SPC_DataBank
 	lda.l	SRC_TrackNotOffsetTable, x				; read offset of notes data (excluding 2 bytes at the beginning, denoting file size)
-	sta	DP_SPC_DATA_OFFS
+	sta	DP_SPC_DataOffset
 	lda.l	SRC_TrackNotSizeTable, x				; read file size
-	sta	DP_SPC_DATA_SIZE
+	sta	DP_SPC_DataSize
 	lda.l	SRC_TrackSmpLengthTable, x				; store samples to SPC700 memory address $B24 + size of sample pack
 	clc
 	adc	#$0B24
-	sta	DP_SPC_DATA_ADDR
+	sta	DP_SPC_DataAddress
 	jsl	spc_load_data
 
 	Accu16
@@ -103,9 +103,9 @@ PlayTrack:
 	Accu16
 
 	lda	#$00FF
-	sta	DP_SPC_VOL_FADESPD
+	sta	DP_SPC_VolFadeSpeed
 	lda	#$007F
-	sta	DP_SPC_VOL_CURRENT
+	sta	DP_SPC_VolCurrent
 	jsl	spc_global_volume
 
 	Accu16
@@ -333,13 +333,13 @@ BootSPC700:
 	Accu16
 
 	lda	#:SRC_spc700_driver
-	sta	DP_SPC_DATA_BANK
+	sta	DP_SPC_DataBank
 	lda	#SRC_spc700_driver+2
-	sta	DP_SPC_DATA_OFFS
+	sta	DP_SPC_DataOffset
 	lda.l	SRC_spc700_driver
-	sta	DP_SPC_DATA_SIZE
+	sta	DP_SPC_DataSize
 	lda	#$0200
-	sta	DP_SPC_DATA_ADDR
+	sta	DP_SPC_DataAddress
 	jsl	spc_load_data
 
 	Accu16

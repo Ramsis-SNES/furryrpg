@@ -66,7 +66,6 @@ MainMenuLoop:
 	lda	Joy1New+1
 	and	#%00001000
 	beq	++
-
 	lda	ARRAY_HDMA_ColorMath+0					; first byte of color math HDMA table = no. of scanlines above color bar
 	cmp	#80
 	beq	+
@@ -86,7 +85,6 @@ MainMenuLoop:
 	lda	Joy1New+1
 	and	#%00000100
 	beq	++
-
 	lda	ARRAY_HDMA_ColorMath+0					; first byte of color math HDMA table = no. of scanlines above color bar
 	cmp	#120
 	beq	+
@@ -106,7 +104,6 @@ MainMenuLoop:
 	lda	Joy1New
 	and	#%10000000
 	beq	++
-
 	lda	#%00000100						; mosaic on BG3
 -	sta	REG_MOSAIC
 	wai
@@ -126,7 +123,6 @@ MainMenuLoop:
 /*	lda	ARRAY_HDMA_ColorMath+0
 	cmp	#80
 	bne	+
-
 	ldx	#(ARRAY_BG3TileMap & $FFFF)				; clear text
 	stx	REG_WMADDL
 	stz	REG_WMADDH
@@ -158,7 +154,6 @@ MainMenuLoop:
 	lda	Joy1New+1
 	and	#%10000000
 	bne	+
-
 	jmp	++
 
 +	PrintString	9, 10, "             "
@@ -566,7 +561,7 @@ __RingMenuLoopDpadRightDone:
 +	cmp	#$60
 	bne	+
 	PrintString	2, 8, "      ???2      "
-	bra	++
+	jmp	++
 
 +	cmp	#$80
 	bne	+

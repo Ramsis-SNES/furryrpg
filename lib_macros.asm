@@ -349,9 +349,10 @@ __CheckJoypad\@:
 
 .MACRO PrintString
 	ldx	#32*\1 + \2
-	stx	Cursor
+	stx	DP_TextCursor
 	jsr	PrintF
 
+StringOffset\@:
 	.DB \3, 0							; instead of a return address (-1), the string address (-1) is on the stack
 .ENDM
 
@@ -359,7 +360,7 @@ __CheckJoypad\@:
 
 .MACRO SetTextPos
 	ldx	#32*\1 + \2
-	stx	Cursor
+	stx	DP_TextCursor
 	stz	DP_HiResPrintMon					; reset BG monitor value
 .ENDM
 
@@ -393,15 +394,15 @@ __CheckJoypad\@:
 
 .MACRO PrintSpriteText
 	ldx	#((8*\1)-2)<<8 + 8*\2
-	stx	Cursor
+	stx	DP_TextCursor
 	lda	#\4
-	sta	SprTextPalette
+	sta	DP_SpriteTextPalette
 	ldx	#STR_SpriteText_Start\@
-	stx	strPtr
-	stz.b	strBank
-	stz.b	strBank+1
+	stx	DP_StringPtr
+	stz.b	DP_StringBank
+	stz.b	DP_StringBank+1
 	lda.b	#:STR_SpriteText_Start\@
-	sta.b	strBank+2
+	sta.b	DP_StringBank+2
 	jsr	PrintSpriteText
 	bra	STR_SpriteText_End\@
 

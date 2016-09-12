@@ -155,7 +155,6 @@
 
 
 ; -------------------------- MSU1 registers
-
 .DEFINE MSU_STATUS		$2000
 .DEFINE MSU_READ		$2001
 .DEFINE MSU_ID			$2002
@@ -338,62 +337,42 @@
 	DP_VblankJump		dsb 4					; holds a 4-byte instruction like jml SomeVblankRoutine (NMI vector points here)
 	DP_IRQJump		dsb 4					; holds a 4-byte instruction like jml SomeIRQRoutine (IRQ vector points here)
 
-	strPtr			dw
-	strBank			dsb 3
-
-	DP_SubStrAddr		dsb 3					; holds a 24-bit sub string start address
-
-	SprTextMon		dw					; keeps track of sprite-based text buffer filling level
-	SprTextPalette		db					; holds palette to use when printing sprite-based text
-
 	temp			dsb 8
-
-	Cursor			dw
 
 	Joy1			dw					; Current button state of joypad1, bit0=0 if it is a valid joypad
 	Joy2			dw					; same thing for all pads...
-
 	Joy1Press		dw					; Holds joypad1 keys that are pressed and have been pressed since clearing this mem location
 	Joy2Press		dw					; same thing for all pads...
 									; X Y TL  TR . . . .
 									; A B sel st U D L R
 	Joy1New			dw
 	Joy2New			dw
-
 	Joy1Old			dw
 	Joy2Old			dw
 
-	scrollYCounter		db
-	scrollYUp		db
-	scrollYDown		db
+;	scrollYCounter		db
+;	scrollYUp		db
+;	scrollYDown		db
 
-	cursorX			db
-	cursorY			db
-	cursorYCounter		db
-	cursorYUp		db
-	cursorYDown		db
+;	cursorX			db
+;	cursorY			db
+;	cursorYCounter		db
+;	cursorYUp		db
+;	cursorYDown		db
 
-	speedCounter		db
-	speedScroll		db
+;	speedCounter		db
+;	speedScroll		db
 
 	sneslib_ptr		dsb 4
-	sneslib_temp		dsb 2
-	sneslib_rand1		dsb 2
-	sneslib_rand2		dsb 2
+;	sneslib_temp		dsb 2
+;	sneslib_rand1		dsb 2
+;	sneslib_rand2		dsb 2
 
 	gss_param		dsb 2
 	gss_command		dsb 2
 
-	brr_stream_src		dsb 4
-	brr_stream_list		dsb 4
-
-	DP_NextTrack		dw
-	DP_SPC_DATA_BANK	dw
-	DP_SPC_DATA_OFFS	dw
-	DP_SPC_DATA_SIZE	dw
-	DP_SPC_DATA_ADDR	dw
-	DP_SPC_VOL_CURRENT	dw
-	DP_SPC_VOL_FADESPD	dw
+;	brr_stream_src		dsb 4
+;	brr_stream_list		dsb 4
 
 	DP_AreaCurrent		dw					; holds no. of current area
 	DP_AreaMetaMapAddr	dsb 3					; holds 24-bit address of collision map
@@ -408,26 +387,26 @@
 	DP_Char1SpriteStatus	db					; irrrrddd [i = not walking (idle), ddd = facing direction (0 = down, 1 = up, 2 = left, 3 = right)]
 	DP_Char1WalkingSpd	dw
 
-	DP_DataSrcAddress	dsb 3					; holds a 24-bit source address e.g. for data transfers to SRAM
-
+	DP_CurrentScanline	dw					; holds no. of current scanline (for CPU load meter)
+	DP_DataSrcAddress	dsb 3					; holds a 24-bit source address e.g. for string pointers, data transfers to SRAM, etc.
 	DP_DMA_Updates		dw					; rrrcbbaarrr32211 [123 = BG no. that needs to have its tile map(s) updated on next Vblank (low bytes), abc = same thing for high bytes, r = reserved. The lower bit of each BG represents the first half of a 64×32/32×64 tile map, the higher one represents the second half.]
-
 	DP_EffectSpeed		db
-
-	DP_HDMA_Channels	db					; DCBAcbsr [ABCD = M7A/M7B/M7C/M7D, c = color math, b = background color gradient, s = screen mode, r = reserved]. Variable is transferred to $420C during Vblank
-
-
 	DP_GameMode		db					; 7rrrrrrr [7 = Mode7 on/off, r = reserved]
 
-	DP_GameTime_Seconds	db					; 1 game time second = 1 frame (??)
-	DP_GameTime_Minutes	db
-	DP_GameTime_Hours	db
+	DP_GameTimeSeconds	db					; 1 game time second = 1 frame (??)
+	DP_GameTimeMinutes	db
+	DP_GameTimeHours	db
+
+	DP_HDMA_Channels	db					; DCBAcbsr [ABCD = M7A/M7B/M7C/M7D, c = color math, b = background color gradient, s = screen mode, r = reserved]. Variable is transferred to $420C during Vblank
 
 	DP_HiResPrintLen	db					; holds length of menu hi-res string to print
 	DP_HiResPrintMon	db					; keep track of BG we're printing on: $00 = BG1 (start), $01 = BG2
 
 	DP_HUD_DispCounter	dw					; holds frame count since HUD appeared
 	DP_HUD_Status		db					; adrrrrrp [a/d = HUD should (re-)appear/disappear, p = HUD is present on screen]
+
+	DP_NextTrack		dw					; holds no. of music track to load
+
 	DP_PlayerIdleCounter	dw					; holds frame count since last button press
 
 	DP_RingMenuAngle	dw
@@ -455,12 +434,26 @@
 	DP_Shadow_NMITIMEN	db					; shadow copy of REG_NMITIMEN
 	DP_Shadow_TSTM		dw					; shadow copies of subscreen (high) & mainscreen (low) designation registers ($212C/212D)
 
+	DP_SPC_DataBank		dw
+	DP_SPC_DataOffset	dw
+	DP_SPC_DataSize		dw
+	DP_SPC_DataAddress	dw
+	DP_SPC_VolCurrent	dw
+	DP_SPC_VolFadeSpeed	dw
+
+	DP_SpriteTextMon	dw					; keeps track of sprite-based text buffer filling level
+	DP_SpriteTextPalette	db					; holds palette to use when printing sprite-based text
+
+	DP_StringPtr		dw
+	DP_StringBank		dsb 3					; 8-bit bank no. + 16 bits of trailing zeroes (e.g., $C00000)
+
 	DP_TextASCIIChar	dw					; holds current ASCII character no.
 	DP_TextBoxCharPortrait	db					; pnnnnnnn [p = change character portrait, n = no. of portrait (0-127)
 	DP_TextBoxSelection	db					; holds selection option chosen by player
 	DP_TextBoxSelMax	db					; for HDMA selection bar
 	DP_TextBoxSelMin	db					; ditto
 	DP_TextBoxStatus	db					; cm4321ot [c = clear text box, m = there is more text to process, o = text box is open, 1-4 = text box contains selection on line no. 1-4, t = VWF buffer full, transfer to VRAM]
+	DP_TextCursor		dw
 	DP_TextLanguage		db					; holds language constant
 	DP_TextPointer		dw
 	DP_TextPointerBank	db
@@ -470,12 +463,10 @@
 	DP_TextStringCounter	dw					; holds current ASCII string position
 	DP_TextTileDataCounter	dw					; holds current VRAM tile data address
 
-	DP_CurrentScanline	dw					; holds no. of current scanline (for CPU load meter)
-
 	DP_VWF_BitsUsed		dw
 	DP_VWF_BufferIndex	dw
 	DP_VWF_Loop		db
-.ENDE									; 188 of 256 bytes used
+.ENDE									; 161 of 256 bytes used
 
 
 

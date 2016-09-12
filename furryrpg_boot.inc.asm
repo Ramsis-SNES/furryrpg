@@ -366,48 +366,48 @@ __BuildFontBG2:
 	SetTextPos	2, 2
 
 	ldx	#STR_Software_Title
-	stx	strBank
+	stx	DP_StringBank
 	lda	#:STR_Software_Title
-	sta	strBank+2
+	sta	DP_StringBank+2
 	jsr	PrintHiResFWF
 
 	lda	#' '							; add a space before the build no.
 	sta	ARRAY_TempString
 	stz	ARRAY_TempString+1
 	ldx	#ARRAY_TempString
-	stx	strBank
+	stx	DP_StringBank
 	lda	#$7E
-	sta	strBank+2
+	sta	DP_StringBank+2
 	jsr	PrintHiResFWF
 
 	ldx	#STR_SoftwareBuild
-	stx	strBank
+	stx	DP_StringBank
 	lda	#:STR_SoftwareBuild
-	sta	strBank+2
+	sta	DP_StringBank+2
 	jsr	PrintHiResFWF
 
 	SetTextPos	3, 2
 
 	ldx	#STR_SoftwareMaker
-	stx	strBank
+	stx	DP_StringBank
 	lda	#:STR_SoftwareMaker
-	sta	strBank+2
+	sta	DP_StringBank+2
 	jsr	PrintHiResFWF
 
 	SetTextPos	4, 2
 
 	ldx	#STR_SoftwareBuildTimestamp
-	stx	strBank
+	stx	DP_StringBank
 	lda	#:STR_SoftwareBuildTimestamp
-	sta	strBank+2
+	sta	DP_StringBank+2
 	jsr	PrintHiResFWF
 
 	SetTextPos	6, 2
 
 	ldx	#STR_DisclaimerWallofText
-	stx	strBank
+	stx	DP_StringBank
 	lda	#:STR_DisclaimerWallofText
-	sta	strBank+2
+	sta	DP_StringBank+2
 	jsr	PrintHiResFWF
 
 	stz	REG_VMAIN						; increment VRAM address by one word after writing to $2118
@@ -631,8 +631,8 @@ __BuildFontBG2:
 	Accu16
 
 	lda	#$0010							; fade-out intro song
-	sta	DP_SPC_VOL_FADESPD
-	stz	DP_SPC_VOL_CURRENT
+	sta	DP_SPC_VolFadeSpeed
+	stz	DP_SPC_VolCurrent
 	jsl	spc_global_volume
 
 	Accu8
@@ -790,9 +790,10 @@ VerifyROMIntegrity:
 
 +	eor	#$FFFF							; compare (sum XOR $FFFF) to ROM checksum complement
 	cmp	$C0FFDC
-	bne	__ROMIntegrityBad
+	beq	+
+	jmp	__ROMIntegrityBad
 
-	Accu8
++	Accu8
 
 	stz	REG_CGADD						; reset CGRAM address (i.e., set it to mainscreen backdrop color)
 	lda	#$E4							; $13E4 = light green

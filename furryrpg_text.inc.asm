@@ -412,7 +412,6 @@ TextBoxHandleSelection:
 +	lsr	a
 	bcc	+
 	inc	DP_TextBoxSelMax
-
 +	lda	DP_TextBoxSelMax					; DP_TextBoxSelMax = (no. of options - 1) * 8 + DP_TextBoxSelMin
 	dec	a
 	asl	a
@@ -569,12 +568,10 @@ __ProcessTextLoop2:
 
 +	cmp	#CC_Indent						; indention?
 	bne	+
-
 	jmp	__ProcessTextIncTileCounter
 
 +	cmp	#CC_NewLine						; carriage return?
 	beq	__CarriageReturn
-
 	cmp	#CC_ClearTextBox
 	bne	+
 	jmp	__ClearTextBoxMidString
@@ -639,10 +636,8 @@ __CarriageReturn:
 	lda	DP_TextTileDataCounter					; check what line we've been on
 	cmp	#46*8							; line 1?
 	bne	+
-
 	jmp	__ProcessTextJumpOut					; do nothing if carriage return requested after exactly 23 (16×8) tiles
 +	bcs	+
-
 	lda	#46*8							; go to line 2
 	sta	DP_TextTileDataCounter
 	jmp	__ProcessTextJumpOut
@@ -651,10 +646,8 @@ __CarriageReturn:
 
 +	cmp	#92*8							; line 2?
 	bne	+
-
 	jmp	__ProcessTextJumpOut					; do nothing if carriage return requested after exactly 46 (16×8) tiles
 +	bcs	+
-
 	lda	#92*8							; go to line 3
 	sta	DP_TextTileDataCounter
 	jmp	__ProcessTextJumpOut
@@ -672,7 +665,6 @@ __ClearTextBoxMidString:
 
 	lda	DP_VWF_BitsUsed						; check if bit counter <> 0
 	bne	+
-
 	lda	DP_VWF_BufferIndex					; check if VWF buffer index <> 0
 	beq	++
 
@@ -721,7 +713,6 @@ __ProcessTextNormal:
 	lsr	a
 	cmp	#2
 	bcs	+
-
 	jmp	__ProcessTextLoop2
 
 +	Accu8
@@ -748,7 +739,6 @@ __ProcessTextDone:
 
 	lda	DP_VWF_BitsUsed						; check if bit counter <> 0
 	bne	+
-
 	lda	DP_VWF_BufferIndex					; check if VWF buffer index <> 0
 	beq	++
 
@@ -1187,16 +1177,13 @@ VWFShiftBits:
 	pha
 	lda	DP_VWF_BitsUsed
 	bne	+
-
 	pla
 	bra	__VWFShiftBitsDone
 
 +	dec	a
 	asl	a
 	tax
-
 	pla
-
 	jmp	(__VWFShiftAmount, x)
 
 
@@ -1280,7 +1267,6 @@ ChangeTextBoxBG:
 
 	cmp	#CC_BoxRed						; check for text box color code
 	bne	+
-
 -	bit	REG_HVBJOY						; wait for Hblank // CHECKME on 1/1/1 console
 	bvc	-
 
@@ -1290,7 +1276,6 @@ ChangeTextBoxBG:
 
 +	cmp	#CC_BoxPink
 	bne	+
-
 -	bit	REG_HVBJOY						; wait for Hblank
 	bvc	-
 
@@ -1300,7 +1285,6 @@ ChangeTextBoxBG:
 
 +	cmp	#CC_BoxEvil
 	bne	+
-
 -	bit	REG_HVBJOY						; wait for Hblank
 	bvc	-
 
@@ -1368,7 +1352,7 @@ PrintFStart:
 	Index16
 
 PrintFLoop:
-	lda	[strBank], y						; read next format string character
+	lda	[DP_StringBank], y					; read next format string character
 	beq	PrintFDone						; check for NUL terminator
 	iny								; increment input pointer
 	CMP	#'%'
@@ -1388,7 +1372,7 @@ PrintFDone:
 
 
 PrintFControl:
-	lda	[strBank], y						; read control character
+	lda	[DP_StringBank], y					; read control character
 	beq	PrintFDone						; check for NUL terminator
 	iny								; increment input pointer
 _cn:	CMP	#'n'
@@ -1396,11 +1380,11 @@ _cn:	CMP	#'n'
 
 	AccuIndex16
 
-	lda	Cursor							; get current position
+	lda	DP_TextCursor						; get current position
 	CLC
 	adc	#$0020							; move to the next line
 	AND	#$FFE0
-	sta	Cursor							; save new position
+	sta	DP_TextCursor						; save new position
 
 	Accu8
 
@@ -1411,7 +1395,7 @@ _ct:	CMP	#'t'
 
 	AccuIndex16
 
-	lda	Cursor							; get current position
+	lda	DP_TextCursor						; get current position
 	CLC
 ;	adc	#$0008							; move to the next tab
 ;	AND	#$FFF8
@@ -1419,7 +1403,7 @@ _ct:	CMP	#'t'
 	and	#$fffc
 ;	adc	#$0002							; use this instead for even smaller tabs
 ;	and	#$fffe
-	sta	Cursor							; save new position
+	sta	DP_TextCursor						; save new position
 
 	Accu8
 
@@ -1430,7 +1414,7 @@ _defaultC:
 	bra	NormalPrint
 
 PrintFFormat:
-	lda	[strBank], y						; read format character
+	lda	[DP_StringBank], y					; read format character
 	beq	PrintFDone						; check for NUL terminator
 	iny								; increment input pointer
 _sf:	CMP	#'s'
@@ -1438,7 +1422,7 @@ _sf:	CMP	#'s'
 	phy								; preserve current format string pointer
 
 	ldy	#0
--	lda	[DP_SubStrAddr], y					; read sub string character
+-	lda	[DP_DataSrcAddress], y					; read sub string character
 	beq	__PrintSubstringDone					; check for NUL terminator
 	iny								; increment input pointer
 
@@ -1471,10 +1455,10 @@ _defaultF:
 ; Modifies: P
 
 FillTextBuffer:								; expectations: A = 8 bit, X/Y = 16 bit
-	ldx	Cursor
+	ldx	DP_TextCursor
 	sta	ARRAY_BG3TileMap, x					; write character to the BG3 text buffer
 	inx								; advance text cursor position
-	stx	Cursor
+	stx	DP_TextCursor
 	rts
 
 
@@ -1489,12 +1473,10 @@ PrintHiResFWF:
 	ldy	#0
 
 PrintHiResLoop:
-	lda	[strBank], y						; read next format string character
+	lda	[DP_StringBank], y					; read next format string character
 	beq	PrintHiResDone						; check for NUL terminator
 	iny								; increment input pointer
 	jsr	FillHiResTextBuffer					; write character to text buffer
-;	dec	DP_HiResPrintLen
-;	bne	PrintHiResLoop
 	bra	PrintHiResLoop
 
 PrintHiResDone:
@@ -1520,7 +1502,7 @@ PrintHiResDone:
 FillHiResTextBuffer:							; expectations: A = 8 bit, X/Y = 16 bit
 	asl	a							; character code × 2 so it matches hi-res font tile location
 	xba								; preserve character code
-	ldx	Cursor
+	ldx	DP_TextCursor
 	lda	DP_HiResPrintMon
 	bne	__FillHiResTextBufferBG2				; if BG monitor value is not zero, use BG2
 
@@ -1535,7 +1517,7 @@ __FillHiResTextBufferBG2:
 	xba								; restore character code
 	sta	ARRAY_BG2TileMap1, x					; write it to the BG2 text buffer
 	inx								; ... and advance text cursor position
-	stx	Cursor
+	stx	DP_TextCursor
 
 __FillHiResTextBufferDone:
 	rts
@@ -1549,16 +1531,16 @@ __FillHiResTextBufferDone:
 ; Caveat #2: No support for control characters.
 
 PrintSpriteText:
-	ldy	strPtr
+	ldy	DP_StringPtr
 	php
 
 	Accu8
 	Index16
 
-	ldx	SprTextMon						; start where there is some unused sprite text buffer
+	ldx	DP_SpriteTextMon					; start where there is some unused sprite text buffer
 
 __PrintSpriteTextLoop:
-	lda	[strBank], y						; read next string character
+	lda	[DP_StringBank], y					; read next string character
 	beq	__PrintSpriteTextDone					; check for NUL terminator
 	iny								; increment input pointer
 	phy
@@ -1571,18 +1553,18 @@ __PrintSpriteTextLoop:
 
 	Accu8
 
-	lda	Cursor
+	lda	DP_TextCursor
 	sta	ARRAY_SpriteBuf1.Text, x				; X
 	phx								; preserve tilemap index
 
 	tyx								; adc doesn't support absolute long addressing indexed with Y, so we have to switch to X for that
 	clc
 	adc.l	FWT_Sprite, x						; advance cursor position as per font width table entry
-	sta	Cursor
+	sta	DP_TextCursor
 
 	plx								; restore tilemap index
 	inx
-	lda	Cursor+1
+	lda	DP_TextCursor+1
 	sta	ARRAY_SpriteBuf1.Text, x				; Y
 	inx
 
@@ -1593,7 +1575,7 @@ __PrintSpriteTextLoop:
 	sta	ARRAY_SpriteBuf1.Text, x				; tile num
 	inx
 
-	lda	SprTextPalette
+	lda	DP_SpriteTextPalette
 	asl	a							; shift palette num to bit 1-3
 	ora	#$30							; set highest priority
 	sta	ARRAY_SpriteBuf1.Text, x				; tile attributes
@@ -1601,9 +1583,8 @@ __PrintSpriteTextLoop:
 	inx
 	cpx	#$0080							; if sprite buffer is full, reset
 	bcc	+
-
 	ldx	#$0000
-+	stx	SprTextMon						; keep track of sprite text buffer filling level
++	stx	DP_SpriteTextMon					; keep track of sprite text buffer filling level
 	bra	__PrintSpriteTextLoop
 
 __PrintSpriteTextDone:
@@ -1767,7 +1748,7 @@ _nletter2:
 FillSpriteTextBuf:
 	php
 
-	ldx	SprTextMon						; start where there is some unused sprite text buffer
+	ldx	DP_SpriteTextMon					; start where there is some unused sprite text buffer
 	pha
 
 	Accu16
@@ -1777,18 +1758,18 @@ FillSpriteTextBuf:
 
 	Accu8
 
-	lda	Cursor
+	lda	DP_TextCursor
 	sta	ARRAY_SpriteBuf1.Text, x				; X
 	phx								; preserve tilemap index
 
 	tyx								; adc doesn't support absolute long addressing indexed with Y, so we have to switch to X for that
 	clc
 	adc.l	FWT_Sprite, x						; advance cursor position as per font width table entry
-	sta	Cursor
+	sta	DP_TextCursor
 
 	plx								; restore tilemap index
 	inx
-	lda	Cursor+1
+	lda	DP_TextCursor+1
 	sta	ARRAY_SpriteBuf1.Text, x				; Y
 	inx
 
@@ -1798,16 +1779,15 @@ FillSpriteTextBuf:
 	sta	ARRAY_SpriteBuf1.Text, x				; tile num
 	inx
 
-	lda	SprTextPalette
+	lda	DP_SpriteTextPalette
 	asl	a							; shift palette num to bit 1-3
 	ora	#$30							; set highest priority
 	sta	ARRAY_SpriteBuf1.Text, x				; tile attributes
 	inx
 	cpx	#$0080							; if sprite buffer is full, reset
 	bcc	+
-
 	ldx	#$0000
-+	stx	SprTextMon						; keep track of sprite text buffer filling level
++	stx	DP_SpriteTextMon					; keep track of sprite text buffer filling level
 
 	plp
 	rts
@@ -1830,7 +1810,7 @@ ClearSpriteText:
 	cpy	#$0080							; 128 / 4 = 32 tiles
 	bne	-
 
-	stz	SprTextMon						; reset filling level
+	stz	DP_SpriteTextMon					; reset filling level
 
 	Accu8
 

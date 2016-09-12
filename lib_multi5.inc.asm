@@ -17,7 +17,6 @@ check_mpa:
 	AccuIndex8
 
 	stz	DP_Multi5_Status
-
 -	lda	REG_HVBJOY						; automatic controller read enabled?
 	and	#$01
 	bne	-
@@ -26,7 +25,6 @@ check_mpa:
 	stz	REG_JOYWR						; output "0" to out0
 	lda	#$01
 	sta	REG_JOYWR						; output "1" to out0
-
 	ldx	#$08
 -	lda	REG_JOYA
 	lsr	a
@@ -40,7 +38,6 @@ check_mpa:
 	bne	-
 
 	stz	REG_JOYWR						; output "0" to out0
-
 	ldx	#$08
 -	lda	REG_JOYA
 	lsr	a
@@ -79,7 +76,6 @@ check_mpa:
 	lda	#$40
 	ora	DP_Multi5_Status
 	sta	DP_Multi5_Status
-
 +	plp
 	rtl
 

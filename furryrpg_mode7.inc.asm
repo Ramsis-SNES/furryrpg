@@ -313,7 +313,6 @@ Mode7Loop:
 	and	#%00001010
 	cmp	#%00001010
 	bne	++
-
 	dec	DP_Mode7_RotAngle
 	lda	DP_Mode7_Altitude
 	inc	a
@@ -332,7 +331,6 @@ Mode7Loop:
 	and	#%00001001
 	cmp	#%00001001
 	bne	++
-
 	inc	DP_Mode7_RotAngle
 	lda	DP_Mode7_Altitude
 	inc	a
@@ -351,7 +349,6 @@ Mode7Loop:
 	and	#%00000110
 	cmp	#%00000110
 	bne	++
-
 	dec	DP_Mode7_RotAngle
 	lda	DP_Mode7_Altitude
 	dec	a
@@ -369,7 +366,6 @@ Mode7Loop:
 	and	#%00000101
 	cmp	#%00000101
 	bne	++
-
 	inc	DP_Mode7_RotAngle
 	lda	DP_Mode7_Altitude
 	dec	a
@@ -386,7 +382,6 @@ Mode7Loop:
 	lda	Joy1Press+1
 	and	#%00001000
 	beq	++
-
 	lda	DP_Mode7_Altitude
 	inc	a
 	cmp	#128
@@ -402,7 +397,6 @@ Mode7Loop:
 	lda	Joy1Press+1
 	and	#%00000100
 	beq	++
-
 	lda	DP_Mode7_Altitude
 	dec	a
 	bpl	+
@@ -417,7 +411,6 @@ Mode7Loop:
 	lda	Joy1Press+1
 	and	#%00000010
 	beq	+
-
 	dec	DP_Mode7_RotAngle
 	jsr	CalcMode7Matrix
 +
@@ -428,7 +421,6 @@ Mode7Loop:
 	lda	Joy1Press+1
 	and	#%00000001
 	beq	+
-
 	inc	DP_Mode7_RotAngle
 	jsr	CalcMode7Matrix
 +
@@ -443,7 +435,6 @@ __M7SkipDpad:
 	lda	Joy1Press
 	and	#%00100000
 	beq	+
-
 	dec	DP_Mode7_RotAngle
 	dec	DP_Mode7_RotAngle
 	jsr	CalcMode7Matrix
@@ -455,7 +446,6 @@ __M7SkipDpad:
 	lda	Joy1Press
 	and	#%00010000
 	beq	+
-
 	inc	DP_Mode7_RotAngle
 	inc	DP_Mode7_RotAngle
 	jsr	CalcMode7Matrix
@@ -467,7 +457,6 @@ __M7SkipDpad:
 	lda	Joy1Press
 	and	#%10000000
 	beq	++
-
 	lda	DP_Mode7_RotAngle					; $00 < angle < $80 --> inc X
 	beq	__M7FlightY						; don't change X if angle = 0
 	cmp	#$80
@@ -526,7 +515,6 @@ __M7FlightY:
 	lda	Joy1New+1
 	and	#%00010000
 	beq	+
-
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
 	jsr	EffectHSplitOut2
@@ -554,7 +542,6 @@ __M7FlightY:
 	lda	Joy1New+1
 	and	#%00100000
 	beq	+
-
 	jsr	ResetMode7Matrix
 
 	WaitFrames	1						; wait for altitude setting to take effect
@@ -620,7 +607,6 @@ CalcMode7Matrix:
 	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the cos table
 	lda.l	SRC_Mode7Cos, x
 	bpl	+							; check for negative multiplier
-
 	eor	#$FF							; make multiplier positive
 	inc	a
 	pha
@@ -649,7 +635,6 @@ CalcMode7Matrix:
 	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the cos table
 	lda.l	SRC_Mode7Cos, x
 	bpl	+							; check for negative multiplier once again
-
 	eor	#$FF							; make multiplier positive
 	inc	a
 +	sta	REG_WRMPYB
@@ -705,7 +690,6 @@ CalcMode7Matrix:
 	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the sin table
 	lda.l	SRC_Mode7Sin, x
 	bpl	+							; check for negative multiplier
-
 	eor	#$FF							; make multiplier positive
 	inc	a
 	pha
@@ -733,7 +717,6 @@ CalcMode7Matrix:
 	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the sin table
 	lda.l	SRC_Mode7Sin, x
 	bpl	+							; check for negative multiplier once again
-
 	eor	#$FF							; make multiplier positive
 	inc	a
 +	sta	REG_WRMPYB
@@ -1054,7 +1037,6 @@ __IncX1:
 M7FlightDecY:								; expects angle in Accu
 	cmp	#$40
 	bcc	+
-
 	cmp	#$E0
 	bcc	__DoYDecByAngle
 	bra	__DoYDecFull

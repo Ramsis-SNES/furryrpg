@@ -25,11 +25,11 @@ spc_load_data:
 
 	Accu16
 
-	lda	DP_SPC_DATA_SIZE ;7,s					;size
+	lda	DP_SPC_DataSize ;7,s					;size
 	tax
-	lda	DP_SPC_DATA_OFFS ;9,s					;src
+	lda	DP_SPC_DataOffset ;9,s					;src
 	sta	sneslib_ptr
-	lda	DP_SPC_DATA_BANK ;11,s					;srch
+	lda	DP_SPC_DataBank ;11,s					;srch
 	sta	sneslib_ptr+2
 	lda.w	#$bbaa							;IPL ready signature
 
@@ -38,7 +38,7 @@ _wait1:
 	cmp.l	REG_APUIO01
 	bne	_wait1
 
-	lda	DP_SPC_DATA_ADDR ;5,s					;adr
+	lda	DP_SPC_DataAddress ;5,s					;adr
 	sta.l	REG_APUIO23
 	lda.w	#$01cc							;IPL load and ready signature
 	sta.l	REG_APUIO01
@@ -207,11 +207,11 @@ spc_global_volume:
 
 	AccuIndex16
 
-	lda	DP_SPC_VOL_FADESPD ;7,s					;speed
+	lda	DP_SPC_VolFadeSpeed ;7,s				;speed
 	xba
 	and.w	#$ff00
 	sta	gss_param
-	lda	DP_SPC_VOL_CURRENT ;5,s					;volume
+	lda	DP_SPC_VolCurrent ;5,s					;volume
 	and.w	#$00ff
 	ora	gss_param
 	sta	gss_param

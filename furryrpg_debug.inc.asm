@@ -137,7 +137,7 @@ DebugMenu:
 ;	PrintString	16, 3, ""
 ;	PrintString	17, 3, ""
 
-	stz	SprTextMon						; reset sprite text filling level so it won't draw more than 1 cursor ;-)
+	stz	DP_SpriteTextMon					; reset sprite text filling level so it won't draw more than 1 cursor ;-)
 
 	PrintSpriteText	10, 2, $10, 0					; put cursor on first line ($10 = cursor tile no.)
 
@@ -160,12 +160,12 @@ DebugMenuLoop:
 	asl	a
 	tax
 	lda.l	SRC_TrackPointerTable, x				; load track name pointer
-	sta	DP_SubStrAddr
+	sta	DP_DataSrcAddress
 
 	Accu8
 
 	lda	#:SRC_TrackPointerTable
-	sta	DP_SubStrAddr+2
+	sta	DP_DataSrcAddress+2
 
 	SetTextPos	11, 14
 	PrintHexNum	DP_AreaCurrent+1				; print no. of area to load
@@ -182,14 +182,12 @@ DebugMenuLoop:
 	lda	Joy1New+1
 	and	#%00001000
 	beq	++
-
 	lda	ARRAY_SpriteBuf1.Text+1					; Y coord of cursor
 	cmp	#78
 	beq	+
 	sec
 	sbc	#8
 	sta	ARRAY_SpriteBuf1.Text+1
-
 	bra	++
 
 +	lda	#142
@@ -203,14 +201,12 @@ DebugMenuLoop:
 	lda	Joy1New+1
 	and	#%00000100
 	beq	++
-
 	lda	ARRAY_SpriteBuf1.Text+1
 	cmp	#142
 	beq	+
 	clc
 	adc	#8
 	sta	ARRAY_SpriteBuf1.Text+1
-
 	bra	++
 
 +	lda	#78
@@ -224,7 +220,6 @@ DebugMenuLoop:
 	lda	Joy1New+1
 	and	#%00000010
 	beq	++
-
 	lda	ARRAY_SpriteBuf1.Text+1					; only do anything if cursor is on area loader ...
 	cmp	#86
 	bne	+
@@ -240,7 +235,6 @@ DebugMenuLoop:
 +	lda	ARRAY_SpriteBuf1.Text+1					; ... or on music test
 	cmp	#142
 	bne	++
-
 	lda	DP_NextTrack						; go to previous track
 	dec	a
 	bpl	+
@@ -255,7 +249,6 @@ DebugMenuLoop:
 	lda	Joy1New+1
 	and	#%00000001
 	beq	++
-
 	lda	ARRAY_SpriteBuf1.Text+1					; only do anything if cursor is on area loader ...
 	cmp	#86
 	bne	+
@@ -271,7 +264,6 @@ DebugMenuLoop:
 +	lda	ARRAY_SpriteBuf1.Text+1					; ... or on music test
 	cmp	#142
 	bne	++
-
 	lda	DP_NextTrack						; go to next track
 	inc	a
 	cmp	#(SRC_TrackPointerTable_END-SRC_TrackPointerTable)/2
@@ -287,16 +279,12 @@ DebugMenuLoop:
 	lda	Joy1New
 	and	#%10000000
 	beq	++
-
 	lda	ARRAY_SpriteBuf1.Text+1
 	cmp	#78
 	bne	+
-
 	jmp	AlphaIntro
-
 +	cmp	#86
 	bne	+
-
 	ldx	#(ARRAY_BG3TileMap & $FFFF)				; clear text
 	stx	REG_WMADDL
 	stz	REG_WMADDH
@@ -304,37 +292,24 @@ DebugMenuLoop:
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024
 
 	jmp	LoadArea
-
 +	cmp	#94
 	bne	+
-
 	brk	$FF
-
 +	cmp	#102
 	bne	+
-
 	cop	$FF
-
 +	cmp	#110
 	bne	+
-
 	jmp	InGameMenu
-
 +	cmp	#118
 	bne	+
-
 	jmp	LoadWorldMap
-
 +	cmp	#126
 	bne	+
-
 	jmp	TestMode7
-
 +	cmp	#134
 	bne	+
-
 	jmp	ShowSpriteGallery
-
 +
 
 .IFNDEF NOMUSIC
@@ -349,7 +324,6 @@ DebugMenuLoop:
 	lda	Joy1Press+1
 	and	#%00010000
 	beq	+
-
 	jsr	CreateRandomNr
 +
 
@@ -570,7 +544,6 @@ __MSCTestLoop:
 	lda	Joy1New+1
 	and	#%00010000
 	beq	+
-
 	jmp	DebugMenu
 +
 

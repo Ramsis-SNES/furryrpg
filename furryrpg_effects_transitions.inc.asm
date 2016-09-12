@@ -92,7 +92,6 @@ __HSplitInSubLoop2:							; loop 2: go towards start of table
 	lda	temp+4							; 112 scanlines in each direction done?
 	cmp	#112
 	bcs	+
-
 	inc	temp+4							; no, scanline counter max. += 2
 	inc	temp+4
 
@@ -184,7 +183,6 @@ __HSplitOutSubLoop2:							; loop 2: go towards start of table
 	lda	temp+4							; 112 scanlines in each direction done?
 	cmp	#112
 	bcs	+
-
 	inc	temp+4							; no, scanline counter max. += 2
 	inc	temp+4
 
@@ -278,7 +276,6 @@ __HSplitOut2SubLoop2:
 	lda	temp+4							; 112 scanlines in each direction done?
 	cmp	#112
 	bcs	+
-
 	inc	temp+4							; no, scanline counter max. += 2
 	inc	temp+4
 

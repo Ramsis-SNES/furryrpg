@@ -732,7 +732,7 @@ STR_DialogEng0114:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "Now that he's gone ...", CC_NewLine
-	.DB CC_Selection, CC_Indent, "(I'll sneak up on him, and tickle him all night! ", SYM_heart, ")", CC_NewLine	; skip 0115 thru 0124
+	.DB CC_Selection, CC_Indent, "(I'll sneak up on him, and tickle him all night long! ", SYM_heart, ")", CC_NewLine	; skip 0115 thru 0124
 	.DB CC_Selection, CC_Indent, "(I'd better make it up to Lily for being a meanie.)", CC_End			; continue (don't skip later Primus cut scene)
 
 STR_DialogEng0115:

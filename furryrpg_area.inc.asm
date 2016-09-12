@@ -156,7 +156,6 @@ LoadArea:
 	inx
 	inx
 	jmp	__AreaBG2TileMapDone
-
 +	sta	VAR_DMASourceOffset
 	inx
 	inx
@@ -481,7 +480,6 @@ __AreaBG2TileMapDone:
 	sta	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
 	cli								; re-enable interrupts
-
 	lda	#%00011111						; make sure BG1/2/3 lo/hi tilemaps get updated
 	tsb	DP_DMA_Updates
 	tsb	DP_DMA_Updates+1
@@ -520,7 +518,6 @@ __AreaBG2TileMapDone:
 	sta	REG_INIDISP
 	lda	#ADDR_CGRAM_AREA					; set CGRAM address for BG1 tiles palette
 	sta	REG_CGADD
-
 	ldx	#0
 -	lda.l	SRC_Palette_Area001, x
 	eor	#$FF
@@ -531,7 +528,6 @@ __AreaBG2TileMapDone:
 
 	lda	#$80							; set CGRAM address to #256 (word address) for sprites
 	sta	REG_CGADD
-
 	ldx	#0
 -	lda.l	SRC_Palette_Spritesheet_Char1, x
 	eor	#$FF
@@ -569,7 +565,6 @@ __AreaBG2TileMapDone:
 ;	sta	REG_CGWSEL
 ;	lda	#%00100000						; enable color math on backdrop only
 ;	sta	REG_CGADSUB
-
 ;	stz	REG_CGADD						; set backdrop color to overlay the whole image
 ;	stz	REG_CGDATA						; $6C00 = bright blue
 ;	lda	#$6C
@@ -610,11 +605,9 @@ __AreaBG2TileMapDone:
 	lda	DP_NextTrack+1
 	cmp	#$FF							; DP_NextTrack = $FFFF --> don't play any music
 	bne	+
-
 	lda	DP_NextTrack
 	cmp	#$FF
 	beq	__AreaGSSTrackDone
-
 +	jsl	PlayTrack
 
 __AreaGSSTrackDone:
@@ -625,7 +618,7 @@ __AreaGSSTrackDone:
 
 	lda	DP_MSU1_NextTrack					; MSU1 present, set track
 	cmp	#$FFFF							; $FFFF = don't play any MSU1 track
-	beq	++
+	beq	+
 	sta	MSU_TRACK
 -	lda	MSU_STATUS						; wait for Audio Busy bit to clear
 	and	#%0000000001000000
@@ -634,7 +627,7 @@ __AreaGSSTrackDone:
 	lda	#%0000001111111111					; set play, repeat flags, max. volume (16-bit write)
 	sta	MSU_VOLUME
 
-++	Accu8
++	Accu8
 
 __AreaMSU1TrackDone:
 .ENDIF
@@ -705,7 +698,7 @@ __HUDLogicDone:
 
 ; -------------------------- HUD contents
 	lda	#:AreaNames
-	sta	DP_SubStrAddr+2
+	sta	DP_DataSrcAddress+2
 
 	Accu16
 
@@ -720,7 +713,7 @@ __HUDLogicDone:
 	adc	#AreaNames_END-AreaNames				; add offset to sub-string address based on language
 	bra	-
 
-+	sta	DP_SubStrAddr
++	sta	DP_DataSrcAddress
 
 	Accu8
 
@@ -757,9 +750,9 @@ __HUDLogicDone:
 ;	PrintString	24, 20, "Time: XX:XX"
 
 	SetTextPos	24, 26
-	PrintHexNum	DP_GameTime_Hours
+	PrintHexNum	DP_GameTimeHours
 	SetTextPos	24, 29
-	PrintHexNum	DP_GameTime_Minutes
+	PrintHexNum	DP_GameTimeMinutes
 
 
 
@@ -767,7 +760,6 @@ __HUDLogicDone:
 	lda	Joy1Press+1
 	and	#%10000000
 	bne	+
-
 	lda	#1							; B not pressed, set slow walking speed
 	bra	__MainAreaLoopBButtonDone
 
@@ -776,7 +768,6 @@ __HUDLogicDone:
 	beq	+
 	lda	#%01000000						; yes, set "HUD should disappear" bit
 	sta	DP_HUD_Status
-
 +	stz	DP_PlayerIdleCounter
 	stz	DP_PlayerIdleCounter+1
 	lda	#2							; B pressed, set fast walking speed
@@ -795,11 +786,9 @@ __MainAreaLoopBButtonDone:
 	stz	DP_PlayerIdleCounter+1
 	stz	DP_HUD_DispCounter
 	stz	DP_HUD_DispCounter+1
-
 	lda	DP_HUD_Status						; check if HUD is already being displayed
 	and	#%00000001
 	bne	__MainAreaLoopYButtonDone
-
 	lda	#%10000000						; no, set "HUD should appear" bit
 	sta	DP_HUD_Status
 
@@ -883,11 +872,9 @@ __MainAreaLoopDpadNewDone:
 	sec
 	sbc	DP_Char1WalkingSpd
 	sta	DP_Char1MapPosY
-
 	lda	DP_AreaProperties					; check if area may be scrolled vertically
 	and	#%0000000000001000
 	bne	+
-
 	lda	DP_Char1WalkingSpd					; area not scrollable, move hero sprite instead
 	xba								; shift to high byte for Y value
 	eor	#$FFFF							; make negative
@@ -939,11 +926,9 @@ __MainAreaLoopDpadUpDone:
 	clc
 	adc	DP_Char1WalkingSpd
 	sta	DP_Char1MapPosY
-
 	lda	DP_AreaProperties					; check if area may be scrolled vertically
 	and	#%0000000000001000
 	bne	+
-
 	lda	DP_Char1WalkingSpd					; area not scrollable, move hero sprite instead
 	xba								; shift to high byte for Y value
 	clc
@@ -991,11 +976,9 @@ __MainAreaLoopDpadDownDone:
 	sec
 	sbc	DP_Char1WalkingSpd
 	sta	DP_Char1MapPosX
-
 	lda	DP_AreaProperties					; check if area may be scrolled horizontally
 	and	#%0000000000000100
 	bne	+
-
 	lda	DP_Char1ScreenPosYX					; area not scrollable, move hero sprite instead
 	sec
 	sbc	DP_Char1WalkingSpd					; X = X - DP_Char1WalkingSpd
@@ -1042,11 +1025,9 @@ __MainAreaLoopDpadLeftDone:
 	clc
 	adc	DP_Char1WalkingSpd
 	sta	DP_Char1MapPosX
-
 	lda	DP_AreaProperties					; check if area may be scrolled horizontally
 	and	#%0000000000000100
 	bne	+
-
 	lda	DP_Char1ScreenPosYX					; area not scrollable, move hero sprite instead
 	clc
 	adc	DP_Char1WalkingSpd					; X += DP_Char1WalkingSpd
@@ -1129,7 +1110,6 @@ __MainAreaLoopStButtonDone:
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMA_Updates
-
 	jmp	MainAreaLoop
 
 
