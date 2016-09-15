@@ -251,6 +251,10 @@
 .DEFINE ADDR_VRAM_BG1_TileMap3	$7800					; only $7B60-$7BFF used for text box
 .DEFINE ADDR_VRAM_BG2_TileMap3	$7C00					; only $7F60-$7FFF used for text box
 
+.DEFINE PARAM_CollMarginLeft	3					; collision margin at left/right/top sprite edges
+.DEFINE PARAM_CollMarginRight	3
+.DEFINE PARAM_CollMarginTop	1					; the top margin value differs from the other two in that it acts as a protection against getting trapped when moving along upper edges horizontally
+
 .DEFINE PARAM_RingMenuCenterX	128
 .DEFINE PARAM_RingMenuCenterY	112
 .DEFINE PARAM_RingMenuRadiusMin	0
@@ -377,6 +381,7 @@
 	DP_AreaCurrent		dw					; holds no. of current area
 	DP_AreaMetaMapAddr	dsb 3					; holds 24-bit address of collision map
 	DP_AreaMetaMapIndex	dw
+	DP_AreaMetaMapIndex2	dw
 	DP_AreaNamePointer	dw
 	DP_AreaProperties	dw					; 0000000000bayxss [s = screen size, as in BGXSC regs, x/y = area is scrollable horizontally/vertically, a/b = auto-scroll area horizontally/vertically, 0 = reserved]
 
@@ -466,7 +471,7 @@
 	DP_VWF_BitsUsed		dw
 	DP_VWF_BufferIndex	dw
 	DP_VWF_Loop		db
-.ENDE									; 161 of 256 bytes used
+.ENDE									; 163 of 256 bytes used
 
 
 

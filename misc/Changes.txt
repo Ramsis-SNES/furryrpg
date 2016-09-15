@@ -9,6 +9,11 @@
 
 
 
+Build #00274:
+- vastly improved hero-to-BG collision detection
+
+
+
 Build #00273:
 - fixed HUD glitching out when loading an area after another area has been left with HUD fully visible
 - added support for strings in any ROM bank (not just $C0) to the PrintString macro

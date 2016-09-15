@@ -92,9 +92,9 @@ SRC_AreaProperty002:
 	.DW 10								; music track: "Temba's Theme"
 	.DW 1								; MSU1 ambient track: Nightingale
 	.DW STR_AreaNameEng002
-	.DW $5078							; hero screen position (low byte = X, high byte = Y, numbers refer to top left of sprite)
-	.DW $0078							; hero map position (X)
-	.DW $0050							; hero map position (Y)
+	.DW $2098							; hero screen position (low byte = X, high byte = Y, numbers refer to top left of sprite)
+	.DW $0098							; hero map position (X)
+	.DW $0020							; hero map position (Y)
 	.DB $82								; hero sprite status: irrrrddd [i = not walking (idle), ddd = facing direction (0 = down, 1 = up, 2 = left, 3 = right)]
 
 SRC_AreaProperty003:
@@ -116,9 +116,9 @@ SRC_AreaProperty003:
 	.DW 10								; music track: "Temba's Theme"
 	.DW 1								; MSU1 ambient track: Nightingale
 	.DW STR_AreaNameEng003
-	.DW $5078							; hero screen position (low byte = X, high byte = Y, numbers refer to top left of sprite)
-	.DW $0078							; hero map position (X)
-	.DW $0050							; hero map position (Y)
+	.DW $2098							; hero screen position (low byte = X, high byte = Y, numbers refer to top left of sprite)
+	.DW $0098							; hero map position (X)
+	.DW $0020							; hero map position (Y)
 	.DB $80								; hero sprite status: irrrrddd [i = not walking (idle), ddd = facing direction (0 = down, 1 = up, 2 = left, 3 = right)]
 
 

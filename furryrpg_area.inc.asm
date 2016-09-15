@@ -808,42 +808,6 @@ __MainAreaLoopDpadNewDone:
 
 
 
-; -------------------------- calculate collision map index
-	Accu16
-
-	lda	DP_Char1MapPosX
-	bit	#$0008							; if bit 4 is set ...
-	beq	+
-	and	#$FFF0							; ... round number up to next multiple of 16
-	clc
-	adc	#16
-	bra	++
-+;	bit	#$0007
-;	beq	++
-	and	#$FFF0							; otherwise, rund number down 
-++	lsr	a							; divide by 16 as each entry in the meta map is a block of 2×2 tiles (16×16 px)
-	lsr	a
-	lsr	a
-	lsr	a
-	sta	temp
-	lda	DP_Char1MapPosY
-	bit	#$0008							; do rounding as above
-	beq	+
-	and	#$FFF0
-	clc
-	adc	#16
-	bra	++
-+;	bit	#$0007
-;	beq	++
-	and	#$FFF0							; no need to divide number for 16 entries per row // FIXME for areas larger than 32×32 tiles
-++	clc
-	adc	temp
-	sta	DP_AreaMetaMapIndex
-
-	Accu8
-
-
-
 ; -------------------------- check for dpad up
 	lda	Joy1Press+1
 	and	#%00001000
@@ -854,16 +818,13 @@ __MainAreaLoopDpadNewDone:
 	lda	#TBL_Char1_up
 	sta	DP_Char1SpriteStatus
 
-	Accu16
+	jsr	MakeCollIndexUp
 
-	lda	DP_AreaMetaMapIndex
-;	sec								; subtract 16 = check row above character // never mind, it should check the row at the char's feet anyway
-;	sbc	#16
-	tay
-
-	Accu8
-
+	ldy	DP_AreaMetaMapIndex
 	lda	[DP_AreaMetaMapAddr], y					; check for BG collision using meta map entries
+	bmi	__MainAreaLoopDpadUpDone
+	ldy	DP_AreaMetaMapIndex2
+	lda	[DP_AreaMetaMapAddr], y
 	bmi	__MainAreaLoopDpadUpDone
 
 	Accu16
@@ -908,15 +869,12 @@ __MainAreaLoopDpadUpDone:
 	lda	#TBL_Char1_down
 	sta	DP_Char1SpriteStatus
 
-	Accu16
+	jsr	MakeCollIndexDown
 
-	lda	DP_AreaMetaMapIndex
-	clc								; add 32 = check row below character's feet
-	adc	#32
-	tay
-
-	Accu8
-
+	ldy	DP_AreaMetaMapIndex
+	lda	[DP_AreaMetaMapAddr], y					; check for BG collision using meta map entries
+	bmi	__MainAreaLoopDpadDownDone
+	ldy	DP_AreaMetaMapIndex2
 	lda	[DP_AreaMetaMapAddr], y
 	bmi	__MainAreaLoopDpadDownDone
 
@@ -958,15 +916,12 @@ __MainAreaLoopDpadDownDone:
 	lda	#TBL_Char1_left
 	sta	DP_Char1SpriteStatus
 
-	Accu16
+	jsr	MakeCollIndexLeft
 
-	lda	DP_AreaMetaMapIndex
-	clc								; add 16, subtract 1 = check column left of character's feet
-	adc	#15
-	tay
-
-	Accu8
-
+	ldy	DP_AreaMetaMapIndex
+	lda	[DP_AreaMetaMapAddr], y					; check for BG collision using meta map entries
+	bmi	__MainAreaLoopDpadLeftDone
+	ldy	DP_AreaMetaMapIndex2
 	lda	[DP_AreaMetaMapAddr], y
 	bmi	__MainAreaLoopDpadLeftDone
 
@@ -1007,15 +962,12 @@ __MainAreaLoopDpadLeftDone:
 	lda	#TBL_Char1_right
 	sta	DP_Char1SpriteStatus
 
-	Accu16
+	jsr	MakeCollIndexRight
 
-	lda	DP_AreaMetaMapIndex
-	clc								; add 16, add 1 = check column right of character's feet
-	adc	#17
-	tay
-
-	Accu8
-
+	ldy	DP_AreaMetaMapIndex
+	lda	[DP_AreaMetaMapAddr], y					; check for BG collision using meta map entries
+	bmi	__MainAreaLoopDpadRightDone
+	ldy	DP_AreaMetaMapIndex2
 	lda	[DP_AreaMetaMapAddr], y
 	bmi	__MainAreaLoopDpadRightDone
 
@@ -1111,6 +1063,280 @@ __MainAreaLoopStButtonDone:
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMA_Updates
 	jmp	MainAreaLoop
+
+
+
+; ************************ Collision detection *************************
+
+MakeCollIndexUp:
+
+
+
+; -------------------------- create collision index for left edge of char sprite
+	Accu16
+
+	ldy	#0
+	lda	DP_Char1MapPosX						; MapPosX/Y references the upper leftmost sprite pixel
+	clc								; acknowledge left collision margin
+	adc	#PARAM_CollMarginLeft
+-	cmp	#16							; value still >=16?
+	bcc	+
+	sec								; no, subtract 16 from value (each meta map entry represents 2×2 tiles, or 16×16 px)
+	sbc	#16
+	iny								; add 1 to collision index per 16 pixels subtracted
+	bra	-
+
++	sty	DP_AreaMetaMapIndex					; save interim result (horizontal position in meta map)
+	ldy	#0
+	lda	DP_Char1MapPosY
+	clc								; add 1 row (w/o top margin) --> check character's lower 16×16 sprite (upper half of body is unaffected)
+	adc	#16-PARAM_CollMarginTop
+-	cmp	#16							; value still >=16?
+	bcc	+
+	sec								; no, subtract 16 from value
+	sbc	#16
+	tax								; preserve Accu in unused X register
+	tya
+	clc								; add 16 to collision index per 16 pixels subtracted as there are 16 meta map entries per line // FIXME for area maps larger than 32×32 tiles
+	adc	#16
+	tay
+	txa								; restore Accu
+	bra	-
+
++	tya
+	sta	DP_AreaMetaMapIndex2					; save interim result (vertical position in meta map) so we won't need to calculate this part again
+	clc
+	adc	DP_AreaMetaMapIndex
+	sta	DP_AreaMetaMapIndex					; save final index value for left edge
+
+
+
+; -------------------------- create collision index for right edge of char sprite
+	ldy	#0
+	lda	DP_Char1MapPosX
+	clc								; go to right edge, acknowledge right collision margin
+	adc	#16-PARAM_CollMarginRight
+-	cmp	#16							; same thing as above
+	bcc	+
+	sec
+	sbc	#16
+	iny
+	bra	-
+
++	tya
+	clc
+	adc	DP_AreaMetaMapIndex2
+	sta	DP_AreaMetaMapIndex2					; save final index value for right edge
+
+	Accu8
+
+	rts
+
+
+
+MakeCollIndexDown:
+
+
+
+; -------------------------- create collision index for left edge of char sprite
+	Accu16
+
+	ldy	#0
+	lda	DP_Char1MapPosX
+	clc								; acknowledge left collision margin
+	adc	#PARAM_CollMarginLeft
+-	cmp	#16
+	bcc	+
+	sec
+	sbc	#16
+	iny
+	bra	-
+
++	sty	DP_AreaMetaMapIndex
+	ldy	#0
+	lda	DP_Char1MapPosY
+	clc								; add 2 rows (+1 px) --> check tile below character's lower 16×16 sprite
+	adc	#33
+-	cmp	#16
+	bcc	+
+	sec
+	sbc	#16
+	tax
+	tya
+	clc
+	adc	#16
+	tay
+	txa
+	bra	-
+
++	tya
+	sta	DP_AreaMetaMapIndex2					; save interim result for later
+	clc
+	adc	DP_AreaMetaMapIndex
+	sta	DP_AreaMetaMapIndex
+
+
+
+; -------------------------- create collision index for right edge of char sprite
+	ldy	#0
+	lda	DP_Char1MapPosX
+	clc								; go to right edge, acknowledge right collision margin
+	adc	#16-PARAM_CollMarginRight
+-	cmp	#16
+	bcc	+
+	sec
+	sbc	#16
+	iny
+	bra	-
+
++	tya
+	clc
+	adc	DP_AreaMetaMapIndex2
+	sta	DP_AreaMetaMapIndex2
+
+	Accu8
+
+	rts
+
+
+
+MakeCollIndexLeft:
+
+
+
+; -------------------------- create collision index for upper corner of lower char sprite
+	Accu16
+
+	ldy	#0
+	lda	DP_Char1MapPosX
+-	cmp	#16
+	bcc	+
+	sec
+	sbc	#16
+	iny
+	bra	-
+
++	sty	DP_AreaMetaMapIndex
+	sty	DP_AreaMetaMapIndex2					; save interim result for later
+	ldy	#0
+	lda	DP_Char1MapPosY
+	clc								; add 1 row for lower char sprite
+	adc	#16+PARAM_CollMarginTop
+-	cmp	#16
+	bcc	+
+	sec
+	sbc	#16
+	tax
+	tya
+	clc
+	adc	#16
+	tay
+	txa
+	bra	-
+
++	tya
+	clc
+	adc	DP_AreaMetaMapIndex
+	sta	DP_AreaMetaMapIndex
+
+
+
+; -------------------------- create collision index for lower corner of lower char sprite
+	ldy	#0
+	lda	DP_Char1MapPosY
+	clc								; add 2 rows (-1 px)
+	adc	#31
+-	cmp	#16
+	bcc	+
+	sec
+	sbc	#16
+	tax
+	tya
+	clc
+	adc	#16
+	tay
+	txa
+	bra	-
+
++	tya
+	clc
+	adc	DP_AreaMetaMapIndex2
+	sta	DP_AreaMetaMapIndex2
+
+	Accu8
+
+	rts
+
+
+
+MakeCollIndexRight:
+
+
+
+; -------------------------- create collision index for upper corner of lower char sprite
+	Accu16
+
+	ldy	#0
+	lda	DP_Char1MapPosX
+	clc								; go to right edge
+	adc	#16
+-	cmp	#16
+	bcc	+
+	sec
+	sbc	#16
+	iny
+	bra	-
+
++	sty	DP_AreaMetaMapIndex
+	sty	DP_AreaMetaMapIndex2					; save interim result for later
+	ldy	#0
+	lda	DP_Char1MapPosY
+	clc								; add 1 row for lower char sprite
+	adc	#16+PARAM_CollMarginTop
+-	cmp	#16
+	bcc	+
+	sec
+	sbc	#16
+	tax
+	tya
+	clc
+	adc	#16
+	tay
+	txa
+	bra	-
+
++	tya
+	clc
+	adc	DP_AreaMetaMapIndex
+	sta	DP_AreaMetaMapIndex
+
+
+
+; -------------------------- create collision index for lower corner of lower char sprite
+	ldy	#0
+	lda	DP_Char1MapPosY
+	clc								; add 2 rows (-1 px)
+	adc	#31
+-	cmp	#16
+	bcc	+
+	sec
+	sbc	#16
+	tax
+	tya
+	clc
+	adc	#16
+	tay
+	txa
+	bra	-
+
++	tya
+	clc
+	adc	DP_AreaMetaMapIndex2
+	sta	DP_AreaMetaMapIndex2
+
+	Accu8
+
+	rts
 
 
 
