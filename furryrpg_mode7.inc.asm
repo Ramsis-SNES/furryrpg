@@ -549,49 +549,19 @@ __M7FlightY:
 	jsr	CalcMode7Matrix
 +
 
-
-
-; -------------------------- show CPU load
-	lda	REG_SLHV						; latch H/V counter
-	lda	REG_STAT78						; reset OPHCT/OPVCT flip-flops
-	lda	REG_OPVCT
-	sta	DP_CurrentScanline
-	lda	REG_OPVCT
-	and	#$01							; mask off 7 open bus bits
-	sta	DP_CurrentScanline+1
-
-	PrintSpriteText	25, 21, "V-line: $", 1
-	PrintSpriteHexNum	DP_CurrentScanline+1
-	PrintSpriteHexNum	DP_CurrentScanline
-
 	jmp	Mode7Loop
 
 
 
 ; -------------------------- calculate Mode 7 matrix parameters for next frame
+
+; This is the algorithm to do signed 8×16 bit multiplication using CPU multiplication registers:
+; - do unsigned 8×8 bit multiplication for lower 8 bits of multiplicand (while keeping track of multiplier sign), store 16-bit interim result in temp
+; - do unsigned 8×8 bit multiplication for upper 8 bits of multiplicand, store 16-bit final result (if multiplier sign was negative, make result negative)
+
 CalcMode7Matrix:
 	lda	#:SRC_Mode7Scaling
 	sta	DP_Mode7_AltTabOffset+2
-
-
-
-; This is the algorithm to do signed 8×16 bit multiplication using CPU multiplication registers:
-; 1. do unsigned 8×8 bit multiplication for lower 8 bits of multiplicand, store 16-bit interim result in temp
-; 2. do unsigned 8×8 bit multiplication for upper 8 bits of multiplicand, store 16-bit interim result in temp+3 (it's crucial that temp+2 remains $00)
-; 3. combine interim results, keeping the upper 16 bits of the 24-bit result only (the lower 8 bits aren't needed by the Mode 7 matrix parameters)
-;
-; As CPU multiplication is unsigned, this is how the sign of the multiplier is accounted for:
-; 1. if multiplier is positive, simply do the two 8×8 bit multiplications one by one, and do (temp+3)+(temp+1) for the end result
-; 2. if multiplier is negative, make it positive first, then do the two 8×8 bit multiplications one by one, and do -(temp+3)-(temp+1) for the end result
-;
-; Proof of concept:
-; Consider this multiplication:
-; 17 * (-5) = -85
-; Now make the multiplier positive, and store the two interim results:
-; 7 * 5 = 35
-; 10 * 5 = 50
-; Now make the second result negative, and subtract the first one:
-; (-50) - 35 = -85
 
 
 
@@ -609,19 +579,14 @@ CalcMode7Matrix:
 	bpl	+							; check for negative multiplier
 	eor	#$FF							; make multiplier positive
 	inc	a
-	pha
-
-	lda	#$01							; remember that multplier has wrong sign
-	sta	temp+6
-
-	pla
+	dec	temp+6							; remember that multplier has wrong sign
 +	sta	REG_WRMPYB
 
 	plx								; 5 cycles
 
 	Accu16								; 3
 
-	lda	REG_RDMPYL						; 3 // store interim result 1
+	lda	REG_RDMPYL						; 3 // store interim result
 	sta	temp
 
 	Accu8
@@ -643,30 +608,14 @@ CalcMode7Matrix:
 
 	Accu16								; 3
 
-	lda	REG_RDMPYL						; 3 // store interim result 2
-	sta	temp+3
-
-	Accu8
-
-	lda	temp+6							; check how to combine interim results due to sign of multiplier
-	beq	+
-
-	Accu16
-
-	lda	temp+3							; end result negative, subtract (interim 1 >> 8) from negative interim 2
-	eor	#$FFFF
-	inc	a
-	sec
-	sbc	temp+1
-
-	bra	++
-
-+	Accu16
-
-	lda	temp+3							; end result positive, add (interim 1 >> 8) to interim 2
+	lda	REG_RDMPYL						; 3 // store final result
 	clc
 	adc	temp+1
-++	sta	ARRAY_HDMA_M7A+(PARAM_Mode7SkyLines*2), x
+	bit	temp+5							; check for multiplier sign
+	bpl	+
+	eor	#$FFFF							; multiplier was negative, so make final result negative
+	inc	a
++	sta	ARRAY_HDMA_M7A+(PARAM_Mode7SkyLines*2), x
 	sta	ARRAY_HDMA_M7D+(PARAM_Mode7SkyLines*2), x
 
 	Accu8
@@ -692,18 +641,14 @@ CalcMode7Matrix:
 	bpl	+							; check for negative multiplier
 	eor	#$FF							; make multiplier positive
 	inc	a
-	pha
-
-	lda	#$01							; remember that multplier has wrong sign
-	sta	temp+6
-	pla
+	dec	temp+6							; remember that multplier has wrong sign
 +	sta	REG_WRMPYB
 
 	plx								; 5 cycles
 
 	Accu16								; 3
 
-	lda	REG_RDMPYL						; 3 // store interim result 1
+	lda	REG_RDMPYL						; 3 // store interim result
 	sta	temp
 
 	Accu8
@@ -725,32 +670,30 @@ CalcMode7Matrix:
 
 	Accu16								; 3
 
-	lda	REG_RDMPYL						; 3 // store interim result 2
-	sta	temp+3
-
-	Accu8
-
-	lda	temp+6							; check how to combine interim results due to sign of multiplier
-	beq	+
-
-	Accu16
-
-	lda	temp+3							; end result negative, subtract (interim 1 >> 8) from negative interim 2
-	eor	#$FFFF
-	inc	a
-	sec
-	sbc	temp+1
-	bra	++
-
-+	Accu16
-
-	lda	temp+3							; end result positive, add (interim 1 >> 8) to interim 2
+	lda	REG_RDMPYL						; 3 // store final result
 	clc
 	adc	temp+1
-++	sta	ARRAY_HDMA_M7C+(PARAM_Mode7SkyLines*2), x
+	bit	temp+5							; check for multiplier sign
+	bmi	+
+	sta	ARRAY_HDMA_M7C+(PARAM_Mode7SkyLines*2), x
 	eor	#$FFFF							; make M7C parameter negative and store in M7B
 	inc	a
 	sta	ARRAY_HDMA_M7B+(PARAM_Mode7SkyLines*2), x
+
+	Accu8
+
+	inx
+	inx
+	cpx	#448-(PARAM_Mode7SkyLines*2)
+	bne	-
+	rts
+
+.ACCU 16
+
++	sta	ARRAY_HDMA_M7B+(PARAM_Mode7SkyLines*2), x		; multiplier was negative, store negative value first in M7B
+	eor	#$FFFF							; make M7B parameter positive and store in M7C
+	inc	a
+	sta	ARRAY_HDMA_M7C+(PARAM_Mode7SkyLines*2), x
 
 	Accu8
 
