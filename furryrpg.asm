@@ -261,7 +261,6 @@ SRC_IRQJumpTable:
 
 .SECTION "libs" SEMIFREE
 
-.INCLUDE "lib_joypads.inc.asm"
 .INCLUDE "lib_multi5.inc.asm"
 .INCLUDE "lib_randomnrgen.inc.asm"
 .INCLUDE "lib_snesgss.inc.asm"

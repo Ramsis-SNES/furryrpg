@@ -71,7 +71,7 @@ Boot:
 	stz	$1D
 	stz	$1D
 	stz	$1E
-	lda	#$01
+;	lda	#$01							; never mind, 8-bit Accu still contains $01
 	sta	$1E
 	stz	$1F
 	stz	$1F
@@ -103,7 +103,6 @@ Boot:
 
 	; regs $2134-$213F: PPU read registers, no initialization needed
 	; regs $2140-$2143: APU communication regs, no initialization required
-
 	; reg $2180: WRAM data read/write
 
 	stz	$81							; regs $2181-$2183: WRAM address
@@ -143,7 +142,6 @@ Boot:
 	; regs $4214-$4215: divide results, no need to initialize
 	; regs $4216-$4217: multiplication or remainder results, no need to initialize
 	; regs $4218-$421f: JoyPad read registers, no need to initialize
-
 	; regs $4300-$437F: DMA/HDMA parameters, unused registers
 
 
@@ -160,8 +158,8 @@ Boot:
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $04, 512+32		; OAM (low+high OAM tables = 512+32 bytes)
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 0		; WRAM (length $0000 = 65536 bytes = lower 64K of WRAM)
 
-	lda	#$01							; WRAM address in $2181-$2183 has reached $10000 now,
-	sta	REG_MDMAEN						; so re-initiate DMA transfer for the upper 64K of WRAM
+;	lda	#$01							; never mind, Accu still contains this value
+	sta	REG_MDMAEN						; WRAM address in $2181-$2183 has reached $10000 now, re-initiate DMA transfer for the upper 64K of WRAM
 	jsr	SpriteInit						; set up the sprite buffer
 
 
@@ -244,8 +242,8 @@ Boot:
 	Accu8
 
 	SetNMI	TBL_NMI_DebugMenu
+	JoyInit								; initialize joypads and enable NMI & IRQ
 
-	jsr	JoyInit							; initialize joypads and enable NMI
 	lda	ADDR_SRAM_GoodROM					; if byte is $01, then ROM integrity check was already passed
 	cmp	#$01
 	beq	+

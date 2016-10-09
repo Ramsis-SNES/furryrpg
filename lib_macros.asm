@@ -389,6 +389,20 @@ StringOffset\@:
 
 
 
+.MACRO JoyInit								; based on a subroutine by Neviksti. Expects A = 8 bit and XY = 16 bit
+	lda	#$C0							; have the automatic read of the SNES read the first pair of JoyPads
+	sta	REG_WRIO
+	ldx	#$0000
+	stx	Joy1Press
+	stx	Joy2Press
+	lda	#$81
+	sta	REG_NMITIMEN						; enable JoyPad Read and NMI
+	cli								; enable interrupts
+	wai								; wait for NMI to fill the variables with real JoyPad data
+.ENDM
+
+
+
 ; Macro PrintSpriteText by ManuLöwe
 ;
 ; Usage: PrintSpriteText <y-pos>, <x-pos>, "Lorem ipsum ...", <font color>
