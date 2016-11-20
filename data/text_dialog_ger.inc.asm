@@ -192,7 +192,7 @@ STR_DialogGer0026:
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "Nee, aber du wirst Augen machen, wenn du erst", CC_NewLine
 	.DB CC_Indent, "mal das hier h", ouml, "rst ...", CC_ClearTextBox
-	.DB CC_Indent, "Der B", uuml, "rgermeister verspricht demnenigen eine", CC_NewLine
+	.DB CC_Indent, "Der B", uuml, "rgermeister verspricht demjenigen eine", CC_NewLine
 	.DB CC_Indent, "Belohnung, der rausfindet, was es mit diesem" CC_NewLine
 	.DB CC_Indent, "Geist auf sich hat, von dem alle reden. Ich hab", CC_NewLine
 	.DB CC_Indent, "dir doch davon erz", auml, "hlt, wei", szlig, "t du noch?", CC_End
