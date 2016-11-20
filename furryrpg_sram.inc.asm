@@ -83,6 +83,7 @@ WriteDataToSRAM:							; this routine expects the 24-bit source data address in 
 	bne	-
 
 	jsr	FixSRAMChecksum
+
 	rtl
 
 

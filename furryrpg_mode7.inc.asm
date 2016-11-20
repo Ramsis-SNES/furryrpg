@@ -16,7 +16,6 @@ TestMode7:
 	lda	#$80							; enter forced blank
 	sta	REG_INIDISP
 	stz	DP_HDMA_Channels					; disable HDMA
-
 	wai								; wait for OAM to refresh
 
 	DisableIRQs
@@ -321,6 +320,7 @@ Mode7Loop:
 	lda	#127
 +	sta	DP_Mode7_Altitude
 	jsr	CalcMode7Matrix
+
 	jmp	__M7SkipDpad						; skip additional d-pad checks (no more than 2 directions allowed)
 ++
 
@@ -339,6 +339,7 @@ Mode7Loop:
 	lda	#127
 +	sta	DP_Mode7_Altitude
 	jsr	CalcMode7Matrix
+
 	bra	__M7SkipDpad
 ++
 
@@ -356,6 +357,7 @@ Mode7Loop:
 	lda	#0
 +	sta	DP_Mode7_Altitude
 	jsr	CalcMode7Matrix
+
 	bra	__M7SkipDpad
 ++
 
@@ -373,6 +375,7 @@ Mode7Loop:
 	lda	#0
 +	sta	DP_Mode7_Altitude
 	jsr	CalcMode7Matrix
+
 	bra	__M7SkipDpad
 ++
 
@@ -463,6 +466,7 @@ __M7SkipDpad:
 	beq	__M7FlightY						; don't change X if angle = 128 (eq. 180°)
 	bcs	+
 	jsr	M7FlightIncX
+
 	bra	__M7FlightY
 
 +	jsr	M7FlightDecX						; $80 < angle <= $FF --> dec X
@@ -476,6 +480,7 @@ __M7FlightY:
 	beq	++							; don't change Y if angle = 192 (eq. 270°)
 	bcs	+
 	jsr	M7FlightIncY
+
 	bra	++
 
 +	jsr	M7FlightDecY						; $C0 < angle <= $FF | $00 < angle < $40 --> dec Y
@@ -518,6 +523,7 @@ __M7FlightY:
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
 	jsr	EffectHSplitOut2
+
 	jsr	SpriteInit						; purge OAM
 
 	ldx	#(ARRAY_BG3TileMap & $FFFF)				; clear text

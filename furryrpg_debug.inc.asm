@@ -283,6 +283,7 @@ DebugMenuLoop:
 	cmp	#78
 	bne	+
 	jmp	AlphaIntro
+
 +	cmp	#86
 	bne	+
 	ldx	#(ARRAY_BG3TileMap & $FFFF)				; clear text
@@ -292,6 +293,7 @@ DebugMenuLoop:
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024
 
 	jmp	LoadArea
+
 +	cmp	#94
 	bne	+
 	brk	$FF
@@ -301,12 +303,15 @@ DebugMenuLoop:
 +	cmp	#110
 	bne	+
 	jmp	InGameMenu
+
 +	cmp	#118
 	bne	+
 	jmp	LoadWorldMap
+
 +	cmp	#126
 	bne	+
 	jmp	TestMode7
+
 +	cmp	#134
 	bne	+
 	jmp	ShowSpriteGallery
@@ -328,6 +333,7 @@ DebugMenuLoop:
 +
 
 	jsr	ShowCPUload
+
 	jmp	DebugMenuLoop
 
 
@@ -345,6 +351,7 @@ ShowSpriteGallery:
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 2048		; clear BG3 tile map
 
 	jsr	SpriteInit						; purge OAM
+
 	ldx	#ADDR_VRAM_SpriteTiles					; set VRAM address for sprite tiles
 	stx	REG_VMADDL
 
@@ -450,6 +457,7 @@ ShowSpriteGallery:
 	WaitUserInput
 
 	jsr	SpriteInit						; purge OAM
+
 	jmp	DebugMenu
 
 
@@ -553,6 +561,7 @@ __MSCTestLoop:
 +
 
 	jsr	ShowCPUload
+
 	jmp	__MSCTestLoop
 
 .ASM

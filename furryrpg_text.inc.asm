@@ -19,30 +19,43 @@ LoadTextBoxBorderTiles:
 	stx	REG_VMADDL
 	ldx	#$0100							; upper left corner (1)
 	jsr	SaveTextBoxTileToVRAM
+
 	ldx	#$0110							; upper left corner (2) / upper border (1)
 	jsr	SaveTextBoxTileToVRAM
+
 	ldx	#$0110							; upper border (2) / upper right corner (1)
 	jsr	SaveTextBoxTileToVRAM
+
 	ldx	#$0120							; upper right corner (2)
 	jsr	SaveTextBoxTileToVRAM
+
 	ldx	#$0130							; left border (1)
 	jsr	SaveTextBoxTileToVRAM
+
 	ldx	#$0000							; left border (2) / right border (1)
 	jsr	SaveTextBoxTileToVRAM
+
 	ldx	#$0140							; right border (2)
 	jsr	SaveTextBoxTileToVRAM
+
 	ldx	#$0150							; lower left corner (1)
 	jsr	SaveTextBoxTileToVRAM
+
 	ldx	#$0160							; lower left corner (2) / lower border (1)
 	jsr	SaveTextBoxTileToVRAM
+
 	ldx	#$0160							; lower border (2) / lower right corner (1)
 	jsr	SaveTextBoxTileToVRAM
+
 	ldx	#$0170							; lower right corner (2)
 	jsr	SaveTextBoxTileToVRAM
+
 	ldx	#$0180							; black tile (1)
 	jsr	SaveTextBoxTileToVRAM
+
 	ldx	#$0180							; black tile (2)
 	jsr	SaveTextBoxTileToVRAM
+
 	rts
 
 
@@ -100,7 +113,6 @@ __ProcessNextDialog:
 	clc								; add language constant to get the correct text bank
 	adc	DP_TextLanguage
 	sta	DP_TextStringBank
-
 	lda	DP_TextLanguage						; check language again for the right pointer table
 	bne	+
 
@@ -122,7 +134,6 @@ __ProcessNextDialog:
 	tax
 	lda.l	SRC_DiagPointerGer, x					; DP_TextLanguage is 1 --> German
 ++	sta	DP_TextString
-
 	stz	DP_TextStringCounter					; reset string counter
 
 	Accu8
@@ -622,6 +633,7 @@ __OtherControlCode:
 	bcc	__ProcessTextLoop
 
 	jsr	ChangeTextBoxBG
+
 	jmp	__ProcessTextJumpOut
 
 __CarriageReturn:
@@ -637,6 +649,7 @@ __CarriageReturn:
 	cmp	#46*8							; line 1?
 	bne	+
 	jmp	__ProcessTextJumpOut					; do nothing if carriage return requested after exactly 23 (16×8) tiles
+
 +	bcs	+
 	lda	#46*8							; go to line 2
 	sta	DP_TextTileDataCounter
@@ -647,6 +660,7 @@ __CarriageReturn:
 +	cmp	#92*8							; line 2?
 	bne	+
 	jmp	__ProcessTextJumpOut					; do nothing if carriage return requested after exactly 46 (16×8) tiles
+
 +	bcs	+
 	lda	#92*8							; go to line 3
 	sta	DP_TextTileDataCounter
@@ -1129,6 +1143,7 @@ __VWFTilesLoop:
 	xba								; move to high byte
 	lda	#$00
 	jsr	VWFShiftBits						; shift tile data if necessary
+
 	ora	ARRAY_VWF_TileBuffer+16, y				; store upper 8 bit
 	sta	ARRAY_VWF_TileBuffer+16, y
 	xba
@@ -1358,6 +1373,7 @@ PrintFLoop:
 
 NormalPrint:
 	jsr	FillTextBuffer						; write character to text buffer
+
 	bra	PrintFLoop
 
 PrintFDone:
@@ -1421,8 +1437,8 @@ _sf:	CMP	#'s'
 -	lda	[DP_DataSrcAddress], y					; read sub string character
 	beq	__PrintSubstringDone					; check for NUL terminator
 	iny								; increment input pointer
-
 	jsr	FillTextBuffer						; write sub string character to text buffer
+
 	bra	-
 
 __PrintSubstringDone:
@@ -1431,14 +1447,17 @@ __PrintSubstringDone:
 _df:	CMP	#'d'
 	bne	_bf
 	jsr	PrintInt16						; print 16-bit integer
+
 	bra	PrintFLoop
 _bf:	CMP	#'b'
 	bne	_xf
 	jsr	PrintInt8						; print 8-bit integer
+
 	bra	PrintFLoop
 _xf:	CMP	#'x'
 	bne	_defaultF
 	jsr	PrintHex8						; print 8-bit hex integer
+
 	bra	PrintFLoop
 _defaultF:
 	lda	#'%'
@@ -1473,6 +1492,7 @@ PrintHiResLoop:
 	beq	PrintHiResDone						; check for NUL terminator
 	iny								; increment input pointer
 	jsr	FillHiResTextBuffer					; write character to text buffer
+
 	bra	PrintHiResLoop
 
 PrintHiResDone:
@@ -1635,8 +1655,8 @@ _Low_0:
 IntPrintLoop:								; until we get to the end of the string...
 	PLA								; keep pulling characters and printing them
 	beq	_EndOfInt
-
 	jsr	FillTextBuffer						; write them to the text buffer
+
 	BRA	IntPrintLoop
 
 _EndOfInt:
@@ -1690,6 +1710,7 @@ PrintHex8_noload:
 	pla
 	and	#$0F
 	jsr	PrintHexNibble
+
 	rts	
 
 PrintHexNibble:								; assumes 8b mem, 16b index
@@ -1698,12 +1719,14 @@ PrintHexNibble:								; assumes 8b mem, 16b index
 	clc
 	adc	#'0'
 	jsr	FillTextBuffer						; write it to the text buffer
+
 	rts
 
 _nletter: 	
 	clc
 	adc	#'A'-10		
 	jsr	FillTextBuffer						; write it to the text buffer
+
 	rts
 
 
@@ -1721,6 +1744,7 @@ PrintSpriteHex8:
 	pla
 	and	#$0F
 	jsr	PrintSpriteHexNibble
+
 	rts	
 
 
@@ -1731,12 +1755,14 @@ PrintSpriteHexNibble:							; assumes 8b mem, 16b index
 	clc
 	adc	#'0'
 	jsr	FillSpriteTextBuf					; write it to the text buffer
+
 	rts
 
 _nletter2: 	
 	clc
 	adc	#'A'-10		
 	jsr	FillSpriteTextBuf					; write it to the text buffer
+
 	rts
 
 

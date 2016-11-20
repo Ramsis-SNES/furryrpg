@@ -227,6 +227,7 @@ __WorldMapLoopDpadRightDone:
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
 	jsr	EffectHSplitOut2
+
 	ldx	#(ARRAY_BG3TileMap & $FFFF)				; clear text
 	stx	REG_WMADDL
 	stz	REG_WMADDH

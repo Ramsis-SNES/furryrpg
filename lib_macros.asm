@@ -93,7 +93,6 @@ __ReturnAdress\@:
 	Accu16
 
 	lda.w	\1
-
 	plp
 .ENDM
 

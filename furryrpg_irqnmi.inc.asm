@@ -28,17 +28,17 @@ Vblank_Area:
 	lda	DP_TextBoxCharPortrait					; check for "change character portrait" flag
 	bpl	+
 	jsr	UpdateCharPortrait
+
 	jmp	__SkipRefreshes3					; changing the portrait involves 2 DMAs, so skip other stuff for now
 
 +	lda	DP_TextBoxStatus					; check text box status
 	bpl	+
-
 	jsr	ClearTextBox						; bit 7 set --> wipe text
+
 	jmp	__SkipRefreshes3					; ... and skip BG refreshes (to avoid glitches due to premature end of Vblank)
 
 +	bit	#%00000001						; VWF buffer full?
 	beq	__TextBoxVblankDone
-
 	jsr	VWFTileBufferFull
 
 __TextBoxVblankDone:
@@ -96,7 +96,6 @@ __UpdateHUDDone:
 	sta	REG_VMAIN
 	ldx	#ADDR_VRAM_SpriteTiles					; set VRAM address for sprite tiles
 	stx	REG_VMADDL
-
 	lda	DP_Char1SpriteStatus
 	and	#%00000111						; isolate direction parameter
 	sta	REG_WRMPYA
@@ -1055,7 +1054,6 @@ ErrorHandlerBRK:
 	stz	REG_CGDATA						; set mainscreen bg color: blue
 	lda	#$70
 	sta	REG_CGDATA
-
 	ldx	#2							; skip original bg color
 -	lda.l	SRC_Palettes_Text, x					; copy remaining 3 colors
 	sta	REG_CGDATA
@@ -1068,7 +1066,6 @@ ErrorHandlerBRK:
 ; -------------------------- register updates
 	lda	#$01							; set BG mode 1
 	sta	REG_BGMODE
-
 	lda	#$48							; BG3 tile map VRAM offset: $4800, Tile Map size: 32×32 tiles
 	sta	REG_BG3SC
 	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
@@ -1140,7 +1137,6 @@ ErrorHandlerBRK:
 	lda	REG_RDNMI						; clear NMI flag
 	lda	#$0F							; turn on screen
 	sta	REG_INIDISP
-
 	jmp	Forever							; go to trap loop instead of RTI
 
 
@@ -1206,7 +1202,6 @@ ErrorHandlerCOP:
 	lda	#$1C							; set mainscreen bg color: red
 	sta	REG_CGDATA
 	stz	REG_CGDATA
-
 	ldx	#2							; skip original bg color
 -	lda.l	SRC_Palettes_Text, x					; copy remaining 3 colors
 	sta	REG_CGDATA
@@ -1219,7 +1214,6 @@ ErrorHandlerCOP:
 ; -------------------------- register updates
 	lda	#$01							; set BG mode 1
 	sta	REG_BGMODE
-
 	lda	#$48							; BG3 tile map VRAM offset: $4800, Tile Map size: 32×32 tiles
 	sta	REG_BG3SC
 	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
@@ -1291,7 +1285,6 @@ ErrorHandlerCOP:
 	lda	REG_RDNMI						; clear NMI flag
 	lda	#$0F							; turn on screen
 	sta	REG_INIDISP
-
 	jmp	Forever							; go to trap loop instead of RTI
 
 

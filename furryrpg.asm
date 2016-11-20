@@ -278,7 +278,6 @@ Startup:
 	sei								; disable interrupts
 	clc
 	xce								; switch to native mode
-
 	jml	Boot
 
 .ENDS

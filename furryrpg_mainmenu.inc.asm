@@ -27,7 +27,6 @@ MainMenu:
 
 ; -------------------------- menu "window" color
 	ldx	#$0000
-
 -	lda.l	SRC_HDMA_ColMathMenu, x
 	sta	ARRAY_HDMA_ColorMath, x
 	inx
@@ -44,7 +43,6 @@ MainMenu:
 	sta	REG_WH1
 	lda	#%00100000						; color math window 1 area = outside (why does this work??)
 	sta	REG_WOBJSEL
-
 	lda	#%00001000						; enable HDMA channel 3 (color math)
 	tsb	DP_HDMA_Channels
 
@@ -206,6 +204,7 @@ InGameMenu:
 
 .IFNDEF NOMUSIC
 	jsl	music_stop						; stop music // REMOVEME when done with menu
+
 	lda	DP_MSU1_Present
 	beq	+
 	stz	MSU_CONTROL						; stop MSU1 track
@@ -429,6 +428,7 @@ InGameMenu:
 
 __RingMenuOpenAnimation:
 	jsr	PutRingMenuItems
+
 	wai
 	lda	DP_RingMenuAngle
 	sec
@@ -516,6 +516,7 @@ RingMenuLoop:
 	dec	DP_RingMenuAngle					; dec angle --> rotate clockwise
 	dec	DP_RingMenuAngle
 	jsr	PutRingMenuItems
+
 	dey
 	dey
 	bne	-
@@ -534,6 +535,7 @@ __RingMenuLoopDpadLeftDone:
 	inc	DP_RingMenuAngle					; inc angle --> rotate counter-clockwise
 	inc	DP_RingMenuAngle
 	jsr	PutRingMenuItems
+
 	dey
 	dey
 	bne	-
@@ -707,6 +709,7 @@ PutRingMenuItems:
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 	jsr	CalcRingMenuItemPos
+
 	rts
 
 
@@ -818,7 +821,6 @@ __MakeBG3ItemTileMap:
 	inx
 	inx
 	inx
-
 	ldy	#10							; max. no. of tiles for an item name
 -	sta	ARRAY_BG3TileMap, x
 	xba
@@ -946,15 +948,12 @@ GotoInventoryV-Split:
 	lda	#44							; H-IRQ setup: dot number for interrupt
 	sta	REG_HTIMEL						; set low byte of H-timer
 	stz	REG_HTIMEH						; set high byte of H-timer
-
 	lda	#%11000000						; enable HDMA channels 6 (BG1/2 char data area designation), 7 (BG Mode 5)
 	tsb	DP_HDMA_Channels
-
 	lda	#$91							; enable H-IRQ, NMI, and auto-joypad read
 	sta	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
 	cli
-
 	lda	#$0F
 	sta	REG_INIDISP
 
@@ -1001,6 +1000,7 @@ __RenderItem:
 	asl	a							; double char no. because font tiles were "expanded" for hi-res mode
 	inc	a							; increment char no. because Mode 5 BG2 font tiles sit on the "right"
 	jsr	FillTextBuffer
+
 	iny
 	bra	-
 +
@@ -1020,7 +1020,6 @@ __RenderItem:
 	tsb	DP_DMA_Updates
 	and	#%00001111
 	tsb	DP_DMA_Updates+1
-
 -	bra	-
 
 

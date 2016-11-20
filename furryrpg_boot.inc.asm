@@ -250,6 +250,7 @@ Boot:
 	lda	#$0F							; turn on the screen
 	sta	REG_INIDISP
 	jsr	VerifyROMIntegrity
+
 +	jml	DebugMenu
 
 
@@ -425,7 +426,6 @@ __BuildFontBG2:
 	lda	DP_Shadow_NMITIMEN					; reenable interrupts
 	sta	REG_NMITIMEN
 	cli
-
 	lda	#$FF
 	ldx	#0
 -	wai
@@ -675,6 +675,7 @@ StartScreenLoop:
 	bne	-
 
 	jsr	ClearSpriteText
+
 	jml	DebugMenu
 
 .ASM
@@ -710,7 +711,6 @@ VerifyROMIntegrity:
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMA_Updates
-
 	lda	#$C0							; set start address to $C00000
 	sta	temp+7
 
@@ -727,7 +727,6 @@ VerifyROMIntegrity:
 	stz	temp+5
 	lda	#$01FE							; assume [$C0FFDC-F] = $FF, $FF, $00, $00, so add these right now
 	sta	temp+3
-
 	ldy	#0
 -	lda	[temp+5], y
 	and	#$00FF
@@ -804,7 +803,6 @@ VerifyROMIntegrity:
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMA_Updates
-
 	lda	#$01							; remember that ROM integrity check was passed
 	sta	temp							; source data in temp
 	ldx	#temp							; source data offset
@@ -832,7 +830,6 @@ __ROMIntegrityBad:
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMA_Updates
-
 	jmp	Forever
 
 __ROMIntegrityGood:

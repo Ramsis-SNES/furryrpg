@@ -156,6 +156,7 @@ LoadArea:
 	inx
 	inx
 	jmp	__AreaBG2TileMapDone
+
 +	sta	VAR_DMASourceOffset
 	inx
 	inx
@@ -491,7 +492,6 @@ __AreaBG2TileMapDone:
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
 	jsr	EffectHSplitIn
-
 
 
 ; NIGHT
@@ -1036,6 +1036,7 @@ __MainAreaLoopXButtonDone:
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
 	jsr	EffectHSplitOut2
+
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
 	lda	#%00110000						; clear IRQ enable bits
@@ -1049,6 +1050,7 @@ __MainAreaLoopXButtonDone:
 
 .IFNDEF NOMUSIC
 	jsl	music_stop						; stop music
+
 	lda	DP_MSU1_Present
 	beq	+
 	stz	MSU_CONTROL						; stop ambient soundtrack
