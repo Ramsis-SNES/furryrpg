@@ -1292,13 +1292,13 @@ ChangeTextBoxBG:
 
 	bra	__ChangeTextBoxBGDone
 
-+	cmp	#CC_BoxPissed
++	cmp	#CC_BoxAlert
 	bne	_f
 
 -	bit	REG_HVBJOY						; wait for Hblank
 	bvc	-
 
-	DMA_CH0 $00, :SRC_HDMA_TextBoxGradientPissed, SRC_HDMA_TextBoxGradientPissed, $80, 48*4
+	DMA_CH0 $00, :SRC_HDMA_TextBoxGradientAlert, SRC_HDMA_TextBoxGradientAlert, $80, 48*4
 
 	bra	__ChangeTextBoxBGDone
 

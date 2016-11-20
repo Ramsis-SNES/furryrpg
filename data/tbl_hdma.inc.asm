@@ -767,52 +767,52 @@ SRC_HDMA_TextBoxGradientEvil:
 
 
 
-SRC_HDMA_TextBoxGradientPissed:
+SRC_HDMA_TextBoxGradientAlert:
 	.DW $0000,$0000							; 3 scanlines black (to suppress color in frame corners)
 	.DW $0000,$0000
 	.DW $0000,$0000
-	.DW $0000,$0022							; start of "pissed" color gradient
-	.DW $0000,$0423
-	.DW $0000,$0444
-	.DW $0000,$0444
-	.DW $0000,$0445
-	.DW $0000,$0466
-	.DW $0000,$0467
-	.DW $0000,$0468
-	.DW $0000,$0488
-	.DW $0000,$0489
-	.DW $0000,$088A
-	.DW $0000,$08AB
-	.DW $0000,$08AC
-	.DW $0000,$08AC
-	.DW $0000,$08CD
-	.DW $0000,$08CE
-	.DW $0000,$08CF
-	.DW $0000,$0CF0
-	.DW $0000,$0CF0
-	.DW $0000,$0CF1
-	.DW $0000,$0D12
-	.DW $0000,$0D13
-	.DW $0000,$0D34
-	.DW $0000,$0D34
-	.DW $0000,$0D35
-	.DW $0000,$1156
-	.DW $0000,$1157
-	.DW $0000,$1158
-	.DW $0000,$1178
-	.DW $0000,$1179
-	.DW $0000,$117A
-	.DW $0000,$119B
-	.DW $0000,$119C
-	.DW $0000,$159C
-	.DW $0000,$15BD
-	.DW $0000,$15BE
-	.DW $0000,$15BF
-	.DW $0000,$15DF
-	.DW $0000,$15DF
-	.DW $0000,$15DF
-	.DW $0000,$15DF
-	.DW $0000,$15DF							; end of "pissed" color gradient
+	.DW $0000,$0421							; start of "alert" color gradient
+	.DW $0000,$0442
+	.DW $0000,$0443
+	.DW $0000,$0463
+	.DW $0000,$0464
+	.DW $0000,$0465
+	.DW $0000,$0086
+	.DW $0000,$0086
+	.DW $0000,$00A7
+	.DW $0000,$00A8
+	.DW $0000,$00A9
+	.DW $0000,$00CA
+	.DW $0000,$00CA
+	.DW $0000,$00EB
+	.DW $0000,$00EB
+	.DW $0000,$010C
+	.DW $0000,$010D
+	.DW $0000,$012E
+	.DW $0000,$012E
+	.DW $0000,$014F
+	.DW $0000,$0150
+	.DW $0000,$0150
+	.DW $0000,$0171
+	.DW $0000,$0172
+	.DW $0000,$0192
+	.DW $0000,$0193
+	.DW $0000,$01B4
+	.DW $0000,$01B5
+	.DW $0000,$01D5
+	.DW $0000,$01D6
+	.DW $0000,$01F7
+	.DW $0000,$01F8
+	.DW $0000,$01F8
+	.DW $0000,$0219
+	.DW $0000,$021A
+	.DW $0000,$023B
+	.DW $0000,$023B
+	.DW $0000,$023B
+	.DW $0000,$023B
+	.DW $0000,$023B
+	.DW $0000,$023B
+	.DW $0000,$023B							; end of "alert" color gradient
 	.DW $0000,$0000							; 3 scanlines black
 	.DW $0000,$0000
 	.DW $0000,$0000

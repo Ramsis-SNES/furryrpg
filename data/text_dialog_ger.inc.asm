@@ -75,7 +75,7 @@ STR_DialogGer0005:
 	.DB CC_Indent, "Lecker, das Zeug. ", SYM_heart, CC_End
 
 STR_DialogGer0006:
-	.DB CC_Portrait, 0, CC_BoxPissed
+	.DB CC_Portrait, 0, CC_BoxAlert
 	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "Was in aller ...!?", CC_End
 
@@ -172,7 +172,7 @@ STR_DialogGer0023:
 	.DB CC_Portrait, 2, CC_BoxBlue
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "Stimmt, bin ich nicht.", CC_ClearTextBox
-	.DB CC_BoxPissed
+	.DB CC_BoxAlert
 	.DB CC_Indent, "Das Schicksal der ganzen Welt h", auml, "ngt nur", CC_NewLine
 	.DB CC_Indent, "von dir ab!", CC_End
 
@@ -375,7 +375,7 @@ STR_DialogGer0054:
 	.DB CC_Indent, "Hey-ho, Leonido ...", CC_End
 
 STR_DialogGer0055:
-	.DB CC_Portrait, 2, CC_BoxPissed
+	.DB CC_Portrait, 2, CC_BoxAlert
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "Was BITTESCH", Ouml, "N macht ihr zwei da!?", CC_End
 
@@ -427,7 +427,7 @@ STR_DialogGer0063:
 	.DB CC_Indent, "Das nennst du anschnauzen, ", SYM_quot, "Leonido\"?", CC_End
 
 STR_DialogGer0064:
-	.DB CC_Portrait, 0, CC_BoxPissed
+	.DB CC_Portrait, 0, CC_BoxAlert
 	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "Schluss damit, oder ich versohl' dir deinen", CC_NewLine
 	.DB CC_Indent, "Wolfen...", CC_End
@@ -472,7 +472,7 @@ STR_DialogGer0070:
 	.DB CC_Selection, CC_Indent, "Du bist also ein Deserteur?", CC_End
 
 STR_DialogGer0071:
-	.DB CC_Portrait, 0, CC_BoxPissed
+	.DB CC_Portrait, 0, CC_BoxAlert
 	.DB "PRIMUS:", CC_NewLine
 	.DB CC_Indent, "Wenn ich ein Deserteur bin, dann bist du ein", CC_NewLine
 	.DB CC_Indent, "Wilderer, Leonido.", CC_End
@@ -676,7 +676,7 @@ STR_DialogGer0100:
 	.DB CC_Indent, "For I am known as Jack. Jack Lion-Flayer ...", CC_End
 
 STR_DialogGer0101:
-	.DB CC_Portrait, 0, CC_BoxPissed
+	.DB CC_Portrait, 0, CC_BoxAlert
 	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "Kleiner Tipp, ihr drei Affen ...", CC_NewLine
 	.DB CC_Indent, "I won't be flayed by any Tom, Dick or Harry!", CC_End
@@ -705,7 +705,7 @@ STR_DialogGer0104:
 	.DB CC_Indent, "ein bisschen wie R", auml, "ucherschinken schmeckt ...!", CC_End
 
 STR_DialogGer0105:
-	.DB CC_Portrait, 2, CC_BoxPissed
+	.DB CC_Portrait, 2, CC_BoxAlert
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "W...was?", CC_NewLine
 	.DB CC_Indent, "Soll das hei", szlig, "en, ich esse hier gerade ...", CC_NewLine
@@ -977,7 +977,7 @@ STR_DialogGer0153:
 	.DB CC_Indent, "... aber ich h", ouml, "re dein Herz schlagen!", CC_End
 
 STR_DialogGer0154:
-	.DB CC_Portrait, 0, CC_BoxPissed
+	.DB CC_Portrait, 0, CC_BoxAlert
 	.DB "PRIMUS:", CC_NewLine
 	.DB CC_Indent, "Look out! More enemies approaching!", CC_End
 
@@ -1000,7 +1000,7 @@ STR_DialogGer0157:
 	.DB CC_Selection, CC_Indent, "(Have Lily reply instead)", CC_End
 
 STR_DialogGer0158:
-	.DB CC_Portrait, 2, CC_BoxPissed
+	.DB CC_Portrait, 2, CC_BoxAlert
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "Why did you attack us?", CC_End
 
@@ -1065,7 +1065,7 @@ STR_DialogGer0168:
 	.DB CC_Indent, "Muhlhausen Nido sulle Colline ... Junior.", CC_End
 
 STR_DialogGer0169:
-	.DB CC_Portrait, 0, CC_BoxPissed
+	.DB CC_Portrait, 0, CC_BoxAlert
 	.DB "TARA:", CC_NewLine
 	.DB CC_Indent, "Nimm ja deine Pfote von mir!", CC_End
 

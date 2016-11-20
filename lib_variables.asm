@@ -295,7 +295,7 @@
 .DEFINE CC_BoxRed		2
 .DEFINE CC_BoxPink		3
 .DEFINE CC_BoxEvil		4
-.DEFINE CC_BoxPissed		5
+.DEFINE CC_BoxAlert		5
 .DEFINE CC_ClearTextBox		6
 .DEFINE CC_Indent		7
 .DEFINE CC_NewLine		8

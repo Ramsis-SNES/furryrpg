@@ -75,7 +75,7 @@ STR_DialogEng0005:
 	.DB CC_Indent, "Yummy stuff. ", SYM_heart, CC_End
 
 STR_DialogEng0006:
-	.DB CC_Portrait, 0, CC_BoxPissed
+	.DB CC_Portrait, 0, CC_BoxAlert
 	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "What the ...?!", CC_End
 
@@ -168,7 +168,7 @@ STR_DialogEng0023:
 	.DB CC_Portrait, 2, CC_BoxBlue
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "Actually, no.", CC_ClearTextBox
-	.DB CC_BoxPissed
+	.DB CC_BoxAlert
 	.DB CC_Indent, "The fate of the world depends on you!", CC_End
 
 STR_DialogEng0024:
@@ -362,7 +362,7 @@ STR_DialogEng0054:
 	.DB CC_Indent, "Hey-ho, Leonido ...", CC_End
 
 STR_DialogEng0055:
-	.DB CC_Portrait, 2, CC_BoxPissed
+	.DB CC_Portrait, 2, CC_BoxAlert
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "What ARE you two doing?!", CC_End
 
@@ -412,7 +412,7 @@ STR_DialogEng0063:
 	.DB CC_Indent, "You call that cursing, ", SYM_quot, "Leonido?\"", CC_End
 
 STR_DialogEng0064:
-	.DB CC_Portrait, 0, CC_BoxPissed
+	.DB CC_Portrait, 0, CC_BoxAlert
 	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "Stop it, or I'll kick your Wolfen ...", CC_End
 
@@ -453,7 +453,7 @@ STR_DialogEng0070:
 	.DB CC_Selection, CC_Indent, "You're a deserter then?", CC_End				; continue
 
 STR_DialogEng0071:
-	.DB CC_Portrait, 0, CC_BoxPissed
+	.DB CC_Portrait, 0, CC_BoxAlert
 	.DB "PRIMUS:", CC_NewLine
 	.DB CC_Indent, "I'm as much of a deserter as you are a poacher,", CC_NewLine
 	.DB CC_Indent, "Leonido.", CC_End
@@ -651,7 +651,7 @@ STR_DialogEng0100:
 	.DB CC_Indent, "For I am known as Jack. Jack Lion-Flayer ...", CC_End
 
 STR_DialogEng0101:
-	.DB CC_Portrait, 0, CC_BoxPissed
+	.DB CC_Portrait, 0, CC_BoxAlert
 	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "Know what, you apes?", CC_NewLine
 	.DB CC_Indent, "I won't be flayed by any Tom, Dick or Harry!", CC_End
@@ -680,7 +680,7 @@ STR_DialogEng0104:
 	.DB CC_Indent, "actually resembled salted pork ...!", CC_End
 
 STR_DialogEng0105:
-	.DB CC_Portrait, 2, CC_BoxPissed
+	.DB CC_Portrait, 2, CC_BoxAlert
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "Wh...what?", CC_NewLine
 	.DB CC_Indent, "You mean what I'm eating is ... the remains of ...", CC_End
@@ -949,7 +949,7 @@ STR_DialogEng0153:
 	.DB CC_Indent, "... but I can hear your heart throbbing!", CC_End
 
 STR_DialogEng0154:
-	.DB CC_Portrait, 0, CC_BoxPissed
+	.DB CC_Portrait, 0, CC_BoxAlert
 	.DB "PRIMUS:", CC_NewLine
 	.DB CC_Indent, "Look out! More enemies approaching!", CC_End
 
@@ -972,7 +972,7 @@ STR_DialogEng0157:
 	.DB CC_Selection, CC_Indent, "(Have Lily reply instead)", CC_End			; show 0158, 0159, skip 0160, 0161, 0163
 
 STR_DialogEng0158:
-	.DB CC_Portrait, 2, CC_BoxPissed
+	.DB CC_Portrait, 2, CC_BoxAlert
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "Why did you attack us?", CC_End
 
@@ -1037,7 +1037,7 @@ STR_DialogEng0168:
 	.DB CC_Indent, "Nido sulle Colline ... junior.", CC_End
 
 STR_DialogEng0169:
-	.DB CC_Portrait, 0, CC_BoxPissed
+	.DB CC_Portrait, 0, CC_BoxAlert
 	.DB "TARA:", CC_NewLine
 	.DB CC_Indent, "Don't you lay your paw on me!", CC_End
 
