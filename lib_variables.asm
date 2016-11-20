@@ -588,14 +588,15 @@
 	ARRAY_HDMA_M7C			dsb 448
 	ARRAY_HDMA_M7D			dsb 448
 
-	ARRAY_HDMA_MainEffects		dsb 224
+	ARRAY_HDMA_FX_1Byte		dsb 224
+	ARRAY_HDMA_FX_2Bytes		dsb 448
 	ARRAY_HDMA_BG_Scroll		dsb 16
 	ARRAY_HDMA_HUD_Scroll		dsb 10
 
 	ARRAY_TempString		dsb 32				; for temp strings
 
 	VAR_TextBox_TSTM		dw				; shadow copies of subscreen (high) & mainscreen (low) designation registers ($212C/212D) for text box area
-.ENDE									; $BDC bytes + $200 = $DDC bytes used (stack resides at $1FFF)
+.ENDE									; $D9C bytes + $200 = $F9C bytes used (stack resides at $1FFF)
 
 
 

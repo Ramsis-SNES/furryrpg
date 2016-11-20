@@ -216,12 +216,23 @@ SRC_HDMA_HUD_Scroll:
 
 
 
-SRC_HDMA_MainEffects:							; FIXME, rename
+SRC_HDMA_FX_1Byte:
 	.DB 112|$80							; 112 scanlines, continuous mode flag set
-	.DW ARRAY_HDMA_MainEffects
+	.DW ARRAY_HDMA_FX_1Byte
 
 	.DB 112|$80
-	.DW ARRAY_HDMA_MainEffects+112
+	.DW ARRAY_HDMA_FX_1Byte+112
+
+	.DB 0								; end of HDMA table
+
+
+
+SRC_HDMA_FX_2Bytes:
+	.DB 112|$80							; 112 scanlines, continuous mode flag set
+	.DW ARRAY_HDMA_FX_2Bytes
+
+	.DB 112|$80
+	.DW ARRAY_HDMA_FX_2Bytes+224
 
 	.DB 0								; end of HDMA table
 
