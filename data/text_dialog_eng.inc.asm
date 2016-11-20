@@ -624,7 +624,7 @@ STR_DialogEng0098:
 	.DB CC_Indent, "G'day, mate.", CC_NewLine
 	.DB CC_Indent, "Very pleased ter meetcha, me is ...", CC_ClearTextBox
 	.DB CC_BoxEvil
-	.DB CC_Indent, "... 'cuz me main hobby is turning Leoniden folk into", CC_NewLine
+	.DB CC_Indent, "... 'cuz me main hobby is turning lions into", CC_NewLine
 	.DB CC_Indent, "sausage!", CC_NewLine
 	.DB CC_Indent, "Oh, me name's Joe. Joe Lion-Trapper ...", CC_End
 
