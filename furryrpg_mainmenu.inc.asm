@@ -867,7 +867,7 @@ __MakeBG3ItemTileMap:
 	lda	#$0F							; turn screen back on
 	sta	REG_INIDISP
 
--	bra	-
+	Freeze
 
 
 

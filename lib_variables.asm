@@ -410,31 +410,30 @@
 	DP_HUD_DispCounter	dw					; holds frame count since HUD appeared
 	DP_HUD_Status		db					; adrrrrrp [a/d = HUD should (re-)appear/disappear, p = HUD is present on screen]
 
-	DP_NextTrack		dw					; holds no. of music track to load
-
-	DP_PlayerIdleCounter	dw					; holds frame count since last button press
-
-	DP_RingMenuAngle	dw
-	DP_RingMenuAngleOffset	dw
-	DP_RingMenuRadius	db
-
 	DP_Mode7_Altitude	db
 	DP_Mode7_AltTabOffset	dsb 3					; holds a 24-bit address
-	DP_Mode7_RotAngle	dw					; currently needs to be 16-bit as it's used as an index in CalcMode7Matrix
-	DP_Mode7_ScrollOffsetX	dw
-	DP_Mode7_ScrollOffsetY	dw
 	DP_Mode7_CenterCoordX	dw
 	DP_Mode7_CenterCoordY	dw
 	DP_Mode7_FrameCounter	db
+	DP_Mode7_RotAngle	dw					; currently needs to be 16-bit as it's used as an index in CalcMode7Matrix
+	DP_Mode7_ScrollOffsetX	dw
+	DP_Mode7_ScrollOffsetY	dw
 
-	DP_MSU1_Present		db
 	DP_MSU1_NextTrack	dw
+	DP_MSU1_Present		db
 
 	DP_Multi5_Reg0lo	db
 	DP_Multi5_Reg0hi	db
 	DP_Multi5_Reg1lo	db
 	DP_Multi5_Reg1hi	db
 	DP_Multi5_Status	db
+
+	DP_NextTrack		dw					; holds no. of music track to load
+	DP_PlayerIdleCounter	dw					; holds frame count since last button press
+
+	DP_RingMenuAngle	dw
+	DP_RingMenuAngleOffset	dw
+	DP_RingMenuRadius	db
 
 	DP_Shadow_NMITIMEN	db					; shadow copy of REG_NMITIMEN
 	DP_Shadow_TSTM		dw					; shadow copies of subscreen (high) & mainscreen (low) designation registers ($212C/212D)

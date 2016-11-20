@@ -102,14 +102,10 @@ __UpdateHUDDone:
 	sta	REG_WRMPYA
 	lda	#$08							; multiply direction with #$0800 (2048) to get offset for upcoming DMA
 	sta	REG_WRMPYB
-	nop
-	nop
-	nop
-	nop
 
-	Accu16
+	Accu16								; 3 cycles
 
-	lda	REG_RDMPYL
+	lda	REG_RDMPYL						; 5 cycles (4 + 1 for 16-bit Accu)
 	xba
 	clc
 	adc	#(GFX_Spritesheet_Char1 & $FFFF)
@@ -1001,24 +997,28 @@ __GameTimeUpdateDone:
 ErrorHandlerBRK:
 	AccuIndex16
 
-	pha
+	pha								; preserve registers
 	phx
 	phy
 
 	Accu8
 
 	lda	#$80							; enter forced blank
-	sta	REG_INIDISP
+	sta.l	REG_INIDISP
 
 	DisableIRQs
 
+.IFNDEF NOMUSIC
 	jsl	sound_stop_all
+.ENDIF
 
 	Accu16
 
 	SetDPag	$0000
 
 	Accu8
+
+	SetDBR	$00
 
 	stz	REG_HDMAEN						; disable HDMA
 
@@ -1137,7 +1137,7 @@ ErrorHandlerBRK:
 
 	SetNMI	TBL_NMI_Error
 
-	lda.l	REG_RDNMI						; clear NMI flag
+	lda	REG_RDNMI						; clear NMI flag
 	lda	#$0F							; turn on screen
 	sta	REG_INIDISP
 
@@ -1148,24 +1148,28 @@ ErrorHandlerBRK:
 ErrorHandlerCOP:
 	AccuIndex16
 
-	pha
+	pha								; preserve registers
 	phx
 	phy
 
 	Accu8
 
 	lda	#$80							; enter forced blank
-	sta	REG_INIDISP
+	sta.l	REG_INIDISP
 
 	DisableIRQs
 
+.IFNDEF NOMUSIC
 	jsl	sound_stop_all
+.ENDIF
 
 	Accu16
 
 	SetDPag	$0000
 
 	Accu8
+
+	SetDBR	$00
 
 	stz	REG_HDMAEN						; disable HDMA
 
@@ -1284,7 +1288,7 @@ ErrorHandlerCOP:
 
 	SetNMI	TBL_NMI_Error
 
-	lda.l	REG_RDNMI						; clear NMI flag
+	lda	REG_RDNMI						; clear NMI flag
 	lda	#$0F							; turn on screen
 	sta	REG_INIDISP
 

@@ -190,7 +190,7 @@ Boot:
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
-	DMA_CH0 $00, :RAM_DoDMA, RAM_DoDMA, $80, RAM_DoDMA_END-RAM_DoDMA
+	DMA_CH0 $00, :SRC_CodeDoDMA, SRC_CodeDoDMA, $80, SRC_CodeDoDMA_END-SRC_CodeDoDMA
 
 
 
@@ -887,7 +887,7 @@ __Init_OAM_hi2:
 
 ; **************************** RAM routines ****************************
 
-RAM_DoDMA:
+SRC_CodeDoDMA:
 	php								; preserve registers
 	phb
 
@@ -921,7 +921,7 @@ RAM_DoDMA:
 	plp
 	rtl
 
-RAM_DoDMA_END:
+SRC_CodeDoDMA_END:
 
 
 

@@ -218,6 +218,21 @@ __DrawLowerBorder\@:
 
 
 
+; Freeze macro by ManuLöwe
+;
+; Usage: Freeze
+; Effect: CPU enters trap loop (useful e.g. for debugging)
+;
+; Expects: nothing
+
+.MACRO Freeze
+
+__Freeze\@:
+	bra	__Freeze\@
+.ENDM
+
+
+
 ; Set Data Bank macro by ManuLöwe
 ;
 ; Usage: SetDBR $XX
