@@ -15,7 +15,7 @@
 ;.DEFINE NOMUSIC							; activate this to disable music
 .DEFINE CurrentBank	0
 .DEFINE TotalROMBanks	20						; self-reminder: increase value when using more banks (crucial for ROM integrity check)
-.DEFINE START_OFFSET	$F000						; start code offset in bank $C0
+.DEFINE START_OFFSET	$F000						; start code offset in bank $00 (must be >$8000 because of how "HiROM" is mapped)
 
 .DEFINE SPC700_DRV	"music/spc700-driver-v1.4.bin"
 
