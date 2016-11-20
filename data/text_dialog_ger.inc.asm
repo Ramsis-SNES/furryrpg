@@ -44,9 +44,11 @@ STR_DialogGer0001:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "Uff, was f", uuml, "r ein Traum!", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "Ich bin der F", auml, "hrte eines seltenen M", auml, "hnen-", CC_NewLine
 	.DB CC_Indent, "Schneeleoparden gefolgt. Als ich ihn stellte,", CC_NewLine
 	.DB CC_Indent, "hat er sich umgedreht und zu mir gesprochen ...", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "Ich wei", szlig, " nicht mehr, was er sagte, nur", CC_NewLine
 	.DB CC_Indent, "dass es mich total mitgenommen hat.", CC_End
 
@@ -54,6 +56,7 @@ STR_DialogGer0002:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "Puh! Zum Gl", uuml, "ck war's nur ein Traum.", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "Warum f", uuml, "hr' ich eigentlich Selbstgespr", auml, "che?", CC_NewLine
 	.DB CC_Indent, "Ich sollte mich an die Arbeit machen!", CC_End
 
@@ -172,6 +175,7 @@ STR_DialogGer0023:
 	.DB CC_Portrait, 2, CC_BoxBlue
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "Stimmt, bin ich nicht.", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_BoxAlert
 	.DB CC_Indent, "Das Schicksal der ganzen Welt h", auml, "ngt nur", CC_NewLine
 	.DB CC_Indent, "von dir ab!", CC_End
@@ -192,6 +196,7 @@ STR_DialogGer0026:
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "Nee, aber du wirst Augen machen, wenn du erst", CC_NewLine
 	.DB CC_Indent, "mal das hier h", ouml, "rst ...", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "Der B", uuml, "rgermeister verspricht demjenigen eine", CC_NewLine
 	.DB CC_Indent, "Belohnung, der rausfindet, was es mit diesem" CC_NewLine
 	.DB CC_Indent, "Geist auf sich hat, von dem alle reden. Ich hab", CC_NewLine
@@ -222,6 +227,7 @@ STR_DialogGer0030:
 	.DB CC_Indent, "Abgesehen von Tuskers verschwundenen W", uuml, "rsten", CC_NewLine
 	.DB CC_Indent, "sind im Dorf in letzter Zeit noch mehr komische", CC_NewLine
 	.DB CC_Indent, "Sachen passiert.", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "Der Kleine meiner Fuchsennachbarn behauptet", CC_NewLine
 	.DB CC_Indent, "sogar, er h", auml, "tte den Geist mit eigenen Augen", CC_NewLine
 	.DB CC_Indent, "gesehen, und ...", CC_End
@@ -238,6 +244,7 @@ STR_DialogGer0032:
 	.DB CC_Indent, "Genau das hab ich meinen Nachbarn auch gesagt.", CC_NewLine
 	.DB CC_Indent, "Aber die sind mittlerweile alle drei zu Tode", CC_NewLine
 	.DB CC_Indent, "ver", auml, "ngstigt.", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "Sogar Tusker, eigentlich ein vern", uuml, "nftiger Kerl,", CC_NewLine
 	.DB CC_Indent, "glaubt mittlerweile lieber an ", uuml, "bernat", uuml, "rliche", CC_NewLine
 	.DB CC_Indent, "Kr", auml, "fte. Mit evidenzbasierter Wissenschaft kommst", CC_NewLine
@@ -302,6 +309,7 @@ STR_DialogGer0042:
 	.DB CC_Portrait, 2, CC_BoxPink
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "Klar doch. ", SYM_heart, CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_BoxBlue
 	.DB CC_Indent, Uuml, "brigens, ich kenne jemanden, der uns helfen", CC_NewLine
 	.DB CC_Indent, "kann. Bevor wir den B", uuml, "rgermeister besuchen,", CC_NewLine
@@ -338,6 +346,7 @@ STR_DialogGer0048:
 	.DB CC_Portrait, 2, CC_BoxPink
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "Das ist echt nett von dir, Alec. ", SYM_heart, CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_BoxBlue
 	.DB CC_Indent, "... Aber du wei", szlig, "t ja, mein Onkel ist ein bisschen senil.", CC_NewLine
 	.DB CC_Indent, "In seinem Zustand will er lieber keinen Besuch von", CC_NewLine
@@ -443,9 +452,11 @@ STR_DialogGer0066:
 	.DB "WOLFENSOLDAT:", CC_NewLine
 	.DB CC_Indent, "Da h", ouml, "rst du's, ", SYM_quot, "Leonido\". Wieder ein", CC_NewLine
 	.DB CC_Indent, "Zitat, versteht sich ...", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, Uuml, "brigens bin ich selber schon oft genug", CC_NewLine
 	.DB CC_Indent, SYM_quot, "angeschnauzt\" worden, wenn auch aus anderen", CC_NewLine
 	.DB CC_Indent, "Gr", uuml, "nden.", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "Um ehrlich zu sein, ist mir das v", ouml, "llig schnuppe.", CC_NewLine
 	.DB CC_Indent, "Seit meiner Welpenzeit hab ich ein dickes Fell ...", CC_End
 
@@ -494,6 +505,7 @@ STR_DialogGer0074:
 	.DB "PRIMUS:", CC_NewLine
 	.DB CC_Indent, "Zugegeben, manchmal kann es hart sein.", CC_NewLine
 	.DB CC_Indent, "Aber gerade heute ist es das nicht ...", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "Wenn ihr mich jetzt bitte entschuldigen wollt?", CC_NewLine
 	.DB CC_Indent, "Ich habe einen Termin beim B", uuml, "rgermeister. Nur falls ihr", CC_NewLine
 	.DB CC_Indent, "es ernst meint und mich wirklich auf der Jagd nach dem", CC_NewLine
@@ -503,6 +515,7 @@ STR_DialogGer0075:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "H", auml, "h? Augenblick mal ...", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "Lily!", CC_NewLine
 	.DB CC_Indent, "Das da gerade war doch MEIN Job!", CC_End
 
@@ -560,6 +573,7 @@ STR_DialogGer0084:
 	.DB CC_Indent, "Sir Greyfur, wie Sie wahrscheinlich wissen, erwartet", CC_NewLine
 	.DB CC_Indent, "denjenigen, der uns dieser schrecklichen Bedrohung", CC_NewLine
 	.DB CC_Indent, "entledigt, ewiger Ruhm ...", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "... zumal sie unser Dorf betrifft, seit Sie hier", CC_NewLine
 	.DB CC_Indent, "eingetroffen sind.", CC_End
 
@@ -584,6 +598,7 @@ STR_DialogGer0088:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "GEISSENB", Uuml, "RGERMEISTER:", CC_NewLine
 	.DB CC_Indent, "Dann ist es also abgemacht.", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 
 STR_DialogGer0089:
 	.DB CC_Portrait, 0, CC_BoxBlue
@@ -616,6 +631,7 @@ STR_DialogGer0093:
 	.DB CC_Indent, "Entschuldige, Alec ... Du wolltest doch fr", uuml, "h wieder zu", CC_NewLine
 	.DB CC_Indent, "Hause sein. Ich f", uuml, "rchte, es k", ouml, "nnte doch sp", auml, "ter", CC_NewLine
 	.DB CC_Indent, "werden.", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "Trotzdem, ich kenn' dich doch. Ich wusste, du w", uuml, "rdest", CC_NewLine
 	.DB CC_Indent, "mir noch danken, dass ich dir einen Impuls gab, deine", CC_NewLine
 	.DB CC_Indent, "H", ouml, "hle zu verlassen, und ...", CC_End
@@ -648,6 +664,7 @@ STR_DialogGer0098:
 	.DB "GORILLA 1:", CC_NewLine
 	.DB CC_Indent, "G'day, mate.", CC_NewLine
 	.DB CC_Indent, "Very pleased ter meetcha, me is ...", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_BoxEvil
 	.DB CC_Indent, "... 'cuz me main hobby is turning lions into", CC_NewLine
 	.DB CC_Indent, "sausage!", CC_NewLine
@@ -659,6 +676,7 @@ STR_DialogGer0099:
 	.DB CC_Indent, "Hello there, hunky mane-bearer. ", SYM_heart, CC_NewLine
 	.DB CC_Indent, "Your muscled appearance, coated in velvety", CC_NewLine
 	.DB CC_Indent, "golden fur, is indeed a feast for the eyes ...", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_BoxEvil
 	.DB CC_Indent, "... as it'll be for my fangs. Too bad you can't live", CC_NewLine
 	.DB CC_Indent, "to witness our appreciation of your tasty flesh!", CC_NewLine
@@ -670,6 +688,7 @@ STR_DialogGer0100:
 	.DB CC_Indent, "Greetings, splendid Leoniden fellow.", CC_NewLine
 	.DB CC_Indent, "Never mind either of my brothers' uncouth", CC_NewLine
 	.DB CC_Indent, "talk ...", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_BoxEvil
 	.DB CC_Indent, "Just rest assured that it will be an honor,", CC_NewLine
 	.DB CC_Indent, "and a privilege, to take your precious hide.", CC_NewLine
@@ -687,6 +706,7 @@ STR_DialogGer0102:
 	.DB CC_Indent, "Tja, ich nehme alles zur", uuml, "ck.", CC_NewLine
 	.DB CC_Indent, "Ich hatte nicht den leisesten Schimmer, dass", CC_NewLine
 	.DB CC_Indent, "Wildschwein-Rostbraten SO lecker schmeckt.", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_BoxPink
 	.DB CC_Indent, "Danke, Alec! ", SYM_heart, CC_End
 
@@ -701,6 +721,7 @@ STR_DialogGer0104:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "Schleck! ", SYM_heart, CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "Ich wusste gar nicht, dass frische Primatenleber", CC_NewLine
 	.DB CC_Indent, "ein bisschen wie R", auml, "ucherschinken schmeckt ...!", CC_End
 
@@ -737,6 +758,7 @@ STR_DialogGer0110:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "PRIMUS:", CC_NewLine
 	.DB CC_Indent, "Nein, Leonido.", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "Sag ihr, dass du nicht auch in sie verliebt bist.", CC_End
 
 STR_DialogGer0111:
@@ -1060,6 +1082,7 @@ STR_DialogGer0168:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "BRAUNB", Auml, "R:", CC_NewLine
 	.DB CC_Indent, "Habe die Ehre. ", Auml, "hem ...", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "Mein Name ist Gregory Perpetuus Ebenezer", CC_NewLine
 	.DB CC_Indent, "Hrabanus Eindhoven Dubois Quaoar van der", CC_NewLine
 	.DB CC_Indent, "Muhlhausen Nido sulle Colline ... Junior.", CC_End

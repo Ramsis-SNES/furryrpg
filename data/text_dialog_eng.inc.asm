@@ -44,9 +44,11 @@ STR_DialogEng0001:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "Whew, what a dream!", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "I was following the track of an elusive maned", CC_NewLine
 	.DB CC_Indent, "snow leopard, and when I finally caught up", CC_NewLine
 	.DB CC_Indent, "with him, he turned around and spoke to me ...", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "I can't remember what he said, only that it", CC_NewLine
 	.DB CC_Indent, "totally affected me.", CC_End
 
@@ -54,6 +56,7 @@ STR_DialogEng0002:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "Phew! I'm glad it was just a dream.", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "Why am I talking to myself, anyway?", CC_NewLine
 	.DB CC_Indent, "I'd better get to work!", CC_End
 
@@ -168,6 +171,7 @@ STR_DialogEng0023:
 	.DB CC_Portrait, 2, CC_BoxBlue
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "Actually, no.", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_BoxAlert
 	.DB CC_Indent, "The fate of the world depends on you!", CC_End
 
@@ -185,6 +189,7 @@ STR_DialogEng0026:
 	.DB CC_Portrait, 2, CC_BoxBlue
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "But wait 'til you hear this ...", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "The mayor offers a reward to anyfur who finds", CC_NewLine
 	.DB CC_Indent, "out what's behind this ghost people have been", CC_NewLine
 	.DB CC_Indent, "talking about lately. You remember the stories", CC_NewLine
@@ -215,6 +220,7 @@ STR_DialogEng0030:
 	.DB CC_Indent, "Right. Apart from Tusker's missing sausages,", CC_NewLine
 	.DB CC_Indent, "even more weird stuff's been going on in the", CC_NewLine
 	.DB CC_Indent, "village.", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "My Foxen neighbors' kid said he'd actually seen", CC_NewLine
 	.DB CC_Indent, "the ghost with his own eyes, and ...", CC_End
 
@@ -229,6 +235,7 @@ STR_DialogEng0032:
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "That's exactly what I told my neighbors.", CC_NewLine
 	.DB CC_Indent, "But they're scared to death by now, too.", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "Even Tusker, sensible though as he is, rather", CC_NewLine
 	.DB CC_Indent, "chooses to believe in the supernatural. There's", CC_NewLine
 	.DB CC_Indent, "just no way now to persuade anyfur to stick", CC_NewLine
@@ -290,6 +297,7 @@ STR_DialogEng0042:
 	.DB CC_Portrait, 2, CC_BoxPink
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "Sure enough. ", SYM_heart, CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_BoxBlue
 	.DB CC_Indent, "Listen, I know somefur who can help us.", CC_NewLine
 	.DB CC_Indent, "Before we go see the mayor, we should talk", CC_NewLine
@@ -326,6 +334,7 @@ STR_DialogEng0048:
 	.DB CC_Portrait, 2, CC_BoxPink
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "That's so nice of you, Alec. ", SYM_heart, CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_BoxBlue
 	.DB CC_Indent, "... But remember my uncle's a bit demented. He", CC_NewLine
 	.DB CC_Indent, "probably wouldn't want to be seen by a stranger", CC_NewLine
@@ -425,8 +434,10 @@ STR_DialogEng0066:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "WOLFEN SOLDIER:", CC_NewLine
 	.DB CC_Indent, "She's right, ", SYM_quot, "Leonido.\" In quotes, mind you ...", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "By the way, I've been ", SYM_quot, "cursed\" at many times", CC_NewLine
 	.DB CC_Indent, "before, myself, albeit for other reasons.", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "To be perfectly honest, I stopped bothering", CC_NewLine
 	.DB CC_Indent, "back when I was a puppy ...", CC_End
 
@@ -475,6 +486,7 @@ STR_DialogEng0074:
 	.DB "PRIMUS:", CC_NewLine
 	.DB CC_Indent, "Admittedly, it's hard from time to time.", CC_NewLine
 	.DB CC_Indent, "But not today ...", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "Now, if you'll excuse me? I have an appointment", CC_NewLine
 	.DB CC_Indent, "at the mayor's. Unless you really mean it, and", CC_NewLine
 	.DB CC_Indent, "want to join me hunting down some alleged ghost.", CC_End
@@ -483,6 +495,7 @@ STR_DialogEng0075:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "Huh? Wait a minute ...", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "Lily!", CC_NewLine
 	.DB CC_Indent, "That was MY job, right there!", CC_End
 
@@ -538,6 +551,7 @@ STR_DialogEng0084:
 	.DB CC_Indent, "Sir Greyfur, as you are probably aware, eternal", CC_NewLine
 	.DB CC_Indent, "glory awaits he who rids us of that dreadful", CC_NewLine
 	.DB CC_Indent, "threat ...", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "... a threat which has haunted our village", CC_NewLine
 	.DB CC_Indent, "ever since you showed up here.", CC_End
 
@@ -561,6 +575,7 @@ STR_DialogEng0088:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "GOATEN MAYOR:", CC_NewLine
 	.DB CC_Indent, "That's settled then.", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 
 STR_DialogEng0089:
 	.DB CC_Portrait, 0, CC_BoxBlue
@@ -592,6 +607,7 @@ STR_DialogEng0093:
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "Sorry, Alec ... You said you wanted to be home early", CC_NewLine
 	.DB CC_Indent, "tonight. I was afraid that might not happen.", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "But I know you, don't I? I knew you'd be glad", CC_NewLine
 	.DB CC_Indent, "that I gave you a little nudge out of your", CC_NewLine
 	.DB CC_Indent, "door, and ...", CC_End
@@ -623,6 +639,7 @@ STR_DialogEng0098:
 	.DB "GORILLA 1:", CC_NewLine
 	.DB CC_Indent, "G'day, mate.", CC_NewLine
 	.DB CC_Indent, "Very pleased ter meetcha, me is ...", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_BoxEvil
 	.DB CC_Indent, "... 'cuz me main hobby is turning lions into", CC_NewLine
 	.DB CC_Indent, "sausage!", CC_NewLine
@@ -634,6 +651,7 @@ STR_DialogEng0099:
 	.DB CC_Indent, "Hello there, hunky mane-bearer. ", SYM_heart, CC_NewLine
 	.DB CC_Indent, "Your muscled appearance, coated in velvety", CC_NewLine
 	.DB CC_Indent, "golden fur, is indeed a feast for the eyes ...", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_BoxEvil
 	.DB CC_Indent, "... as it'll be for my fangs. Too bad you can't live", CC_NewLine
 	.DB CC_Indent, "to witness our appreciation of your tasty flesh!", CC_NewLine
@@ -645,6 +663,7 @@ STR_DialogEng0100:
 	.DB CC_Indent, "Greetings, splendid Leoniden fellow.", CC_NewLine
 	.DB CC_Indent, "Never mind either of my brothers' uncouth", CC_NewLine
 	.DB CC_Indent, "talk ...", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_BoxEvil
 	.DB CC_Indent, "Just rest assured that it will be an honor,", CC_NewLine
 	.DB CC_Indent, "and a privilege, to take your precious hide.", CC_NewLine
@@ -662,6 +681,7 @@ STR_DialogEng0102:
 	.DB CC_Indent, "Well, I stand corrected.", CC_NewLine
 	.DB CC_Indent, "I hadn't the faintest idea wild boar roast", CC_NewLine
 	.DB CC_Indent, "was THAT delicious.", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_BoxPink
 	.DB CC_Indent, "Thanks, Alec! ", SYM_heart, CC_End
 
@@ -676,6 +696,7 @@ STR_DialogEng0104:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
 	.DB CC_Indent, "Yum! ", SYM_heart, CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "I never knew the taste of fresh primate liver", CC_NewLine
 	.DB CC_Indent, "actually resembled salted pork ...!", CC_End
 
@@ -711,6 +732,7 @@ STR_DialogEng0110:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "PRIMUS:", CC_NewLine
 	.DB CC_Indent, "No, Leonido.", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "Tell her you are not in love with her.", CC_End
 
 STR_DialogEng0111:
@@ -1032,6 +1054,7 @@ STR_DialogEng0168:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "BROWN BEAR:", CC_NewLine
 	.DB CC_Indent, "Allow me the honor. Ahem ...", CC_ClearTextBox
+; --------------------------------------------------------------------------------
 	.DB CC_Indent, "My name is Gregory Perpetuus Ebenezer Hrabanus", CC_NewLine
 	.DB CC_Indent, "Eindhoven Dubois Quaoar van der Muhlhausen", CC_NewLine
 	.DB CC_Indent, "Nido sulle Colline ... junior.", CC_End
