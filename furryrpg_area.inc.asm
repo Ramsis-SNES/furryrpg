@@ -494,6 +494,7 @@ __AreaBG2TileMapDone:
 	jsr	EffectHSplitIn
 
 
+
 ; NIGHT
 ;	Accu16
 

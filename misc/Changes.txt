@@ -9,6 +9,22 @@
 
 
 
+Build #00277:
+- added new transition effect (window-based "diamond" in/out)
+
+
+
+Build #00276:
+- changed "alert" text box BG color gradient a little
+- added new transition effect (window-based "camera shutter" in/out)
+
+
+
+Build #00275:
+- vastly improved Mode 7 matrix calculation algorithm, which practically eliminates all slowdowns when flying around on the map :D
+
+
+
 Build #00274:
 - vastly improved hero-to-BG collision detection
 
