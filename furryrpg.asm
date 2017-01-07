@@ -186,14 +186,14 @@ STR_SoftwareVersionNo:
 ;STR_SoftwareVersionNo_END:
 
 STR_SoftwareMaker:
-	.DB "Copyright (c) 2016 by Ramsis - http://manuloewe.de/"
+	.DB "Copyright (c) 201X by Ramsis - http://manuloewe.de/"
 	.DB 0
 
 STR_SoftwareBuild:
 	.DB "Build #"
 
 STR_SoftwareBuildNo:
-	.DB "00277"
+	.DB "00278"
 	.DB 0
 
 ;STR_Software_BuildNo_END:

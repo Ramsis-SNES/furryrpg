@@ -452,11 +452,12 @@
 	DP_StringBank		dsb 3					; 8-bit bank no. + 16 bits of trailing zeroes (e.g., $C00000)
 
 	DP_TextASCIIChar	dw					; holds current ASCII character no.
+	DP_TextBoxBG		db					; bnnnnnnn [b = change text box background, n = no. of color table (0-127)
 	DP_TextBoxCharPortrait	db					; pnnnnnnn [p = change character portrait, n = no. of portrait (0-127)
-	DP_TextBoxSelection	db					; holds selection option chosen by player
+	DP_TextBoxSelection	db					; rrrr4321 [1-4 = text box contains selection on line no. 1-4, r = reserved], also holds selection made by player
 	DP_TextBoxSelMax	db					; for HDMA selection bar
 	DP_TextBoxSelMin	db					; ditto
-	DP_TextBoxStatus	db					; cm4321ot [c = clear text box, m = there is more text to process, o = text box is open, 1-4 = text box contains selection on line no. 1-4, t = VWF buffer full, transfer to VRAM]
+	DP_TextBoxStatus	db					; cmrrrrot [c = clear text box, m = there is more text to process, o = text box is open, r = reserved, t = VWF buffer full, transfer to VRAM]
 	DP_TextCursor		dw
 	DP_TextLanguage		db					; holds language constant
 	DP_TextPointer		dw

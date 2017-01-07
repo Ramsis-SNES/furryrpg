@@ -38,8 +38,12 @@ Vblank_Area:
 	jmp	__SkipRefreshes3					; ... and skip BG refreshes (to avoid glitches due to premature end of Vblank)
 
 +	bit	#%00000001						; VWF buffer full?
-	beq	__TextBoxVblankDone
+	beq	+
 	jsr	VWFTileBufferFull
+
++	lda	DP_TextBoxBG						; check if text box background change requested
+	bpl	__TextBoxVblankDone
+	jsr	LoadTextBoxBG						; bit 7 set --> load new background color table
 
 __TextBoxVblankDone:
 

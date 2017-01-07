@@ -99,13 +99,6 @@ OpenTextBox:
 
 	Accu8
 
-	lda	#%00110100						; activate HDMA ch. 2 (backdrop color), 4, 5 (BG scrolling regs)
-	tsb	DP_HDMA_Channels
-	lda	#%00110000						; enable IRQ at H=$4207 and V=$4209
-	tsb	DP_Shadow_NMITIMEN
-
-	WaitFrames	1
-
 
 
 __ProcessNextDialog:
@@ -163,13 +156,13 @@ __PrintDialogTextDone:
 
 
 
-; -------------------------- check for selection bar
-	lda	DP_TextBoxStatus
-	bit	#%00111100
+; -------------------------- check if selection requested
+	lda	DP_TextBoxSelection
+	bit	#%00001111
 	beq	__DrawSelBarDone
 
-	and	#%01000000						; only draw sel bar after current string is finished
-	bne	__DrawSelBarDone
+	bit	DP_TextBoxStatus
+	bvs	__DrawSelBarDone					; only draw sel bar after current string is finished
 
 	jsr	TextBoxHandleSelection
 
@@ -348,10 +341,7 @@ __MainTextBoxLoopRButtonDone:
 
 ; -------------------------- check for B button = close text box, return
 	lda	Joy1New+1
-;	and	#%10000000
-	bpl	__MainTextBoxLoopBButtonDone
-
-	jmp	__CloseTextBox
+	bmi	__CloseTextBox
 
 __MainTextBoxLoopBButtonDone:
 	jmp	MainTextBoxLoop
@@ -385,18 +375,18 @@ __CloseTextBox:
 
 
 TextBoxHandleSelection:
-	lda	DP_TextBoxStatus
-	bit	#%00000100						; check if selection starts on line 1
+	lda	DP_TextBoxSelection
+	bit	#%00000001						; check if selection starts on line 1
 	beq	+
 	lda	#0
 	bra	++
 
-+	bit #%00001000							; check if selection starts on line 2
++	bit	#%00000010						; check if selection starts on line 2
 	beq	+
 	lda	#8
 	bra	++
 
-+	bit #%00010000							; check if selection starts on line 3
++	bit	#%00000100						; check if selection starts on line 3
 	beq	+
 	lda	#16
 	bra	++
@@ -408,9 +398,7 @@ TextBoxHandleSelection:
 	sta	DP_TextBoxSelMin
 	stz	DP_TextBoxSelMax
 
-	lda	DP_TextBoxStatus
-	lsr	a							; get rid of 2 lower bits
-	lsr	a
+	lda	DP_TextBoxSelection
 	lsr	a							; count no. of selection options available (4 max.)
 	bcc	+
 	inc	DP_TextBoxSelMax
@@ -486,8 +474,8 @@ __TBHSLoopDpadDownDone:
 	bmi	-
 
 __TBHSDone:
-	lda	#%00111100						; clear selection bits
-	trb	DP_TextBoxStatus
+	lda	#%00001111						; clear selection bits // FIXME, write selection made by player to this variable instead
+	trb	DP_TextBoxSelection
 	lda	#%00001000						; disable HDMA channel 3 (color math) // FIXME for CM on playfield!!
 	trb	DP_HDMA_Channels
 	rts
@@ -551,7 +539,16 @@ __ProcessTextLoop2:
 
 	Accu8
 
-	lda	[DP_TextString], y					; read ASCII string character
+	cmp	#4							; make text box appear on screen only after portrait and BG color data of a string have been processed (this doesn't affect the text box if it's already open) // self-reminder: NOT cmp #3 because of preceding inc a
+	bne	+
+	lda	#%00110100						; activate HDMA ch. 2 (backdrop color), 4, 5 (BG scrolling regs)
+	tsb	DP_HDMA_Channels
+	lda	#%00110000						; enable IRQ at H=$4207 and V=$4209
+	tsb	DP_Shadow_NMITIMEN
+
+	WaitFrames	1						; seems unnecessary
+
++	lda	[DP_TextString], y					; read ASCII string character
 	cmp	#CC_End							; end of string reached?
 	bne	+
 	jmp	__ProcessTextDone					; yes, done
@@ -598,7 +595,7 @@ __ProcessTextLoop2:
 
 	Accu8
 
-	lda	#%00000100
+	lda	#%00000001
 	bra	++
 
 .ACCU 16
@@ -608,7 +605,7 @@ __ProcessTextLoop2:
 
 	Accu8
 
-	lda	#%00001000
+	lda	#%00000010
 	bra	++
 
 .ACCU 16
@@ -618,21 +615,24 @@ __ProcessTextLoop2:
 
 	Accu8
 
-	lda	#%00010000
+	lda	#%00000100
 	bra	++
 
 +	Accu8
 
-	lda	#%00100000						; else, line 4
-++	tsb	DP_TextBoxStatus
-
-	bra	__ProcessTextLoop
+	lda	#%00001000						; else, line 4
+++	tsb	DP_TextBoxSelection
+	jmp	__ProcessTextLoop
 
 __OtherControlCode:
 	cmp	#CC_BoxBlue						; self-reminder: This only works because we've already checked for all other CCs!
-	bcc	__ProcessTextLoop
+	bcs	+
+	jmp	__ProcessTextLoop
 
-	jsr	ChangeTextBoxBG
++	ora	#$80							; set "change text box background" bit
+	sta	DP_TextBoxBG
+
+;	WaitFrames	1						; seems unnecessary
 
 	jmp	__ProcessTextJumpOut
 
@@ -787,14 +787,24 @@ ClearTextBox:
 
 	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 184*16		; 184 tiles
 
+
+
+; -------------------------- clear VWF buffer
 	Accu16
 
+	lda	#0
+	ldy	#0
+-	sta	ARRAY_VWF_TileBuffer, y					; erase buffer
+	iny
+	iny
+	cpy	#64							; 4 tiles, 16 bytes per tile
+	bne	-
+
 	stz	DP_TextTileDataCounter					; reset tile data counter
-	stz	DP_VWF_BitsUsed
+	stz	DP_VWF_BitsUsed						; reset used bits counter
+	stz	DP_VWF_BufferIndex					; reset VWF buffer index
 
 	Accu8
-
-	jsr	ClearVWFBuffer
 
 	lda	#%10000000						; text box is empty now, so clear the "clear text box" flag
 	trb	DP_TextBoxStatus
@@ -802,14 +812,47 @@ ClearTextBox:
 
 
 
-;ClearTextBoxSingleLine:
-;	lda	#$80							; increment VRAM address by 1 after writing to $2119
-;	sta	REG_VMAIN
-;	ldx	#ADDR_VRAM_BG2_TEXTBOXL1				; set VRAM address to beginning of line 1
-;	stx	REG_VMADDL
+LoadTextBoxBG:
+	ldx	#(ARRAY_HDMA_BackgrTextBox & $FFFF)			; set WRAM address to text box HDMA background
+	stx	REG_WMADDL
+	stz	REG_WMADDH
 
-;	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 800		; 50 tiles × 16 bytes
-;	rts
+	lda	DP_TextBoxBG
+	and	#%01111111						; mask off request bit
+	bne	+
+
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 192		; if zero, clear table (i.e., make background black)
+
+	bra	__LoadTextBoxBGDone
+
++	dec	a							; make up for number difference (blue = $01)
+	sta	REG_WRMPYA
+	lda	#192							; multiply requested color table with 192 to get correct data offset for upcoming DMA
+	sta	REG_WRMPYB
+
+	Accu16								; 3 cycles
+
+	lda	REG_RDMPYL						; 5 cycles (4 + 1 for 16-bit Accu)
+	clc
+	adc	#(SRC_HDMA_TextBoxGradientBlue & $FFFF)
+	sta	$4302							; data offset
+
+	Accu8
+
+ 	stz	$4300							; DMA mode
+	lda	#$80							; B bus register ($2180)
+	sta	$4301
+	lda	#:SRC_HDMA_TextBoxGradientBlue				; data bank
+	sta	$4304
+	ldx	#192							; data length
+	stx	$4305
+	lda	#%00000001						; initiate DMA transfer (channel 0)
+	sta	REG_MDMAEN
+
+__LoadTextBoxBGDone:
+	lda	#$80							; new table loaded, clear request bit
+	trb	DP_TextBoxBG
+	rts
 
 
 
@@ -1252,77 +1295,6 @@ SaveTextBoxTileToVRAM:
 
 	Accu8
 
-	rts
-
-
-
-ClearVWFBuffer:
-	Accu16
-
-	lda	#0
-	ldy	#0
--	sta	ARRAY_VWF_TileBuffer, y					; copy font tiles
-	iny
-	iny
-	cpy	#64							; 4 tiles, 16 bytes per tile
-	bne	-
-
-	stz	DP_VWF_BufferIndex					; reset buffer index
-
-	Accu8
-
-	rts
-
-
-
-ChangeTextBoxBG:
-	ldx	#(ARRAY_HDMA_BackgrTextBox & $FFFF)			; set WRAM address to text box HDMA background
-	stx	REG_WMADDL
-	stz	REG_WMADDH
-
-	cmp	#CC_BoxRed						; check for text box color code
-	bne	+
--	bit	REG_HVBJOY						; wait for Hblank // CHECKME on 1/1/1 console
-	bvc	-
-
-	DMA_CH0 $00, :SRC_HDMA_TextBoxGradientRed, SRC_HDMA_TextBoxGradientRed, $80, 48*4
-
-	jmp	__ChangeTextBoxBGDone
-
-+	cmp	#CC_BoxPink
-	bne	+
--	bit	REG_HVBJOY						; wait for Hblank
-	bvc	-
-
-	DMA_CH0 $00, :SRC_HDMA_TextBoxGradientPink, SRC_HDMA_TextBoxGradientPink, $80, 48*4
-
-	bra	__ChangeTextBoxBGDone
-
-+	cmp	#CC_BoxEvil
-	bne	+
--	bit	REG_HVBJOY						; wait for Hblank
-	bvc	-
-
-	DMA_CH0 $00, :SRC_HDMA_TextBoxGradientEvil, SRC_HDMA_TextBoxGradientEvil, $80, 48*4
-
-	bra	__ChangeTextBoxBGDone
-
-+	cmp	#CC_BoxAlert
-	bne	_f
-
--	bit	REG_HVBJOY						; wait for Hblank
-	bvc	-
-
-	DMA_CH0 $00, :SRC_HDMA_TextBoxGradientAlert, SRC_HDMA_TextBoxGradientAlert, $80, 48*4
-
-	bra	__ChangeTextBoxBGDone
-
-__	bit	REG_HVBJOY						; wait for Hblank
-	bvc	_b
-
-	DMA_CH0 $00, :SRC_HDMA_TextBoxGradientBlue, SRC_HDMA_TextBoxGradientBlue, $80, 48*4
-
-__ChangeTextBoxBGDone:
 	rts
 
 
