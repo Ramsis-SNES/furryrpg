@@ -552,12 +552,12 @@ __BuildFontBG2:
 	ldx	#$0000
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_StartPic, GFX_StartPic, $18, 40384
+	DMA_CH0 $01, :GFX_StartPic, GFX_StartPic, $18, 26304
 
 	ldx	#$5000
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :SRC_StartMap, SRC_StartMap, $18, 2048
+	DMA_CH0 $01, :SRC_StartMap, SRC_StartMap, $18, 1792
 
 	lda	#$FF
 	ldx	#0
