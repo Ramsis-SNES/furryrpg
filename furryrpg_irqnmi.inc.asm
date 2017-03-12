@@ -562,21 +562,15 @@ Vblank_Intro:
 HIRQ_MainMenu:
 	php								; preserve processor status
 
-	Accu16
+	Accu8								; only use 8 bit accumulator
 
-	pha								; preserve 16 bit accumulator
-
-	Accu8
-
+	pha								; preserve 8 bit accumulator
 	lda	#$01|$08						; switch to BG Mode 1 (BG3 priority)
 	sta	REG_BGMODE
 	stz	REG_BG12NBA						; reset BG1/2 character data area designation to $0000
 	lda	REG_TIMEUP						; acknowledge IRQ
-
-	Accu16
-
-	pla								; pull 16 bit accumulator
-	plp								; pull processor status
+	pla								; restore 8 bit accumulator
+	plp								; restore processor status
 	rti
 
 
@@ -586,34 +580,21 @@ HIRQ_MainMenu:
 VIRQ_Area:
 	php								; preserve processor status
 
-	Accu16
+	Accu8								; only use 8 bit accumulator
 
-	pha								; preserve 16 bit accumulator
-
-	Accu8
-
-;-	bit	REG_HVBJOY						; wait for Hblank period flag to get set
-;	bvc	-
-
+	pha								; preserve 8 bit accumulator
 	lda	#$05							; switch to BG Mode 5 for text box
 	sta	REG_BGMODE
 	lda	#$78							; BG1 tile map VRAM offset: $7800, Tile Map size: 32×32 tiles
 	sta	REG_BG1SC
 	lda	#$7C							; BG2 tile map VRAM offset: $7C00, Tile Map size: 32×32 tiles
 	sta	REG_BG2SC
-
-	Accu16
-
-	lda	VAR_TextBox_TSTM					; write Sub/Mainscreen designation regs
+	lda	VAR_TextBox_TSTM					; write Main/Subscreen designation regs
 	sta	REG_TM
-
-	Accu8
-
+	lda	VAR_TextBox_TSTM+1
+	sta	REG_TS
 	lda	REG_TIMEUP						; acknowledge IRQ
-
-	Accu16
-
-	pla								; restore 16 bit accumulator
+	pla								; restore 8 bit accumulator
 	plp								; restore processor status
 	rti
 
@@ -622,26 +603,16 @@ VIRQ_Area:
 VIRQ_Mode7:
 	php								; preserve processor status
 
-	Accu16
+	Accu8								; only use 8 bit accumulator
 
-	pha								; preserve 16 bit accumulator
-
-	Accu8
-
-;-	bit	REG_HVBJOY						; wait for Hblank period flag to get set
-;	bvc	-
-
+	pha								; preserve 8 bit accumulator
 	lda	#$07							; switch to BG Mode 7
 	sta	REG_BGMODE
 	lda	#%00010001						; turn on BG1 and sprites only
 	sta	REG_TM							; on the mainscreen
 	sta	REG_TS							; and on the subscreen
-
 	lda	REG_TIMEUP						; acknowledge IRQ
-
-	Accu16
-
-	pla								; restore 16 bit accumulator
+	pla								; restore 8 bit accumulator
 	plp								; restore processor status
 	rti
 
