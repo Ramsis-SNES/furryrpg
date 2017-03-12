@@ -27,97 +27,97 @@
 ; ******************************* Items ********************************
 
 STR_ItemEng000:
-	.DB "Item000000000000"
+	.DB "1234567890123456"
 
 STR_ItemEng001:
-	.DB "Item000000000001"
+	.DB "Rabbit Stick    "
 
 STR_ItemEng002:
-	.DB "Item000000000002"
+	.DB "Leather Gloves  "
 
 STR_ItemEng003:
-	.DB "Item000000000003"
+	.DB "Unknown Alloy   "
 
 STR_ItemEng004:
-	.DB "Item000000000004"
+	.DB "Unknown Vase    "
 
 STR_ItemEng005:
-	.DB "Item000000000005"
+	.DB "Cold Boar Roast "
 
 STR_ItemEng006:
-	.DB "Item000000000006"
+	.DB "Leather Pants   "
 
 STR_ItemEng007:
-	.DB "Item000000000007"
+	.DB "Wolfen Fur Brush"
 
 STR_ItemEng008:
-	.DB "Item000000000008"
+	.DB "Emerald Brooch  "
 
 STR_ItemEng009:
-	.DB "Item000000000009"
+	.DB "Leoniden Paw Wax"
 
 STR_ItemEng010:
-	.DB "Item000000000010"
+	.DB "Linen Cape      "
 
 STR_ItemEng011:
-	.DB "Item000000000011"
+	.DB "Librefur Map    "
 
 STR_ItemEng012:
-	.DB "Item000000000012"
+	.DB "Well Water      "
 
 STR_ItemEng013:
-	.DB "Item000000000013"
+	.DB "Parsnip         "
 
 STR_ItemEng014:
-	.DB "Item000000000014"
+	.DB "Deer Bait       "
 
 STR_ItemEng015:
-	.DB "Item000000000015"
+	.DB "Flintstone      "
 
 STR_ItemEng016:
-	.DB "Item000000000016"
+	.DB "Parden Bait     "
 
 STR_ItemEng017:
-	.DB "Item000000000017"
+	.DB "Fleckenstein Map"
 
 STR_ItemEng018:
-	.DB "Item000000000018"
+	.DB "Dungeon Key     "
 
 STR_ItemEng019:
-	.DB "Item000000000019"
+	.DB "Wooden Flute    "
 
 STR_ItemEng020:
-	.DB "Item000000000020"
+	.DB "Silver Flute    "
 
 STR_ItemEng021:
-	.DB "Item000000000021"
+	.DB "Leo Flayer      "
 
 STR_ItemEng022:
-	.DB "Item000000000022"
+	.DB "Gorilla Hide    "
 
 STR_ItemEng023:
-	.DB "Item000000000023"
+	.DB "Dorothy         "
 
 STR_ItemEng024:
-	.DB "Item000000000024"
+	.DB "Fennec Ears     "
 
 STR_ItemEng025:
-	.DB "Item000000000025"
+	.DB "Brown Ale       "
 
 STR_ItemEng026:
-	.DB "Item000000000026"
+	.DB "Yo-yo           "
 
 STR_ItemEng027:
-	.DB "Item000000000027"
+	.DB "iiiiiiiiiiiiiiii"
 
 STR_ItemEng028:
-	.DB "Item000000000028"
+	.DB "abababababababab"
 
 STR_ItemEng029:
-	.DB "Item000000000029"
+	.DB "ngngngngngngngng"
 
 STR_ItemEng030:
-	.DB "Item000000000030"
+	.DB "KKKKKKKKKKKKKKKK"
 
 STR_ItemEng031:
 	.DB "Item000000000031"
