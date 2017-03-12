@@ -35,13 +35,13 @@ spc_load_data:
 
 _wait1:
 
-	cmp.l	REG_APUIO01
+	cmp.l	REG_APUIO0
 	bne	_wait1
 
 	lda	DP_SPC_DataAddress ;5,s					;adr
-	sta.l	REG_APUIO23
+	sta.l	REG_APUIO2
 	lda.w	#$01cc							;IPL load and ready signature
-	sta.l	REG_APUIO01
+	sta.l	REG_APUIO0
 
 	Accu8
 
@@ -82,7 +82,7 @@ _load3:
 	Accu16
 
 	lda.w	#$0200							;loaded code starting address
-	sta.l	REG_APUIO23
+	sta.l	REG_APUIO2
 
 	Accu8
 
@@ -112,8 +112,8 @@ _load3:
 
 _load5:
 
-	lda.l	REG_APUIO01						;wait until SPC700 clears all communication ports, confirming that code has started
-	ora.l	REG_APUIO23
+	lda.l	REG_APUIO0						;wait until SPC700 clears all communication ports, confirming that code has started
+	ora.l	REG_APUIO2
 	bne	_load5
 
 ;	.endif
@@ -139,9 +139,9 @@ spc_command_asm:
 	Accu16
 
 	lda	gss_param
-	sta.l	REG_APUIO23
+	sta.l	REG_APUIO2
 	lda	gss_command
-	sta.l	REG_APUIO01
+	sta.l	REG_APUIO0
 	cmp.w	#SCMD_LOAD						;don't wait acknowledge
 	beq	+
 

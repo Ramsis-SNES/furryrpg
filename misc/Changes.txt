@@ -10,7 +10,7 @@
 
 
 Build #00278:
-- made text box appear only after portrait/background color control codes have been processed, this fixes "flickering"
+- made text box appear only after portrait/background color control codes have been processed, this fixes "flickering" of text box elements
 - moved text box background color DMA to Vblank to prevent glitches
 - updated WIP title screen
 

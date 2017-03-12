@@ -923,7 +923,7 @@ GotoInventoryV-Split:
 
 
 
-; -------------------------- set up HDMA channel 7 for screen mode (inventory sub-menu)
+; -------------------------- set up HDMA channel 7 for screen mode
 	ldx	#SRC_HDMA_Mode5
 	stx	$4372
 	lda	#:SRC_HDMA_Mode5
@@ -936,8 +936,8 @@ GotoInventoryV-Split:
 
 
 ; -------------------------- screen regs, additional parameters
-	lda	#$40							; BG1/BG2 character data VRAM offset: $0000/$4000
-	sta	REG_BG12NBA
+;	lda	#$40							; BG1/BG2 character data VRAM offset: $0000/$4000 // never mind, HDMA does this
+;	sta	REG_BG12NBA
 	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
 	sta	REG_BG34NBA
 	lda	#%00100000						; enable color math on backdrop only
@@ -1020,8 +1020,8 @@ __RenderItem:
 	tsb	DP_DMA_Updates
 	and	#%00001111
 	tsb	DP_DMA_Updates+1
--	bra	-
 
+	Freeze
 
 
 MakeMode5Fonts:

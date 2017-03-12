@@ -58,7 +58,7 @@ __TextBoxVblankDone:
 __ShowHUD:
 	lda	ARRAY_HDMA_HUD_Scroll+1
 	ldb	ARRAY_HDMA_HUD_Scroll+7
--	dec	a							; make it appear faster than it disappears (hence multiple decrements)
+	dec	a							; make it appear faster than it disappears (hence multiple decrements)
 	dec	a
 	dec	a
 	bpl	+							; only positive values allowed (except for #$FF)
@@ -82,7 +82,7 @@ __ShowHUD:
 __HideHUD:
 	lda	ARRAY_HDMA_HUD_Scroll+1
 	ldb	ARRAY_HDMA_HUD_Scroll+7
--	inc	a
+	inc	a
 	sta	ARRAY_HDMA_HUD_Scroll+1
 	xba
 	dec	a
@@ -654,9 +654,6 @@ VIRQ_Mode7:
 
 GetInput:
 	php
-
-;	Accu8
-
 	lda	#$01
 
 _W1:	bit	REG_HVBJOY

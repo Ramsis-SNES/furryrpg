@@ -517,7 +517,7 @@ __AreaBG2TileMapDone:
 ; NIGHT W/ SPRITES, XORed palette req.
 	lda	#$80							; enter forced blank
 	sta	REG_INIDISP
-	lda	#ADDR_CGRAM_AREA					; set CGRAM address for BG1 tiles palette
+	lda	#ADDR_CGRAM_Area					; set CGRAM address for BG1 tiles palette
 	sta	REG_CGADD
 	ldx	#0
 -	lda.l	SRC_Palette_Area001, x

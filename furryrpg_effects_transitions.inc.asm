@@ -587,10 +587,6 @@ EffectDiamondIn:
 	sta	REG_W34SEL
 	lda	#%00000011						; and sprites
 	sta	REG_WOBJSEL
-;	lda	#$20							; set initial window 1 X1
-;	sta	REG_WH0
-;	lda	#$C0							; set initial window 1 X2
-;	sta	REG_WH1
 	lda	#%00011111						; enable window masking on BG1 thru BG4 and sprites
 	sta	REG_TMW							; on mainscreen
 	sta	REG_TSW							; and subscreen
