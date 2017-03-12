@@ -89,4 +89,48 @@ STR_MainMenuEng013:
 
 
 
+STR_SubMenuInventoryEng000:
+	.DB "Refreshments            "
+
+STR_SubMenuInventoryEng001:
+	.DB "First-aid supplies      "
+
+STR_SubMenuInventoryEng002:
+	.DB "Food                    "
+
+STR_SubMenuInventoryEng003:
+	.DB "Weapons                 "
+
+STR_SubMenuInventoryEng004:
+	.DB "Short-range             "
+
+STR_SubMenuInventoryEng005:
+	.DB "Long-range              "
+
+STR_SubMenuInventoryEng006:
+	.DB "Armor                   "
+
+STR_SubMenuInventoryEng007:
+	.DB "Accessories             "
+
+STR_SubMenuInventoryEng008:
+	.DB "Battle Items            "
+
+STR_SubMenuInventoryEng009:
+	.DB "Attack Items            "
+
+STR_SubMenuInventoryEng010:
+	.DB "Defense Items           "
+
+STR_SubMenuInventoryEng011:
+	.DB "Treasure                "
+
+STR_SubMenuInventoryEng012:
+	.DB "Unappraised             "
+
+STR_SubMenuInventoryEng013:
+	.DB "Key Items               "
+
+
+
 ; ******************************** EOF *********************************
