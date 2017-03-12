@@ -751,6 +751,162 @@ CalcRingMenuItemPos:
 GotoQuitGame:
 
 Goto???1:
+;GotoInventoryV-Split:
+	lda	#$80							; enter forced blank
+	sta	REG_INIDISP
+
+	DisableIRQs
+
+	stz	REG_HDMAEN						; disable HDMA
+
+
+
+; -------------------------- clear tilemap buffers, init sprites, load new font/GFX data
+	ldx	#(ARRAY_BG1TileMap1 & $FFFF)
+	stx	REG_WMADDL
+	stz	REG_WMADDH
+
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024*9		; clear all tile map buffers (except BG3-hi)
+
+	jsr	SpriteInit						; purge OAM
+
+	lda	#$80							; increment VRAM address by one word after writing to $2119
+	sta	REG_VMAIN
+	ldx	#ADDR_VRAM_BG1_Tiles					; set VRAM address for BG1 font tiles
+	stx	REG_VMADDL
+	jsr	MakeMode5FontBG1
+
+	ldx	#ADDR_VRAM_BG3_Tiles					; set VRAM address for BG2 font tiles (Mode 5 BG2 uses the same char data as Mode 1 BG3)
+	stx	REG_VMADDL
+	jsr	MakeMode5FontBG2
+
+
+
+; -------------------------- palettes --> CGRAM
+	stz	REG_CGADD						; reset CGRAM address
+
+	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
+
+;	lda	#$80							; set CGRAM address to #256 (word address) for sprites
+;	sta	REG_CGADD
+
+;	DMA_CH0 $02, :SRC_Palette_Sprites_InGameMenu, SRC_Palette_Sprites_InGameMenu, $22, 32
+
+
+
+; -------------------------- set up HDMA channel 6 for char data area designation
+	ldx	#SRC_HDMA_BG12CharData
+	stx	$4362
+	lda	#:SRC_HDMA_BG12CharData
+	sta	$4364
+	lda	#$0B							; PPU reg. $210B (BG12NBA)
+	sta	$4361
+	lda	#$00							; transfer mode (1 byte)
+	sta	$4360
+
+
+
+; -------------------------- set up HDMA channel 7 for screen mode
+	ldx	#SRC_HDMA_Mode5
+	stx	$4372
+	lda	#:SRC_HDMA_Mode5
+	sta	$4374
+	lda	#$05							; PPU reg. $2105 (BGMODE)
+	sta	$4371
+	lda	#$00							; transfer mode (1 byte)
+	sta	$4370
+
+
+
+; -------------------------- screen regs, additional parameters
+;	lda	#$40							; BG1/BG2 character data VRAM offset: $0000/$4000 // never mind, HDMA does this
+;	sta	REG_BG12NBA
+	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
+	sta	REG_BG34NBA
+	lda	#%00100000						; enable color math on backdrop only
+	sta	REG_CGADSUB
+
+	SetIRQ	TBL_HIRQ_MainMenu
+
+	lda	#44							; H-IRQ setup: dot number for interrupt
+	sta	REG_HTIMEL						; set low byte of H-timer
+	stz	REG_HTIMEH						; set high byte of H-timer
+	lda	#%11000000						; enable HDMA channels 6 (BG1/2 char data area designation), 7 (BG Mode 5)
+	tsb	DP_HDMA_Channels
+	lda	#$91							; enable H-IRQ, NMI, and auto-joypad read
+	sta	DP_Shadow_NMITIMEN
+	sta	REG_NMITIMEN
+	cli
+	lda	#$0F
+	sta	REG_INIDISP
+
+	SetTextPos	2, 2
+
+	ldx	#STR_ItemEng000
+	stx	DP_StringBank
+	lda	#:STR_ItemEng000
+	sta	DP_StringBank+2
+	lda	#24
+	sta	temp+3
+
+__RenderItem:
+	lda	#16
+	sta	DP_HiResPrintLen
+	jsr	PrintHiResFixedLenFWF
+
+	Accu16
+
+	lda	DP_StringBank
+	clc
+	adc	#16
+	sta	DP_StringBank
+	lda	DP_TextCursor
+	clc
+	adc	#24
+	sta	DP_TextCursor
+
+	Accu8
+
+	dec	temp+3
+	bne	__RenderItem
+
+	SetTextPos	2, 16
+
+	ldx	#STR_MainMenuEng000
+	stx	DP_StringBank
+	lda	#:STR_MainMenuEng000
+	sta	DP_StringBank+2
+
+	ldy	#0
+-	lda	[DP_StringBank], y
+	beq	+
+	asl	a							; double char no. because font tiles were "expanded" for hi-res mode
+	inc	a							; increment char no. because Mode 5 BG2 font tiles sit on the "right"
+	jsr	FillTextBuffer
+
+	iny
+	bra	-
++
+
+;	ldx	#(ARRAY_BG3TileMap & $FFFF)
+;	stx	REG_WMADDL
+;	stz	REG_WMADDH
+
+;	ldx	#0
+;	lda	#$83
+;-	sta	REG_WMDATA						; fill BG3 tile map (for testing)
+;	inx
+;	cpx	#1024
+;	bne	-
+
+	lda	#%00011111						; make sure BG1-3 lo and BG1/2 hi tilemaps get updated
+	tsb	DP_DMA_Updates
+	and	#%00001111
+	tsb	DP_DMA_Updates+1
+
+	Freeze
+
+
 
 Goto???2:
 
@@ -875,212 +1031,9 @@ __MakeBG3ItemTileMap:
 
 ; **********************************************************************
 
+
+
 .ENDASM
-
-GotoInventoryV-Split:
-	lda	#$80							; enter forced blank
-	sta	REG_INIDISP
-
-	DisableIRQs
-
-	stz	REG_HDMAEN						; disable HDMA
-
-
-
-; -------------------------- clear tilemap buffers, init sprites, load new font/GFX data
-	ldx	#(ARRAY_BG1TileMap1 & $FFFF)
-	stx	REG_WMADDL
-	stz	REG_WMADDH
-
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024*9		; clear all tile map buffers (except BG3-hi)
-
-	jsr	SpriteInit						; purge OAM
-	jsr	MakeMode5Fonts
-
-
-
-; -------------------------- palettes --> CGRAM
-	stz	REG_CGADD						; reset CGRAM address
-
-	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
-
-;	lda	#$80							; set CGRAM address to #256 (word address) for sprites
-;	sta	REG_CGADD
-
-;	DMA_CH0 $02, :SRC_Palette_Sprites_InGameMenu, SRC_Palette_Sprites_InGameMenu, $22, 32
-
-
-
-; -------------------------- set up HDMA channel 6 for char data area designation
-	ldx	#SRC_HDMA_BG12CharData
-	stx	$4362
-	lda	#:SRC_HDMA_BG12CharData
-	sta	$4364
-	lda	#$0B							; PPU reg. $210B (BG12NBA)
-	sta	$4361
-	lda	#$00							; transfer mode (1 byte)
-	sta	$4360
-
-
-
-; -------------------------- set up HDMA channel 7 for screen mode
-	ldx	#SRC_HDMA_Mode5
-	stx	$4372
-	lda	#:SRC_HDMA_Mode5
-	sta	$4374
-	lda	#$05							; PPU reg. $2105 (BGMODE)
-	sta	$4371
-	lda	#$00							; transfer mode (1 byte)
-	sta	$4370
-
-
-
-; -------------------------- screen regs, additional parameters
-;	lda	#$40							; BG1/BG2 character data VRAM offset: $0000/$4000 // never mind, HDMA does this
-;	sta	REG_BG12NBA
-	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
-	sta	REG_BG34NBA
-	lda	#%00100000						; enable color math on backdrop only
-	sta	REG_CGADSUB
-
-	SetIRQ	TBL_HIRQ_MainMenu
-
-	lda	#44							; H-IRQ setup: dot number for interrupt
-	sta	REG_HTIMEL						; set low byte of H-timer
-	stz	REG_HTIMEH						; set high byte of H-timer
-	lda	#%11000000						; enable HDMA channels 6 (BG1/2 char data area designation), 7 (BG Mode 5)
-	tsb	DP_HDMA_Channels
-	lda	#$91							; enable H-IRQ, NMI, and auto-joypad read
-	sta	DP_Shadow_NMITIMEN
-	sta	REG_NMITIMEN
-	cli
-	lda	#$0F
-	sta	REG_INIDISP
-
-	SetTextPos	2, 2
-
-	ldx	#STR_ItemEng000
-	stx	strBank
-	lda	#:STR_ItemEng000
-	sta	strBank+2
-	lda	#24
-	sta	temp+3
-
-__RenderItem:
-	lda	#16
-	sta	DP_HiResPrintLen
-	jsr	PrintHiResFWF
-
-	Accu16
-
-	lda	strBank
-	clc
-	adc	#16
-	sta	strBank
-	lda	Cursor
-	clc
-	adc	#24
-	sta	Cursor
-
-	Accu8
-
-	dec	temp+3
-	bne	__RenderItem
-
-	SetTextPos	2, 16
-
-	ldx	#STR_MainMenuEng000
-	stx	strBank
-	lda	#:STR_MainMenuEng000
-	sta	strBank+2
-
-	ldy	#0
--	lda	[strBank], y
-	beq	+
-	asl	a							; double char no. because font tiles were "expanded" for hi-res mode
-	inc	a							; increment char no. because Mode 5 BG2 font tiles sit on the "right"
-	jsr	FillTextBuffer
-
-	iny
-	bra	-
-+
-
-;	ldx	#(ARRAY_BG3TileMap & $FFFF)
-;	stx	REG_WMADDL
-;	stz	REG_WMADDH
-
-;	ldx	#0
-;	lda	#$83
-;-	sta	REG_WMDATA						; fill BG3 tile map (for testing)
-;	inx
-;	cpx	#1024
-;	bne	-
-
-	lda	#%00011111						; make sure BG1-3 lo and BG1/2 hi tilemaps get updated
-	tsb	DP_DMA_Updates
-	and	#%00001111
-	tsb	DP_DMA_Updates+1
-
-	Freeze
-
-
-MakeMode5Fonts:
-	lda	#$80							; increment VRAM address by one word after writing to $2119
-	sta	$2115
-	ldx	#ADDR_VRAM_BG1_Tiles					; set VRAM address for BG1 font tiles
-	stx	$2116
-
-	Accu16
-
-	ldx	#0
-
-__BuildFontBG1:
-	ldy	#0
--	lda.l	GFX_FontHUD, x						; first, copy font tile (font tiles sit on the "left")
-	sta	$2118
-	inx
-	inx
-	iny
-	cpy	#8							; 16 bytes (8 double bytes) per tile
-	bne	-
-
-	ldy	#0
--	stz	$2118							; next, add 3 blank tiles (1 blank tile because Mode 5 forces 16×8 tiles
-	iny								; and 2 blank tiles because BG1 is 4bpp)
-	cpy	#24							; 16 bytes (8 double bytes) per tile
-	bne	-
-
-	cpx	#2048							; 2 KiB font done?
-	bne	__BuildFontBG1
-
-	lda	#ADDR_VRAM_BG3_Tiles					; set VRAM address for BG2 font tiles (Mode 5 BG2 uses the same char data as Mode 1 BG3)
-	sta	$2116
-	ldx	#0
-
-__BuildFontBG2:
-	ldy	#0
--	stz	$2118							; first, add 1 blank tile (Mode 5 forces 16×8 tiles,
-	iny								; no more blank tiles because BG2 is 2bpp)
-	cpy	#8							; 16 bytes (8 double bytes) per tile
-	bne	-
-
-	ldy	#0
--	lda.l	GFX_FontHUD, x						; next, copy 8×8 font tile (font tiles sit on the "right")
-	sta	$2118
-	inx
-	inx
-	iny
-	cpy	#8							; 16 bytes (8 double bytes) per tile
-	bne	-
-
-	cpx	#2048							; 2 KiB font done?
-	bne	__BuildFontBG2
-
-	Accu8
-
-	rts
-
-
 
 LoadMenuCharPortraits:
 	ldx	#$01C0

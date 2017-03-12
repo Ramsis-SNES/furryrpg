@@ -313,54 +313,11 @@ AlphaIntro:
 	sta	REG_VMAIN
 	ldx	#$0000							; set VRAM address for BG1 font tiles
 	stx	REG_VMADDL
+	jsr	MakeMode5FontBG1
 
-	Accu16
-
-	ldx	#0
-
-__BuildFontBG1:
-	ldy	#0
--	lda.l	GFX_FontHUD, x						; first, copy font tile (font tiles sit on the "left")
-	sta	REG_VMDATAL
-	inx
-	inx
-	iny
-	cpy	#8							; 16 bytes (8 double bytes) per tile
-	bne	-
-
-	ldy	#0
--	stz	REG_VMDATAL						; next, add 3 blank tiles (1 blank tile because Mode 5 forces 16×8 tiles
-	iny								; and 2 blank tiles because BG1 is 4bpp)
-	cpy	#24							; 16 bytes (8 double bytes) per tile
-	bne	-
-
-	cpx	#2048							; 2 KiB font done?
-	bne	__BuildFontBG1
-
-	lda	#$2000							; set VRAM address for BG2 font tiles
-	sta	REG_VMADDL
-	ldx	#0
-
-__BuildFontBG2:
-	ldy	#0
--	stz	REG_VMDATAL						; first, add 1 blank tile (Mode 5 forces 16×8 tiles,
-	iny								; no more blank tiles because BG2 is 2bpp)
-	cpy	#8							; 16 bytes (8 double bytes) per tile
-	bne	-
-
-	ldy	#0
--	lda.l	GFX_FontHUD, x						; next, copy 8×8 font tile (font tiles sit on the "right")
-	sta	REG_VMDATAL
-	inx
-	inx
-	iny
-	cpy	#8							; 16 bytes (8 double bytes) per tile
-	bne	-
-
-	cpx	#2048							; 2 KiB font done?
-	bne	__BuildFontBG2
-
-	Accu8
+	ldx	#$2000							; set VRAM address for BG2 font tiles
+	stx	REG_VMADDL
+	jsr	MakeMode5FontBG2
 
 	SetTextPos	2, 2
 

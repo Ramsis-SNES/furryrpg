@@ -1165,6 +1165,66 @@ MakeTextBoxTileMapBG2:
 
 
 
+MakeMode5FontBG1:							; Expects VRAM address set to BG1 tile base
+	Accu16
+
+	ldx	#0
+
+__BuildFontBG1:
+	ldy	#0
+-	lda.l	GFX_FontHUD, x						; first, copy font tile (font tiles sit on the "left")
+	sta	$2118
+	inx
+	inx
+	iny
+	cpy	#8							; 16 bytes (8 double bytes) per tile
+	bne	-
+
+	ldy	#0
+-	stz	$2118							; next, add 3 blank tiles (1 blank tile because Mode 5 forces 16×8 tiles
+	iny								; and 2 blank tiles because BG1 is 4bpp)
+	cpy	#24							; 16 bytes (8 double bytes) per tile
+	bne	-
+
+	cpx	#2048							; 2 KiB font done?
+	bne	__BuildFontBG1
+
+	Accu8
+
+	rts
+
+
+
+MakeMode5FontBG2:							; Expects VRAM address set to BG2 tile base
+	Accu16
+
+	ldx	#0
+
+__BuildFontBG2:
+	ldy	#0
+-	stz	$2118							; first, add 1 blank tile (Mode 5 forces 16×8 tiles,
+	iny								; no more blank tiles because BG2 is 2bpp)
+	cpy	#8							; 16 bytes (8 double bytes) per tile
+	bne	-
+
+	ldy	#0
+-	lda.l	GFX_FontHUD, x						; next, copy 8×8 font tile (font tiles sit on the "right")
+	sta	$2118
+	inx
+	inx
+	iny
+	cpy	#8							; 16 bytes (8 double bytes) per tile
+	bne	-
+
+	cpx	#2048							; 2 KiB font done?
+	bne	__BuildFontBG2
+
+	Accu8
+
+	rts
+
+
+
 ProcessVWFTiles:
 	Accu16
 
@@ -1468,6 +1528,28 @@ PrintHiResLoop:
 	bra	PrintHiResLoop
 
 PrintHiResDone:
+	plp
+	rts
+
+
+
+PrintHiResFixedLenFWF:
+	php
+
+	Accu8
+	Index16
+
+	ldy	#0
+
+PrintHiResFixedLenLoop:
+	lda	[DP_StringBank], y					; read next format string character
+	iny								; increment input pointer
+	jsr	FillHiResTextBuffer					; write character to text buffer
+
+	dec	DP_HiResPrintLen
+	bne	PrintHiResFixedLenLoop
+
+PrintHiResFixedLenDone:
 	plp
 	rts
 
