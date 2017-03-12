@@ -1,7 +1,7 @@
 #==========================================================================================
 #
 #   "FURRY RPG" (WORKING TITLE)
-#   (c) 2016 by Ramsis a.k.a. ManuLoewe (http://www.manuloewe.de/)
+#   (c) 201X by Ramsis a.k.a. ManuLoewe (https://manuloewe.de/)
 #
 #	*** SCRIPT TO CREATE MODE 7 SCALING TABLES ***
 #

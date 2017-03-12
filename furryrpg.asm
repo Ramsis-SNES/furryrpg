@@ -1,7 +1,7 @@
 ;==========================================================================================
 ;
 ;   "FURRY RPG" (WORKING TITLE)
-;   (c) 201X by Ramsis a.k.a. ManuLöwe (http://manuloewe.de/)
+;   (c) 201X by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
 ;
 ;	*** ROM LAYOUT ***
 ;
@@ -186,7 +186,7 @@ STR_SoftwareVersionNo:
 ;STR_SoftwareVersionNo_END:
 
 STR_SoftwareMaker:
-	.DB "Copyright (c) 201X by Ramsis - http://manuloewe.de/"
+	.DB "Copyright (c) 201X by Ramsis - https://manuloewe.de/"
 	.DB 0
 
 STR_SoftwareBuild:

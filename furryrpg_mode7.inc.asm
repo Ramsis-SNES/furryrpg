@@ -1,7 +1,7 @@
 ;==========================================================================================
 ;
 ;   "FURRY RPG" (WORKING TITLE)
-;   (c) 201X by Ramsis a.k.a. ManuLöwe (http://manuloewe.de/)
+;   (c) 201X by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
 ;
 ;	*** MODE7 HANDLER ***
 ;
