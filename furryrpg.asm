@@ -13,6 +13,7 @@
 
 .DEFINE DEBUG								; boot into debug menu, show verbose on-screen messages
 ;.DEFINE NOMUSIC							; uncomment this to disable music
+.DEFINE PrecalcMode7Tables						; if disabled, 112 304-byte-long tables (>33 KiB) are calculated during runtime (and stored in WRAM), which currently adds ~6 seconds of loading time to the Mode7 map screen
 
 
 
@@ -454,6 +455,24 @@ GFX_StartPic:
 
 
 
+.SECTION "Mode 7 sky data"
+
+GFX_Mode7_Sky:
+.INCBIN "gfx/sky.pic"
+GFX_Mode7_Sky_END:
+
+SRC_Palette_Mode7_Sky:
+.INCBIN "gfx/sky.pal" READ 32
+SRC_Palette_Mode7_Sky_END:
+
+SRC_TileMap_Mode7_Sky:
+.INCBIN "gfx/sky.map"
+SRC_TileMap_Mode7_Sky_END:
+
+.ENDS
+
+
+
 ; ****************************** NEW BANK ******************************
 
 .REDEFINE CurrentBank	CurrentBank+1
@@ -488,15 +507,13 @@ SRC_Tilemap_WorldMap:
 
 .SECTION "Mode 7 GFX 2"
 
-SRC_Sommappal:
-.INCBIN "gfx/iot.pal" ;som_map.pal"
-;.INCBIN "SOM.zst" SKIP $618 READ 512
+SRC_IoTmappal:
+.INCBIN "gfx/iot.pal" READ 512
 
-GFX_Sommappic:
-.INCBIN "gfx/iot.bin" ;som_map.pic"
-;.INCBIN "SOM.zst" SKIP $20C13 READ $8000
+GFX_IoTmappic:
+.INCBIN "gfx/iot.bin"
 
-GFX_Sommappic_END:
+GFX_IoTmappic_END:
 
 .ENDS
 

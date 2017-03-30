@@ -408,11 +408,10 @@
 	DP_HUD_DispCounter	dw					; holds frame count since HUD appeared
 	DP_HUD_Status		db					; adrrrrrp [a/d = HUD should (re-)appear/disappear, p = HUD is present on screen]
 
-	DP_Mode7_Altitude	db
-	DP_Mode7_AltTabOffset	dsb 3					; holds a 24-bit address
+	DP_Mode7_Altitude	db					; altitude setting (currently 0-127)
+	DP_Mode7_BG2HScroll	db
 	DP_Mode7_CenterCoordX	dw
 	DP_Mode7_CenterCoordY	dw
-	DP_Mode7_FrameCounter	db
 	DP_Mode7_RotAngle	dw					; currently needs to be 16-bit as it's used as an index in CalcMode7Matrix
 	DP_Mode7_ScrollOffsetX	dw
 	DP_Mode7_ScrollOffsetY	dw

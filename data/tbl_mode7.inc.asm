@@ -9,8 +9,10 @@
 
 
 
+.IFDEF PrecalcMode7Tables
 SRC_Mode7Scaling:
 .INCBIN ".\\data\\tbl_mode7_scaling.bin"
+.ENDIF
 
 
 

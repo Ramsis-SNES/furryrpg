@@ -378,24 +378,39 @@ Vblank_Mode7:
 	xba
 	sta	REG_M7Y							; Mode 7 center position Y register (high)
 
-; calculate table index based on altitude
-	lda	#$C0							; $1C0 = 224*2 scanlines
-	sta	REG_M7A
-	lda	#$01
-	sta	REG_M7A
+; calculate table offset based on current altitude
+	Accu16
+
+	lda	#$01C0							; 224 scanlines (*2 as the table consists of word entries for each scanline)
+	sec
+	sbc	#PARAM_Mode7SkyLines*2					; subtract sky lines as those aren't present in the table
+
+	Accu8
+
+	sta	REG_M7A							; write low byte
+	xba
+	sta	REG_M7A							; write high byte
 	lda	DP_Mode7_Altitude
 	sta	REG_M7B
 
+.IFDEF PrecalcMode7Tables
 	Accu16
 
-	lda	REG_MPYL
-	sta	DP_Mode7_AltTabOffset
-	lda	#(SRC_Mode7Scaling & $FFFF)
+	lda	REG_MPYL						; (number of lines * 2) * altitude setting = table offset
+	sta	DP_DataSrcAddress
 	clc
-	adc	DP_Mode7_AltTabOffset
-	sta	DP_Mode7_AltTabOffset
+	adc	#(SRC_Mode7Scaling & $FFFF)
+	sta	DP_DataSrcAddress
 
 	Accu8
+.ELSE
+	ldx	REG_MPYL						; (number of lines * 2) * altitude setting = table offset
+	stx	DP_DataSrcAddress
+.ENDIF
+
+	lda	DP_Mode7_BG2HScroll
+	sta	REG_BG2HOFS
+	stz	REG_BG2HOFS
 
 
 
@@ -403,8 +418,7 @@ Vblank_Mode7:
 	lda	#$01|$08						; set BG Mode 1 for sky, BG3 priority
 	sta	REG_BGMODE
 
-;	lda	#%00010110						; turn on BG2, BG3, and sprites
-	lda	#%00010000
+	lda	#%00010010						; turn on BG2 and sprites
 	sta	REG_TM							; on the mainscreen
 	sta	REG_TS							; and on the subscreen
 

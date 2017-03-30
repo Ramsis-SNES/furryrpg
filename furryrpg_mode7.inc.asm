@@ -20,6 +20,89 @@ TestMode7:
 
 	DisableIRQs
 
+.IFNDEF PrecalcMode7Tables
+	stz	REG_WMADDL						; set WRAM address to $7F0000
+	stz	REG_WMADDM
+	lda	#$01
+	sta	REG_WMADDH
+
+;old:
+; generate tables for 128 altitude settings, 152 scanlines each:
+; altitude 0: $800 / $20, $24, $28 ... $280
+; altitude 1: $1000 / $20, $24, $28 ... $280
+; altitude 2: $1800 / $20, $24, $28 ... $280
+; ...
+
+;new:
+; generate tables for 112 altitude settings, 152 scanlines each:
+; altitude 0: $8800 / $20, $24, $28 ... $280
+; altitude 1: $9000 / $20, $24, $28 ... $280
+; altitude 2: $9800 / $20, $24, $28 ... $280
+; ...
+
+	Accu16
+
+	pea	$0000							; high word of 32-bit dividend
+	pea	$8800							; low word of 32-bit dividend
+--	pea	$0020							; 16-bit divisor
+-	jsr	Div32by16
+
+	Accu8
+
+	lda	temp+4							; location of quotient
+	sta	REG_WMDATA
+	lda	temp+5
+	sta	REG_WMDATA
+
+	Accu16
+
+	pla								; divisor += 4
+	clc
+	adc	#4
+	cmp	#$0280
+	bcs	+
+	pha
+	bra	-
+
++	pla								; dividend += $800
+	clc
+	adc	#$0800
+	bcc	+
+	plx
+	inx
+	cpx	#4
+	beq	++
+	phx								; push high word of dividend
++	pha								; push low word of dividend
+;	pea	$0020							; push initial divisor
+	bra	--
+
+
+++	phx
+	pha
+	pea	$0020							; 16-bit divisor
+-	jsr	Div32by16
+
+	Accu8
+
+	lda	temp+4							; location of quotient
+	sta	REG_WMDATA
+	lda	temp+5
+	sta	REG_WMDATA
+
+	Accu16
+
+	pla								; divisor += 4
+	clc
+	adc	#4
+	cmp	#$0280
+	bcs	+
+	pha
+	bra	-
+
++	Accu8
+.ENDIF
+
 
 
 ; -------------------------- HDMA channel 3: color math
@@ -93,8 +176,7 @@ TestMode7:
 ; -------------------------- load Mode 7 palette
 	stz	REG_CGADD						; start at color 0
 
-	DMA_CH0 $02, :SRC_Sommappal, SRC_Sommappal, $22, 512
-;	DMA_CH0 $02, :SRC_Mappal, SRC_Mappal, $22, $0200
+	DMA_CH0 $02, :SRC_IoTmappal, SRC_IoTmappal, $22, 512
 
 
 
@@ -105,7 +187,7 @@ TestMode7:
 	ldx	#$0000							; set VRAM address $0000
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_Sommappic, GFX_Sommappic, $18, 32768 ;$0000
+	DMA_CH0 $01, :GFX_IoTmappic, GFX_IoTmappic, $18, 32768
 ; ##########################################################
 
 
@@ -126,18 +208,45 @@ TestMode7:
 ; ##############################################################
 
 
+	lda	#$58							; BG2 tile map VRAM offset: $5800, Tile Map size: 32×32 tiles
+	sta	REG_BG2SC
+	lda	#$40							; BG4 character data VRAM offset: $4000 (ignore BG1 bits)
+	sta	REG_BG12NBA
+	ldx	#$4000							; set VRAM address $4000
+	stx	REG_VMADDL
 
+	DMA_CH0 $01, :GFX_Mode7_Sky, GFX_Mode7_Sky, $18, GFX_Mode7_Sky_END-GFX_Mode7_Sky
+
+	ldx	#$5800							; set VRAM address $5800
+	stx	REG_VMADDL
+
+	DMA_CH0 $01, :SRC_TileMap_Mode7_Sky, SRC_TileMap_Mode7_Sky, $18, SRC_TileMap_Mode7_Sky_END-SRC_TileMap_Mode7_Sky
+
+	stz	REG_CGADD						; reset CGRAM address
+
+	DMA_CH0 $02, :SRC_Palette_Mode7_Sky, SRC_Palette_Mode7_Sky, $22, 32
+
+	lda	#$FF							; scroll BG2 down by 1 px
+	sta	REG_BG2VOFS
+	stz	REG_BG2VOFS
+
+
+
+; -------------------------- load sprite font
 	jsr	SpriteInit						; purge OAM
 
-
-
-; -------------------------- load font & cloud sprites
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	REG_VMAIN
 	ldx	#ADDR_VRAM_SpriteTiles					; set VRAM address for sprite tiles
 	stx	REG_VMADDL
 
 	DMA_CH0 $01, :GFX_Sprites_Smallfont, GFX_Sprites_Smallfont, $18, 4096
+
+
+
+.ENDASM
+
+; -------------------------- load cloud sprites
 	DMA_CH0 $01, :GFX_Sprites_Clouds, GFX_Sprites_Clouds, $18, 2048
 
 	lda	#$A0							; start at 3rd sprite color
@@ -146,8 +255,6 @@ TestMode7:
 	DMA_CH0 $02, :SRC_Palette_Clouds, SRC_Palette_Clouds, $22, 32
 
 
-
-.ENDASM
 
 ; -------------------------- write cloud tilemap
 	Accu16
@@ -288,6 +395,9 @@ Mode7Loop:
 ;	PrintSpriteText	25, 22, "V-Line: $", 1
 ;	PrintSpriteHexNum	temp+7
 
+	PrintSpriteText	25, 20, "Altitude: $", 1
+	PrintSpriteHexNum	DP_Mode7_Altitude
+
 ;	PrintSpriteText	23, 22, "Angle: $", 1
 ;	PrintSpriteHexNum	DP_Mode7_RotAngle
 
@@ -315,9 +425,9 @@ Mode7Loop:
 	dec	DP_Mode7_RotAngle
 	lda	DP_Mode7_Altitude
 	inc	a
-	cmp	#128
+	cmp	#112
 	bcc	+
-	lda	#127
+	lda	#111
 +	sta	DP_Mode7_Altitude
 	jsr	CalcMode7Matrix
 
@@ -334,9 +444,9 @@ Mode7Loop:
 	inc	DP_Mode7_RotAngle
 	lda	DP_Mode7_Altitude
 	inc	a
-	cmp	#128
+	cmp	#112
 	bcc	+
-	lda	#127
+	lda	#111
 +	sta	DP_Mode7_Altitude
 	jsr	CalcMode7Matrix
 
@@ -387,9 +497,9 @@ Mode7Loop:
 	beq	++
 	lda	DP_Mode7_Altitude
 	inc	a
-	cmp	#128
+	cmp	#112
 	bcc	+
-	lda	#127
+	lda	#111
 +	sta	DP_Mode7_Altitude
 	jsr	CalcMode7Matrix
 ++
@@ -414,6 +524,10 @@ Mode7Loop:
 	lda	Joy1Press+1
 	and	#%00000010
 	beq	+
+	lda	DP_Mode7_BG2HScroll
+	sec
+	sbc	#5
+	sta	DP_Mode7_BG2HScroll
 	dec	DP_Mode7_RotAngle
 	jsr	CalcMode7Matrix
 +
@@ -424,6 +538,10 @@ Mode7Loop:
 	lda	Joy1Press+1
 	and	#%00000001
 	beq	+
+	lda	DP_Mode7_BG2HScroll
+	clc
+	adc	#5
+	sta	DP_Mode7_BG2HScroll
 	inc	DP_Mode7_RotAngle
 	jsr	CalcMode7Matrix
 +
@@ -561,13 +679,15 @@ __M7FlightY:
 
 ; -------------------------- calculate Mode 7 matrix parameters for next frame
 
-; This is the algorithm to do signed 8×16 bit multiplication using CPU multiplication registers:
+; This is the algorithm to do signed 8×16 bit multiplication required for Mode 7 registers using hardware multiplication:
 ; - do unsigned 8×8 bit multiplication for lower 8 bits of multiplicand (while keeping track of multiplier sign), store 16-bit interim result in temp
-; - do unsigned 8×8 bit multiplication for upper 8 bits of multiplicand, store 16-bit final result (if multiplier sign was negative, make result negative)
+; - do unsigned 8×8 bit multiplication for upper 8 bits of multiplicand, add (interim result >> 8) and store as 16-bit final result (if multiplier sign was negative, make result negative)
+
+.IFDEF PrecalcMode7Tables
 
 CalcMode7Matrix:
 	lda	#:SRC_Mode7Scaling
-	sta	DP_Mode7_AltTabOffset+2
+	sta	DP_DataSrcAddress+2
 
 
 
@@ -576,9 +696,8 @@ CalcMode7Matrix:
 	ldx	#0
 -	stz	temp+6
 	txy
-	lda	[DP_Mode7_AltTabOffset], y
+	lda	[DP_DataSrcAddress], y
 	sta	REG_WRMPYA
-	phx
 
 	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the cos table
 	lda.l	SRC_Mode7Cos, x
@@ -587,21 +706,15 @@ CalcMode7Matrix:
 	inc	a
 	dec	temp+6							; remember that multplier has wrong sign
 +	sta	REG_WRMPYB
-
-	plx								; 5 cycles
-
-	Accu16								; 3
-
-	lda	REG_RDMPYL						; 3 // store interim result
-	sta	temp
-
-	Accu8
+	nop								; burn a few cycles
+	nop
+	ldx	REG_RDMPYL						; store interim result
+	stx	temp
 
 ; 8×8 multiplication for upper 8 bits of multiplicand
 	iny
-	lda	[DP_Mode7_AltTabOffset], y
+	lda	[DP_DataSrcAddress], y
 	sta	REG_WRMPYA
-	phx
 
 	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the cos table
 	lda.l	SRC_Mode7Cos, x
@@ -609,10 +722,10 @@ CalcMode7Matrix:
 	eor	#$FF							; make multiplier positive
 	inc	a
 +	sta	REG_WRMPYB
+	tyx
+	dex								; make up for preceding iny
 
-	plx								; 5 cycles
-
-	Accu16								; 3
+	Accu16								; 3 cycles
 
 	lda	REG_RDMPYL						; 3 // store final result
 	clc
@@ -638,9 +751,8 @@ CalcMode7Matrix:
 	ldx	#0
 -	stz	temp+6
 	txy
-	lda	[DP_Mode7_AltTabOffset], y
+	lda	[DP_DataSrcAddress], y
 	sta	REG_WRMPYA
-	phx
 
 	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the sin table
 	lda.l	SRC_Mode7Sin, x
@@ -649,21 +761,15 @@ CalcMode7Matrix:
 	inc	a
 	dec	temp+6							; remember that multplier has wrong sign
 +	sta	REG_WRMPYB
-
-	plx								; 5 cycles
-
-	Accu16								; 3
-
-	lda	REG_RDMPYL						; 3 // store interim result
-	sta	temp
-
-	Accu8
+	nop								; burn a few cycles
+	nop
+	ldx	REG_RDMPYL						; store interim result
+	stx	temp
 
 ; 8×8 multiplication for upper 8 bits of multiplicand
 	iny
-	lda	[DP_Mode7_AltTabOffset], y
+	lda	[DP_DataSrcAddress], y
 	sta	REG_WRMPYA
-	phx
 
 	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the sin table
 	lda.l	SRC_Mode7Sin, x
@@ -671,8 +777,137 @@ CalcMode7Matrix:
 	eor	#$FF							; make multiplier positive
 	inc	a
 +	sta	REG_WRMPYB
+	tyx
+	dex
 
-	plx								; 5 cycles
+	Accu16								; 3 cycles
+
+	lda	REG_RDMPYL						; 3 // store final result
+	clc
+	adc	temp+1
+	bit	temp+5							; check for multiplier sign
+	bmi	+
+	sta	ARRAY_HDMA_M7C+(PARAM_Mode7SkyLines*2), x
+	eor	#$FFFF							; make M7C parameter negative and store in M7B
+	inc	a
+	sta	ARRAY_HDMA_M7B+(PARAM_Mode7SkyLines*2), x
+
+	Accu8
+
+	inx
+	inx
+	cpx	#448-(PARAM_Mode7SkyLines*2)
+	bne	-
+	rts
+
+.ACCU 16
+
++	sta	ARRAY_HDMA_M7B+(PARAM_Mode7SkyLines*2), x		; multiplier was negative, store negative value first in M7B
+	eor	#$FFFF							; make M7B parameter positive and store in M7C
+	inc	a
+	sta	ARRAY_HDMA_M7C+(PARAM_Mode7SkyLines*2), x
+
+	Accu8
+
+	inx
+	inx
+	cpx	#448-(PARAM_Mode7SkyLines*2)
+	bne	-
+	rts
+
+.ELSE
+
+CalcMode7Matrix:
+	ldx	DP_DataSrcAddress					; set WRAM address to beginning of table (based on current altitude, as set during Vblank)
+	stx	REG_WMADDL
+	lda	#$01
+	sta	REG_WMADDH
+
+
+
+; -------------------------- calculate M7A/M7D for next frame
+; 8×8 multiplication for lower 8 bits of multiplicand
+	ldx	#0
+-	stz	temp+6
+	lda	REG_WMDATA						; read table entry
+	sta	REG_WRMPYA
+	txy								; preserve X in Y, this is faster than using the stack
+	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the cos table
+	lda.l	SRC_Mode7Cos, x
+	bpl	+							; check for negative multiplier
+	eor	#$FF							; make multiplier positive
+	inc	a
+	dec	temp+6							; remember that multplier has wrong sign
++	sta	REG_WRMPYB
+	nop								; burn a few cycles
+	nop
+	ldx	REG_RDMPYL						; store interim result
+	stx	temp
+
+; 8×8 multiplication for upper 8 bits of multiplicand
+	lda	REG_WMDATA						; read table entry
+	sta	REG_WRMPYA
+	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the cos table
+	lda.l	SRC_Mode7Cos, x
+	bpl	+							; check for negative multiplier once again
+	eor	#$FF							; make multiplier positive
+	inc	a
++	sta	REG_WRMPYB
+	tyx								; restore X // 2 cycles
+
+	Accu16								; 3
+
+	lda	REG_RDMPYL						; 3 // store final result
+	clc
+	adc	temp+1
+	bit	temp+5							; check for multiplier sign
+	bpl	+
+	eor	#$FFFF							; multiplier was negative, so make final result negative
+	inc	a
++	sta	ARRAY_HDMA_M7A+(PARAM_Mode7SkyLines*2), x
+	sta	ARRAY_HDMA_M7D+(PARAM_Mode7SkyLines*2), x
+
+	Accu8
+
+	inx
+	inx
+	cpx	#448-(PARAM_Mode7SkyLines*2)
+	bne	-
+
+	ldx	DP_DataSrcAddress					; reset WRAM address to beginning of table
+	stx	REG_WMADDL
+
+
+
+; -------------------------- calculate M7B/M7C for next frame
+; 8×8 multiplication for lower 8 bits of multiplicand
+	ldx	#0
+-	stz	temp+6
+	lda	REG_WMDATA						; read table entry
+	sta	REG_WRMPYA
+	txy								; preserve X
+	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the sin table
+	lda.l	SRC_Mode7Sin, x
+	bpl	+							; check for negative multiplier
+	eor	#$FF							; make multiplier positive
+	inc	a
+	dec	temp+6							; remember that multplier has wrong sign
++	sta	REG_WRMPYB
+	nop								; burn a few cycles
+	nop
+	ldx	REG_RDMPYL						; store interim result
+	stx	temp
+
+; 8×8 multiplication for upper 8 bits of multiplicand
+	lda	REG_WMDATA						; read table entry
+	sta	REG_WRMPYA
+	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the sin table
+	lda.l	SRC_Mode7Sin, x
+	bpl	+							; check for negative multiplier once again
+	eor	#$FF							; make multiplier positive
+	inc	a
++	sta	REG_WRMPYB
+	tyx								; restore X // 2 cycles
 
 	Accu16								; 3
 
@@ -710,6 +945,72 @@ CalcMode7Matrix:
 	rts
 
 
+
+.ACCU 16
+
+;-----------------------------
+; 32 by 16 bit division (c) by Garth Wilson
+; http://6502.org/source/integers/ummodfix/ummodfix.htm
+;
+                        ; +-----|-----+-----|-----+-----|-----+-----|------+
+                        ; |  DIVISOR  |    D I V I D E N D    |temp storage|
+                        ; |           |  hi cell     lo cell  |of carry bit|
+                        ; |  N    N+1 | N+2   N+3 | N+4   N+5 | N+6   N+7  |
+                        ; +-----|-----+-----|-----+-----|-----+-----|------+
+;
+Div32by16:
+	lda	7, s							; high word of 32-bit dividend
+	sta	temp+2
+	lda	5, s							; low word of 32-bit dividend
+	sta	temp+4
+	lda	3, s							; 16-bit divisor
+	sta	temp
+	stz	temp+6							; clear 16-bit of temp storage
+
+        SEC             ; Detect overflow or /0 condition.  To find out, sub-
+        LDA     temp+2     ; tract divisor from hi cell of dividend; if C flag
+        SBC     temp       ; remains set, divisor was not big enough to avoid
+        BCS     uoflo   ; overflow.  This also takes care of any /0 conditions.
+                        ; If branch not taken, C flag is left clear for 1st ROL.
+                        ; We will loop 16x; but since we shift the dividend
+        LDX     #17     ; over at the same time as shifting the answer in, the
+                        ; operation must start AND finish with a shift of the
+                        ; lo cell of the dividend (which ends up holding the
+;       INDEX_16        ; quotient), so we start with 17 in X.  We will use Y
+                        ; for temporary storage too, so set index reg.s 16-bit.
+ushftl: ROL     temp+4     ; Move lo cell of dividend left one bit, also shifting
+                        ; answer in.  The 1st rotation brings in a 0, which
+        DEX             ; later gets pushed off the other end in the last
+        BEQ     umend   ; rotation.     Branch to the end if finished.
+
+        ROL     temp+2     ; Shift hi cell of dividend left one bit, also shifting
+        LDA     #0      ; next bit in from high bit of lo cell.
+        ROL     A
+        STA     temp+6     ; Store old hi bit of dividend in N+6.
+
+        SEC             ; See if divisor will fit into hi 17 bits of dividend
+        LDA     temp+2     ; by subtracting and then looking at carry flag.
+        SBC     temp       ; If carry got cleared, divisor did not fit.
+        TAY             ; Save the difference in Y until we know if we need it.
+
+        LDA     temp+6     ; Bit 0 of N+6 serves as 17th bit.
+        SBC     #0      ; Complete the subtraction by doing the 17th bit before
+        BCC     ushftl  ; determining if the divisor fit into the hi 17 bits of
+                        ; the dividend.  If so, the C flag remains set.
+        STY     temp+2     ; If divisor fit into hi 17 bits, update dividend hi
+        BRA     ushftl  ; cell to what it would be after subtraction.    Branch.
+
+ uoflo: LDA     #$FFFF  ; If an overflow or /0 condition occurs, put FFFF in
+        STA     temp+4     ; both the quotient
+        STA     temp+2     ; and the remainder.
+
+ umend:
+	rts
+.ENDIF
+
+
+
+.ACCU 8
 
 M7FlightDecX:								; expects angle in Accu
 	cmp	#$A0
@@ -1271,7 +1572,7 @@ ResetMode7Matrix:
 
 	Accu8
 
-	lda	#64
+	lda	#56
 	sta	DP_Mode7_Altitude
 	stz	DP_Mode7_RotAngle
 	stz	REG_M7SEL						; M7SEL: no flipping, Screen Over = wrap
