@@ -73,9 +73,9 @@ PlayTrack:
 	lda	DP_NextTrack
 	asl	a
 	tax
-	lda.l	SRC_TrackNotBankTable, x				; read bank byte of notes data
+	lda.l	SRC_TrackNotBankTable, x				; read bank byte of Notes data
 	sta	DP_SPC_DataBank
-	lda.l	SRC_TrackNotOffsetTable, x				; read offset of notes data (excluding 2 bytes at the beginning, denoting file size)
+	lda.l	SRC_TrackNotOffsetTable, x				; read offset of Notes data (excluding 2 bytes at the beginning, denoting file size)
 	sta	DP_SPC_DataOffset
 	lda.l	SRC_TrackNotSizeTable, x				; read file size
 	sta	DP_SPC_DataSize
@@ -211,53 +211,53 @@ SRC_TrackSmpLengthTable:
 
 
 SRC_TrackNotBankTable:
-	.DW :SRC_track_00_notes
-	.DW :SRC_track_01_notes
-	.DW :SRC_track_02_notes
-	.DW :SRC_track_03_notes
-	.DW :SRC_track_04_notes
-	.DW :SRC_track_05_notes
-	.DW :SRC_track_06_notes
-	.DW :SRC_track_07_notes
-	.DW :SRC_track_08_notes
-	.DW :SRC_track_09_notes
-	.DW :SRC_track_10_notes
-	.DW :SRC_track_11_notes
-	.DW :SRC_track_12_notes
+	.DW :SRC_track_00_Notes
+	.DW :SRC_track_01_Notes
+	.DW :SRC_track_02_Notes
+	.DW :SRC_track_03_Notes
+	.DW :SRC_track_04_Notes
+	.DW :SRC_track_05_Notes
+	.DW :SRC_track_06_Notes
+	.DW :SRC_track_07_Notes
+	.DW :SRC_track_08_Notes
+	.DW :SRC_track_09_Notes
+	.DW :SRC_track_10_Notes
+	.DW :SRC_track_11_Notes
+	.DW :SRC_track_12_Notes
 
 
 
 SRC_TrackNotOffsetTable:
-	.DW SRC_track_00_notes+2
-	.DW SRC_track_01_notes+2
-	.DW SRC_track_02_notes+2
-	.DW SRC_track_03_notes+2
-	.DW SRC_track_04_notes+2
-	.DW SRC_track_05_notes+2
-	.DW SRC_track_06_notes+2
-	.DW SRC_track_07_notes+2
-	.DW SRC_track_08_notes+2
-	.DW SRC_track_09_notes+2
-	.DW SRC_track_10_notes+2
-	.DW SRC_track_11_notes+2
-	.DW SRC_track_12_notes+2
+	.DW SRC_track_00_Notes+2
+	.DW SRC_track_01_Notes+2
+	.DW SRC_track_02_Notes+2
+	.DW SRC_track_03_Notes+2
+	.DW SRC_track_04_Notes+2
+	.DW SRC_track_05_Notes+2
+	.DW SRC_track_06_Notes+2
+	.DW SRC_track_07_Notes+2
+	.DW SRC_track_08_Notes+2
+	.DW SRC_track_09_Notes+2
+	.DW SRC_track_10_Notes+2
+	.DW SRC_track_11_Notes+2
+	.DW SRC_track_12_Notes+2
 
 
 
 SRC_TrackNotSizeTable:
-	.INCBIN TRACK00_NOTES READ 2
-	.INCBIN TRACK01_NOTES READ 2
-	.INCBIN TRACK02_NOTES READ 2
-	.INCBIN TRACK03_NOTES READ 2
-	.INCBIN TRACK04_NOTES READ 2
-	.INCBIN TRACK05_NOTES READ 2
-	.INCBIN TRACK06_NOTES READ 2
-	.INCBIN TRACK07_NOTES READ 2
-	.INCBIN TRACK08_NOTES READ 2
-	.INCBIN TRACK09_NOTES READ 2
-	.INCBIN TRACK10_NOTES READ 2
-	.INCBIN TRACK11_NOTES READ 2
-	.INCBIN TRACK12_NOTES READ 2
+	.INCBIN Track00_Notes READ 2
+	.INCBIN Track01_Notes READ 2
+	.INCBIN Track02_Notes READ 2
+	.INCBIN Track03_Notes READ 2
+	.INCBIN Track04_Notes READ 2
+	.INCBIN Track05_Notes READ 2
+	.INCBIN Track06_Notes READ 2
+	.INCBIN Track07_Notes READ 2
+	.INCBIN Track08_Notes READ 2
+	.INCBIN Track09_Notes READ 2
+	.INCBIN Track10_Notes READ 2
+	.INCBIN Track11_Notes READ 2
+	.INCBIN Track12_Notes READ 2
 
 
 

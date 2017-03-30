@@ -3,47 +3,56 @@
 ;   "FURRY RPG" (WORKING TITLE)
 ;   (c) 201X by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
 ;
-;	*** ROM LAYOUT ***
+;	*** ROM SETTINGS AND LAYOUT ***
 ;
 ;==========================================================================================
 
 
 
-; ****************************** Defines *******************************
+; *************************** Debug switches ***************************
 
-.DEFINE DEBUG
-;.DEFINE NOMUSIC							; activate this to disable music
+.DEFINE DEBUG								; boot into debug menu, show verbose on-screen messages
+;.DEFINE NOMUSIC							; uncomment this to disable music
+
+
+
+; ************************** Basic ROM layout **************************
+
 .DEFINE CurrentBank	0
 .DEFINE TotalROMBanks	20						; self-reminder: increase value when using more banks (crucial for ROM integrity check)
-.DEFINE START_OFFSET	$F000						; start code offset in bank $00 (must be >$8000 because of how "HiROM" is mapped)
+.DEFINE StartOffset	$F000						; start code offset in bank $00, this must be >$8000 because of how ROM Mode 21 ("HiROM") is mapped
 
-.DEFINE SPC700_DRV	"music/spc700-driver-v1.4.bin"
 
-.DEFINE TRACK00_SMP	"music/00-sun-wind-and-rain-spc700.bin"
-.DEFINE TRACK01_SMP	"music/01-through-darkness-spc700.bin"
-.DEFINE TRACK02_SMP	"music/02-theme-of-despair-spc700.bin"
-.DEFINE TRACK03_SMP	"music/03-three-buskers-spc700.bin"
-.DEFINE TRACK04_SMP	"music/04-and-one-buffoon-spc700.bin"
-.DEFINE TRACK05_SMP	"music/05-troubled-mind-spc700.bin"
-.DEFINE TRACK06_SMP	"music/06-fanfare1-spc700.bin"
-.DEFINE TRACK07_SMP	"music/07-allons-ensemble-spc700.bin"
-.DEFINE TRACK08_SMP	"music/08-caterwauling-spc700.bin"
-.DEFINE TRACK09_SMP	"music/09-contemplate-spc700.bin"
-.DEFINE TRACK10_SMP	"music/10-tembas-theme-spc700.bin"
 
-.DEFINE TRACK00_NOTES	"music/00-sun-wind-and-rain-music.bin"
-.DEFINE TRACK01_NOTES	"music/01-through-darkness-music.bin"
-.DEFINE TRACK02_NOTES	"music/02-theme-of-despair-music.bin"
-.DEFINE TRACK03_NOTES	"music/03-three-buskers-music.bin"
-.DEFINE TRACK04_NOTES	"music/04-and-one-buffoon-music.bin"
-.DEFINE TRACK05_NOTES	"music/05-troubled-mind-music.bin"
-.DEFINE TRACK06_NOTES	"music/06-fanfare1-music.bin"
-.DEFINE TRACK07_NOTES	"music/07-allons-ensemble-music.bin"
-.DEFINE TRACK08_NOTES	"music/08-caterwauling-music.bin"
-.DEFINE TRACK09_NOTES	"music/09-contemplate-music.bin"
-.DEFINE TRACK10_NOTES	"music/10-tembas-theme-music.bin"
-.DEFINE TRACK11_NOTES	"music/11-triumph-beta-music.bin"
-.DEFINE TRACK12_NOTES	"music/12-furlorn-village-music.bin"
+; **************************** Data aliases ****************************
+
+.DEFINE SPC700_Drv	"music/spc700-driver-v1.4.bin"
+
+.DEFINE Track00_SMP	"music/00-sun-wind-and-rain-spc700.bin"
+.DEFINE Track01_SMP	"music/01-through-darkness-spc700.bin"
+.DEFINE Track02_SMP	"music/02-theme-of-despair-spc700.bin"
+.DEFINE Track03_SMP	"music/03-three-buskers-spc700.bin"
+.DEFINE Track04_SMP	"music/04-and-one-buffoon-spc700.bin"
+.DEFINE Track05_SMP	"music/05-troubled-mind-spc700.bin"
+.DEFINE Track06_SMP	"music/06-fanfare1-spc700.bin"
+.DEFINE Track07_SMP	"music/07-allons-ensemble-spc700.bin"
+.DEFINE Track08_SMP	"music/08-caterwauling-spc700.bin"
+.DEFINE Track09_SMP	"music/09-contemplate-spc700.bin"
+.DEFINE Track10_SMP	"music/10-tembas-theme-spc700.bin"
+
+.DEFINE Track00_Notes	"music/00-sun-wind-and-rain-music.bin"
+.DEFINE Track01_Notes	"music/01-through-darkness-music.bin"
+.DEFINE Track02_Notes	"music/02-theme-of-despair-music.bin"
+.DEFINE Track03_Notes	"music/03-three-buskers-music.bin"
+.DEFINE Track04_Notes	"music/04-and-one-buffoon-music.bin"
+.DEFINE Track05_Notes	"music/05-troubled-mind-music.bin"
+.DEFINE Track06_Notes	"music/06-fanfare1-music.bin"
+.DEFINE Track07_Notes	"music/07-allons-ensemble-music.bin"
+.DEFINE Track08_Notes	"music/08-caterwauling-music.bin"
+.DEFINE Track09_Notes	"music/09-contemplate-music.bin"
+.DEFINE Track10_Notes	"music/10-tembas-theme-music.bin"
+.DEFINE Track11_Notes	"music/11-triumph-beta-music.bin"
+.DEFINE Track12_Notes	"music/12-furlorn-village-music.bin"
 
 
 
@@ -80,7 +89,7 @@
 
 
 .BANK CurrentBank SLOT 0
-.ORG START_OFFSET + $FB0
+.ORG StartOffset + $FB0
 
 	.DB "00"							; new licensee code
 
@@ -112,7 +121,7 @@
 
 ; -------------------------- empty vectors
 .BANK CurrentBank SLOT 0
-.ORG START_OFFSET
+.ORG StartOffset
 
 .SECTION "Dummy/empty vectors" SEMIFREE
 
@@ -270,7 +279,7 @@ SRC_IRQJumpTable:
 
 
 .BANK CurrentBank SLOT 0
-.ORG START_OFFSET + $FA0
+.ORG StartOffset + $FA0
 
 .SECTION "Startup" FORCE
 
@@ -503,28 +512,28 @@ GFX_Sommappic_END:
 .SECTION ".roDataSoundDriver" SEMIFREE
 
 SRC_spc700_driver:
-.INCBIN SPC700_DRV
+.INCBIN SPC700_Drv
 
 .ENDS
 
 .SECTION ".roDataSoundCode12" SEMIFREE
 
 SRC_track_10_pointers:
-.INCBIN TRACK10_SMP SKIP 10 READ 6					; 2 + 8
+.INCBIN Track10_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_10_samples:
-.INCBIN TRACK10_SMP SKIP 2342						; 2 + 2340
+.INCBIN Track10_SMP SKIP 2342						; 2 + 2340
 
 SRC_track_10_samples_END:
 
-SRC_track_10_notes:
-.INCBIN TRACK10_NOTES
+SRC_track_10_Notes:
+.INCBIN Track10_Notes
 
-SRC_track_11_notes:
-.INCBIN TRACK11_NOTES
+SRC_track_11_Notes:
+.INCBIN Track11_Notes
 
-SRC_track_12_notes:
-.INCBIN TRACK12_NOTES
+SRC_track_12_Notes:
+.INCBIN Track12_Notes
 
 .ENDS
 
@@ -540,10 +549,10 @@ SRC_track_12_notes:
 .SECTION ".roDataSoundCode02" SEMIFREE
 
 SRC_track_00_pointers:
-.INCBIN TRACK00_SMP SKIP 10 READ 6					; 2 + 8
+.INCBIN Track00_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_00_samples:
-.INCBIN TRACK00_SMP SKIP 2342						; 2 + 2340
+.INCBIN Track00_SMP SKIP 2342						; 2 + 2340
 
 SRC_track_00_samples_END:
 
@@ -553,8 +562,8 @@ SRC_track_00_samples_END:
 
 .SECTION ".roDataMusic02" SEMIFREE
 
-SRC_track_00_notes:
-.INCBIN TRACK00_NOTES
+SRC_track_00_Notes:
+.INCBIN Track00_Notes
 
 .ENDS
 
@@ -570,10 +579,10 @@ SRC_track_00_notes:
 .SECTION ".roDataSoundCode03" SEMIFREE
 
 SRC_track_01_pointers:
-.INCBIN TRACK01_SMP SKIP 10 READ 6					; 2 + 8
+.INCBIN Track01_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_01_samples:
-.INCBIN TRACK01_SMP SKIP 2342						; 2 + 2340
+.INCBIN Track01_SMP SKIP 2342						; 2 + 2340
 
 SRC_track_01_samples_END:
 
@@ -583,8 +592,8 @@ SRC_track_01_samples_END:
 
 .SECTION ".roDataMusic03" SEMIFREE
 
-SRC_track_01_notes:
-.INCBIN TRACK01_NOTES
+SRC_track_01_Notes:
+.INCBIN Track01_Notes
 
 .ENDS
 
@@ -593,10 +602,10 @@ SRC_track_01_notes:
 .SECTION ".roDataSoundCode05" SEMIFREE
 
 SRC_track_03_pointers:
-.INCBIN TRACK03_SMP SKIP 10 READ 6					; 2 + 8
+.INCBIN Track03_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_03_samples:
-.INCBIN TRACK03_SMP SKIP 2342						; 2 + 2340
+.INCBIN Track03_SMP SKIP 2342						; 2 + 2340
 
 SRC_track_03_samples_END:
 
@@ -606,8 +615,8 @@ SRC_track_03_samples_END:
 
 .SECTION ".roDataMusic05" SEMIFREE
 
-SRC_track_03_notes:
-.INCBIN TRACK03_NOTES
+SRC_track_03_Notes:
+.INCBIN Track03_Notes
 
 .ENDS
 
@@ -623,10 +632,10 @@ SRC_track_03_notes:
 .SECTION ".roDataSoundCode04" SEMIFREE
 
 SRC_track_02_pointers:
-.INCBIN TRACK02_SMP SKIP 10 READ 6					; 2 + 8
+.INCBIN Track02_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_02_samples:
-.INCBIN TRACK02_SMP SKIP 2342						; 2 + 2340
+.INCBIN Track02_SMP SKIP 2342						; 2 + 2340
 
 SRC_track_02_samples_END:
 
@@ -636,8 +645,8 @@ SRC_track_02_samples_END:
 
 .SECTION ".roDataMusic04" SEMIFREE
 
-SRC_track_02_notes:
-.INCBIN TRACK02_NOTES
+SRC_track_02_Notes:
+.INCBIN Track02_Notes
 
 .ENDS
 
@@ -653,10 +662,10 @@ SRC_track_02_notes:
 .SECTION ".roDataSoundCode06" SEMIFREE
 
 SRC_track_04_pointers:
-.INCBIN TRACK04_SMP SKIP 10 READ 6					; 2 + 8
+.INCBIN Track04_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_04_samples:
-.INCBIN TRACK04_SMP SKIP 2342						; 2 + 2340
+.INCBIN Track04_SMP SKIP 2342						; 2 + 2340
 
 SRC_track_04_samples_END:
 
@@ -666,8 +675,8 @@ SRC_track_04_samples_END:
 
 .SECTION ".roDataMusic06" SEMIFREE
 
-SRC_track_04_notes:
-.INCBIN TRACK04_NOTES
+SRC_track_04_Notes:
+.INCBIN Track04_Notes
 
 .ENDS
 
@@ -683,10 +692,10 @@ SRC_track_04_notes:
 .SECTION ".roDataSoundCode07" SEMIFREE
 
 SRC_track_05_pointers:
-.INCBIN TRACK05_SMP SKIP 10 READ 6					; 2 + 8
+.INCBIN Track05_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_05_samples:
-.INCBIN TRACK05_SMP SKIP 2342						; 2 + 2340
+.INCBIN Track05_SMP SKIP 2342						; 2 + 2340
 
 SRC_track_05_samples_END:
 
@@ -696,8 +705,8 @@ SRC_track_05_samples_END:
 
 .SECTION ".roDataMusic07" SEMIFREE
 
-SRC_track_05_notes:
-.INCBIN TRACK05_NOTES
+SRC_track_05_Notes:
+.INCBIN Track05_Notes
 
 .ENDS
 
@@ -713,10 +722,10 @@ SRC_track_05_notes:
 .SECTION ".roDataSoundCode08" SEMIFREE
 
 SRC_track_06_pointers:
-.INCBIN TRACK06_SMP SKIP 10 READ 6					; 2 + 8
+.INCBIN Track06_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_06_samples:
-.INCBIN TRACK06_SMP SKIP 2342						; 2 + 2340
+.INCBIN Track06_SMP SKIP 2342						; 2 + 2340
 
 SRC_track_06_samples_END:
 
@@ -726,8 +735,8 @@ SRC_track_06_samples_END:
 
 .SECTION ".roDataMusic08" SEMIFREE
 
-SRC_track_06_notes:
-.INCBIN TRACK06_NOTES
+SRC_track_06_Notes:
+.INCBIN Track06_Notes
 
 .ENDS
 
@@ -743,10 +752,10 @@ SRC_track_06_notes:
 .SECTION ".roDataSoundCode09" SEMIFREE
 
 SRC_track_07_pointers:
-.INCBIN TRACK07_SMP SKIP 10 READ 6					; 2 + 8
+.INCBIN Track07_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_07_samples:
-.INCBIN TRACK07_SMP SKIP 2342						; 2 + 2340
+.INCBIN Track07_SMP SKIP 2342						; 2 + 2340
 
 SRC_track_07_samples_END:
 
@@ -756,8 +765,8 @@ SRC_track_07_samples_END:
 
 .SECTION ".roDataMusic09" SEMIFREE
 
-SRC_track_07_notes:
-.INCBIN TRACK07_NOTES
+SRC_track_07_Notes:
+.INCBIN Track07_Notes
 
 .ENDS
 
@@ -773,10 +782,10 @@ SRC_track_07_notes:
 .SECTION ".roDataSoundCode10" SEMIFREE
 
 SRC_track_08_pointers:
-.INCBIN TRACK08_SMP SKIP 10 READ 6					; 2 + 8
+.INCBIN Track08_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_08_samples:
-.INCBIN TRACK08_SMP SKIP 2342						; 2 + 2340
+.INCBIN Track08_SMP SKIP 2342						; 2 + 2340
 
 SRC_track_08_samples_END:
 
@@ -786,8 +795,8 @@ SRC_track_08_samples_END:
 
 .SECTION ".roDataMusic10" SEMIFREE
 
-SRC_track_08_notes:
-.INCBIN TRACK08_NOTES
+SRC_track_08_Notes:
+.INCBIN Track08_Notes
 
 .ENDS
 
@@ -803,10 +812,10 @@ SRC_track_08_notes:
 .SECTION ".roDataSoundCode11" SEMIFREE
 
 SRC_track_09_pointers:
-.INCBIN TRACK09_SMP SKIP 10 READ 6					; 2 + 8
+.INCBIN Track09_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_09_samples:
-.INCBIN TRACK09_SMP SKIP 2342						; 2 + 2340
+.INCBIN Track09_SMP SKIP 2342						; 2 + 2340
 
 SRC_track_09_samples_END:
 
@@ -816,8 +825,8 @@ SRC_track_09_samples_END:
 
 .SECTION ".roDataMusic11" SEMIFREE
 
-SRC_track_09_notes:
-.INCBIN TRACK09_NOTES
+SRC_track_09_Notes:
+.INCBIN Track09_Notes
 
 .ENDS
 
