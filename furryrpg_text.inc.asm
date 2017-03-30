@@ -232,6 +232,8 @@ __MainTextBoxLoopDpadDownDone:
 __PrevTextPointer:
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
+	lda	#%00001111						; clear selection bits just in case
+	trb	DP_TextBoxSelection
 
 	WaitFrames	1
 
@@ -260,6 +262,8 @@ __MainTextBoxLoopDpadLeftDone:
 __NextTextPointer:
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
+	lda	#%00001111						; clear selection bits
+	trb	DP_TextBoxSelection
 
 	WaitFrames	1
 
@@ -288,6 +292,8 @@ __MainTextBoxLoopDpadRightDone:
 
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
+	lda	#%00001111						; clear selection bits
+	trb	DP_TextBoxSelection
 
 	WaitFrames	1
 
@@ -317,6 +323,8 @@ __MainTextBoxLoopLButtonDone:
 
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
+	lda	#%00001111						; clear selection bits
+	trb	DP_TextBoxSelection
 
 	WaitFrames	1
 
