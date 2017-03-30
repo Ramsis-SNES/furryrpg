@@ -736,13 +736,13 @@ __HUDLogicDone:
 ;	PrintHexNum	ARRAY_HDMA_BGScroll+4
 ;	PrintHexNum	ARRAY_HDMA_BGScroll+3
 
-	PrintString	7, 5, "MapPosX="
-	PrintHexNum	DP_Char1MapPosX+1
-	PrintHexNum	DP_Char1MapPosX
+;	PrintString	7, 5, "MapPosX="
+;	PrintHexNum	DP_Char1MapPosX+1
+;	PrintHexNum	DP_Char1MapPosX
 
-	PrintString	8, 5, "MapPosY="
-	PrintHexNum	DP_Char1MapPosY+1
-	PrintHexNum	DP_Char1MapPosY
+;	PrintString	8, 5, "MapPosY="
+;	PrintHexNum	DP_Char1MapPosY+1
+;	PrintHexNum	DP_Char1MapPosY
 .ENDIF
 
 

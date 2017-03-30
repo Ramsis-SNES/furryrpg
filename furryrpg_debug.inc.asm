@@ -127,15 +127,13 @@ DebugMenu:
 	PrintString	7, 3, "DEBUG MENU:"
 	PrintString	10, 3, "Alpha intro"
 	PrintString	11, 3, "Load area: XXXX"
-	PrintString	12, 3, "Error test (BRK)"
-	PrintString	13, 3, "Error test (COP)"
-	PrintString	14, 3, "In-game menu"
-	PrintString	15, 3, "Mode1 world map"
-	PrintString	16, 3, "Mode7 world map"
-	PrintString	17, 3, "Show sprite gallery"
-	PrintString	18, 3, "SNESGSS music test:"
-;	PrintString	16, 3, ""
+	PrintString	12, 3, "In-game menu"
+	PrintString	13, 3, "Mode1 world map"
+	PrintString	14, 3, "Mode7 world map"
+	PrintString	15, 3, "Show sprite gallery"
+	PrintString	16, 3, "SNESGSS music test:"
 ;	PrintString	17, 3, ""
+;	PrintString	18, 3, ""
 
 	stz	DP_SpriteTextMon					; reset sprite text filling level so it won't draw more than 1 cursor ;-)
 
@@ -171,7 +169,7 @@ DebugMenuLoop:
 	PrintHexNum	DP_AreaCurrent+1				; print no. of area to load
 	SetTextPos	11, 16
 	PrintHexNum	DP_AreaCurrent
-	PrintString	19, 4, "%s"					; print current SNESGSS song title
+	PrintString	17, 4, "%s"					; print current SNESGSS song title
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMA_Updates
@@ -190,7 +188,7 @@ DebugMenuLoop:
 	sta	ARRAY_SpriteBuf1.Text+1
 	bra	++
 
-+	lda	#142
++	lda	#126
 	sta	ARRAY_SpriteBuf1.Text+1
 
 ++
@@ -202,7 +200,7 @@ DebugMenuLoop:
 	and	#%00000100
 	beq	++
 	lda	ARRAY_SpriteBuf1.Text+1
-	cmp	#142
+	cmp	#126
 	beq	+
 	clc
 	adc	#8
@@ -233,7 +231,7 @@ DebugMenuLoop:
 	bra	++
 
 +	lda	ARRAY_SpriteBuf1.Text+1					; ... or on music test
-	cmp	#142
+	cmp	#126
 	bne	++
 	lda	DP_NextTrack						; go to previous track
 	dec	a
@@ -262,7 +260,7 @@ DebugMenuLoop:
 	bra	++
 
 +	lda	ARRAY_SpriteBuf1.Text+1					; ... or on music test
-	cmp	#142
+	cmp	#126
 	bne	++
 	lda	DP_NextTrack						; go to next track
 	inc	a
@@ -296,23 +294,17 @@ DebugMenuLoop:
 
 +	cmp	#94
 	bne	+
-	brk	$FF
-+	cmp	#102
-	bne	+
-	cop	$FF
-+	cmp	#110
-	bne	+
 	jmp	InGameMenu
 
-+	cmp	#118
++	cmp	#102
 	bne	+
 	jmp	LoadWorldMap
 
-+	cmp	#126
++	cmp	#110
 	bne	+
 	jmp	TestMode7
 
-+	cmp	#134
++	cmp	#118
 	bne	+
 	jmp	ShowSpriteGallery
 +
@@ -326,17 +318,32 @@ DebugMenuLoop:
 
 
 ; -------------------------- check for Start
-	lda	Joy1Press+1
-	and	#%00010000
-	beq	+
-	jsr	CreateRandomNr
-+
+;	lda	Joy1Press+1
+;	and	#%00010000
+;	beq	+
+;	jsr	CreateRandomNr
+;+
 
-	jsr	ShowCPUload
+;	jsr	ShowCPUload
+
+; -------------------------- check for Start
+;	lda	Joy1Press+1
+;	and	#%00010000
+;	beq	+
+
+;	Accu16
+
+;	lda	#1
+;	jsl	LoadEvent
+
+;	jmp	DebugMenu
+;+
 
 	jmp	DebugMenuLoop
 
 
+
+.ACCU 8
 
 ShowSpriteGallery:
 	lda	#$80							; enter forced blank
@@ -464,6 +471,8 @@ ShowSpriteGallery:
 
 ; ************************ Debugging functions *************************
 
+.ENDASM
+
 ; -------------------------- show CPU load (via scanline counter)
 ShowCPUload:
 	lda	REG_SLHV						; latch H/V counter
@@ -486,83 +495,6 @@ ShowCPUload:
 	.DB "  ", 0							; clear trailing numbers from old values
 
 	rts
-
-
-
-; ******************************* Tests ********************************
-
-.ENDASM
-
-MoveSpriteCircularTest:
-	ldx	#(ARRAY_BG3TileMap & $FFFF)				; clear BG3 tilemap
-	stx	REG_WMADDL
-	stz	REG_WMADDH
-
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 2048
-
-	stz	temp							; reset angle
-	stz	temp+1
-
-	lda	#35							; set radius
-	sta	temp+2
-
-; X := CenterX + sin(angle)*radius
-; Y := CenterY + cos(angle)*radius
-
-	PrintString	2, 20, "Angle: $"
-
-
-
-__MSCTestLoop:
-	wai
-
--	lda	REG_HVBJOY						; are we still on Vblank?
-	bmi	-							; yes, wait
-
-	SetTextPos	2, 28
-	PrintHexNum	temp
-
-	ldx	temp
-	lda.l	SRC_Mode7Sin, x
-	stz	REG_M7A
-	sta	REG_M7A
-	lda	temp+2							; radius
-	asl	a							; not sure why this is needed
-	sta	REG_M7B
-	lda	REG_MPYH
-	clc
-	adc	#128							; add CenterX
-	sta	ARRAY_SpriteBuf1.Text						; X
-
-	ldx	temp
-	lda.l	SRC_Mode7Cos, x
-	stz	REG_M7A
-	sta	REG_M7A
-	lda	temp+2							; radius
-	asl	a							; not sure why this is needed
-	sta	REG_M7B
-	lda	REG_MPYH
-	clc
-	adc	#112							; add CenterY
-	sta	ARRAY_SpriteBuf1.Text+1					; Y
-
-	lda	#%00010000						; make sure BG3 low tile map bytes are updated
-	tsb	DP_DMA_Updates
-
-	inc	temp
-
-
-
-; -------------------------- check for Start
-	lda	Joy1New+1
-	and	#%00010000
-	beq	+
-	jmp	DebugMenu
-+
-
-	jsr	ShowCPUload
-
-	jmp	__MSCTestLoop
 
 .ASM
 
