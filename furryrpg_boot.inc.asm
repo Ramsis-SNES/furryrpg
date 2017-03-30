@@ -255,7 +255,7 @@ Boot:
 
 
 
-; -------------------------- intro / title screen // FIXME, move to event handler
+; -------------------------- intro / title screen
 AlphaIntro:
 	lda	#$80							; enter forced blank
 	sta	REG_INIDISP
@@ -603,7 +603,7 @@ AlphaIntro:
 	sta	REG_NMITIMEN
 	sta	DP_Shadow_NMITIMEN
 	cli
-	jml	DebugMenu
+	rtl
 
 
 

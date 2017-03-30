@@ -280,16 +280,18 @@ DebugMenuLoop:
 	lda	ARRAY_SpriteBuf1.Text+1
 	cmp	#78
 	bne	+
-	jmp	AlphaIntro
+
+	Accu16
+
+	lda	#0
+	jsl	LoadEvent
+
+	jmp	DebugMenu
+
+.ACCU 8
 
 +	cmp	#86
 	bne	+
-	ldx	#(ARRAY_BG3TileMap & $FFFF)				; clear text
-	stx	REG_WMADDL
-	stz	REG_WMADDH
-
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024
-
 	jmp	LoadArea
 
 +	cmp	#94

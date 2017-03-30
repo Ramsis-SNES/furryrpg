@@ -29,7 +29,9 @@ Vblank_Area:
 	bpl	+
 	jsr	UpdateCharPortrait
 
-	jmp	__SkipRefreshes3					; changing the portrait involves 2 DMAs, so skip other stuff for now
++	lda	DP_TextBoxBG						; check if text box background change requested
+	bpl	+
+	jsr	LoadTextBoxBG						; bit 7 set --> load new background color table
 
 +	lda	DP_TextBoxStatus					; check text box status
 	bpl	+
@@ -38,12 +40,8 @@ Vblank_Area:
 	jmp	__SkipRefreshes3					; ... and skip BG refreshes (to avoid glitches due to premature end of Vblank)
 
 +	bit	#%00000001						; VWF buffer full?
-	beq	+
+	beq	__TextBoxVblankDone
 	jsr	VWFTileBufferFull
-
-+	lda	DP_TextBoxBG						; check if text box background change requested
-	bpl	__TextBoxVblankDone
-	jsr	LoadTextBoxBG						; bit 7 set --> load new background color table
 
 __TextBoxVblankDone:
 
@@ -895,7 +893,8 @@ UpdateCharPortrait:
 	and	#$7F							; check for portrait no., 0 = no portrait
 	bne	+
 
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $22, 32		; no portrait wanted, so just zero out palette // FIXME, add masking tiles
+	DMA_CH0 $09, :CONST_FFs, CONST_FFs, $18, 1920			; no portrait wanted, so put masking tiles over portrait
+	DMA_CH0 $0A, :CONST_Zeroes, CONST_Zeroes, $22, 32		; and zero out palette
 
 	bra	__CharPortraitUpdated
 

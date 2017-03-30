@@ -16,7 +16,8 @@
 ; __		= sub-label
 ; ADDR_		= address value, as .DEFINEd
 ; ARRAY_	= non-Direct Page array
-; CC_		= control code byte (for text strings)
+; CC_		= text box control code byte
+; EC_		= event control code byte
 ; CMD_		= constant, as .DEFINEd (used as macro/subroutine command)
 ; CONST_	= arbitrary constant, stored in ROM
 ; DP_		= Direct Page variable
@@ -186,6 +187,47 @@
 
 
 
+; ************************ Event control codes *************************
+
+.ENUM $00								; argument(s) (8/16 bit) / effect(s)
+	EC_DIALOG				db			; dialog pointer (16)
+
+	EC_GSS_LOAD_TRACK			db			; track no. # (16)
+	EC_GSS_TRACK_FADEIN			db			; speed (16), target volume (16)
+	EC_GSS_TRACK_FADEOUT			db			; speed (16), target volume (16)
+	EC_GSS_TRACK_PLAY			db
+	EC_GSS_TRACK_STOP			db
+
+	EC_INIT_ALPHAINTRO			db
+	EC_INIT_GAMEINTRO			db
+
+	EC_LOAD_AREA				db			; no. # of area (16)
+	EC_LOAD_PARTY_FORMATION			db			; no. # of party formation
+
+	EC_MOVE_ALLY				db			; ally no. #, direction(s), speed
+	EC_MOVE_HERO				db			; direction(s), speed
+	EC_MOVE_NPC				db			; NPC no. #, direction(s), speed
+	EC_MOVE_OBJ				db			; obj. no. #, direction(s), speed
+
+	EC_MSU_LOAD_TRACK			db			; track no. # (16)
+	EC_MSU_TRACK_FADEIN			db			; speed
+	EC_MSU_TRACK_FADEOUT			db			; speed
+	EC_MSU_TRACK_PLAY			db			; 000000rpvvvvvvvv [r = Repeat flag, p = Play flag, v = volume]
+	EC_MSU_TRACK_STOP			db
+
+	EC_SCR_EFFECT				db			; effect no. #
+	EC_SCR_EFFECT_TRANSITION		db			; transition effect no. #, speed
+	EC_SCR_SCROLL				db			; BG(s), direction(s), speed
+
+	EC_WAIT_JOY1				db			; button(s)
+	EC_WAIT_JOY2				db			; button(s)
+	EC_WAIT_FRAMES				db			; no. of frames (16)
+.ENDE
+
+.DEFINE EC_END					$FF
+
+
+
 ; *********************** Sprite control tables ************************
 
 ; -------------------------- playable character 1 walking frames table (matches spritesheet)
@@ -272,6 +314,202 @@
 
 
 
+; -------------------------- dialog string numbers
+.ENUM 0
+	DialogStringTest	db
+	DialogStringNo0000	db
+	DialogStringNo0001	db
+	DialogStringNo0002	db
+	DialogStringNo0003	db
+	DialogStringNo0004	db
+	DialogStringNo0005	db
+	DialogStringNo0006	db
+	DialogStringNo0007	db
+	DialogStringNo0008	db
+	DialogStringNo0009	db
+	DialogStringNo0010	db
+	DialogStringNo0011	db
+	DialogStringNo0012	db
+	DialogStringNo0013	db
+	DialogStringNo0014	db
+	DialogStringNo0015	db
+	DialogStringNo0016	db
+	DialogStringNo0017	db
+	DialogStringNo0018	db
+	DialogStringNo0019	db
+	DialogStringNo0020	db
+	DialogStringNo0021	db
+	DialogStringNo0022	db
+	DialogStringNo0023	db
+	DialogStringNo0024	db
+	DialogStringNo0025	db
+	DialogStringNo0026	db
+	DialogStringNo0027	db
+	DialogStringNo0028	db
+	DialogStringNo0029	db
+	DialogStringNo0030	db
+	DialogStringNo0031	db
+	DialogStringNo0032	db
+	DialogStringNo0033	db
+	DialogStringNo0034	db
+	DialogStringNo0035	db
+	DialogStringNo0036	db
+	DialogStringNo0037	db
+	DialogStringNo0038	db
+	DialogStringNo0039	db
+	DialogStringNo0040	db
+	DialogStringNo0041	db
+	DialogStringNo0042	db
+	DialogStringNo0043	db
+	DialogStringNo0044	db
+	DialogStringNo0045	db
+	DialogStringNo0046	db
+	DialogStringNo0047	db
+	DialogStringNo0048	db
+	DialogStringNo0049	db
+	DialogStringNo0050	db
+	DialogStringNo0051	db
+	DialogStringNo0052	db
+	DialogStringNo0053	db
+	DialogStringNo0054	db
+	DialogStringNo0055	db
+	DialogStringNo0056	db
+	DialogStringNo0057	db
+	DialogStringNo0058	db
+	DialogStringNo0059	db
+	DialogStringNo0060	db
+	DialogStringNo0061	db
+	DialogStringNo0062	db
+	DialogStringNo0063	db
+	DialogStringNo0064	db
+	DialogStringNo0065	db
+	DialogStringNo0066	db
+	DialogStringNo0067	db
+	DialogStringNo0068	db
+	DialogStringNo0069	db
+	DialogStringNo0070	db
+	DialogStringNo0071	db
+	DialogStringNo0072	db
+	DialogStringNo0073	db
+	DialogStringNo0074	db
+	DialogStringNo0075	db
+	DialogStringNo0076	db
+	DialogStringNo0077	db
+	DialogStringNo0078	db
+	DialogStringNo0079	db
+	DialogStringNo0080	db
+	DialogStringNo0081	db
+	DialogStringNo0082	db
+	DialogStringNo0083	db
+	DialogStringNo0084	db
+	DialogStringNo0085	db
+	DialogStringNo0086	db
+	DialogStringNo0087	db
+	DialogStringNo0088	db
+	DialogStringNo0089	db
+	DialogStringNo0090	db
+	DialogStringNo0091	db
+	DialogStringNo0092	db
+	DialogStringNo0093	db
+	DialogStringNo0094	db
+	DialogStringNo0095	db
+	DialogStringNo0096	db
+	DialogStringNo0097	db
+	DialogStringNo0098	db
+	DialogStringNo0099	db
+	DialogStringNo0100	db
+	DialogStringNo0101	db
+	DialogStringNo0102	db
+	DialogStringNo0103	db
+	DialogStringNo0104	db
+	DialogStringNo0105	db
+	DialogStringNo0106	db
+	DialogStringNo0107	db
+	DialogStringNo0108	db
+	DialogStringNo0109	db
+	DialogStringNo0110	db
+	DialogStringNo0111	db
+	DialogStringNo0112	db
+	DialogStringNo0113	db
+	DialogStringNo0114	db
+	DialogStringNo0115	db
+	DialogStringNo0116	db
+	DialogStringNo0117	db
+	DialogStringNo0118	db
+	DialogStringNo0119	db
+	DialogStringNo0120	db
+	DialogStringNo0121	db
+	DialogStringNo0122	db
+	DialogStringNo0123	db
+	DialogStringNo0124	db
+	DialogStringNo0125	db
+	DialogStringNo0126	db
+	DialogStringNo0127	db
+	DialogStringNo0128	db
+	DialogStringNo0129	db
+	DialogStringNo0130	db
+	DialogStringNo0131	db
+	DialogStringNo0132	db
+	DialogStringNo0133	db
+	DialogStringNo0134	db
+	DialogStringNo0135	db
+	DialogStringNo0136	db
+	DialogStringNo0137	db
+	DialogStringNo0138	db
+	DialogStringNo0139	db
+	DialogStringNo0140	db
+	DialogStringNo0141	db
+	DialogStringNo0142	db
+	DialogStringNo0143	db
+	DialogStringNo0144	db
+	DialogStringNo0145	db
+	DialogStringNo0146	db
+	DialogStringNo0147	db
+	DialogStringNo0148	db
+	DialogStringNo0149	db
+	DialogStringNo0150	db
+	DialogStringNo0151	db
+	DialogStringNo0152	db
+	DialogStringNo0153	db
+	DialogStringNo0154	db
+	DialogStringNo0155	db
+	DialogStringNo0156	db
+	DialogStringNo0157	db
+	DialogStringNo0158	db
+	DialogStringNo0159	db
+	DialogStringNo0160	db
+	DialogStringNo0161	db
+	DialogStringNo0162	db
+	DialogStringNo0163	db
+	DialogStringNo0164	db
+	DialogStringNo0165	db
+	DialogStringNo0166	db
+	DialogStringNo0167	db
+	DialogStringNo0168	db
+	DialogStringNo0169	db
+	DialogStringNo0170	db
+	DialogStringNo0171	db
+	DialogStringNo0172	db
+	DialogStringNo0173	db
+	DialogStringNo0174	db
+	DialogStringNo0175	db
+	DialogStringNo0176	db
+	DialogStringNo0177	db
+	DialogStringNo0178	db
+	DialogStringNo0179	db
+	DialogStringNo0180	db
+	DialogStringNo0181	db
+	DialogStringNo0182	db
+	DialogStringNo0183	db
+	DialogStringNo0184	db
+	DialogStringNo0185	db
+	DialogStringNo0186	db
+	DialogStringNo0187	db
+	DialogStringNo0188	db
+.ENDE
+
+
+
 ; -------------------------- language constants
 .ENUM $00
 	TBL_Lang_Eng		db					; the order of the languages must match the order of dialog banks!
@@ -303,15 +541,54 @@
 
 
 
-; -------------------------- various commands
-.DEFINE CMD_EffectSpeed1	$01
-.DEFINE CMD_EffectSpeed2	$02
-.DEFINE CMD_EffectSpeed3	$03
-.DEFINE CMD_EffectSpeed4	$04
-.DEFINE CMD_EffectSpeed5	$05
-.DEFINE CMD_EffectSpeed6	$06
-.DEFINE CMD_EffectSpeed7	$07
-.DEFINE CMD_EffectSpeed8	$08
+; -------------------------- effect numbers
+.ENUM 0
+	EffectNoFadeFromBlack	dw
+	EffectNoFadeToBlack	dw
+	EffectNoHSplitIn	dw
+	EffectNoHSplitOut	dw
+	EffectNoHSplitOut2	dw
+	EffectNoShutterIn	dw
+	EffectNoShutterOut	dw
+	EffectNoDiamondIn	dw
+	EffectNoDiamondOut	dw
+.ENDE
+
+
+
+; -------------------------- effect speed values
+.ENUM 1
+	CMD_EffectSpeed1	db
+	CMD_EffectSpeed2	db
+	CMD_EffectSpeed3	db
+	CMD_EffectSpeed4	db
+	CMD_EffectSpeed5	db
+	CMD_EffectSpeed6	db
+	CMD_EffectSpeed7	db
+	CMD_EffectSpeed8	db
+	CMD_EffectSpeed9	db
+	CMD_EffectSpeed10	db
+	CMD_EffectSpeed11	db
+	CMD_EffectSpeed12	db
+.ENDE
+
+
+
+; -------------------------- effect delay values
+.ENUM $FF DESC
+	CMD_EffectDelay1	db
+	CMD_EffectDelay2	db
+	CMD_EffectDelay3	db
+	CMD_EffectDelay4	db
+	CMD_EffectDelay5	db
+	CMD_EffectDelay6	db
+	CMD_EffectDelay7	db
+	CMD_EffectDelay8	db
+	CMD_EffectDelay9	db
+	CMD_EffectDelay10	db
+	CMD_EffectDelay11	db
+	CMD_EffectDelay12	db
+.ENDE
 
 
 
@@ -393,7 +670,9 @@
 	DP_CurrentScanline	dw					; holds no. of current scanline (for CPU load meter)
 	DP_DataSrcAddress	dsb 3					; holds a 24-bit source address e.g. for string pointers, data transfers to SRAM, etc.
 	DP_DMA_Updates		dw					; rrrcbbaarrr32211 [123 = BG no. that needs to have its tile map(s) updated on next Vblank (low bytes), abc = same thing for high bytes, r = reserved. The lower bit of each BG represents the first half of a 64×32/32×64 tile map, the higher one represents the second half.]
-	DP_EffectSpeed		db
+	DP_EffectSpeed		dw
+	DP_EventCodeAddress	dsb 3
+	DP_EventCodePointer	dw
 	DP_GameMode		db					; 7rrrrrrr [7 = Mode7 on/off, r = reserved]
 
 	DP_GameTimeSeconds	db					; 1 game time second = 1 frame (??)
@@ -426,6 +705,7 @@
 	DP_Multi5_Status	db
 
 	DP_NextTrack		dw					; holds no. of music track to load
+	DP_NextEvent		dw					; holds no. of event to load
 	DP_PlayerIdleCounter	dw					; holds frame count since last button press
 
 	DP_RingMenuAngle	dw
@@ -468,7 +748,7 @@
 	DP_VWF_BitsUsed		dw
 	DP_VWF_BufferIndex	dw
 	DP_VWF_Loop		db
-.ENDE									; 163 of 256 bytes used
+.ENDE									; 168 of 256 bytes used
 
 
 

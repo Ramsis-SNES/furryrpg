@@ -12,6 +12,92 @@
 .ACCU 8
 .INDEX 16
 
+LoadTrackGSS:
+	DisableIRQs
+
+	Accu16
+
+	lda.w	#SCMD_LOAD
+	sta	gss_command
+	stz	gss_param
+	jsl	spc_command_asm
+
+	Accu16
+
+	lda	DP_NextTrack
+	asl	a
+	tax
+	lda.l	SRC_TrackPtrBankTable, x				; read bank byte of pointers
+	sta	DP_SPC_DataBank
+	lda.l	SRC_TrackPtrOffsetTable, x				; read offset of pointers
+	sta	DP_SPC_DataOffset
+	lda	#6							; data length = 3 16-bit pointers to ADSR table, SFX, and music
+	sta	DP_SPC_DataSize
+	lda	#$0208							; store pointers to SPC700 memory address $208
+	sta	DP_SPC_DataAddress
+	jsl	spc_load_data
+
+	Accu16
+
+	lda.w	#SCMD_LOAD
+	sta	gss_command
+	stz	gss_param
+	jsl	spc_command_asm
+
+	Accu16
+
+	lda	DP_NextTrack
+	asl	a
+	tax
+	lda.l	SRC_TrackSmpBankTable, x				; read bank byte of sample pack
+	sta	DP_SPC_DataBank
+	lda.l	SRC_TrackSmpOffsetTable, x				; read offset of sample pack
+	sta	DP_SPC_DataOffset
+	lda.l	SRC_TrackSmpLengthTable, x				; data length
+	sta	DP_SPC_DataSize
+	lda	#$0B24							; store samples to SPC700 memory address $B24 ($200 + $924, where $924 = size of sound driver)
+	sta	DP_SPC_DataAddress
+	jsl	spc_load_data
+
+	Accu16
+
+	lda.w	#SCMD_LOAD
+	sta	gss_command
+	stz	gss_param
+	jsl	spc_command_asm
+
+	Accu16
+
+	lda	DP_NextTrack
+	asl	a
+	tax
+	lda.l	SRC_TrackNotBankTable, x				; read bank byte of Notes data
+	sta	DP_SPC_DataBank
+	lda.l	SRC_TrackNotOffsetTable, x				; read offset of Notes data (excluding 2 bytes at the beginning, denoting file size)
+	sta	DP_SPC_DataOffset
+	lda.l	SRC_TrackNotSizeTable, x				; read file size
+	sta	DP_SPC_DataSize
+	lda.l	SRC_TrackSmpLengthTable, x				; store samples to SPC700 memory address $B24 + size of sample pack
+	clc
+	adc	#$0B24
+	sta	DP_SPC_DataAddress
+	jsl	spc_load_data
+
+	Accu16
+
+	lda.w	#SCMD_INITIALIZE					; this is important, or else the song won't play correctly
+	sta	gss_command
+	stz	gss_param
+	jsl	spc_command_asm
+
+	lda.l	REG_RDNMI						; clear NMI flag
+	lda.l	DP_Shadow_NMITIMEN					; reenable interrupts
+	sta.l	REG_NMITIMEN
+	cli
+	rtl
+
+
+
 PlayTrack:
 	DisableIRQs							; reminder: this was moved here from the original SNESGSS routines as of build #00203
 

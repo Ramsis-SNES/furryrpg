@@ -12,6 +12,137 @@
 .ACCU 8
 .INDEX 16
 
+SRC_EffectPointer:
+	.DW EffectFadeFromBlack
+	.DW EffectFadeToBlack
+	.DW EffectHSplitIn
+	.DW EffectHSplitOut
+	.DW EffectHSplitOut2
+	.DW EffectShutterIn
+	.DW EffectShutterOut
+	.DW EffectDiamondIn
+	.DW EffectDiamondOut
+
+
+
+ScreenEffects:
+
+; ************************* Fade from/to black *************************
+
+EffectFadeFromBlack:
+	lda	DP_EffectSpeed
+	bmi	__FadeDelayFromBlack					; if speed value is negative, insert delay instead
+	lda	#$00							; initial screen brightness
+
+__FadeSpeedFromBlackLoop:
+	sta	REG_INIDISP
+	ldx	DP_EffectSpeed						; use speed value to skip brightness values
+-	inc	a
+	cmp	#$0F							; prevent glitches due to speed values in event script that aren't divisors of 15, or completely pointless
+	bcs	+
+	dex
+	bne	-
+
++	sta	REG_INIDISP
+	xba								; save current screen brightness in B
+-	lda	REG_HVBJOY						; wait 1 frame
+	bpl	-
+
+-	lda	REG_HVBJOY
+	bmi	-
+
+	xba
+	cmp	#$0F
+	bne	__FadeSpeedFromBlackLoop
+
+	bra	__FadeFromBlackDone
+
+__FadeDelayFromBlack:
+	eor	#$FF							; make speed value positive and use as delay value
+	inc	a
+	sta	DP_EffectSpeed
+	lda	#$00							; initial screen brightness
+
+__FadeDelayFromBlackLoop1:
+	sta	REG_INIDISP
+	xba								; save current screen brightness in B
+	ldx	DP_EffectSpeed						; use delay value to insert frames
+
+__FadeDelayFromBlackLoop2:
+-	lda	REG_HVBJOY
+	bpl	-
+
+-	lda	REG_HVBJOY
+	bmi	-
+
+	dex
+	bne	__FadeDelayFromBlackLoop2
+
+	xba								; increment screen brightness ...
+	inc	a
+	cmp	#$10							; ... until it's reached max value ($0F)
+	bne	__FadeDelayFromBlackLoop1
+
+__FadeFromBlackDone:
+	rts
+
+
+
+EffectFadeToBlack:
+	lda	DP_EffectSpeed
+	bmi	__FadeDelayToBlack					; if speed value is negative, insert delay instead
+	lda	#$0F							; initial screen brightness
+
+__FadeSpeedToBlackLoop:
+	sta	REG_INIDISP
+	ldx	DP_EffectSpeed						; use speed value to skip brightness values
+-	dec	a
+	beq	+							; prevent glitches due to invalid speed values in event script
+	dex
+	bne	-
+
++	sta	REG_INIDISP
+	xba								; save current screen brightness in B
+-	lda	REG_HVBJOY						; wait 1 frame
+	bpl	-
+
+-	lda	REG_HVBJOY
+	bmi	-
+
+	xba
+	bne	__FadeSpeedToBlackLoop
+
+	bra	__FadeToBlackDone
+
+__FadeDelayToBlack:
+	eor	#$FF							; make speed value positive and use as delay value
+	inc	a
+	sta	DP_EffectSpeed
+	lda	#$0F							; initial screen brightness
+
+__FadeDelayToBlackLoop1:
+	sta	REG_INIDISP
+	xba								; save current screen brightness in B
+	ldx	DP_EffectSpeed						; use delay value to insert frames
+
+__FadeDelayToBlackLoop2:
+-	lda	REG_HVBJOY
+	bpl	-
+
+-	lda	REG_HVBJOY
+	bmi	-
+
+	dex
+	bne	__FadeDelayToBlackLoop2
+
+	xba								; decrement screen brightness ...
+	dec	a
+	cmp	#$FF							; ... until it's reached zero
+	bne	__FadeDelayToBlackLoop1
+
+__FadeToBlackDone:
+	rts
+
 
 
 ; ****************** Split horizontal in (from black) ******************

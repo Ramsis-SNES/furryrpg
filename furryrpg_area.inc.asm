@@ -10,6 +10,12 @@
 
 
 LoadArea:
+	jsr	LoadAreaData
+	jmp	ShowArea
+
+
+
+LoadAreaData:
 	lda	#$80							; enter forced blank
 	sta	REG_INIDISP
 	jsr	SpriteInit						; purge OAM
@@ -18,6 +24,12 @@ LoadArea:
 
 	stz	DP_HDMA_Channels					; disable HDMA
 	stz	REG_HDMAEN
+	ldx	#(ARRAY_BG3TileMap & $FFFF)				; clear BG3 text
+	stx	REG_WMADDL
+	stz	REG_WMADDH
+
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024
+
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	REG_VMAIN
 	jsr	LoadTextBoxBorderTiles					; prepare some stuff for text box
@@ -489,6 +501,9 @@ __AreaBG2TileMapDone:
 
 	WaitFrames	4						; let the screen clear up
 
+	rts
+
+ShowArea:
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
 	jsr	EffectHSplitIn

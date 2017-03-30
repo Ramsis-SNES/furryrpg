@@ -221,6 +221,9 @@ STR_SoftwareBuildTimestamp:
 CONST_Zeroes:
 	.DW 0
 
+CONST_FFs:
+	.DW $FFFF
+
 
 
 SRC_VblankJumpTable:
@@ -248,6 +251,7 @@ SRC_IRQJumpTable:
 .INCLUDE "furryrpg_boot.inc.asm"					; boot code
 .INCLUDE "furryrpg_debug.inc.asm"					; debug menu
 .INCLUDE "furryrpg_effects_transitions.inc.asm"				; screen transition effects
+.INCLUDE "furryrpg_event.inc.asm"					; event handler
 .INCLUDE "furryrpg_irqnmi.inc.asm"					; Vblank NMI & IRQ handlers with subroutines
 .INCLUDE "furryrpg_mainmenu.inc.asm"					; in-game main menu
 .INCLUDE "furryrpg_mode7.inc.asm"					; Mode 7 handler
@@ -260,10 +264,11 @@ SRC_IRQJumpTable:
 
 
 
-.SECTION "data" SEMIFREE						; FIXME, move to another bank (requires acknowledgement of bank byte in area properties)
+.SECTION "data" SEMIFREE						; CHANGEME, move data/scripting files to other banks (requires acknowledgement of bank byte in area properties)
 
 .INCLUDE "data/text_areanames_all.inc.asm"				; area names
 .INCLUDE "data/tbl_areametamaps.inc.asm"				; area meta maps
+.INCLUDE "scripts/event.inc.asm"					; event control scripting code
 
 .ENDS
 
