@@ -74,28 +74,28 @@ SRC_AreaProperty001:
 	.DB $80								; hero sprite status: irrrrddd [i = not walking (idle), ddd = facing direction (0 = down, 1 = up, 2 = left, 3 = right)]
 
 SRC_AreaProperty002:
-	.DW %0000000000000101						; area properties: 64×32, x-scrollable
-	.DW GFX_Area003							; FIXME, this is just a placeholder
-	.DB :GFX_Area003
-	.DW GFX_Area003_END-GFX_Area003
-	.DW SRC_TileMapBG1_Area003
-	.DB :SRC_TileMapBG1_Area003
-	.DW SRC_TileMapBG1_Area003_END-SRC_TileMapBG1_Area003
-	.DW $FFFF ;SRC_TileMapBG2_Area003
-	.DB $FF ;:SRC_TileMapBG2_Area003
-	.DW $FFFF ;SRC_TileMapBG2_Area003_END-SRC_TileMapBG2_Area003
-	.DW SRC_Palette_Area003
-	.DB :SRC_Palette_Area003
-	.DW SRC_Palette_Area003_END-SRC_Palette_Area003
+	.DW %0000000000000000						; area properties: 32×32, not scrollable
+	.DW GFX_Area002
+	.DB :GFX_Area002
+	.DW GFX_Area002_END-GFX_Area002
+	.DW SRC_TileMapBG1_Area002
+	.DB :SRC_TileMapBG1_Area002
+	.DW SRC_TileMapBG1_Area002_END-SRC_TileMapBG1_Area002
+	.DW $FFFF ;SRC_TileMapBG2_Area002
+	.DB $FF ;:SRC_TileMapBG2_Area002
+	.DW $FFFF ;SRC_TileMapBG2_Area002_END-SRC_TileMapBG2_Area002
+	.DW SRC_Palette_Area002
+	.DB :SRC_Palette_Area002
+	.DW SRC_Palette_Area002_END-SRC_Palette_Area002
 	.DW SRC_AreaMetaMap002
 	.DB :SRC_AreaMetaMap002
-	.DW 10								; music track: "Temba's Theme"
-	.DW 1								; MSU1 ambient track: Nightingale
+	.DW $FFFF							; music track: none
+	.DW $FFFF							; MSU1 ambient track: none
 	.DW STR_AreaNameEng002
-	.DW $2098							; hero screen position (low byte = X, high byte = Y, numbers refer to top left of sprite)
-	.DW $0098							; hero map position (X)
+	.DW $20D0							; hero screen position (low byte = X, high byte = Y, numbers refer to top left of sprite)
+	.DW $00D0							; hero map position (X)
 	.DW $0020							; hero map position (Y)
-	.DB $82								; hero sprite status: irrrrddd [i = not walking (idle), ddd = facing direction (0 = down, 1 = up, 2 = left, 3 = right)]
+	.DB $80								; hero sprite status: irrrrddd [i = not walking (idle), ddd = facing direction (0 = down, 1 = up, 2 = left, 3 = right)]
 
 SRC_AreaProperty003:
 	.DW %0000000000000101						; area properties: 64×32, x-scrollable

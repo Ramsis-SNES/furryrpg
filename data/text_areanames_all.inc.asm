@@ -35,7 +35,7 @@ STR_AreaNameEng001:
 	.DB "         Sandbox        ", 0
 
 STR_AreaNameEng002:
-	.DB "      Temba's Woods     ", 0
+	.DB "      Alec's House      ", 0
 
 STR_AreaNameEng003:
 	.DB "      Temba's Woods     ", 0
@@ -53,7 +53,7 @@ STR_AreaNameGer001:
 	.DB "       Sandkasten       ", 0
 
 STR_AreaNameGer002:
-	.DB "    Tembas Waeldchen    ", 0
+	.DB "       Alecs Haus       ", 0
 
 STR_AreaNameGer003:
 	.DB "    Tembas Waeldchen    ", 0

@@ -455,6 +455,24 @@ GFX_StartPic:
 
 
 
+.SECTION "Area data"
+
+GFX_Area002:
+.INCBIN "gfx/area-002-house.pic"
+GFX_Area002_END:
+
+SRC_Palette_Area002:
+.INCBIN "gfx/area-002-house.pal" READ 32
+SRC_Palette_Area002_END:
+
+SRC_TileMapBG1_Area002:
+.INCBIN "gfx/area-002-house.map"
+SRC_TileMapBG1_Area002_END:
+
+.ENDS
+
+
+
 .SECTION "Mode 7 sky data"
 
 GFX_Mode7_Sky:
