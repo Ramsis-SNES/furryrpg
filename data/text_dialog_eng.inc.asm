@@ -351,7 +351,7 @@ STR_DialogEng0050:
 
 STR_DialogEng0051:
 	.DB CC_Portrait, 0, CC_BoxRed
-	.DB "STRANGE WOLF:", CC_NewLine
+	.DB "FOREIGN WOLF:", CC_NewLine
 	.DB CC_Indent, "Hey-ho, Leonido ...", CC_NewLine
 	.DB CC_Indent, "Looking for trouble, are we?", CC_End
 
@@ -362,7 +362,7 @@ STR_DialogEng0052:
 
 STR_DialogEng0053:
 	.DB CC_Portrait, 0, CC_BoxRed
-	.DB "STRANGE WOLF:", CC_NewLine
+	.DB "FOREIGN WOLF:", CC_NewLine
 	.DB CC_Indent, "Okay-o, Leonido ...", CC_End
 
 STR_DialogEng0054:
@@ -388,7 +388,7 @@ STR_DialogEng0057:
 
 STR_DialogEng0058:
 	.DB CC_Portrait, 0, CC_BoxBlue
-	.DB "STRANGE WOLF:", CC_NewLine
+	.DB "FOREIGN WOLF:", CC_NewLine
 	.DB CC_Indent, "I'm a soldier. I fight.", CC_End
 
 STR_DialogEng0059:
@@ -982,7 +982,7 @@ STR_DialogEng0155:
 
 STR_DialogEng0156:
 	.DB CC_Portrait, 0, CC_BoxBlue
-	.DB "STRANGE FOX:", CC_NewLine
+	.DB "UNKNOWN FOX:", CC_NewLine
 	.DB CC_Indent, "You fought very well.", CC_NewLine
 	.DB CC_Indent, "Who are you?", CC_End
 
@@ -1000,24 +1000,24 @@ STR_DialogEng0158:
 
 STR_DialogEng0159:
 	.DB CC_Portrait, 0, CC_BoxBlue
-	.DB "STRANGE FOX:", CC_NewLine
+	.DB "UNKNOWN FOX:", CC_NewLine
 	.DB CC_Indent, "I wasn't going to hurt you, and neither was", CC_NewLine
 	.DB CC_Indent, "Dorothy.", CC_End
 
 STR_DialogEng0160:
 	.DB CC_Portrait, 0, CC_BoxBlue
-	.DB "STRANGE FOX:", CC_NewLine
+	.DB "UNKNOWN FOX:", CC_NewLine
 	.DB CC_Indent, "Welcome to my hiding place, Alec.", CC_End
 
 STR_DialogEng0161:
 	.DB CC_Portrait, 0, CC_BoxBlue
-	.DB "STRANGE FOX:", CC_NewLine
+	.DB "UNKNOWN FOX:", CC_NewLine
 	.DB CC_Indent, "I am deeply sorry for being so rude in the", CC_NewLine
 	.DB CC_Indent, "first place.", CC_End
 
 STR_DialogEng0162:
 	.DB CC_Portrait, 0, CC_BoxBlue
-	.DB "STRANGE FOX:", CC_NewLine
+	.DB "UNKNOWN FOX:", CC_NewLine
 	.DB CC_Indent, "My name is Reinhold von Pappenheim.", CC_NewLine
 	.DB CC_Indent, "I'm a professional ventriloquist.", CC_NewLine
 	.DB CC_Indent, "I apologize for scaring youfurs ...", CC_End
