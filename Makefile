@@ -20,6 +20,9 @@ LDFLAGS=-r -s
 
 target=furryrpg
 
+pyscript_gfx=snes-tile-tool.py
+pyscript_m7=calc_mode7_scaling_tables.py
+
 lnk=$(target).lnk
 msu=$(target).msu
 obj=$(target).obj
@@ -27,10 +30,7 @@ sfc=$(target).sfc
 src=$(target).asm
 sym=$(target).sym
 
-pyscript_gfx=snes-tile-tool.py
-pyscript_m7=calc_mode7_scaling_tables.py
-
-.PHONY: clean gfx
+.PHONY: bindata clean gfx
 
 all: bindata $(msu) $(sfc)
 
