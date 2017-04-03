@@ -301,13 +301,13 @@ SRC_HDMA_Mode5:
 
 SRC_HDMA_ResetBGScroll:
 	.DB 127								; 127 + 49 = 176 scanlines = playfield
-	.DW $0000, $00FF						; horiz. scroll = $0000, vert. scroll = $00FF (values to be manipulated in WRAM)
+	.DW $0000, $00FF						; horiz. scroll = $0000, vert. scroll = $00FF (all values to be manipulated in WRAM)
 
 	.DB 49
 	.DW $0000, $00FF
 
-	.DB 48								; 48 scanlines = text box area
-	.DW $0000, $00FF
+	.DB 48
+	.DW $0000, $00CF
 
 	.DB 0
 

@@ -479,10 +479,11 @@ __AreaBG2TileMapDone:
 
 	Accu16
 
-	lda	#211							; dot number for interrupt (256 = too late, 204 = too early)
+	lda	#228							; dot number for interrupt (256 = too late, 204 = too early)
 	sta	REG_HTIMEL
-	lda	#176							; scanline number for interrupt: 176 (i.e., let IRQ fire in Hblank between scanlines 176 and 177)
+	lda	#224							; scanline number for interrupt (none for now)
 	sta	REG_VTIMEL
+	sta	DP_TextBoxVIRQ
 
 	Accu8
 

@@ -62,11 +62,7 @@ LoadTextBoxBorderTiles:
 
 OpenTextBox:
 
-; -------------------------- FIXME: enhance routine with opening animation
-
-
-
-; -------------------------- prepare selection bar
+; -------------------------- prepare selection bar & set misc. regs/parameters
 	ldx	#$0000
 -	lda.l	SRC_HDMA_ColMathDialogSel, x
 	sta	ARRAY_HDMA_ColorMath, x
@@ -93,11 +89,15 @@ OpenTextBox:
 	sta	ARRAY_HDMA_BG_Scroll+6
 	lda	ARRAY_HDMA_BG_Scroll+3
 	sta	ARRAY_HDMA_BG_Scroll+8
-	stz	ARRAY_HDMA_BG_Scroll+11					; reset scrolling parameters for text box area
-	lda	#$00FF
-	sta	ARRAY_HDMA_BG_Scroll+13
+;	stz	ARRAY_HDMA_BG_Scroll+11					; reset scrolling parameters for text box area
+;	lda	#$00FF
+;	sta	ARRAY_HDMA_BG_Scroll+13
 
 	Accu8
+
+	lda	#97							; set initial size of playfield BG to fill the whole screen (127 + 97 = 224)
+	sta	ARRAY_HDMA_BG_Scroll+5
+	stz	ARRAY_HDMA_BG_Scroll+10
 
 
 
@@ -357,21 +357,7 @@ __MainTextBoxLoopBButtonDone:
 
 
 __CloseTextBox:
-	lda	#%00110000						; clear IRQ enable bits
-	trb	DP_Shadow_NMITIMEN
-	lda	#%00110100						; deactivate used HDMA channels
-	trb	DP_HDMA_Channels
-
-	WaitFrames	1
-
-	Accu16
-
-	lda	ARRAY_HDMA_BG_Scroll+1					; restore scrolling parameters
-	sta	ARRAY_HDMA_BG_Scroll+11
-	lda	ARRAY_HDMA_BG_Scroll+3
-	sta	ARRAY_HDMA_BG_Scroll+13
-
-	Accu8
+	jsr TextBoxAnimationClose
 
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
@@ -549,12 +535,7 @@ __ProcessTextLoop2:
 
 	cmp	#4							; make text box appear on screen only after portrait and BG color data of a string have been processed (this doesn't affect the text box if it's already open) // self-reminder: NOT cmp #3 because of preceding inc a
 	bne	+
-	lda	#%00110100						; activate HDMA ch. 2 (backdrop color), 4, 5 (BG scrolling regs)
-	tsb	DP_HDMA_Channels
-	lda	#%00110000						; enable IRQ at H=$4207 and V=$4209
-	tsb	DP_Shadow_NMITIMEN
-
-	WaitFrames	1						; seems unnecessary
+	jsr	TextBoxAnimationOpen
 
 +	lda	[DP_TextString], y					; read ASCII string character
 	cmp	#CC_End							; end of string reached?
@@ -821,15 +802,14 @@ ClearTextBox:
 
 
 LoadTextBoxBG:
+	lda	DP_TextBoxBG
+	and	#%01111111						; mask off request bit
+	bne	+
 	ldx	#(ARRAY_HDMA_BackgrTextBox & $FFFF)			; set WRAM address to text box HDMA background
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
-	lda	DP_TextBoxBG
-	and	#%01111111						; mask off request bit
-	bne	+
-
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 192		; if zero, clear table (i.e., make background black)
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 192		; DP_TextBoxBG is zero, so make background black
 
 	bra	__LoadTextBoxBGDone
 
@@ -840,20 +820,40 @@ LoadTextBoxBG:
 
 	Accu16								; 3 cycles
 
-	lda	REG_RDMPYL						; 5 cycles (4 + 1 for 16-bit Accu)
-	clc
-	adc	#(SRC_HDMA_TextBoxGradientBlue & $FFFF)
-	sta	$4302							; data offset
+	lda	#224							; calculate DMA data length based on current IRQ scanline (e.g. when text box has fully "scrolled in": 224 - 176 = 48; 48 * 4 = 192)
+	sec
+	sbc	DP_TextBoxVIRQ
+	asl	a
+	asl	a
+	tax								; save length in X
+	bne	+							; only continue if length isn't zero, otherwise we'd end up with a destructive transfer of 65536 bytes ;-)
 
 	Accu8
 
+	bra	__LoadTextBoxBGDone
+
+.ACCU 16
+
++	lda	REG_RDMPYL
+	clc
+	adc	#(SRC_HDMA_TextBoxGradientBlue & $FFFF)
+	sta	$4302							; data offset
+	lda	DP_TextBoxVIRQ						; calculate WRAM address based on DP_TextBoxVIRQ (e.g. 176 * 4 - 704 = 0)
+	asl	a
+	asl	a
+	clc
+	adc	#(ARRAY_HDMA_BackgrPlayfield & $FFFF)			; use playfield background as a base to save the subtraction of 704
+	sta	REG_WMADDL
+
+	Accu8
+
+	stz	REG_WMADDH						; array is in bank $7E
  	stz	$4300							; DMA mode
 	lda	#$80							; B bus register ($2180)
 	sta	$4301
 	lda	#:SRC_HDMA_TextBoxGradientBlue				; data bank
 	sta	$4304
-	ldx	#192							; data length
-	stx	$4305
+	stx	$4305							; data length
 	lda	#%00000001						; initiate DMA transfer (channel 0)
 	sta	REG_MDMAEN
 
@@ -1362,6 +1362,107 @@ SaveTextBoxTileToVRAM:
 	bne	-
 
 	Accu8
+
+	rts
+
+
+
+TextBoxAnimationClose:
+
+; -------------------------- closing animation (scroll text box content out vertically below the screen)
+__CloseTextBoxAniLoop:
+	WaitFrames	1
+
+	Accu16
+
+	lda	ARRAY_HDMA_BG_Scroll+13					; subtract speed value to vertical BG scroll data, i.e. scroll BG down
+	sec
+	sbc	#PARAM_TextBoxAnimSpd
+	sta	ARRAY_HDMA_BG_Scroll+13
+
+	Accu8
+
+	lda	ARRAY_HDMA_BG_Scroll+5					; increase playfield BG size by speed value
+	clc
+	adc	#PARAM_TextBoxAnimSpd
+	sta	ARRAY_HDMA_BG_Scroll+5
+	lda	ARRAY_HDMA_BG_Scroll+10					; reduce text box BG size by speed value
+	sec
+	sbc	#PARAM_TextBoxAnimSpd
+	sta	ARRAY_HDMA_BG_Scroll+10
+	lda	#$80							; set "new text box BG requested" flag, this is required within the loop as the flag is cleared during Vblank after a new gradient was loaded
+	tsb	DP_TextBoxBG
+	lda	DP_TextBoxVIRQ						; increase value to create the illusion that the text box "scrolls out" below the screen
+	clc
+	adc	#PARAM_TextBoxAnimSpd
+	sta	DP_TextBoxVIRQ						; write new scanline for IRQ to fire
+	sta	REG_VTIMEL
+	cmp	#224
+	bne	__CloseTextBoxAniLoop
+
+	Accu8
+
+	lda	#%00110000						; clear IRQ enable bits
+	trb	DP_Shadow_NMITIMEN
+	lda	#%00110100						; deactivate used HDMA channels
+	trb	DP_HDMA_Channels
+
+	WaitFrames	1
+
+;	Accu16
+
+;	lda	ARRAY_HDMA_BG_Scroll+1					; restore scrolling parameters // possibly needed on areas with vertical scrolling
+;	sta	ARRAY_HDMA_BG_Scroll+11
+;	lda	ARRAY_HDMA_BG_Scroll+3
+;	sta	ARRAY_HDMA_BG_Scroll+13
+
+;	Accu8
+
+	rts
+
+
+
+TextBoxAnimationOpen:
+
+; -------------------------- opening animation (scroll text box content in vertically from below)
+	lda	#%00110100						; activate HDMA ch. 2 (backdrop color), 4, 5 (BG scrolling regs)
+	tsb	DP_HDMA_Channels
+	lda	#%00110000						; enable IRQ at H=$4207 and V=$4209
+	tsb	DP_Shadow_NMITIMEN
+
+__OpenTextBoxAniLoop:
+	WaitFrames	1
+
+	Accu16
+
+	lda	DP_TextBoxVIRQ						; final value (scanline 176) reached?
+	cmp	#176
+	beq	+							; yes, jump out
+	sec								; no --> reduce value to create so the text box "scrolls" in from below the screen
+	sbc	#PARAM_TextBoxAnimSpd
+	sta	DP_TextBoxVIRQ
+	lda	ARRAY_HDMA_BG_Scroll+13					; add speed value to vertical BG scroll data, i.e. scroll BG up
+	clc
+	adc	#PARAM_TextBoxAnimSpd
+	sta	ARRAY_HDMA_BG_Scroll+13
+
+	Accu8
+
+	lda	ARRAY_HDMA_BG_Scroll+5					; reduce playfield BG size by speed value
+	sec
+	sbc	#PARAM_TextBoxAnimSpd
+	sta	ARRAY_HDMA_BG_Scroll+5
+	lda	ARRAY_HDMA_BG_Scroll+10					; increase text box BG size by speed value
+	clc
+	adc	#PARAM_TextBoxAnimSpd
+	sta	ARRAY_HDMA_BG_Scroll+10
+	lda	#$80							; set "new text box BG requested" flag
+	tsb	DP_TextBoxBG
+	lda	DP_TextBoxVIRQ						; lastly, write new scanline for IRQ to fire
+	sta	REG_VTIMEL
+	bra	__OpenTextBoxAniLoop
+
++	Accu8
 
 	rts
 

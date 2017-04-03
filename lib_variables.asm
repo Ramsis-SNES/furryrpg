@@ -303,6 +303,7 @@
 .DEFINE PARAM_Mode7SkyLines	72					; number of scanlines for sky above Mode 7 landscape
 
 .DEFINE PARAM_TextBox		$02C0					; tilemap entry for start of whole text box area
+.DEFINE PARAM_TextBoxAnimSpd	4					; scrolling speed for text box animation (must be a divisor of 48)
 ;.DEFINE PARAM_TextBoxInside	$02E0					; tilemap entry for inside of text box
 .DEFINE PARAM_TextBoxLine1	$02E7					; tilemap entry for start of line 1 in text box
 .DEFINE PARAM_TextBoxLine2	$0307					; tilemap entry for start of line 2 in text box
@@ -735,6 +736,7 @@
 	DP_TextBoxSelMax	db					; for HDMA selection bar
 	DP_TextBoxSelMin	db					; ditto
 	DP_TextBoxStatus	db					; cmrrrrot [c = clear text box, m = there is more text to process, o = text box is open, r = reserved, t = VWF buffer full, transfer to VRAM]
+	DP_TextBoxVIRQ		dw					; scanline no. of text box start (for scrolling animation)
 	DP_TextCursor		dw
 	DP_TextLanguage		db					; holds language constant
 	DP_TextPointer		dw
@@ -748,7 +750,7 @@
 	DP_VWF_BitsUsed		dw
 	DP_VWF_BufferIndex	dw
 	DP_VWF_Loop		db
-.ENDE									; 168 of 256 bytes used
+.ENDE									; 170 of 256 bytes used
 
 
 
