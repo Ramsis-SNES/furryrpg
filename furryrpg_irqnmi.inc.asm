@@ -55,14 +55,11 @@ __TextBoxVblankDone:
 
 __ShowHUD:
 	lda	ARRAY_HDMA_HUD_Scroll+1
-	ldb	ARRAY_HDMA_HUD_Scroll+7
 	dec	a							; make it appear faster than it disappears (hence multiple decrements)
 	dec	a
 	dec	a
-	bpl	+							; only positive values allowed (except for #$FF)
-	lda	#$FF							; underflow, set final scroll value
-+	sta	ARRAY_HDMA_HUD_Scroll+1
-	xba
+	sta	ARRAY_HDMA_HUD_Scroll+1
+	lda	ARRAY_HDMA_HUD_Scroll+7
 	inc	a
 	inc	a
 	inc	a
@@ -79,10 +76,9 @@ __ShowHUD:
 
 __HideHUD:
 	lda	ARRAY_HDMA_HUD_Scroll+1
-	ldb	ARRAY_HDMA_HUD_Scroll+7
 	inc	a
 	sta	ARRAY_HDMA_HUD_Scroll+1
-	xba
+	lda	ARRAY_HDMA_HUD_Scroll+7
 	dec	a
 	sta	ARRAY_HDMA_HUD_Scroll+7
 	cmp	#$CF							; final scroll value reached?

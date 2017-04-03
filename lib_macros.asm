@@ -67,37 +67,6 @@ __ReturnAdress\@:
 
 
 
-; Macro ldb by ManuLöwe
-;
-; Usage: ldb <value>
-; Effect: Loads an 8-bit value/address into the B accumulator (high byte of 16-bit accu) without destroying the contents of the A accumulator.
-;
-; Expects: A 8 bit
-
-.MACRO ldb
-	xba
-	lda	\1
-	xba
-.ENDM
-
-
-
-; Macro ldc by ManuLöwe
-;
-; Usage: ldc <value>
-; Effect: Loads a 16-bit value/address into the accumulator. Useful whenever it's important to set the contents of the B accu without having to worry about the current accu size.
-
-.MACRO ldc
-	php
-
-	Accu16
-
-	lda.w	\1
-	plp
-.ENDM
-
-
-
 ; -------------------------- frequently-used "code snippet" macros
 .ACCU 8
 
