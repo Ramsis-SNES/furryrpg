@@ -843,9 +843,9 @@ Goto???1:
 	SetTextPos	2, 2
 
 	ldx	#STR_ItemEng000
-	stx	DP_StringBank
+	stx	DP_TextStringPtr
 	lda	#:STR_ItemEng000
-	sta	DP_StringBank+2
+	sta	DP_TextStringBank
 	lda	#24
 	sta	temp+3
 
@@ -856,10 +856,10 @@ __RenderItem:
 
 	Accu16
 
-	lda	DP_StringBank
+	lda	DP_TextStringPtr
 	clc
 	adc	#16
-	sta	DP_StringBank
+	sta	DP_TextStringPtr
 	lda	DP_TextCursor
 	clc
 	adc	#24
@@ -873,12 +873,12 @@ __RenderItem:
 	SetTextPos	2, 16
 
 	ldx	#STR_MainMenuEng000
-	stx	DP_StringBank
+	stx	DP_TextStringPtr
 	lda	#:STR_MainMenuEng000
-	sta	DP_StringBank+2
+	sta	DP_TextStringBank
 
 	ldy	#0
--	lda	[DP_StringBank], y
+-	lda	[DP_TextStringPtr], y
 	beq	+
 	asl	a							; double char no. because font tiles were "expanded" for hi-res mode
 	inc	a							; increment char no. because Mode 5 BG2 font tiles sit on the "right"

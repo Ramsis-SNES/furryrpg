@@ -126,7 +126,7 @@ __ProcessNextDialog:
 	asl	a
 	tax
 	lda.l	SRC_DiagPointerGer, x					; DP_TextLanguage is 1 --> German
-++	sta	DP_TextString
+++	sta	DP_TextStringPtr
 	stz	DP_TextStringCounter					; reset string counter
 
 	Accu8
@@ -537,7 +537,7 @@ __ProcessTextLoop2:
 	bne	+
 	jsr	TextBoxAnimationOpen
 
-+	lda	[DP_TextString], y					; read ASCII string character
++	lda	[DP_TextStringPtr], y					; read ASCII string character
 	cmp	#CC_End							; end of string reached?
 	bne	+
 	jmp	__ProcessTextDone					; yes, done
@@ -552,7 +552,7 @@ __ProcessTextLoop2:
 +	cmp	#CC_Portrait						; char portrait?
 	bne	+
 	iny								; increment string pointer to portrait no.
-	lda	[DP_TextString], y					; read portrait no. (0-127)
+	lda	[DP_TextStringPtr], y					; read portrait no. (0-127)
 	ora	#$80							; set "change portrait" bit
 	sta	DP_TextBoxCharPortrait					; save to "change portrait" request variable
 
@@ -1504,7 +1504,7 @@ PrintFStart:
 	Index16
 
 PrintFLoop:
-	lda	[DP_StringBank], y					; read next format string character
+	lda	[DP_TextStringPtr], y					; read next format string character
 	beq	PrintFDone						; check for NUL terminator
 	iny								; increment input pointer
 	CMP	#'%'
@@ -1525,7 +1525,7 @@ PrintFDone:
 
 
 PrintFControl:
-	lda	[DP_StringBank], y					; read control character
+	lda	[DP_TextStringPtr], y					; read control character
 	beq	PrintFDone						; check for NUL terminator
 	iny								; increment input pointer
 _cn:	CMP	#'n'
@@ -1567,7 +1567,7 @@ _defaultC:
 	bra	NormalPrint
 
 PrintFFormat:
-	lda	[DP_StringBank], y					; read format character
+	lda	[DP_TextStringPtr], y					; read format character
 	beq	PrintFDone						; check for NUL terminator
 	iny								; increment input pointer
 _sf:	CMP	#'s'
@@ -1629,7 +1629,7 @@ PrintHiResFWF:
 	ldy	#0
 
 PrintHiResLoop:
-	lda	[DP_StringBank], y					; read next format string character
+	lda	[DP_TextStringPtr], y					; read next format string character
 	beq	PrintHiResDone						; check for NUL terminator
 	iny								; increment input pointer
 	jsr	FillHiResTextBuffer					; write character to text buffer
@@ -1651,7 +1651,7 @@ PrintHiResFixedLenFWF:
 	ldy	#0
 
 PrintHiResFixedLenLoop:
-	lda	[DP_StringBank], y					; read next format string character
+	lda	[DP_TextStringPtr], y					; read next format string character
 	iny								; increment input pointer
 	jsr	FillHiResTextBuffer					; write character to text buffer
 
@@ -1710,7 +1710,7 @@ __FillHiResTextBufferDone:
 ; Caveat #2: No support for control characters.
 
 PrintSpriteText:
-	ldy	DP_StringPtr
+	ldy	#0
 	php
 
 	Accu8
@@ -1719,7 +1719,7 @@ PrintSpriteText:
 	ldx	DP_SpriteTextMon					; start where there is some unused sprite text buffer
 
 __PrintSpriteTextLoop:
-	lda	[DP_StringBank], y					; read next string character
+	lda	[DP_TextStringPtr], y					; read next string character
 	beq	__PrintSpriteTextDone					; check for NUL terminator
 	iny								; increment input pointer
 	phy

@@ -726,9 +726,6 @@
 	DP_SpriteTextMon	dw					; keeps track of sprite-based text buffer filling level
 	DP_SpriteTextPalette	db					; holds palette to use when printing sprite-based text
 
-	DP_StringPtr		dw
-	DP_StringBank		dsb 3					; 8-bit bank no. + 16 bits of trailing zeroes (e.g., $C00000)
-
 	DP_TextASCIIChar	dw					; holds current ASCII character no.
 	DP_TextBoxBG		db					; bnnnnnnn [b = change text box background, n = no. of color table (0-127)
 	DP_TextBoxCharPortrait	db					; pnnnnnnn [p = change character portrait, n = no. of portrait (0-127)
@@ -739,18 +736,16 @@
 	DP_TextBoxVIRQ		dw					; scanline no. of text box start (for scrolling animation)
 	DP_TextCursor		dw
 	DP_TextLanguage		db					; holds language constant
-	DP_TextPointer		dw
-	DP_TextPointerBank	db
 	DP_TextPointerNo	dw
-	DP_TextString		dw
-	DP_TextStringBank	db
+	DP_TextStringPtr	dw					; 16-bit string pointer (or zeroes)
+	DP_TextStringBank	db					; 8-bit bank no. of string
 	DP_TextStringCounter	dw					; holds current ASCII string position
 	DP_TextTileDataCounter	dw					; holds current VRAM tile data address
 
 	DP_VWF_BitsUsed		dw
 	DP_VWF_BufferIndex	dw
 	DP_VWF_Loop		db
-.ENDE									; 170 of 256 bytes used
+.ENDE									; 163 of 256 bytes used
 
 
 

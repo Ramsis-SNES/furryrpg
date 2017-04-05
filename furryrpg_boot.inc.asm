@@ -322,48 +322,48 @@ AlphaIntro:
 	SetTextPos	2, 2
 
 	ldx	#STR_Software_Title
-	stx	DP_StringBank
+	stx	DP_TextStringPtr
 	lda	#:STR_Software_Title
-	sta	DP_StringBank+2
+	sta	DP_TextStringBank
 	jsr	PrintHiResFWF
 
 	lda	#' '							; add a space before the build no.
 	sta	ARRAY_TempString
 	stz	ARRAY_TempString+1
 	ldx	#ARRAY_TempString
-	stx	DP_StringBank
+	stx	DP_TextStringPtr
 	lda	#$7E
-	sta	DP_StringBank+2
+	sta	DP_TextStringBank
 	jsr	PrintHiResFWF
 
 	ldx	#STR_SoftwareBuild
-	stx	DP_StringBank
+	stx	DP_TextStringPtr
 	lda	#:STR_SoftwareBuild
-	sta	DP_StringBank+2
+	sta	DP_TextStringBank
 	jsr	PrintHiResFWF
 
 	SetTextPos	3, 2
 
 	ldx	#STR_SoftwareMaker
-	stx	DP_StringBank
+	stx	DP_TextStringPtr
 	lda	#:STR_SoftwareMaker
-	sta	DP_StringBank+2
+	sta	DP_TextStringBank
 	jsr	PrintHiResFWF
 
 	SetTextPos	4, 2
 
 	ldx	#STR_SoftwareBuildTimestamp
-	stx	DP_StringBank
+	stx	DP_TextStringPtr
 	lda	#:STR_SoftwareBuildTimestamp
-	sta	DP_StringBank+2
+	sta	DP_TextStringBank
 	jsr	PrintHiResFWF
 
 	SetTextPos	6, 2
 
 	ldx	#STR_DisclaimerWallofText
-	stx	DP_StringBank
+	stx	DP_TextStringPtr
 	lda	#:STR_DisclaimerWallofText
-	sta	DP_StringBank+2
+	sta	DP_TextStringBank
 	jsr	PrintHiResFWF
 
 	stz	REG_VMAIN						; increment VRAM address by one word after writing to $2118

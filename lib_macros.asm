@@ -331,10 +331,10 @@ __CheckJoypad\@:
 ; PrintString modified by ManuLöwe: PrintString y, x, "String"
 
 .MACRO PrintString
-	stz	DP_StringBank
-	stz	DP_StringBank+1
+	stz	DP_TextStringPtr
+	stz	DP_TextStringPtr+1
 	lda	#:StringOffset\@
-	sta	DP_StringBank+2
+	sta	DP_TextStringBank
 	ldx	#32*\1 + \2
 	stx	DP_TextCursor
 	jsr	PrintF
@@ -399,12 +399,11 @@ StringOffset\@:
 	lda	#\4
 	sta	DP_SpriteTextPalette
 	ldx	#STR_SpriteText_Start\@
-	stx	DP_StringPtr
-	stz.b	DP_StringBank
-	stz.b	DP_StringBank+1
+	stx	DP_TextStringPtr
 	lda.b	#:STR_SpriteText_Start\@
-	sta.b	DP_StringBank+2
+	sta.b	DP_TextStringBank
 	jsr	PrintSpriteText
+
 	bra	STR_SpriteText_End\@
 
 STR_SpriteText_Start\@:
