@@ -1606,6 +1606,26 @@ _defaultF:
 
 
 
+PrintFtemp:
+	ldx	#ARRAY_TempString
+	stx	DP_TextStringPtr
+	lda	#$7E
+	sta	DP_TextStringBank
+	ldy	#0
+
+PrintFtempLoop:
+	lda	[DP_TextStringPtr], y					; read next string character
+	beq	PrintFtempDone						; check for NUL terminator
+	iny								; increment input pointer
+	jsr	FillTextBuffer						; write character to text buffer
+
+	bra	PrintFtempLoop
+
+PrintFtempDone:
+	rts
+
+
+
 ; In: A -- ASCII code to print
 ; Out: none
 ; Modifies: P

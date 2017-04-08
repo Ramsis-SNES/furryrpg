@@ -612,8 +612,8 @@ ShowArea:
 	DrawFrame	3, 1, 25, 2
 ;	PrintString	2, 4, "XXXXXXXXXXXXXXXXXXXXXXXX"		; area name
 	PrintString	23, 1, "Gengen"
-	PrintString	24, 1, "HP: XXXX"
-	PrintString	24, 20, "Time: XX:XX"
+;	PrintString	24, 1, "HP: XXXX"
+;	PrintString	24, 20, "Time: XX:XX"
 
 
 
@@ -736,6 +736,52 @@ __HUDLogicDone:
 
 	PrintString	2, 4, "%s"					; area name
 
+	lda	#:SRC_MiscTextPointerEng
+	clc
+	adc	DP_TextLanguage
+	sta	DP_DataSrcAddress+2
+	lda	DP_TextLanguage						; check language for the correct pointer table
+	bne	+
+	ldx	#STR_MiscEng000						; pointer to "HP"
+	stx	DP_DataSrcAddress
+	bra	++
+
++	ldx	#STR_MiscGer000						; pointer to "LP"
+	stx	DP_DataSrcAddress
+
+++	PrintString	24, 1, "%s: "					; "HP" string
+
+	lda	#'X'							; placeholder for HP numbers/bar
+	sta	ARRAY_TempString
+	sta	ARRAY_TempString+1
+	sta	ARRAY_TempString+2
+	sta	ARRAY_TempString+3
+	stz	ARRAY_TempString+4
+	jsr	PrintFtemp
+
+	lda	#:SRC_MiscTextPointerEng
+	clc
+	adc	DP_TextLanguage
+	sta	DP_DataSrcAddress+2
+	lda	DP_TextLanguage						; check language for the correct pointer table
+	bne	+
+	ldx	#STR_MiscEng003						; pointer to "Time"
+	stx	DP_DataSrcAddress
+	bra	++
+
++	ldx	#STR_MiscGer003						; pointer to "Zeit"
+	stx	DP_DataSrcAddress
+
+++	PrintString	24, 20, "%s: "					; "time" string
+	PrintHexNum	DP_GameTimeHours
+
+	lda	#':'
+	sta	ARRAY_TempString
+	stz	ARRAY_TempString+1
+	jsr	PrintFtemp
+
+	PrintHexNum	DP_GameTimeMinutes
+
 
 
 .IFDEF DEBUG
@@ -760,16 +806,6 @@ __HUDLogicDone:
 ;	PrintHexNum	DP_Char1MapPosY+1
 ;	PrintHexNum	DP_Char1MapPosY
 .ENDIF
-
-
-
-; -------------------------- update HUD game time
-;	PrintString	24, 20, "Time: XX:XX"
-
-	SetTextPos	24, 26
-	PrintHexNum	DP_GameTimeHours
-	SetTextPos	24, 29
-	PrintHexNum	DP_GameTimeMinutes
 
 
 

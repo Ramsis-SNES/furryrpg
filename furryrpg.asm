@@ -352,6 +352,7 @@ GFX_Items_Eng:
 
 .INCLUDE "data/text_items_eng.inc.asm"					; English item names
 .INCLUDE "data/text_mainmenu_eng.inc.asm"				; English main menu strings
+.INCLUDE "data/text_misc_eng.inc.asm"					; English misc. text
 
 .ENDS
 
@@ -373,10 +374,11 @@ GFX_Items_Eng:
 
 .ORG $8000
 
-.SECTION "German items" FORCE
+.SECTION "German misc. text" FORCE
 
 .INCLUDE "data/text_items_ger.inc.asm"					; German item names
 .INCLUDE "data/text_mainmenu_ger.inc.asm"				; German main menu strings
+.INCLUDE "data/text_misc_ger.inc.asm"					; German misc. text
 
 .ENDS
 
