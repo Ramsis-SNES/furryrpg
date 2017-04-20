@@ -9,6 +9,29 @@
 
 
 
+Build #00284:
+- more work on the event handler
+- converted some loops to subroutines in preparation of one (or more) main game loop(s), this allows e.g. dialogue to appear while sprites are moving on the screen
+
+
+
+Build #00283:
+- added proper event handler & pseudo-scripting language (WIP)
+- added scrolling sky background to Mode 7 flight (WIP)
+- added new area (based on visar's pixel artwork)
+- added new speed-controllable transition effects (fade to/from black)
+- made HUD content adapt to currently selected language
+- added text box opening animation (it appears to scroll in from below the screen)
+- various bugfixes & code cleanups
+
+
+
+Build #00279:
+- reimplemented vertical split-screen (possibly for inventory menu)
+- rearranged some code sections
+
+
+
 Build #00278:
 - made text box appear only after portrait/background color control codes have been processed, this fixes "flickering" of text box elements
 - moved text box background color DMA to Vblank to prevent glitches

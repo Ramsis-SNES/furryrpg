@@ -616,7 +616,7 @@ StartScreenLoop:
 
 
 ; -------------------------- check for Start
-	lda	Joy1+1
+	lda	DP_Joy1+1
 	and	#%00010000
 	beq	StartScreenLoop
 

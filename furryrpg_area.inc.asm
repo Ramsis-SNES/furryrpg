@@ -501,9 +501,11 @@ __AreaBG2TileMapDone:
 	lda	#%01000000						; enable HDMA ch. 6 (BG3 HUD scroll)
 	tsb	DP_HDMA_Channels
 
-	WaitFrames	4						; let the screen clear up
+	WaitFrames	4						; give some time for screen refresh
 
 	rts
+
+
 
 ShowArea:
 	lda	#CMD_EffectSpeed3
@@ -658,6 +660,9 @@ MainAreaLoop:
 ;	lda	DP_Shadow_NMITIMEN
 ;	sta	REG_NMITIMEN
 
+
+
+; -------------------------- player ###
 	Accu16
 
 	lda	DP_PlayerIdleCounter
@@ -823,7 +828,7 @@ __MainAreaNoTextBox:
 
 
 ; -------------------------- check for B button = make HUD disappear/run
-	lda	Joy1Press+1
+	lda	DP_Joy1Press+1
 	and	#%10000000
 	bne	+
 	lda	#1							; B not pressed, set slow walking speed
@@ -844,7 +849,7 @@ __MainAreaLoopBButtonDone:
 
 
 ; -------------------------- check for Y button = show HUD
-	lda	Joy1New+1
+	lda	DP_Joy1New+1
 	and	#%01000000
 	beq	__MainAreaLoopYButtonDone
 
@@ -863,7 +868,7 @@ __MainAreaLoopYButtonDone:
 
 
 ; -------------------------- check for dpad released
-	lda	Joy1New+1
+	lda	DP_Joy1New+1
 	and	#%00001111
 	bne	__MainAreaLoopDpadNewDone
 
@@ -875,7 +880,7 @@ __MainAreaLoopDpadNewDone:
 
 
 ; -------------------------- check for dpad up
-	lda	Joy1Press+1
+	lda	DP_Joy1Press+1
 	and	#%00001000
 	beq	__MainAreaLoopDpadUpDone
 
@@ -902,12 +907,12 @@ __MainAreaLoopDpadNewDone:
 	lda	DP_AreaProperties					; check if area may be scrolled vertically
 	and	#%0000000000001000
 	bne	+
-	lda	DP_Char1WalkingSpd					; area not scrollable, move hero sprite instead
-	xba								; shift to high byte for Y value
-	eor	#$FFFF							; make negative
-	inc	a
-	clc
-	adc	DP_Char1ScreenPosYX					; Y = Y - DP_Char1WalkingSpd (add negative value)
+	lda	DP_Char1ScreenPosYX					; area not scrollable, move hero sprite instead
+	ldx	DP_Char1WalkingSpd
+-	sec
+	sbc	#$0100							; Y -= 1
+	dex								; as many times as DP_Char1WalkingSpd
+	bne	-
 	sta	DP_Char1ScreenPosYX
 	bra	++
 
@@ -926,7 +931,7 @@ __MainAreaLoopDpadUpDone:
 
 
 ; -------------------------- check for dpad down
-	lda	Joy1Press+1
+	lda	DP_Joy1Press+1
 	and	#%00000100
 	beq	__MainAreaLoopDpadDownDone
 
@@ -973,7 +978,7 @@ __MainAreaLoopDpadDownDone:
 
 
 ; -------------------------- check for dpad left
-	lda	Joy1Press+1
+	lda	DP_Joy1Press+1
 	and	#%00000010
 	beq	__MainAreaLoopDpadLeftDone
 
@@ -1002,7 +1007,7 @@ __MainAreaLoopDpadDownDone:
 	bne	+
 	lda	DP_Char1ScreenPosYX					; area not scrollable, move hero sprite instead
 	sec
-	sbc	DP_Char1WalkingSpd					; X = X - DP_Char1WalkingSpd
+	sbc	DP_Char1WalkingSpd					; X -= DP_Char1WalkingSpd
 	sta	DP_Char1ScreenPosYX
 	bra	++
 
@@ -1019,7 +1024,7 @@ __MainAreaLoopDpadLeftDone:
 
 
 ; -------------------------- check for dpad right
-	lda	Joy1Press+1
+	lda	DP_Joy1Press+1
 	and	#%00000001
 	beq	__MainAreaLoopDpadRightDone
 
@@ -1065,7 +1070,7 @@ __MainAreaLoopDpadRightDone:
 
 
 ; -------------------------- check for A button = open text box
-	lda	Joy1New
+	lda	DP_Joy1New
 	and	#%10000000
 	beq	__MainAreaLoopAButtonDone
 
@@ -1080,7 +1085,7 @@ __MainAreaLoopAButtonDone:
 
 
 ; -------------------------- check for X button
-	lda	Joy1New
+	lda	DP_Joy1New
 	and	#%01000000
 	beq	__MainAreaLoopXButtonDone
 
@@ -1095,7 +1100,7 @@ __MainAreaLoopSkipDpadABXY:
 
 
 ; -------------------------- check for Start
-	lda	Joy1+1
+	lda	DP_Joy1+1
 	and	#%00010000
 	beq	__MainAreaLoopStButtonDone
 

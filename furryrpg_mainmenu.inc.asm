@@ -61,7 +61,7 @@ MainMenuLoop:
 
 
 ; -------------------------- check for dpad up
-	lda	Joy1New+1
+	lda	DP_Joy1New+1
 	and	#%00001000
 	beq	++
 	lda	ARRAY_HDMA_ColorMath+0					; first byte of color math HDMA table = no. of scanlines above color bar
@@ -80,7 +80,7 @@ MainMenuLoop:
 
 
 ; -------------------------- check for dpad down
-	lda	Joy1New+1
+	lda	DP_Joy1New+1
 	and	#%00000100
 	beq	++
 	lda	ARRAY_HDMA_ColorMath+0					; first byte of color math HDMA table = no. of scanlines above color bar
@@ -99,7 +99,7 @@ MainMenuLoop:
 
 
 ; -------------------------- check for A button
-	lda	Joy1New
+	lda	DP_Joy1New
 	and	#%10000000
 	beq	++
 	lda	#%00000100						; mosaic on BG3
@@ -149,7 +149,7 @@ MainMenuLoop:
 
 
 ; -------------------------- check for B button = back
-	lda	Joy1New+1
+	lda	DP_Joy1New+1
 	and	#%10000000
 	bne	+
 	jmp	++
@@ -184,7 +184,7 @@ MainMenuLoop:
 
 
 ; -------------------------- check for Start
-;	lda	Joy1New+1
+;	lda	DP_Joy1New+1
 ;	and	#%00010000
 ;	beq	+
 
@@ -507,7 +507,7 @@ RingMenuLoop:
 
 
 ; -------------------------- check for dpad left
-	lda	Joy1Press+1
+	lda	DP_Joy1Press+1
 	and	#%00000010
 	beq	__RingMenuLoopDpadLeftDone
 
@@ -526,7 +526,7 @@ __RingMenuLoopDpadLeftDone:
 
 
 ; -------------------------- check for dpad right
-	lda	Joy1Press+1
+	lda	DP_Joy1Press+1
 	and	#%00000001
 	beq	__RingMenuLoopDpadRightDone
 
@@ -594,7 +594,7 @@ __RingMenuLoopDpadRightDone:
 
 
 ; -------------------------- check for A button = make selection
-	lda	Joy1New
+	lda	DP_Joy1New
 	and	#%10000000
 	beq	__RingMenuLoopAButtonDone
 

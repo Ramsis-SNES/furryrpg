@@ -418,7 +418,7 @@ Mode7Loop:
 
 
 ; -------------------------- check for dpad up+left
-	lda	Joy1Press+1
+	lda	DP_Joy1Press+1
 	and	#%00001010
 	cmp	#%00001010
 	bne	++
@@ -437,7 +437,7 @@ Mode7Loop:
 
 
 ; -------------------------- check for dpad up+right
-	lda	Joy1Press+1
+	lda	DP_Joy1Press+1
 	and	#%00001001
 	cmp	#%00001001
 	bne	++
@@ -456,7 +456,7 @@ Mode7Loop:
 
 
 ; -------------------------- check for dpad down+left
-	lda	Joy1Press+1
+	lda	DP_Joy1Press+1
 	and	#%00000110
 	cmp	#%00000110
 	bne	++
@@ -474,7 +474,7 @@ Mode7Loop:
 
 
 ; -------------------------- check for dpad down+right
-	lda	Joy1Press+1
+	lda	DP_Joy1Press+1
 	and	#%00000101
 	cmp	#%00000101
 	bne	++
@@ -492,7 +492,7 @@ Mode7Loop:
 
 
 ; -------------------------- check for dpad up
-	lda	Joy1Press+1
+	lda	DP_Joy1Press+1
 	and	#%00001000
 	beq	++
 	lda	DP_Mode7_Altitude
@@ -507,7 +507,7 @@ Mode7Loop:
 
 
 ; -------------------------- check for dpad down
-	lda	Joy1Press+1
+	lda	DP_Joy1Press+1
 	and	#%00000100
 	beq	++
 	lda	DP_Mode7_Altitude
@@ -521,7 +521,7 @@ Mode7Loop:
 
 
 ; -------------------------- check for dpad left
-	lda	Joy1Press+1
+	lda	DP_Joy1Press+1
 	and	#%00000010
 	beq	+
 	lda	DP_Mode7_BG2HScroll
@@ -535,7 +535,7 @@ Mode7Loop:
 
 
 ; -------------------------- check for dpad right
-	lda	Joy1Press+1
+	lda	DP_Joy1Press+1
 	and	#%00000001
 	beq	+
 	lda	DP_Mode7_BG2HScroll
@@ -553,7 +553,7 @@ __M7SkipDpad:
 
 
 ; -------------------------- check for L
-	lda	Joy1Press
+	lda	DP_Joy1Press
 	and	#%00100000
 	beq	+
 	dec	DP_Mode7_RotAngle
@@ -564,7 +564,7 @@ __M7SkipDpad:
 
 
 ; -------------------------- check for R
-	lda	Joy1Press
+	lda	DP_Joy1Press
 	and	#%00010000
 	beq	+
 	inc	DP_Mode7_RotAngle
@@ -575,7 +575,7 @@ __M7SkipDpad:
 
 
 ; -------------------------- check for A = fly forward
-	lda	Joy1Press
+	lda	DP_Joy1Press
 	and	#%10000000
 	beq	++
 	lda	DP_Mode7_RotAngle					; $00 < angle < $80 --> inc X
@@ -608,7 +608,7 @@ __M7FlightY:
 .ENDASM
 
 ; -------------------------- check for B
-	lda	Joy1Press+1
+	lda	DP_Joy1Press+1
 	and	#%10000000
 	beq	+
 
@@ -617,7 +617,7 @@ __M7FlightY:
 
 
 ; -------------------------- check for X
-	lda	Joy1Press
+	lda	DP_Joy1Press
 	and	#%01000000
 	beq	+
 
@@ -626,7 +626,7 @@ __M7FlightY:
 
 
 ; -------------------------- check for Y
-	lda	Joy1Press+1
+	lda	DP_Joy1Press+1
 	and	#%01000000
 	beq	+
 
@@ -635,7 +635,7 @@ __M7FlightY:
 .ASM
 
 ; -------------------------- check for Start
-	lda	Joy1New+1
+	lda	DP_Joy1New+1
 	and	#%00010000
 	beq	+
 	lda	#CMD_EffectSpeed3
@@ -663,7 +663,7 @@ __M7FlightY:
 
 
 ; -------------------------- check for Select
-	lda	Joy1New+1
+	lda	DP_Joy1New+1
 	and	#%00100000
 	beq	+
 	jsr	ResetMode7Matrix

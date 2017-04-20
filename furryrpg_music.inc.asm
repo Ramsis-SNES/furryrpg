@@ -517,7 +517,7 @@ BackTo0:
 MSUloop1:
 	wai
 
-	lda	Joy1New
+	lda	DP_Joy1New
 	and	#$80							; check for A button
 	beq	MSUloop1
 
@@ -555,7 +555,7 @@ MSUloop1:
 MSUloop2:
 	wai
 
-	lda	Joy1New
+	lda	DP_Joy1New
 	and	#$80							; check for A button
 	beq	MSUloop2
 

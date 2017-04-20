@@ -120,7 +120,7 @@ WorldMapLoop:
 
 
 ; -------------------------- check for dpad up
-	lda	Joy1Press+1
+	lda	DP_Joy1Press+1
 	and	#%00001000
 	beq	__WorldMapLoopDpadUpDone
 
@@ -145,7 +145,7 @@ __WorldMapLoopDpadUpDone:
 
 
 ; -------------------------- check for dpad down
-	lda	Joy1Press+1
+	lda	DP_Joy1Press+1
 	and	#%00000100
 	beq	__WorldMapLoopDpadDownDone
 
@@ -170,7 +170,7 @@ __WorldMapLoopDpadDownDone:
 
 
 ; -------------------------- check for dpad left
-	lda	Joy1Press+1
+	lda	DP_Joy1Press+1
 	and	#%00000010
 	beq	__WorldMapLoopDpadLeftDone
 
@@ -195,7 +195,7 @@ __WorldMapLoopDpadLeftDone:
 
 
 ; -------------------------- check for dpad right
-	lda	Joy1Press+1
+	lda	DP_Joy1Press+1
 	and	#%00000001
 	beq	__WorldMapLoopDpadRightDone
 
@@ -220,7 +220,7 @@ __WorldMapLoopDpadRightDone:
 
 
 ; -------------------------- check for Start
-	lda	Joy1+1
+	lda	DP_Joy1+1
 	and	#%00010000
 	beq	__WorldMapLoopStButtonDone
 

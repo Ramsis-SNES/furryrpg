@@ -622,27 +622,14 @@
 
 	temp			dsb 8
 
-	Joy1			dw					; Current button state of joypad1, bit0=0 if it is a valid joypad
-	Joy2			dw					; same thing for all pads...
-	Joy1Press		dw					; Holds joypad1 keys that are pressed and have been pressed since clearing this mem location
-	Joy2Press		dw					; same thing for all pads...
-									; X Y TL  TR . . . .
-									; A B sel st U D L R
-	Joy1New			dw
-	Joy2New			dw
-	Joy1Old			dw
-	Joy2Old			dw
-
 ;	scrollYCounter		db
 ;	scrollYUp		db
 ;	scrollYDown		db
-
 ;	cursorX			db
 ;	cursorY			db
 ;	cursorYCounter		db
 ;	cursorYUp		db
 ;	cursorYDown		db
-
 ;	speedCounter		db
 ;	speedScroll		db
 
@@ -650,10 +637,8 @@
 ;	sneslib_temp		dsb 2
 ;	sneslib_rand1		dsb 2
 ;	sneslib_rand2		dsb 2
-
 	gss_param		dsb 2
 	gss_command		dsb 2
-
 ;	brr_stream_src		dsb 4
 ;	brr_stream_list		dsb 4
 
@@ -671,8 +656,7 @@
 	DP_Char1ScreenPosYX	dw					; high byte = Y position, low byte = X position (in px)
 	DP_Char1SpriteStatus	db					; irrrrddd [i = not walking (idle), ddd = facing direction (0 = down, 1 = up, 2 = left, 3 = right)]
 	DP_Char1WalkingSpd	dw
-
-	DP_CurrentScanline	dw					; holds no. of current scanline (for CPU load meter)
+;	DP_CurrentScanline	dw					; holds no. of current scanline (for CPU load meter)
 	DP_DataSrcAddress	dsb 3					; holds a 24-bit source address e.g. for string pointers, data transfers to SRAM, etc.
 	DP_DMA_Updates		dw					; rrrcbbaarrr32211 [123 = BG no. that needs to have its tile map(s) updated on next Vblank (low bytes), abc = same thing for high bytes, r = reserved. The lower bit of each BG represents the first half of a 64×32/32×64 tile map, the higher one represents the second half.]
 	DP_EffectSpeed		dw
@@ -683,15 +667,19 @@
 	DP_GameTimeSeconds	db					; 1 game time second = 1 frame (??)
 	DP_GameTimeMinutes	db
 	DP_GameTimeHours	db
-
 	DP_HDMA_Channels	db					; DCBAcbsr [ABCD = M7A/M7B/M7C/M7D, c = color math, b = background color gradient, s = screen mode, r = reserved]. Variable is transferred to $420C during Vblank
-
 	DP_HiResPrintLen	db					; holds length of menu hi-res string to print
 	DP_HiResPrintMon	db					; keep track of BG we're printing on: $00 = BG1 (start), $01 = BG2
-
 	DP_HUD_DispCounter	dw					; holds frame count since HUD appeared
 	DP_HUD_Status		db					; adrrrrrp [a/d = HUD should (re-)appear/disappear, p = HUD is present on screen]
-
+	DP_Joy1			dw					; Current button state of joypad1, bit0=0 if it is a valid joypad
+	DP_Joy2			dw					; same thing for all pads...
+	DP_Joy1Press		dw					; Holds joypad1 keys that are pressed and have been pressed since clearing this mem location
+	DP_Joy2Press		dw					; same thing for all pads...
+	DP_Joy1New		dw
+	DP_Joy2New		dw
+	DP_Joy1Old		dw
+	DP_Joy2Old		dw
 	DP_Mode7_Altitude	db					; altitude setting (currently 0-127)
 	DP_Mode7_BG2HScroll	db
 	DP_Mode7_CenterCoordX	dw
@@ -699,37 +687,29 @@
 	DP_Mode7_RotAngle	dw					; currently needs to be 16-bit as it's used as an index in CalcMode7Matrix
 	DP_Mode7_ScrollOffsetX	dw
 	DP_Mode7_ScrollOffsetY	dw
-
 	DP_MSU1_NextTrack	dw
 	DP_MSU1_Present		db
-
 	DP_Multi5_Reg0lo	db
 	DP_Multi5_Reg0hi	db
 	DP_Multi5_Reg1lo	db
 	DP_Multi5_Reg1hi	db
 	DP_Multi5_Status	db
-
 	DP_NextTrack		dw					; holds no. of music track to load
 	DP_NextEvent		dw					; holds no. of event to load
 	DP_PlayerIdleCounter	dw					; holds frame count since last button press
-
 	DP_RingMenuAngle	dw
 	DP_RingMenuAngleOffset	dw
 	DP_RingMenuRadius	db
-
 	DP_Shadow_NMITIMEN	db					; shadow copy of REG_NMITIMEN
 	DP_Shadow_TSTM		dw					; shadow copies of subscreen (high) & mainscreen (low) designation registers ($212C/212D)
-
 	DP_SPC_DataBank		dw
 	DP_SPC_DataOffset	dw
 	DP_SPC_DataSize		dw
 	DP_SPC_DataAddress	dw
 	DP_SPC_VolCurrent	dw
 	DP_SPC_VolFadeSpeed	dw
-
 	DP_SpriteTextMon	dw					; keeps track of sprite-based text buffer filling level
 	DP_SpriteTextPalette	db					; holds palette to use when printing sprite-based text
-
 	DP_TextASCIIChar	dw					; holds current ASCII character no.
 	DP_TextBoxBG		db					; bnnnnnnn [b = change text box background, n = no. of color table (0-127)
 	DP_TextBoxCharPortrait	db					; pnnnnnnn [p = change character portrait, n = no. of portrait (0-127)
@@ -747,11 +727,10 @@
 	DP_TextStringBank	db					; 8-bit bank no. of string
 	DP_TextStringCounter	dw					; holds current ASCII string position
 	DP_TextTileDataCounter	dw					; holds current VRAM tile data address
-
 	DP_VWF_BitsUsed		dw
 	DP_VWF_BufferIndex	dw
 	DP_VWF_Loop		db
-.ENDE									; 163 of 256 bytes used
+.ENDE									; 168 of 256 bytes used
 
 
 

@@ -170,7 +170,7 @@ __PrintDialogTextDone:
 
 
 
-; -------------------------- check if selection requested
+; -------------------------- check for selection
 	lda	DP_TextBoxSelection
 	bit	#%00001111
 	beq	__DrawSelBarDone
@@ -185,7 +185,7 @@ __DrawSelBarDone:
 
 
 ; -------------------------- check for dpad up = next language
-	lda	Joy1New+1
+	lda	DP_Joy1New+1
 	and	#%00001000
 	beq	__MainTextBoxLoopDpadUpDone
 
@@ -204,7 +204,7 @@ __MainTextBoxLoopDpadUpDone:
 
 
 ; -------------------------- check for dpad down = previous language
-	lda	Joy1New+1
+	lda	DP_Joy1New+1
 	and	#%00000100
 	beq	__MainTextBoxLoopDpadDownDone
 
@@ -223,7 +223,7 @@ __MainTextBoxLoopDpadDownDone:
 
 
 ; -------------------------- check for Y + dpad right = fast forward text pointers
-	lda	Joy1Press+1						; Y pressed, check for dpad right
+	lda	DP_Joy1Press+1						; Y pressed, check for dpad right
 	and	#%01000001
 	cmp	#%01000001
 	beq	__NextTextPointer
@@ -231,7 +231,7 @@ __MainTextBoxLoopDpadDownDone:
 
 
 ; -------------------------- check for Y + dpad left = fast rewind text pointers
-	lda	Joy1Press+1						; Y pressed, check for dpad right
+	lda	DP_Joy1Press+1						; Y pressed, check for dpad right
 	and	#%01000010
 	cmp	#%01000010
 	beq	__PrevTextPointer
@@ -239,7 +239,7 @@ __MainTextBoxLoopDpadDownDone:
 
 
 ; -------------------------- check for dpad left = previous text pointer
-	lda	Joy1New+1
+	lda	DP_Joy1New+1
 	and	#%00000010
 	beq	__MainTextBoxLoopDpadLeftDone
 
@@ -269,7 +269,7 @@ __MainTextBoxLoopDpadLeftDone:
 
 
 ; -------------------------- check for dpad right = next text pointer
-	lda	Joy1New+1
+	lda	DP_Joy1New+1
 	and	#%00000001
 	beq	__MainTextBoxLoopDpadRightDone
 
@@ -300,7 +300,7 @@ __MainTextBoxLoopDpadRightDone:
 
 
 ; -------------------------- check for L button = text pointers -= 50
-	lda	Joy1New
+	lda	DP_Joy1New
 	and	#%00100000
 	beq	__MainTextBoxLoopLButtonDone
 
@@ -331,7 +331,7 @@ __MainTextBoxLoopLButtonDone:
 
 
 ; -------------------------- check for R button = text pointers += 50
-	lda	Joy1New
+	lda	DP_Joy1New
 	and	#%00010000
 	beq	__MainTextBoxLoopRButtonDone
 
@@ -435,7 +435,7 @@ __TBHSLoop:
 
 
 ; -------------------------- check for dpad up
-	lda	Joy1New+1
+	lda	DP_Joy1New+1
 	and	#%00001000
 	beq	__TBHSLoopDpadUpDone
 
@@ -452,7 +452,7 @@ __TBHSLoopDpadUpDone:
 
 
 ; -------------------------- check for dpad down
-	lda	Joy1New+1
+	lda	DP_Joy1New+1
 	and	#%00000100
 	beq	__TBHSLoopDpadDownDone
 
@@ -469,12 +469,12 @@ __TBHSLoopDpadDownDone:
 
 
 ; -------------------------- check for B button = leave selection
-	lda	Joy1New+1
+	lda	DP_Joy1New+1
 	bpl	__TBHSLoop
 
 -	WaitFrames	1
 
-	lda	Joy1New+1						; wait for player to release button so the text box won't instantly close
+	lda	DP_Joy1New+1						; wait for player to release button so the text box won't instantly close
 	bmi	-
 
 __TBHSDone:

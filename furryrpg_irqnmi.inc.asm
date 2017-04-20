@@ -638,70 +638,93 @@ VIRQ_Mode7:
 GetInput:
 	php
 	lda	#$01
-
-_W1:	bit	REG_HVBJOY
-	bne	_W1							; wait till automatic JoyPort read is complete
+-	bit	REG_HVBJOY
+	bne	-							; wait till automatic JoyPort read is complete
 
 	AccuIndex16
 
-; ********** get Joypads 1, 2
 
-	lda	Joy1
-	sta	Joy1Old
 
-	lda	REG_JOY1L						; get JoyPad1
-	tax
-	eor	Joy1							; A = A xor JoyState = (changes in joy state)
-	stx	Joy1							; update JoyState
-	ora	Joy1Press						; A = (joy changes) or (buttons pressed)
-	and	Joy1							; A = ((joy changes) or (buttons pressed)) and (current joy state)
-	sta	Joy1Press						; store A = (buttons pressed since last clearing reg) and (button is still down)
-
-	lda	REG_JOY2L						; get JoyPad2
-	tax
-	eor	Joy2							; A = A xor JoyState = (changes in joy state)
-	stx	Joy2							; update JoyState
-	ora	Joy2Press						; A = (joy changes) or (buttons pressed)
-	and	Joy2							; A = ((joy changes) or (buttons pressed)) and (current joy state)
-	sta	Joy2Press						; store A = (buttons pressed since last clearing reg) and (button is still down)
-
-	lda	Joy1Old
+; -------------------------- read joypad 1
+	lda	DP_Joy1
+	sta	DP_Joy1Old
+	lda	DP_GameMode
+	and	#%0000000010000000					; check if auto-mode is enabled
+	beq	+
+	lda	DP_AutoJoy1						; yes, load simulated joypad
+	bra	++
++	lda	REG_JOY1L						; otherwise, get JoyPad1
+++	tax
+	eor	DP_Joy1							; A = A xor JoyState = (changes in joy state)
+	stx	DP_Joy1							; update JoyState
+	ora	DP_Joy1Press						; A = (joy changes) or (buttons pressed)
+	and	DP_Joy1							; A = ((joy changes) or (buttons pressed)) and (current joy state)
+	sta	DP_Joy1Press						; store A = (buttons pressed since last clearing reg) and (button is still down)
+	lda	DP_Joy1Old
 	eor	#$FFFF
-	and	Joy1
-	sta	Joy1New
+	and	DP_Joy1
+	sta	DP_Joy1New
 
-; ********** make sure Joypads 1, 2 are valid
+
+
+; -------------------------- read joypad 2
+	lda	DP_Joy2
+	sta	DP_Joy2Old
+	lda	DP_GameMode
+	and	#%0000000010000000					; check if auto-mode is enabled
+	beq	+
+	lda	DP_AutoJoy2						; yes, load simulated joypad
+	bra	++
++	lda	REG_JOY2L						; get JoyPad2
+++	tax
+	eor	DP_Joy2							; A = A xor JoyState = (changes in joy state)
+	stx	DP_Joy2							; update JoyState
+	ora	DP_Joy2Press						; A = (joy changes) or (buttons pressed)
+	and	DP_Joy2							; A = ((joy changes) or (buttons pressed)) and (current joy state)
+	sta	DP_Joy2Press						; store A = (buttons pressed since last clearing reg) and (button is still down)
+	lda	DP_Joy2Old
+	eor	#$FFFF
+	and	DP_Joy2
+	sta	DP_Joy2New
+
+
+
+; -------------------------- make sure Joypads 1, 2 are valid
+	lda	DP_GameMode
+	and	#%0000000010000000					; check if auto-mode is enabled
+	bne	_done							; yes, jump out
 
 	AccuIndex8
 
 	lda	REG_JOYA
 	eor	#$01
 	and	#$01							; A = -bit0 of JOYA
-	ora	Joy1
-	sta	Joy1							; joy state = (joy state) or A.... so bit0 of Joy1State = 0 only if it is a valid joypad
+	ora	DP_Joy1
+	sta	DP_Joy1							; joy state = (joy state) or A.... so bit0 of Joy1State = 0 only if it is a valid joypad
 
 	lda	REG_JOYB
 	eor	#$01
 	and	#$01							; A = -bit0 of JOYB
-	ora	Joy2
-	sta	Joy2							; joy state = (joy state) or A.... so bit0 of Joy1State = 0 only if it is a valid joypad
+	ora	DP_Joy2
+	sta	DP_Joy2							; joy state = (joy state) or A.... so bit0 of Joy1State = 0 only if it is a valid joypad
 
-; ********** change all invalid joypads to have a state of no button presses
 
+
+; -------------------------- change all invalid joypads to have a state of no button presses
 	AccuIndex16
 
 	ldx	#$0001
 	lda	#$000F
-	bit	Joy1							; A = joy state, if any of the bottom 4 bits are on... either nothing is plugged
+	bit	DP_Joy1							; A = joy state, if any of the bottom 4 bits are on... either nothing is plugged
 	beq	_joy2							; into the joy port, or it is not a joypad
-	stx	Joy1							; if it is not a valid joypad put $0001 into the 2 joy state variables
-	stz	Joy1Press
+	stx	DP_Joy1							; if it is not a valid joypad put $0001 into the 2 joy state variables
+	stz	DP_Joy1Press
 
 _joy2:
-	bit	Joy2							; A = joy state, if any of the bottom 4 bits are on... either nothing is plugged
+	bit	DP_Joy2							; A = joy state, if any of the bottom 4 bits are on... either nothing is plugged
 	beq	_done							; into the joy port, or it is not a joypad
-	stx	Joy2							; if it is not a valid joypad put $0001 into the 2 joy state variables
-	stz	Joy2Press
+	stx	DP_Joy2							; if it is not a valid joypad put $0001 into the 2 joy state variables
+	stz	DP_Joy2Press
 
 _done:
 	plp

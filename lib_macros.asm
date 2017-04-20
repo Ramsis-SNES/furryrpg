@@ -319,7 +319,7 @@ __WaitForVblankEnd\@:
 
 __CheckJoypad\@:
 	wai
-	lda	Joy1New
+	lda	DP_Joy1New
 	and	#$F0F0							; B, Y, Select, Start (no d-pad), A, X, L, R
 	beq	__CheckJoypad\@
 
@@ -376,8 +376,8 @@ StringOffset\@:
 	lda	#$C0							; have the automatic read of the SNES read the first pair of JoyPads
 	sta	REG_WRIO
 	ldx	#$0000
-	stx	Joy1Press
-	stx	Joy2Press
+	stx	DP_Joy1Press
+	stx	DP_Joy2Press
 	lda	#$81
 	sta	REG_NMITIMEN						; enable JoyPad Read and NMI
 	cli								; enable interrupts

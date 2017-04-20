@@ -177,7 +177,7 @@ DebugMenuLoop:
 
 
 ; -------------------------- check for dpad up
-	lda	Joy1New+1
+	lda	DP_Joy1New+1
 	and	#%00001000
 	beq	++
 	lda	ARRAY_SpriteBuf1.Text+1					; Y coord of cursor
@@ -196,7 +196,7 @@ DebugMenuLoop:
 
 
 ; -------------------------- check for dpad down
-	lda	Joy1New+1
+	lda	DP_Joy1New+1
 	and	#%00000100
 	beq	++
 	lda	ARRAY_SpriteBuf1.Text+1
@@ -215,7 +215,7 @@ DebugMenuLoop:
 
 
 ; -------------------------- check for dpad left
-	lda	Joy1New+1
+	lda	DP_Joy1New+1
 	and	#%00000010
 	beq	++
 	lda	ARRAY_SpriteBuf1.Text+1					; only do anything if cursor is on area loader ...
@@ -244,7 +244,7 @@ DebugMenuLoop:
 
 
 ; -------------------------- check for dpad right
-	lda	Joy1New+1
+	lda	DP_Joy1New+1
 	and	#%00000001
 	beq	++
 	lda	ARRAY_SpriteBuf1.Text+1					; only do anything if cursor is on area loader ...
@@ -274,7 +274,7 @@ DebugMenuLoop:
 
 
 ; -------------------------- check for A button
-	lda	Joy1New
+	lda	DP_Joy1New
 	and	#%10000000
 	beq	++
 	lda	ARRAY_SpriteBuf1.Text+1
@@ -320,7 +320,7 @@ DebugMenuLoop:
 
 
 ; -------------------------- check for Start
-;	lda	Joy1Press+1
+;	lda	DP_Joy1Press+1
 ;	and	#%00010000
 ;	beq	+
 ;	jsr	CreateRandomNr
@@ -329,17 +329,17 @@ DebugMenuLoop:
 ;	jsr	ShowCPUload
 
 ; -------------------------- check for Start
-;	lda	Joy1Press+1
-;	and	#%00010000
-;	beq	+
+	lda	DP_Joy1Press+1
+	and	#%00010000
+	beq	+
 
-;	Accu16
+	Accu16
 
-;	lda	#1
-;	jsl	LoadEvent
+	lda	#1
+	jsl	LoadEvent
 
-;	jmp	DebugMenu
-;+
+	jmp	DebugMenu
++
 
 	jmp	DebugMenuLoop
 
