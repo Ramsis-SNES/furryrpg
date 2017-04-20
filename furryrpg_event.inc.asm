@@ -28,6 +28,94 @@ LoadEvent:								; expects valid event no. in 16-bit Accu
 
 ; -------------------------- process event script
 ProcessEventLoop:
+	ldx	DP_EventWaitFrames					; check if we need to pause event processing
+	beq	__ProcessEventContinue
+
+__ProcessEventSubLoop:
+	WaitFrames	1
+
+	lda	DP_TextBoxStatus					; check if text box is open
+	and	#%00000010
+	beq	+
+
+	jsr	MainTextBoxLoop						; yes, go to subroutine
+
++	lda	DP_Char1ScreenPosYX+1					; check if hero should be moved vertically
+	sec
+	sbc	VAR_Char1TargetScrPosYX+1
+	beq	__PESL_MoveHeroNextCheck
+	bcc	__PESL_MoveHeroDown
+
+__PESL_MoveHeroUp:
+	Accu16
+
+	lda	DP_Char1ScreenPosYX
+	ldx	DP_Char1WalkingSpd
+-	sec
+	sbc	#$0100							; Y -= 1
+	dex								; as many times as DP_Char1WalkingSpd
+	bne	-
+	sta	DP_Char1ScreenPosYX
+	lda	#TBL_Char1_up
+	bra	__PESL_MoveHeroDone
+
+__PESL_MoveHeroDown:
+	Accu16
+
+	lda	DP_Char1WalkingSpd					; area not scrollable, move hero sprite instead
+	xba								; shift to high byte for Y value
+	clc
+	adc	DP_Char1ScreenPosYX					; Y += DP_Char1WalkingSpd
+	sta	DP_Char1ScreenPosYX
+	lda	#TBL_Char1_down
+	bra	__PESL_MoveHeroDone
+
+.ACCU 8
+
+__PESL_MoveHeroNextCheck:
+	lda	DP_Char1ScreenPosYX					; check if hero should be moved horizontally
+	sec
+	sbc	VAR_Char1TargetScrPosYX
+	beq	__PESL_MoveHeroDone2
+	bcc	__PESL_MoveHeroRight
+
+__PESL_MoveHeroLeft:
+	Accu16
+
+	lda	DP_Char1ScreenPosYX
+	sec
+	sbc	DP_Char1WalkingSpd					; X -= DP_Char1WalkingSpd
+	sta	DP_Char1ScreenPosYX
+	lda	#TBL_Char1_left
+	bra	__PESL_MoveHeroDone
+
+__PESL_MoveHeroRight:
+	Accu16
+
+	lda	DP_Char1ScreenPosYX
+	clc
+	adc	DP_Char1WalkingSpd					; X += DP_Char1WalkingSpd
+	sta	DP_Char1ScreenPosYX
+	lda	#TBL_Char1_right
+
+__PESL_MoveHeroDone:
+	Accu8
+
+	sta	DP_Char1SpriteStatus
+	bra	+
+
+__PESL_MoveHeroDone2:
+	lda	#$80							; make character idle
+	tsb	DP_Char1SpriteStatus
+
++	ldx	DP_EventWaitFrames
+	dex
+	stx	DP_EventWaitFrames
+	bne	__ProcessEventSubLoop
+
+
+
+__ProcessEventContinue:
 	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y				; load next code byte
 	cmp	#EC_END
@@ -40,9 +128,9 @@ ProcessEventLoop:
 	and	#$00FF							; remove garbage in B
 	asl	a							; use code byte ...
 	tax								; ... as an index ...
-	jmp	(ProcessEventCode, x)					; ... into our WIP collection of event processing routines
+	jmp	(__ProcessEventCode, x)					; ... into our WIP collection of event processing routines
 
-ProcessEventCode:
+__ProcessEventCode:
 	.DW Process_EC_DIALOG
 	.DW Process_EC_GSS_LOAD_TRACK
 	.DW Process_EC_GSS_TRACK_FADEIN
@@ -65,6 +153,9 @@ ProcessEventCode:
 	.DW Process_EC_SCR_EFFECT
 	.DW Process_EC_SCR_EFFECT_TRANSITION
 	.DW Process_EC_SCR_SCROLL
+	.DW Process_EC_SIMULATE_INPUT_JOY1
+	.DW Process_EC_SIMULATE_INPUT_JOY2
+	.DW Process_EC_TOGGLE_AUTO_MODE
 	.DW Process_EC_WAIT_JOY1
 	.DW Process_EC_WAIT_JOY2
 	.DW Process_EC_WAIT_FRAMES
@@ -91,7 +182,7 @@ Process_EC_DIALOG:
 
 	jsr	OpenTextBox
 
-	bra	ProcessEventLoop
+	jmp	ProcessEventLoop
 
 .ACCU 16
 
@@ -107,7 +198,7 @@ Process_EC_GSS_LOAD_TRACK:
 
 	jsl	LoadTrackGSS
 
-	bra	ProcessEventLoop
+	jmp	ProcessEventLoop
 
 .ACCU 16
 
@@ -256,13 +347,16 @@ Process_EC_MOVE_ALLY:
 Process_EC_MOVE_HERO:
 	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
-	;use value
+	sta	VAR_Char1TargetScrPosYX					; target screen position
 	iny
 	iny
-	sty	DP_EventCodePointer
 
 	Accu8
 
+	lda	[DP_EventCodeAddress], y
+	sta	DP_Char1WalkingSpd					; speed
+	iny
+	sty	DP_EventCodePointer
 	jmp	ProcessEventLoop
 
 .ACCU 16
@@ -417,6 +511,53 @@ Process_EC_SCR_SCROLL:
 
 .ACCU 16
 
+Process_EC_SIMULATE_INPUT_JOY1:
+	ldy	DP_EventCodePointer
+	lda	[DP_EventCodeAddress], y
+	sta	DP_AutoJoy1
+	iny
+	iny
+	sty	DP_EventCodePointer
+	lda	#1							; make sure simulated input gets acknowledged
+	sta	DP_EventWaitFrames
+
+	Accu8
+
+	jmp	ProcessEventLoop
+
+.ACCU 16
+
+Process_EC_SIMULATE_INPUT_JOY2:
+	ldy	DP_EventCodePointer
+	lda	[DP_EventCodeAddress], y
+	sta	DP_AutoJoy2
+	iny
+	iny
+	sty	DP_EventCodePointer
+	lda	#1							; make sure simulated input gets acknowledged
+	sta	DP_EventWaitFrames
+
+	Accu8
+
+	jmp	ProcessEventLoop
+
+.ACCU 16
+
+Process_EC_TOGGLE_AUTO_MODE:
+	Accu8
+
+	lda	DP_GameMode
+	eor	#$FF							; invert bits
+	and	#%10000000						; only keep new auto-mode bit
+	sta	temp
+	lda	DP_GameMode
+	and	#%01111111						; make sure auto-mode won't stay on forever ;-)
+	ora	temp
+	sta	DP_GameMode
+	jmp	ProcessEventLoop
+
+.ACCU 16
+
 Process_EC_WAIT_JOY1:
 	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
@@ -448,22 +589,12 @@ Process_EC_WAIT_JOY2:
 Process_EC_WAIT_FRAMES:
 	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
-	tax
+	sta	DP_EventWaitFrames
 	iny
 	iny
 	sty	DP_EventCodePointer
 
 	Accu8
-
-__WaitFramesLoop:
--	lda	REG_HVBJOY
-	bpl	-
-
--	lda	REG_HVBJOY
-	bmi	-
-
-	dex
-	bne	__WaitFramesLoop
 
 	jmp	ProcessEventLoop
 

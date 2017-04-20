@@ -99,13 +99,11 @@ OpenTextBox:
 	sta	ARRAY_HDMA_BG_Scroll+5
 	stz	ARRAY_HDMA_BG_Scroll+10
 
-
-
 __ProcessNextDialog:
 	lda	#:SRC_DiagPointerEng
 	clc								; add language constant to get the correct text bank
 	adc	DP_TextLanguage
-	sta	DP_TextStringBank
+	sta	DP_TextBoxStrBank
 	lda	DP_TextLanguage						; check language again for the right pointer table
 	bne	+
 
@@ -126,29 +124,45 @@ __ProcessNextDialog:
 	asl	a
 	tax
 	lda.l	SRC_DiagPointerGer, x					; DP_TextLanguage is 1 --> German
-++	sta	DP_TextStringPtr
+++	sta	DP_TextBoxStrPtr
 	stz	DP_TextStringCounter					; reset string counter
 
 	Accu8
 
 	lda	#%01000010						; set text box open, text pending flags
 	sta	DP_TextBoxStatus
+	rts
 
 
 
-MainTextBoxLoop:
-	WaitFrames	1						; don't use WAI here as IRQ is enabled
+MainTextBoxLoop:							; this routine needs to be called once per frame
 
-
-
-; -------------------------- print dialog text
+; -------------------------- check text box status
 	lda	DP_TextBoxStatus					; don't process text if "VWF buffer full bit" is set
 	bit	#$01
 	bne	__PrintDialogTextDone
 
-	and	#%01000010
-	cmp	#%01000010						; text box open, and more text pending?
-	bne	__PrintDialogTextDone
+	bit	#%00100000						; text box frozen?
+	beq	__TextBoxNotFrozen
+	lda	DP_Joy1New						; yes, wait for player to press the A button
+	and	#%10000000
+	bne	+
+	jmp	__MainTextBoxLoopDone
+
++	lda	#%10000000						; A pressed, set "clear text box" bit
+	tsb	DP_TextBoxStatus
+
+	WaitFrames	1
+
+	stz	DP_TextTileDataCounter					; reset tile counter
+	stz	DP_TextTileDataCounter+1
+	lda	#%00100000						; clear "freeze text box" bit
+	trb	DP_TextBoxStatus
+	jmp	__MainTextBoxLoopDone
+
+__TextBoxNotFrozen:
+	and	#%01000000						; more text pending?
+	beq	__PrintDialogTextDone
 
 	jsr	ProcessNextText
 
@@ -347,23 +361,19 @@ __MainTextBoxLoopRButtonDone:
 
 
 
-; -------------------------- check for B button = close text box, return
-	lda	Joy1New+1
-	bmi	__CloseTextBox
-
-__MainTextBoxLoopBButtonDone:
-	jmp	MainTextBoxLoop
-
-
-
-__CloseTextBox:
-	jsr TextBoxAnimationClose
+; -------------------------- check for B button = close text box
+	lda	DP_Joy1New+1
+	bpl	__MainTextBoxLoopBButtonDone
+	jsr	TextBoxAnimationClose
 
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
 
-	WaitFrames	1
+;	WaitFrames	1
 
+__MainTextBoxLoopBButtonDone:
+
+__MainTextBoxLoopDone:
 	rts
 
 
@@ -537,7 +547,7 @@ __ProcessTextLoop2:
 	bne	+
 	jsr	TextBoxAnimationOpen
 
-+	lda	[DP_TextStringPtr], y					; read ASCII string character
++	lda	[DP_TextBoxStrPtr], y					; read ASCII string character
 	cmp	#CC_End							; end of string reached?
 	bne	+
 	jmp	__ProcessTextDone					; yes, done
@@ -552,7 +562,7 @@ __ProcessTextLoop2:
 +	cmp	#CC_Portrait						; char portrait?
 	bne	+
 	iny								; increment string pointer to portrait no.
-	lda	[DP_TextStringPtr], y					; read portrait no. (0-127)
+	lda	[DP_TextBoxStrPtr], y					; read portrait no. (0-127)
 	ora	#$80							; set "change portrait" bit
 	sta	DP_TextBoxCharPortrait					; save to "change portrait" request variable
 
@@ -678,20 +688,10 @@ __ClearTextBoxMidString:
 
 ++	Accu8
 
--	WaitFrames	1						; next, wait for player to press the A button
-
-	lda	Joy1New
-	and	#%10000000
-	beq	-
-
-	lda	#%10000000						; lastly, set "clear text box" bit
-	tsb	DP_TextBoxStatus
-
 	WaitFrames	1
 
-	Accu16
-
-	stz	DP_TextTileDataCounter					; reset tile counter
+	lda	#%00100000						; set "freeze text box" bit
+	tsb	DP_TextBoxStatus
 	jmp	__ProcessTextJumpOut
 
 

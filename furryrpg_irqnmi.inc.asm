@@ -48,6 +48,9 @@ __TextBoxVblankDone:
 
 
 ; -------------------------- update HUD if necessary
+;	lda	DP_TextBoxStatus					; don't update HUD if text box is open
+;	and	#%00000010
+;	bne	__UpdateHUDDone
 	bit	DP_HUD_Status						; check HUD status
 	bmi	__ShowHUD
 	bvs	__HideHUD
@@ -239,14 +242,12 @@ __SkipRefreshes3:
 	sta	REG_BG2VOFS
 	lda	ARRAY_HDMA_BG_Scroll+4
 	sta	REG_BG2VOFS
-	lda	#$FF							; fixed BG3 vertical scroll = -1
-	sta	REG_BG3VOFS
-	stz	REG_BG3VOFS
-
+;	lda	#$FF							; never mind, HDMA takes care of BG3 vertical scroll
+;	sta	REG_BG3VOFS
+;	stz	REG_BG3VOFS
 	lda	DP_HDMA_Channels					; initiate HDMA transfers
 	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
 	sta	REG_HDMAEN
-
 	lda	REG_RDNMI						; acknowledge NMI
 
 	AccuIndex16
@@ -283,6 +284,9 @@ Vblank_DebugMenu:
 ; -------------------------- misc. tasks
 	jsr	GetInput
 
+	lda	#$FF							; BG3 vertical scroll
+	sta	REG_BG3VOFS
+	stz	REG_BG3VOFS
 	lda	DP_HDMA_Channels					; initiate HDMA transfers
 	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
 	sta	REG_HDMAEN

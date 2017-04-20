@@ -205,7 +205,7 @@
 	EC_LOAD_PARTY_FORMATION			db			; no. # of party formation
 
 	EC_MOVE_ALLY				db			; ally no. #, direction(s), speed
-	EC_MOVE_HERO				db			; direction(s), speed
+	EC_MOVE_HERO				db			; target screen position (16), speed (8) // caveat: position difference has to be divisible by speed value
 	EC_MOVE_NPC				db			; NPC no. #, direction(s), speed
 	EC_MOVE_OBJ				db			; obj. no. #, direction(s), speed
 
@@ -219,8 +219,11 @@
 	EC_SCR_EFFECT_TRANSITION		db			; transition effect no. #, speed
 	EC_SCR_SCROLL				db			; BG(s), direction(s), speed
 
-	EC_WAIT_JOY1				db			; button(s)
-	EC_WAIT_JOY2				db			; button(s)
+	EC_SIMULATE_INPUT_JOY1			db			; joypad data (16)
+	EC_SIMULATE_INPUT_JOY2			db			; joypad data (16)
+	EC_TOGGLE_AUTO_MODE			db			; switch auto-mode on/off
+	EC_WAIT_JOY1				db			; joypad data (16)
+	EC_WAIT_JOY2				db			; joypad data (16)
 	EC_WAIT_FRAMES				db			; no. of frames (16)
 .ENDE
 
@@ -660,7 +663,8 @@
 	DP_AreaMetaMapIndex2	dw
 	DP_AreaNamePointer	dw
 	DP_AreaProperties	dw					; 0000000000bayxss [s = screen size, as in BGXSC regs, x/y = area is scrollable horizontally/vertically, a/b = auto-scroll area horizontally/vertically, 0 = reserved]
-
+	DP_AutoJoy1		dw
+	DP_AutoJoy2		dw
 	DP_Char1FrameCounter	db
 	DP_Char1MapPosX		dw					; in px
 	DP_Char1MapPosY		dw					; in px
@@ -674,8 +678,8 @@
 	DP_EffectSpeed		dw
 	DP_EventCodeAddress	dsb 3
 	DP_EventCodePointer	dw
-	DP_GameMode		db					; 7rrrrrrr [7 = Mode7 on/off, r = reserved]
-
+	DP_EventWaitFrames	dw
+	DP_GameMode		db					; arrrrrrr [a = auto-mode, r = reserved]
 	DP_GameTimeSeconds	db					; 1 game time second = 1 frame (??)
 	DP_GameTimeMinutes	db
 	DP_GameTimeHours	db
@@ -732,12 +736,14 @@
 	DP_TextBoxSelection	db					; rrrr4321 [1-4 = text box contains selection on line no. 1-4, r = reserved], also holds selection made by player
 	DP_TextBoxSelMax	db					; for HDMA selection bar
 	DP_TextBoxSelMin	db					; ditto
-	DP_TextBoxStatus	db					; cmrrrrot [c = clear text box, m = there is more text to process, o = text box is open, r = reserved, t = VWF buffer full, transfer to VRAM]
+	DP_TextBoxStatus	db					; cmfrrrot [c = clear text box, f = freeze text box until player presses A, m = there is more text to process, o = text box is open, r = reserved, t = VWF buffer full, transfer to VRAM]
+	DP_TextBoxStrPtr	dw					; 16-bit string pointer (or zeroes) // caveat: text box string addresses need to be separate from other (FWF) string addresses as the engine can process both types of strings at the same time (e.g. text box + HUD)
+	DP_TextBoxStrBank	db					; 8-bit bank no. of string
 	DP_TextBoxVIRQ		dw					; scanline no. of text box start (for scrolling animation)
 	DP_TextCursor		dw
 	DP_TextLanguage		db					; holds language constant
 	DP_TextPointerNo	dw
-	DP_TextStringPtr	dw					; 16-bit string pointer (or zeroes)
+	DP_TextStringPtr	dw					; 16-bit string pointer (or zeroes) // see caveat @ DP_TextBoxStrPtr
 	DP_TextStringBank	db					; 8-bit bank no. of string
 	DP_TextStringCounter	dw					; holds current ASCII string position
 	DP_TextTileDataCounter	dw					; holds current VRAM tile data address
@@ -870,6 +876,7 @@
 
 	ARRAY_TempString		dsb 32				; for temp strings
 
+	VAR_Char1TargetScrPosYX		dw				; high byte = Y position, low byte = X position (in px)
 	VAR_TextBox_TSTM		dw				; shadow copies of subscreen (high) & mainscreen (low) designation registers ($212C/212D) for text box area
 .ENDE									; $D9C bytes + $200 = $F9C bytes used (stack resides at $1FFF)
 

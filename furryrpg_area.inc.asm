@@ -322,6 +322,7 @@ __AreaBG2TileMapDone:
 ; -------------------------- load hero parameters for this area
 	lda.l	SRC_AreaProperties, x					; read hero screen position
 	sta	DP_Char1ScreenPosYX
+	sta	VAR_Char1TargetScrPosYX
 	inx
 	inx
 	lda.l	SRC_AreaProperties, x					; read hero map position (X)
@@ -809,6 +810,18 @@ __HUDLogicDone:
 
 
 
+; -------------------------- text box
+	lda	DP_TextBoxStatus					; check if text box is open
+	and	#%00000010
+	beq	__MainAreaNoTextBox
+	jsr	MainTextBoxLoop						; yes, go to subroutine
+
+	jmp	__MainAreaLoopSkipDpadABXY				; and skip subsequent button checks
+
+__MainAreaNoTextBox:
+
+
+
 ; -------------------------- check for B button = make HUD disappear/run
 	lda	Joy1Press+1
 	and	#%10000000
@@ -1076,6 +1089,8 @@ __MainAreaLoopAButtonDone:
 	jmp	InGameMenu
 
 __MainAreaLoopXButtonDone:
+
+__MainAreaLoopSkipDpadABXY:
 
 
 
