@@ -87,8 +87,6 @@ SRC_HDMA_ColMathMode7:
 	.DB $E0, $E0							; don't affect display
 	.DB 0
 
-SRC_HDMA_ColMathMode7_End:
-
 
 
 SRC_HDMA_ColMathDialogSel:
@@ -109,8 +107,6 @@ SRC_HDMA_ColMathDialogSel:
 	.DB $E0, $E0							; don't affect display
 	.DB 0
 
-SRC_HDMA_ColMathDialogSel_End:
-
 
 
 SRC_HDMA_ColMathMenu:
@@ -127,8 +123,6 @@ SRC_HDMA_ColMathMenu:
 	.DB 1								; for the remaining scanlines,
 	.DB $E0, $E0							; don't affect display
 	.DB 0
-
-SRC_HDMA_ColMathMenu_End:
 
 
 
@@ -197,8 +191,6 @@ SRC_HDMA_ColMathMainMenu:
 	.DB $E0, $9E
 	.DB 7
 	.DB $E0, $9F
-
-SRC_HDMA_ColMathMainMenu_End:
 
 
 
@@ -488,8 +480,6 @@ SRC_HDMA_MenuParty:							; color gradient: black --> bright blue
 	.dw $0000,$7C00
 .ENDR
 
-SRC_HDMA_MenuParty_END:
-
 
 
 SRC_HDMA_Mode7Sky72:
@@ -565,8 +555,6 @@ SRC_HDMA_Mode7Sky72:
 	.DW $0000,$7378
 	.DW $0000,$7798
 	.DW $0000,$7798
-
-SRC_HDMA_Mode7Sky72_END:
 
 
 

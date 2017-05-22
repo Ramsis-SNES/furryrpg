@@ -264,9 +264,9 @@ DebugMenuLoop:
 	bne	++
 	lda	DP_NextTrack						; go to next track
 	inc	a
-	cmp	#(SRC_TrackPointerTable_END-SRC_TrackPointerTable)/2
+	cmp	#_sizeof_SRC_TrackPointerTable/2
 	bcc	+
-	lda	#(SRC_TrackPointerTable_END-SRC_TrackPointerTable)/2-1
+	lda	#_sizeof_SRC_TrackPointerTable/2-1
 +	sta	DP_NextTrack
 
 ++

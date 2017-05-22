@@ -67,7 +67,7 @@ OpenTextBox:
 -	lda.l	SRC_HDMA_ColMathDialogSel, x
 	sta	ARRAY_HDMA_ColorMath, x
 	inx
-	cpx	#SRC_HDMA_ColMathDialogSel_End-SRC_HDMA_ColMathDialogSel
+	cpx	#_sizeof_SRC_HDMA_ColMathDialogSel
 	bne	-
 
 	lda	#%00010000						; set color math enable bits (4-5) to "MathWindow"
@@ -286,9 +286,9 @@ __NextTextPointer:
 	lda	DP_TextPointerNo					; increment text pointer
 	clc
 	adc	#1
-	cmp	#(SRC_DiagPointerEng_END-SRC_DiagPointerEng)/2
+	cmp	#_sizeof_SRC_DiagPointerEng/2
 	bcc	+
-	lda	#(SRC_DiagPointerEng_END-SRC_DiagPointerEng)/2-1
+	lda	#_sizeof_SRC_DiagPointerEng/2-1
 +	sta	DP_TextPointerNo
 
 	Accu8
@@ -345,9 +345,9 @@ __MainTextBoxLoopLButtonDone:
 	Accu16
 
 	lda	DP_TextPointerNo					; increment text pointer
-	cmp	#(SRC_DiagPointerEng_END-SRC_DiagPointerEng)/2-50
+	cmp	#_sizeof_SRC_DiagPointerEng/2-50
 	bcc	+
-	lda	#(SRC_DiagPointerEng_END-SRC_DiagPointerEng)/2-1
+	lda	#_sizeof_SRC_DiagPointerEng/2-1
 	bra	++
 +;	clc								; never mind, carry is already clear
 	adc	#50

@@ -30,7 +30,7 @@ MainMenu:
 -	lda.l	SRC_HDMA_ColMathMenu, x
 	sta	ARRAY_HDMA_ColorMath, x
 	inx
-	cpx	#SRC_HDMA_ColMathMenu_End-SRC_HDMA_ColMathMenu
+	cpx	#_sizeof_SRC_HDMA_ColMathMenu
 	bne	-
 
 	lda	#%00010000						; set color math enable bits (4-5) to "MathWindow"
@@ -329,7 +329,7 @@ InGameMenu:
 -	lda.l	SRC_HDMA_ColMathMainMenu, x
 	sta	ARRAY_HDMA_ColorMath, x
 	inx
-	cpx	#SRC_HDMA_ColMathMainMenu_End-SRC_HDMA_ColMathMainMenu
+	cpx	#_sizeof_SRC_HDMA_ColMathMainMenu
 	bne	-
 
 	lda	#$01|$08						; set BG Mode 1 (BG3 priority)

@@ -280,19 +280,19 @@ SRC_TrackSmpOffsetTable:
 
 
 SRC_TrackSmpLengthTable:
-	.DW SRC_track_00_samples_END-SRC_track_00_samples
-	.DW SRC_track_01_samples_END-SRC_track_01_samples
-	.DW SRC_track_02_samples_END-SRC_track_02_samples
-	.DW SRC_track_03_samples_END-SRC_track_03_samples
-	.DW SRC_track_04_samples_END-SRC_track_04_samples
-	.DW SRC_track_05_samples_END-SRC_track_05_samples
-	.DW SRC_track_06_samples_END-SRC_track_06_samples
-	.DW SRC_track_07_samples_END-SRC_track_07_samples
-	.DW SRC_track_08_samples_END-SRC_track_08_samples
-	.DW SRC_track_09_samples_END-SRC_track_09_samples
-	.DW SRC_track_10_samples_END-SRC_track_10_samples
-	.DW SRC_track_10_samples_END-SRC_track_10_samples		; sic, track #11 uses the same instrument settings as #10 (for now)
-	.DW SRC_track_10_samples_END-SRC_track_10_samples		; ditto for track #12
+	.DW _sizeof_SRC_track_00_samples
+	.DW _sizeof_SRC_track_01_samples
+	.DW _sizeof_SRC_track_02_samples
+	.DW _sizeof_SRC_track_03_samples
+	.DW _sizeof_SRC_track_04_samples
+	.DW _sizeof_SRC_track_05_samples
+	.DW _sizeof_SRC_track_06_samples
+	.DW _sizeof_SRC_track_07_samples
+	.DW _sizeof_SRC_track_08_samples
+	.DW _sizeof_SRC_track_09_samples
+	.DW _sizeof_SRC_track_10_samples
+	.DW _sizeof_SRC_track_10_samples				; sic, track #11 uses the same instrument settings as #10 (for now)
+	.DW _sizeof_SRC_track_10_samples				; ditto for track #12
 
 
 
@@ -361,8 +361,6 @@ SRC_TrackPointerTable:
 	.DW STR_Track10
 	.DW STR_Track11
 	.DW STR_Track12
-
-SRC_TrackPointerTable_END:
 
 
 

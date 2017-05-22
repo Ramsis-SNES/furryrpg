@@ -190,7 +190,7 @@ Boot:
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
-	DMA_CH0 $00, :SRC_CodeDoDMA, SRC_CodeDoDMA, $80, SRC_CodeDoDMA_END-SRC_CodeDoDMA
+	DMA_CH0 $00, :SRC_CodeDoDMA, SRC_CodeDoDMA, $80, _sizeof_SRC_CodeDoDMA
 
 
 

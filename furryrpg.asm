@@ -193,8 +193,6 @@ STR_SoftwareVersionNo:
 	.DB "0.0.1"
 	.DB 0
 
-;STR_SoftwareVersionNo_END:
-
 STR_SoftwareMaker:
 	.DB "Copyright (c) 201X by Ramsis - https://manuloewe.de/"
 	.DB 0
@@ -205,8 +203,6 @@ STR_SoftwareBuild:
 STR_SoftwareBuildNo:
 	.DB "00284"
 	.DB 0
-
-;STR_Software_BuildNo_END:
 
 STR_SoftwareBuildTimestamp:
 	.DB "Assembled ", WLA_TIME
@@ -444,7 +440,7 @@ GFX_SoundEnginesPic:
 .BANK CurrentBank SLOT 0
 .ORG 0
 
-.SECTION "Intro GFX 2"
+.SECTION "More GFX data"
 
 SRC_SoundEnginesMap:
 .INCBIN "gfx/sound-engines-256.map"
@@ -458,41 +454,25 @@ SRC_StartPal:
 GFX_StartPic:
 .INCBIN "gfx/start2-256.pic"
 
-.ENDS
-
-
-
-.SECTION "Area data"
-
 GFX_Area002:
 .INCBIN "gfx/area-002-house.pic"
-GFX_Area002_END:
 
 SRC_Palette_Area002:
 .INCBIN "gfx/area-002-house.pal" READ 32
-SRC_Palette_Area002_END:
 
 SRC_TileMapBG1_Area002:
 .INCBIN "gfx/area-002-house.map"
-SRC_TileMapBG1_Area002_END:
-
-.ENDS
-
-
-
-.SECTION "Mode 7 sky data"
 
 GFX_Mode7_Sky:
 .INCBIN "gfx/sky.pic"
-GFX_Mode7_Sky_END:
 
 SRC_Palette_Mode7_Sky:
 .INCBIN "gfx/sky.pal" READ 32
-SRC_Palette_Mode7_Sky_END:
 
 SRC_TileMap_Mode7_Sky:
 .INCBIN "gfx/sky.map"
-SRC_TileMap_Mode7_Sky_END:
+
+MoreGFX_END:
 
 .ENDS
 
@@ -565,8 +545,6 @@ SRC_track_10_pointers:
 
 SRC_track_10_samples:
 .INCBIN Track10_SMP SKIP 2342						; 2 + 2340
-
-SRC_track_10_samples_END:
 
 SRC_track_10_Notes:
 .INCBIN Track10_Notes

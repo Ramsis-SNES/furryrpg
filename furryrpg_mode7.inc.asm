@@ -215,12 +215,12 @@ TestMode7:
 	ldx	#$4000							; set VRAM address $4000
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_Mode7_Sky, GFX_Mode7_Sky, $18, GFX_Mode7_Sky_END-GFX_Mode7_Sky
+	DMA_CH0 $01, :GFX_Mode7_Sky, GFX_Mode7_Sky, $18, _sizeof_GFX_Mode7_Sky
 
 	ldx	#$5800							; set VRAM address $5800
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :SRC_TileMap_Mode7_Sky, SRC_TileMap_Mode7_Sky, $18, SRC_TileMap_Mode7_Sky_END-SRC_TileMap_Mode7_Sky
+	DMA_CH0 $01, :SRC_TileMap_Mode7_Sky, SRC_TileMap_Mode7_Sky, $18, _sizeof_SRC_TileMap_Mode7_Sky
 
 	stz	REG_CGADD						; reset CGRAM address
 
@@ -330,7 +330,7 @@ TestMode7:
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
-	DMA_CH0 $00, :SRC_HDMA_Mode7Sky72, SRC_HDMA_Mode7Sky72, $80, SRC_HDMA_Mode7Sky72_END - SRC_HDMA_Mode7Sky72
+	DMA_CH0 $00, :SRC_HDMA_Mode7Sky72, SRC_HDMA_Mode7Sky72, $80, _sizeof_SRC_HDMA_Mode7Sky72
 
 
 
@@ -339,7 +339,7 @@ TestMode7:
 -	lda.l	SRC_HDMA_ColMathMode7, x
 	sta	ARRAY_HDMA_ColorMath, x
 	inx
-	cpx	#SRC_HDMA_ColMathMode7_End-SRC_HDMA_ColMathMode7
+	cpx	#_sizeof_SRC_HDMA_ColMathMode7
 	bne	-
 
 	lda	#%00000000						; clear color math disable bits (4-5)
