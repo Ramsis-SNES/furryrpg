@@ -26,6 +26,69 @@ SRC_HDMA_BG12CharData:
 
 
 
+SRC_HDMA_ColMathMode1:
+	.DB 32								; for the sky,
+	.DB $E0, $E0							; apply black (i.e., don't affect display)
+
+	.DB 1								; apply b/w values for blur effect
+	.DB $E0,$FC
+	.DB 1
+	.DB $E0,$FB
+	.DB 1
+	.DB $E0,$FA
+	.DB 1
+	.DB $E0,$F8
+	.DB 1
+	.DB $E0,$F7
+	.DB 1
+	.DB $E0,$F6
+	.DB 1
+	.DB $E0,$F4
+	.DB 2
+	.DB $E0,$F3
+	.DB 2
+	.DB $E0,$F2
+	.DB 3
+	.DB $E0,$F1
+	.DB 4
+	.DB $E0,$F0
+	.DB 3
+	.DB $E0,$EF
+	.DB 3
+	.DB $E0,$EE
+	.DB 4
+	.DB $E0,$ED
+	.DB 3
+	.DB $E0,$EC
+	.DB 3
+	.DB $E0,$EB
+	.DB 3
+	.DB $E0,$EA
+	.DB 4
+	.DB $E0,$E9
+	.DB 4
+	.DB $E0,$E8
+	.DB 3
+	.DB $E0,$E7
+	.DB 2
+	.DB $E0,$E6
+	.DB 3
+	.DB $E0,$E5
+	.DB 4
+	.DB $E0,$E4
+	.DB 6
+	.DB $E0,$E3
+	.DB 8
+	.DB $E0,$E2
+	.DB 10
+	.DB $E0,$E1
+
+	.DB 1								; for the remaining scanlines,
+	.DB $E0, $E0							; don't affect display
+	.DB 0
+
+
+
 SRC_HDMA_ColMathMode7:
 	.DB PARAM_Mode7SkyLines						; for the sky,
 	.DB $E0, $E0							; apply black (i.e., don't affect display)
@@ -291,28 +354,98 @@ SRC_HDMA_ResetBGScroll:
 
 
 
-SRC_HDMA_WorldMapCG1:
-	.DB $2C
-	.DW SRC_HDMA_WorldMapCG2
-	.DB $10
-	.DW SRC_HDMA_WorldMapCG3
-	.DB $20
-	.DW SRC_HDMA_WorldMapCG4
-	.DB $30
-	.DW SRC_HDMA_WorldMapCG5
-	.DB $00
+SRC_HDMA_WorMapLayerControl:
+	.DB 32								; for 32 scanlines, show BG layer 2 and sprites
+	.DB %00010010, %00010010
+	.DB 1								; for all remaining scanlines, show BG layer 1 and sprites
+	.DB %00010001, %00010001
+	.DB 0
 
-SRC_HDMA_WorldMapCG2:
-	.DB $01, $01, $00, $00
 
-SRC_HDMA_WorldMapCG3:
-	.DB $01, $01, $21, $04
 
-SRC_HDMA_WorldMapCG4:
-	.DB $01, $01, $42, $08
+SRC_HDMA_WorMapVertScr:
+	.DB 112|$80							; 112 scanlines, continuous mode flag set
+	.DW ARRAY_HDMA_WorMapVertScr
 
-SRC_HDMA_WorldMapCG5:
-	.DB $01, $01, $63, $0C
+	.DB 112|$80
+	.DW ARRAY_HDMA_WorMapVertScr+(112*2)
+
+	.DB 0								; end of HDMA table
+
+
+
+SRC_HDMA_WorMapVertScrDisplacement:
+.REPEAT 32
+	.DW 0
+.ENDR
+	.DW 36
+	.DW 34
+	.DW 32
+	.DW 30
+	.DW 28
+	.DW 26
+	.DW 24
+	.DW 23
+	.DW 22
+	.DW 21
+	.DW 20
+	.DW 19
+	.DW 18
+	.DW 18
+	.DW 17
+	.DW 17
+	.DW 16
+	.DW 16
+	.DW 15
+	.DW 15
+	.DW 14
+	.DW 14
+	.DW 13
+	.DW 13
+	.DW 12
+	.DW 12
+	.DW 12
+	.DW 11
+	.DW 11
+	.DW 11
+	.DW 10
+	.DW 10
+	.DW 10
+	.DW 9
+	.DW 9
+	.DW 9
+	.DW 8
+	.DW 8
+	.DW 8
+	.DW 7
+	.DW 7
+	.DW 7
+	.DW 6
+	.DW 6
+	.DW 6
+	.DW 6
+	.DW 5
+	.DW 5
+	.DW 5
+	.DW 5
+	.DW 4
+	.DW 4
+	.DW 4
+	.DW 3
+	.DW 3
+	.DW 3
+	.DW 3
+	.DW 2
+	.DW 2
+	.DW 2
+	.DW 2
+	.DW 1
+	.DW 1
+	.DW 1
+	.DW 1
+.REPEAT 127
+	.DW 0
+.ENDR
 
 
 

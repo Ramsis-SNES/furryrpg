@@ -736,7 +736,9 @@
 	DP_VWF_BitsUsed		dw
 	DP_VWF_BufferIndex	dw
 	DP_VWF_Loop		db
-.ENDE									; 168 of 256 bytes used
+	DP_WorldMapBG1VScroll	dw
+	DP_WorldMapBG1HScroll	dw
+.ENDE									; 175 of 256 bytes used
 
 
 
@@ -856,6 +858,7 @@
 	ARRAY_HDMA_FX_1Byte		dsb 224
 	ARRAY_HDMA_FX_2Bytes		dsb 448
 	ARRAY_HDMA_BG_Scroll		dsb 16
+	ARRAY_HDMA_WorMapVertScr	dsb 448
 
 	ARRAY_TempString		dsb 32				; for temp strings
 

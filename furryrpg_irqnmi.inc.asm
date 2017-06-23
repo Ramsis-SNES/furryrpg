@@ -534,13 +534,42 @@ Vblank_WorldMap:
 
 
 
+; -------------------------- update scroll registers
+	lda	DP_WorldMapBG1HScroll
+	sta	REG_BG1HOFS
+	lda	DP_WorldMapBG1HScroll+1
+	and	#$3F							; limit value to $3FFF
+	sta	REG_BG1HOFS
+	ldx	#ARRAY_HDMA_WorMapVertScr				; set data address for upcoming loop
+	stx	DP_DataSrcAddress
+	stz	DP_DataSrcAddress+2
+
+	Accu16
+
+	ldx	#0
+	ldy	#0
+-	lda	DP_WorldMapBG1VScroll
+	sec
+	sbc.l	SRC_HDMA_WorMapVertScrDisplacement, x			; subtract displacement value for each scanline
+	and	#$3FFF
+	sta	[DP_DataSrcAddress], y					; save to HDMA array
+	inx
+	inx
+	iny
+	iny
+	cpy	#448							; 224 scanlines done?
+	bne	-
+
+	Accu8
+
+
+
 ; -------------------------- misc. tasks
 	jsr	GetInput
 
 	lda	DP_HDMA_Channels					; initiate HDMA transfers
 	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
 	sta	REG_HDMAEN
-
 	lda	REG_RDNMI						; acknowledge NMI
 
 	AccuIndex16
