@@ -184,25 +184,40 @@ SRC_DiagPointerGer:
 	.DW STR_DialogGer0167
 	.DW STR_DialogGer0168
 	.DW STR_DialogGer0169
-;	.DW STR_DialogGer0170
-;	.DW STR_DialogGer0171
-;	.DW STR_DialogGer0172
-;	.DW STR_DialogGer0173
-;	.DW STR_DialogGer0174
-;	.DW STR_DialogGer0175
-;	.DW STR_DialogGer0176
-;	.DW STR_DialogGer0177
-;	.DW STR_DialogGer0178
-;	.DW STR_DialogGer0179
-;	.DW STR_DialogGer0180
-;	.DW STR_DialogGer0181
-;	.DW STR_DialogGer0182
-;	.DW STR_DialogGer0183
-;	.DW STR_DialogGer0184
-;	.DW STR_DialogGer0185
-;	.DW STR_DialogGer0186
-;	.DW STR_DialogGer0187
-;	.DW STR_DialogGer0188
+	.DW STR_DialogGer0170
+	.DW STR_DialogGer0171
+	.DW STR_DialogGer0172
+	.DW STR_DialogGer0173
+	.DW STR_DialogGer0174
+	.DW STR_DialogGer0175
+	.DW STR_DialogGer0176
+	.DW STR_DialogGer0177
+	.DW STR_DialogGer0178
+	.DW STR_DialogGer0179
+	.DW STR_DialogGer0180
+	.DW STR_DialogGer0181
+	.DW STR_DialogGer0182
+	.DW STR_DialogGer0183
+	.DW STR_DialogGer0184
+	.DW STR_DialogGer0185
+	.DW STR_DialogGer0186
+	.DW STR_DialogGer0187
+	.DW STR_DialogGer0188
+	.DW STR_DialogGer0189
+	.DW STR_DialogGer0190
+	.DW STR_DialogGer0191
+	.DW STR_DialogGer0192
+	.DW STR_DialogGer0193
+	.DW STR_DialogGer0194
+	.DW STR_DialogGer0195
+	.DW STR_DialogGer0196
+	.DW STR_DialogGer0197
+	.DW STR_DialogGer0198
+	.DW STR_DialogGer0199
+	.DW STR_DialogGer0200
+	.DW STR_DialogGer0201
+	.DW STR_DialogGer0202
+	.DW STR_DialogGer0203
 
 SRC_DiagPointerGer_END:
 

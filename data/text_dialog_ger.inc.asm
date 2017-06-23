@@ -1000,84 +1000,291 @@ STR_DialogGer0153:
 STR_DialogGer0154:
 	.DB CC_Portrait, 0, CC_BoxAlert
 	.DB "PRIMUS:", CC_NewLine
-	.DB CC_Indent, "Look out! More enemies approaching!", CC_End
+	.DB CC_Indent, "Achtung! Weiterer Feind im Anmarsch!", CC_End
 
 STR_DialogGer0155:
 	.DB CC_Portrait, 0, CC_BoxBlue
-	.DB "MALE VOICE:", CC_NewLine
-	.DB CC_Indent, "I mean no harm ...", CC_End
+	.DB "MELODISCHE STIMME:", CC_NewLine
+	.DB CC_Indent, "Ich habe keine b", ouml, "sen Absichten ...", CC_End
 
 STR_DialogGer0156:
 	.DB CC_Portrait, 0, CC_BoxBlue
-	.DB "STRANGE FOX:", CC_NewLine
-	.DB CC_Indent, "You fought very well.", CC_NewLine
-	.DB CC_Indent, "Who are you?", CC_End
+	.DB "FREMDER FUCHS:", CC_NewLine
+	.DB CC_Indent, "Ihr habt tapfer gek", auml, "mpft.", CC_NewLine
+	.DB CC_Indent, "Wer seid ihr?", CC_End
 
 STR_DialogGer0157:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
-	.DB CC_Selection, CC_Indent, "I'm Alec, and these are my friends.", CC_NewLine
-	.DB CC_Selection, CC_Indent, "I should ask you the same thing, Redcoat!", CC_NewLine
-	.DB CC_Selection, CC_Indent, "(Have Lily reply instead)", CC_End
+	.DB CC_Selection, CC_Indent, "Ich bin Alec, und das sind meine Freunde.", CC_NewLine
+	.DB CC_Selection, CC_Indent, "Dasselbe m", ouml, "chte ich dich fragen, Rotpelz!", CC_NewLine
+	.DB CC_Selection, CC_Indent, "(Stattdessen Lily antworten lassen)", CC_End
 
 STR_DialogGer0158:
 	.DB CC_Portrait, 2, CC_BoxAlert
 	.DB "LILY:", CC_NewLine
-	.DB CC_Indent, "Why did you attack us?", CC_End
+	.DB CC_Indent, "Warum habt ihr uns angegriffen?", CC_End
 
 STR_DialogGer0159:
 	.DB CC_Portrait, 0, CC_BoxBlue
-	.DB "STRANGE FOX:", CC_NewLine
-	.DB CC_Indent, "I wasn't going to hurt you, and neither was", CC_NewLine
-	.DB CC_Indent, "Dorothy.", CC_End
+	.DB "FREMDER FUCHS:", CC_NewLine
+	.DB CC_Indent, "Ich wollte euch kein Leid zuf", uuml, "gen, und das gilt auch", CC_NewLine
+	.DB CC_Indent, "f", uuml, "r Dorothy.", CC_End
 
 STR_DialogGer0160:
 	.DB CC_Portrait, 0, CC_BoxBlue
-	.DB "STRANGE FOX:", CC_NewLine
-	.DB CC_Indent, "Welcome to my hiding place, Alec.", CC_End
+	.DB "FREMDER FUCHS:", CC_NewLine
+	.DB CC_Indent, "Willkommen in meinem Bau, Alec.", CC_End
 
 STR_DialogGer0161:
 	.DB CC_Portrait, 0, CC_BoxBlue
-	.DB "STRANGE FOX:", CC_NewLine
-	.DB CC_Indent, "I am deeply sorry for being so rude in the", CC_NewLine
-	.DB CC_Indent, "first place.", CC_End
+	.DB "FREMDER FUCHS:", CC_NewLine
+	.DB CC_Indent, "Es tut mir aufrichtig leid, dass ich so unh", ouml, "flich", CC_NewLine
+	.DB CC_Indent, "gewesen bin.", CC_End
 
 STR_DialogGer0162:
 	.DB CC_Portrait, 0, CC_BoxBlue
-	.DB "STRANGE FOX:", CC_NewLine
-	.DB CC_Indent, "My name is Reinhold von Pappenheim.", CC_NewLine
-	.DB CC_Indent, "I'm a professional ventriloquist.", CC_NewLine
-	.DB CC_Indent, "I apologize for scaring youfurs ...", CC_End
+	.DB "FREMDER FUCHS:", CC_NewLine
+	.DB CC_Indent, "Mein Name ist Reinhold von Pappenheim. Ich bin", CC_NewLine
+	.DB CC_Indent, "Bauchredner von Beruf. Ich entschuldige mich", CC_NewLine
+	.DB CC_Indent, "daf", uuml, "r, euch ge", auml, "ngstigt zu haben ...", CC_End
 
 STR_DialogGer0163:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "REINHOLD:", CC_NewLine
-	.DB CC_Indent, "I wasn't going to hurt you, and neither was", CC_NewLine
-	.DB CC_Indent, "Dorothy.", CC_End
+	.DB CC_Indent, "Ich wollte euch kein Leid zuf", uuml, "gen, und das gilt auch", CC_NewLine
+	.DB CC_Indent, "f", uuml, "r Dorothy.", CC_End
 
 STR_DialogGer0164:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
-	.DB CC_Indent, "You ever been to Furlorn village, by any chance?", CC_End
+	.DB CC_Indent, "Schon mal zuf", auml, "lligerweise im Dorf Furlorn gewesen?", CC_End
+
 
 STR_DialogGer0165:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "PRIMUS:", CC_NewLine
+	.DB CC_Indent, "War er definitiv. Habt ihr nicht auch diesen Duft", CC_NewLine
+	.DB CC_Indent, "von R", auml, "ucherwurst in der Nase, wie sie Tusker abhanden", CC_NewLine
+	.DB CC_Indent, "gekommen ist?", CC_End
+
+STR_DialogGer0166:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "REINHOLD:", CC_NewLine
+	.DB CC_Indent, "Ich gestehe ein, dass ich aus D", ouml, "rfern in der N", auml, "he", CC_NewLine
+	.DB CC_Indent, "Nahrung stibitzt habe. Hier drau", szlig, "en in der Wildnis", CC_NewLine
+	.DB CC_Indent, "gibt es nichts zu essen.", CC_End
+
+STR_DialogGer0167:
 	.DB CC_Portrait, 2, CC_BoxBlue
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "Da haben wir also unseren ,,Geist\".", CC_End
 
-STR_DialogGer0166:
+STR_DialogGer0168:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "ALEC:", CC_NewLine
+	.DB CC_Indent, "Nichts zu essen, sagst du? Aber die W", auml, "lder in dieser", CC_NewLine
+	.DB CC_Indent, "Gegend sind voller Beute!", CC_End
+
+STR_DialogGer0169:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "DOROTHY:", CC_NewLine
+	.DB CC_Indent, "Er ist kein J", auml, "ger, wisst ihr. Und kein Sammler. Er ist nur", CC_NewLine
+	.DB CC_Indent, "ein Bauernf", auml, "nger. Ein Trickbetr", uuml, "ger, wenn man so will.", CC_NewLine
+	.DB CC_Indent, "Ohne zu klauen w", auml, "re er in kurzer Zeit verhungert.", CC_End
+
+STR_DialogGer0170:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "ALEC:", CC_NewLine
+	.DB CC_Indent, "Halt mal! Wieso kann dieses Ding eigentlich sprechen!?", CC_End
+
+STR_DialogGer0171:
+	.DB CC_Portrait, 2, CC_BoxBlue
+	.DB "LILY:", CC_NewLine
+	.DB CC_Indent, "Lass dich nicht von ihm reinlegen. Ein Bauchredner", CC_NewLine
+	.DB CC_Indent, "kann sprechen, ohne den Mund zu bewegen.", CC_End
+
+STR_DialogGer0172:
+	.DB CC_Portrait, 0, CC_BoxPink
+	.DB "DOROTHY:", CC_NewLine
+	.DB CC_Indent, "Stimmt genau. ", SYM_heart, CC_End
+
+STR_DialogGer0173:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "ALEC:", CC_NewLine
+	.DB CC_Indent, CC_Selection, "Krallenstark!", CC_NewLine
+	.DB CC_Indent, CC_Selection, "Das ist ... gruselig.", CC_End
+
+STR_DialogGer0174:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "PRIMUS:", CC_NewLine
+	.DB CC_Indent, "Leute, eins kapier' ich nicht. Mit solchen Tricks", CC_NewLine
+	.DB CC_Indent, "k", ouml, "nnte man doch in jeder gr", ouml, szlig, "eren Stadt ein", CC_NewLine
+	.DB CC_Indent, "Verm", ouml, "gen als Stra", szlig, "enk", uuml, "nstler verdienen.", CC_ClearTextBox
+; --------------------------------------------------------------------------------
+	.DB CC_Indent, "Stattdessen lebst du hier drau", szlig, "en, ganz im Geheimen.", CC_NewLine
+	.DB CC_Indent, "Es erscheint mir fast so, als ob du dich vor", CC_NewLine
+	.DB CC_Indent, "irgendwem versteckst.", CC_End
+
+STR_DialogGer0175:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "MUSKELPARDE:", CC_NewLine
+	.DB CC_Indent, "Bleib sofort stehen, du kleiner Bastard!", CC_End
+
+STR_DialogGer0176:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "FUCHSENWELPE:", CC_NewLine
 	.DB CC_Indent, "Wr", auml, "ffs! Ich h", auml, "ng' fest!!", CC_End
 
-STR_DialogGer0167:
+STR_DialogGer0177:
 	.DB CC_Portrait, 0, CC_BoxBlue
-	.DB "MICKEY:", CC_NewLine
-	.DB CC_Indent, "Bitte was!? Pass auf, wenn du uns nicht SOFORT", CC_NewLine
+	.DB "MUSKELPARDE:", CC_NewLine
+	.DB CC_Indent, "Hab ich dich endlich!", CC_End
+
+STR_DialogGer0178:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "MUSKELPARDE:", CC_NewLine
+	.DB CC_Indent, "Also nochmal, WO IST MEINE MAHLZEIT?", CC_End
+
+STR_DialogGer0179:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "FUCHSENWELPE:", CC_NewLine
+	.DB CC_Indent, "Echt jetzt, keine Ahnung!", CC_End
+
+STR_DialogGer0180:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "MUSKELPARDE:", CC_NewLine
+	.DB CC_Indent, "Wer's glaubt!? Pass auf, wenn du mir nicht SOFORT", CC_NewLine
 	.DB CC_Indent, "Antwort gibst, mach ich dir einen Knoten in den", CC_NewLine
 	.DB CC_Indent, "Schwanz! Kapiert?", CC_End
 
-STR_DialogGer0168:
+STR_DialogGer0181:
+	.DB CC_Portrait, 0, CC_BoxAlert
+	.DB "FUCHSENWELPE:", CC_NewLine
+	.DB CC_Indent, "Hiiiilfe!!", CC_NewLine
+	.DB CC_Indent, "*quiek*", CC_End
+
+STR_DialogGer0182:
+	.DB CC_Portrait, 2, CC_BoxBlue
+	.DB "LILY:", CC_NewLine
+	.DB CC_Indent, "Wir sollten dem Kleinen helfen!", CC_End
+
+STR_DialogGer0183:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "ALEC:", CC_NewLine
+	.DB CC_Indent, "Unbedingt!", CC_End
+
+STR_DialogGer0184:
+	.DB CC_Portrait, 0, CC_BoxRed
+	.DB "MUSKELPARDE:", CC_NewLine
+	.DB CC_Indent, "H", auml, "h?", CC_NewLine
+	.DB CC_Indent, "Was f", uuml, "r r", auml, "udige Schakale seid ihr?", CC_End
+
+STR_DialogGer0185:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "MUSKELPARDE:", CC_NewLine
+	.DB CC_Indent, "*Keuch, schnauf*", CC_NewLine
+	.DB CC_Indent, "Deppen! Ihr seid schuld, dass der kleine Dieb fliehen", CC_NewLine
+	.DB CC_Indent, "konnte.", CC_ClearTextBox
+; --------------------------------------------------------------------------------
+	.DB CC_Indent, "Ich h", auml, "tte ihn verm", ouml, "beln sollen, solange ich", CC_NewLine
+	.DB CC_Indent, "Gelegenheit hatte!", CC_End
+
+STR_DialogGer0186:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "PRIMUS:", CC_NewLine
+	.DB CC_Indent, "Moment mal ... Hat er dir was gestohlen?", CC_End
+
+STR_DialogGer0187:
+	.DB CC_Portrait, 0, CC_BoxAlert
+	.DB "MUSKELPARDE:", CC_NewLine
+	.DB CC_Indent, "Ja, verdammt! Fressalien! EIER!!", CC_End
+
+STR_DialogGer0188:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "ALEC:", CC_NewLine
+	.DB CC_Indent, "Oha ... Das klingt nicht gut.", CC_End
+
+STR_DialogGer0189:
+	.DB CC_Portrait, 2, CC_BoxBlue
+	.DB "LILY:", CC_NewLine
+	.DB CC_Indent, "Entschuldige das Missverst", auml, "ndnis. Wir nahmen an ...", CC_End
+
+STR_DialogGer0190:
+	.DB CC_Portrait, 0, CC_BoxAlert
+	.DB "MUSKELPARDE:", CC_NewLine
+	.DB CC_Indent, "Mir doch schnuppe!", CC_ClearTextBox
+; --------------------------------------------------------------------------------
+	.DB CC_BoxBlue
+	.DB CC_Indent, "Meine Eier sind weg, darum geht's!", CC_NewLine
+	.DB CC_Indent, "Waren "uuml, "brigens Fasaneneier. Sehr nahrhaft.", CC_NewLine
+	.DB CC_Indent, "Und jetzt sind sie EINFACH WEG!", CC_End
+
+STR_DialogGer0191:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "ALEC:", CC_NewLine
+	.DB CC_Indent, "Als J", auml, "ger wei", szlig, " ich, wo Fasane br", uuml, "ten.", CC_NewLine
+	.DB CC_Indent, "Ich kann dir helfen, frischen Ersatz zu besorgen.", CC_End
+
+STR_DialogGer0192:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "MUSKELPARDE:", CC_NewLine
+	.DB CC_Indent, "Wirklich?", CC_End
+
+STR_DialogGer0193:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "ALEC:", CC_NewLine
+	.DB CC_Indent, "Ja doch.", CC_End
+
+STR_DialogGer0194:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "MUSKELPARDE:", CC_NewLine
+	.DB CC_Indent, "Warum willst du das f", uuml, "r mich tun?", CC_End
+
+STR_DialogGer0195:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "ALEC:", CC_NewLine
+	.DB CC_Selection, CC_Indent, "Wir schulden dir immerhin was.", CC_NewLine						; skip 0187, 0189
+	.DB CC_Selection, CC_Indent, "Ich g", ouml, "nn' dir was Leckeres zum Aufschl", uuml, "rfen. ", SYM_heart, CC_NewLine	; skip 0187, 0188
+	.DB CC_Selection, CC_Indent, "(Stattdessen Lily antworten lassen)", CC_End							; skip 0189
+
+STR_DialogGer0196:
+	.DB CC_Portrait, 2, CC_BoxBlue
+	.DB "LILY:", CC_NewLine
+	.DB CC_Indent, "Alec hat recht. Schlie", szlig, "lich sind wir schuld an,", CC_NewLine
+	.DB CC_Indent, "deinem Verlust und daher verpflichtet, dir Ersatz", CC_NewLine
+	.DB CC_Indent, "zu beschaffen.", CC_End
+
+STR_DialogGer0197:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "MUSKELPARDE:", CC_NewLine
+	.DB CC_Indent, "Stimmt. Also gehen wir.", CC_End
+
+STR_DialogGer0198:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "MUSKELPARDE:", CC_NewLine
+	.DB CC_Indent, "Werd' ich, verlass dich drauf. ", SYM_heart, CC_NewLine
+	.DB CC_Indent, "Joa, dann los.", CC_End
+
+STR_DialogGer0199:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "ALEC:", CC_NewLine
+	.DB CC_Indent, "Wie hei", szlig, "t du eigentlich?", CC_End
+
+STR_DialogGer0200:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "MUSKELPARDE:", CC_NewLine
+	.DB CC_Indent, "...", CC_ClearTextBox
+; --------------------------------------------------------------------------------
+	.DB CC_Indent, "Nennt mich Mickey.", CC_End
+
+STR_DialogGer0201:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "ALEC:", CC_NewLine
+	.DB CC_Selection, CC_Indent, "Ich bin Alec, und das sind meine Freunde.", CC_NewLine		; only affect sympathy levels
+	.DB CC_Selection, CC_Indent, "Nenn mich Leonido. ", SYM_heart, CC_End
+
+STR_DialogGer0202:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "BRAUNB", Auml, "R:", CC_NewLine
 	.DB CC_Indent, "Habe die Ehre. ", Auml, "hem ...", CC_ClearTextBox
@@ -1086,13 +1293,13 @@ STR_DialogGer0168:
 	.DB CC_Indent, "Hrabanus Eindhoven Dubois Quaoar van der", CC_NewLine
 	.DB CC_Indent, "Muhlhausen Nido sulle Colline ... Junior.", CC_End
 
-STR_DialogGer0169:
+STR_DialogGer0203:
 	.DB CC_Portrait, 0, CC_BoxAlert
 	.DB "TARA:", CC_NewLine
 	.DB CC_Indent, "Nimm ja deine Pfote von mir!", CC_End
 
 /*
-STR_DialogGer0170:
+STR_DialogGer0204:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "", CC_NewLine
 	.DB CC_Indent, "", CC_NewLine

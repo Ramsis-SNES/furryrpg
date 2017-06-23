@@ -976,7 +976,7 @@ STR_DialogEng0154:
 
 STR_DialogEng0155:
 	.DB CC_Portrait, 0, CC_BoxBlue
-	.DB "MALE VOICE:", CC_NewLine
+	.DB "MELODIC VOICE:", CC_NewLine
 	.DB CC_Indent, "I mean no harm ...", CC_End
 
 STR_DialogEng0156:
@@ -1006,7 +1006,7 @@ STR_DialogEng0159:
 STR_DialogEng0160:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "UNKNOWN FOX:", CC_NewLine
-	.DB CC_Indent, "Welcome to my hiding place, Alec.", CC_End
+	.DB CC_Indent, "Welcome to my burrow, Alec.", CC_End
 
 STR_DialogEng0161:
 	.DB CC_Portrait, 0, CC_BoxBlue
@@ -1033,23 +1033,224 @@ STR_DialogEng0164:
 	.DB CC_Indent, "You ever been to Furlorn village, by any chance?", CC_End
 
 STR_DialogEng0165:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "PRIMUS:", CC_NewLine
+	.DB CC_Indent, "He definitely has. Don't you smell those smoked", CC_NewLine
+	.DB CC_Indent, "summer sausages Tusker said had gone missing?", CC_End
+
+STR_DialogEng0166:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "REINHOLD:", CC_NewLine
+	.DB CC_Indent, "I confess to snatching food from nearby villages.", CC_NewLine
+	.DB CC_Indent, "There is nothing to eat out here in the wild.", CC_End
+
+STR_DialogEng0167:
 	.DB CC_Portrait, 2, CC_BoxBlue
 	.DB "LILY:", CC_NewLine
 	.DB CC_Indent, "So there we have our \"ghost.''", CC_End
 
-STR_DialogEng0166:
+STR_DialogEng0168:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "ALEC:", CC_NewLine
+	.DB CC_Indent, "Nothing to eat, you say? But the forests around", CC_NewLine
+	.DB CC_Indent, "these parts are full of prey!", CC_End
+
+STR_DialogEng0169:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "DOROTHY:", CC_NewLine
+	.DB CC_Indent, "He's not a hunter, you see. Nor a gatherer. He's", CC_NewLine
+	.DB CC_Indent, "just a con artist. A trickster, if you will. Without", CC_NewLine
+	.DB CC_Indent, "stealing, he'd have starved to death before long.", CC_End
+
+STR_DialogEng0170:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "ALEC:", CC_NewLine
+	.DB CC_Indent, "Whoa! How can this thing talk, anyway?!", CC_End
+
+STR_DialogEng0171:
+	.DB CC_Portrait, 2, CC_BoxBlue
+	.DB "LILY:", CC_NewLine
+	.DB CC_Indent, "Don't let him fool you. A ventriloquist is able", CC_NewLine
+	.DB CC_Indent, "to speak without using his mouth.", CC_End
+
+STR_DialogEng0172:
+	.DB CC_Portrait, 0, CC_BoxPink
+	.DB "DOROTHY:", CC_NewLine
+	.DB CC_Indent, "Exactly. ", SYM_heart, CC_End
+
+STR_DialogEng0173:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "ALEC:", CC_NewLine
+	.DB CC_Indent, CC_Selection, "Crazy claws!", CC_NewLine
+	.DB CC_Indent, CC_Selection, "That's ... creepy.", CC_End
+
+STR_DialogEng0174:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "PRIMUS:", CC_NewLine
+	.DB CC_Indent, "Guys, I don't get it. With a stunt like this, he", CC_NewLine
+	.DB CC_Indent, "could make a fortune as a street performer in", CC_NewLine
+	.DB CC_Indent, "any big city.", CC_ClearTextBox
+; --------------------------------------------------------------------------------
+	.DB CC_Indent, "But instead, you're living out here, in secret.", CC_NewLine
+	.DB CC_Indent, "It strikes me as though you were hiding from", CC_NewLine
+	.DB CC_Indent, "something.", CC_End
+
+STR_DialogEng0175:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "MUSCLY PARDEN:", CC_NewLine
+	.DB CC_Indent, "Stop, you little bastard! Now!", CC_End
+
+STR_DialogEng0176:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "FOXLING:", CC_NewLine
 	.DB CC_Indent, "Yikes! I'm stuck!!", CC_End
 
-STR_DialogEng0167:
+STR_DialogEng0177:
 	.DB CC_Portrait, 0, CC_BoxBlue
-	.DB "MICKEY:", CC_NewLine
+	.DB "MUSCLY PARDEN:", CC_NewLine
+	.DB CC_Indent, "Gotcha!", CC_End
+
+STR_DialogEng0178:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "MUSCLY PARDEN:", CC_NewLine
+	.DB CC_Indent, "So once again, WHERE IS MY FOOD?", CC_End
+
+STR_DialogEng0179:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "FOXLING:", CC_NewLine
+	.DB CC_Indent, "Really, I dunno!", CC_End
+
+STR_DialogEng0180:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "MUSCLY PARDEN:", CC_NewLine
 	.DB CC_Indent, "You whatta?!", CC_NewLine
-	.DB CC_Indent, "Listen, if you don't tell us RIGHT NOW, I'm gonna", CC_NewLine
+	.DB CC_Indent, "Listen, if you don't tell me RIGHT NOW, I'm gonna", CC_NewLine
 	.DB CC_Indent, "make a knot in your tail! Got it?", CC_End
 
-STR_DialogEng0168:
+STR_DialogEng0181:
+	.DB CC_Portrait, 0, CC_BoxAlert
+	.DB "FOXLING:", CC_NewLine
+	.DB CC_Indent, "Heeeelp!!", CC_NewLine
+	.DB CC_Indent, "*squeal*", CC_End
+
+STR_DialogEng0182:
+	.DB CC_Portrait, 2, CC_BoxBlue
+	.DB "LILY:", CC_NewLine
+	.DB CC_Indent, "We should help the little one!", CC_End
+
+STR_DialogEng0183:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "ALEC:", CC_NewLine
+	.DB CC_Indent, "Right on!", CC_End
+
+STR_DialogEng0184:
+	.DB CC_Portrait, 0, CC_BoxRed
+	.DB "MUSCLY PARDEN:", CC_NewLine
+	.DB CC_Indent, "Huh?", CC_NewLine
+	.DB CC_Indent, "Who the jackal's mange are youfurs?", CC_End
+
+STR_DialogEng0185:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "MUSCLY PARDEN:", CC_NewLine
+	.DB CC_Indent, "*Huff, puff*", CC_NewLine
+	.DB CC_Indent, "Idiots! It's your fault that little thief got away.", CC_ClearTextBox
+; --------------------------------------------------------------------------------
+	.DB CC_Indent, "I should've lambasted him while I had a chance!", CC_End
+
+STR_DialogEng0186:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "PRIMUS:", CC_NewLine
+	.DB CC_Indent, "Wait ... Did he steal something from you?", CC_End
+
+STR_DialogEng0187:
+	.DB CC_Portrait, 0, CC_BoxAlert
+	.DB "MUSCLY PARDEN:", CC_NewLine
+	.DB CC_Indent, "Dammit, yes! Eatables! EGGS!!", CC_End
+
+STR_DialogEng0188:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "ALEC:", CC_NewLine
+	.DB CC_Indent, "Oi ... That doesn't sound good.", CC_End
+
+STR_DialogEng0189:
+	.DB CC_Portrait, 2, CC_BoxBlue
+	.DB "LILY:", CC_NewLine
+	.DB CC_Indent, "Sorry for the misunderstanding. We thought ...", CC_End
+
+STR_DialogEng0190:
+	.DB CC_Portrait, 0, CC_BoxAlert
+	.DB "MUSCLY PARDEN:", CC_NewLine
+	.DB CC_Indent, "I don't care what you think!", CC_ClearTextBox
+; --------------------------------------------------------------------------------
+	.DB CC_BoxBlue
+	.DB CC_Indent, "My eggs are gone, that's what counts!", CC_NewLine
+	.DB CC_Indent, "Those were pheasant eggs, by the way.", CC_NewLine
+	.DB CC_Indent, "Very nutritious. And now they're GONE FOR GOOD!", CC_End
+
+STR_DialogEng0191:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "ALEC:", CC_NewLine
+	.DB CC_Indent, "I'm a hunter. I know where to find pheasant nests.", CC_NewLine
+	.DB CC_Indent, "I could help you get a fresh replacement.", CC_End
+
+STR_DialogEng0192:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "MUSCLY PARDEN:", CC_NewLine
+	.DB CC_Indent, "Really?", CC_End
+
+STR_DialogEng0193:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "ALEC:", CC_NewLine
+	.DB CC_Indent, "Yeah.", CC_End
+
+STR_DialogEng0194:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "MUSCLY PARDEN:", CC_NewLine
+	.DB CC_Indent, "Why would you do this for me?", CC_End
+
+STR_DialogEng0195:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "ALEC:", CC_NewLine
+	.DB CC_Selection, CC_Indent, "We owe you, after all.", CC_NewLine					; skip 0196, 0198
+	.DB CC_Selection, CC_Indent, "I'm gonna have you slurp up some wicked stuff. ", SYM_heart, CC_NewLine	; skip 0196, 0197
+	.DB CC_Selection, CC_Indent, "(Have Lily reply instead)", CC_End					; skip 0198
+
+STR_DialogEng0196:
+	.DB CC_Portrait, 2, CC_BoxBlue
+	.DB "LILY:", CC_NewLine
+	.DB CC_Indent, "Alec's right. After all, we feel obliged to", CC_NewLine
+	.DB CC_Indent, "compensate for your loss.", CC_End
+
+STR_DialogEng0197:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "MUSCLY PARDEN:", CC_NewLine
+	.DB CC_Indent, "Right. Let's go then.", CC_End
+
+STR_DialogEng0198:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "MUSCLY PARDEN:", CC_NewLine
+	.DB CC_Indent, "You bet I will. ", SYM_heart, CC_NewLine
+	.DB CC_Indent, "Awright, let's go.", CC_End
+
+STR_DialogEng0199:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "ALEC:", CC_NewLine
+	.DB CC_Indent, "What's your name, by the way?", CC_End
+
+STR_DialogEng0200:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "MUSCLY PARDEN:", CC_NewLine
+	.DB CC_Indent, "...", CC_ClearTextBox
+; --------------------------------------------------------------------------------
+	.DB CC_Indent, "Call me Mickey.", CC_End
+
+STR_DialogEng0201:
+	.DB CC_Portrait, 0, CC_BoxBlue
+	.DB "ALEC:", CC_NewLine
+	.DB CC_Selection, CC_Indent, "I'm Alec, and these are my friends.", CC_NewLine		; only affect sympathy levels
+	.DB CC_Selection, CC_Indent, "Call me Leonido. ", SYM_heart, CC_End
+
+STR_DialogEng0202:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "BROWN BEAR:", CC_NewLine
 	.DB CC_Indent, "Allow me the honor. Ahem ...", CC_ClearTextBox
@@ -1058,13 +1259,13 @@ STR_DialogEng0168:
 	.DB CC_Indent, "Eindhoven Dubois Quaoar van der Muhlhausen", CC_NewLine
 	.DB CC_Indent, "Nido sulle Colline ... junior.", CC_End
 
-STR_DialogEng0169:
+STR_DialogEng0203:
 	.DB CC_Portrait, 0, CC_BoxAlert
 	.DB "TARA:", CC_NewLine
 	.DB CC_Indent, "Don't you lay your paw on me!", CC_End
 
 /*
-STR_DialogEng0170:
+STR_DialogEng0204:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "", CC_NewLine
 	.DB CC_Indent, "", CC_NewLine
