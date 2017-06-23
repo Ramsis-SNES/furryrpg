@@ -191,12 +191,24 @@ __DrawSelBarDone:
 
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
+	lda	#TBL_Lang_Ger
+	sta	DP_TextLanguage
+	jsr	ClearHUD
+
+	lda	#PARAM_HUD_Xpos						; load initial X starting position of HUD
+	sta	temp							; used in upcoming subroutine
+	clc								; make up for different X position of "text box" and text
+	adc	#6
+	sta	DP_TextCursor
+	lda	DP_HUD_Ypos						; ditto for Y position
+	sta	temp+1
+	clc
+	adc	#4
+	sta	DP_TextCursor+1
+	jsr	PutAreaNameIntoHUD
 
 	WaitFrames	1
 
-;	inc	DP_TextLanguage
-	lda	#TBL_Lang_Ger
-	sta	DP_TextLanguage
 	jmp	__ProcessNextDialog
 
 __MainTextBoxLoopDpadUpDone:
@@ -210,12 +222,24 @@ __MainTextBoxLoopDpadUpDone:
 
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
+	lda	#TBL_Lang_Eng
+	sta	DP_TextLanguage
+	jsr	ClearHUD
+
+	lda	#PARAM_HUD_Xpos						; load initial X starting position of HUD
+	sta	temp							; used in upcoming subroutine
+	clc								; make up for different X position of "text box" and text
+	adc	#6
+	sta	DP_TextCursor
+	lda	DP_HUD_Ypos						; ditto for Y position
+	sta	temp+1
+	clc
+	adc	#4
+	sta	DP_TextCursor+1
+	jsr	PutAreaNameIntoHUD
 
 	WaitFrames	1
 
-;	dec	DP_TextLanguage
-	lda	#TBL_Lang_Eng
-	sta	DP_TextLanguage
 	jmp	__ProcessNextDialog
 
 __MainTextBoxLoopDpadDownDone:
@@ -1180,7 +1204,7 @@ MakeMode5FontBG1:							; Expects VRAM address set to BG1 tile base
 
 __BuildFontBG1:
 	ldy	#0
--	lda.l	GFX_FontHUD, x						; first, copy font tile (font tiles sit on the "left")
+-	lda.l	GFX_Font8x8, x						; first, copy font tile (font tiles sit on the "left")
 	sta	$2118
 	inx
 	inx
@@ -1216,7 +1240,7 @@ __BuildFontBG2:
 	bne	-
 
 	ldy	#0
--	lda.l	GFX_FontHUD, x						; next, copy 8×8 font tile (font tiles sit on the "right")
+-	lda.l	GFX_Font8x8, x						; next, copy 8×8 font tile (font tiles sit on the "right")
 	sta	$2118
 	inx
 	inx
@@ -1266,7 +1290,7 @@ __VWFTilesLoop:
 	bne	__VWFTilesLoop
 
 	ldx	DP_TextASCIIChar					; ASCII char no. --> font width table index
-	lda.l	SRC_FWTDialogue, x
+	lda.l	SRC_FWT_Dialog, x
 	clc
 	adc	DP_VWF_BitsUsed
 	cmp	#8
@@ -1754,14 +1778,14 @@ __PrintSpriteTextLoop:
 
 	lda	DP_TextCursor
 	sta	ARRAY_SpriteBuf1.Text, x				; X
-	phx								; preserve tilemap index
+	phx								; preserve text buffer index
 
 	tyx								; adc doesn't support absolute long addressing indexed with Y, so we have to switch to X for that
 	clc
-	adc.l	FWT_Sprite, x						; advance cursor position as per font width table entry
+	adc.l	SRC_FWT_HUD, x						; advance cursor position as per font width table entry
 	sta	DP_TextCursor
 
-	plx								; restore tilemap index
+	plx								; restore text buffer index
 	inx
 	lda	DP_TextCursor+1
 	sta	ARRAY_SpriteBuf1.Text, x				; Y
@@ -1969,7 +1993,7 @@ FillSpriteTextBuf:
 
 	tyx								; adc doesn't support absolute long addressing indexed with Y, so we have to switch to X for that
 	clc
-	adc.l	FWT_Sprite, x						; advance cursor position as per font width table entry
+	adc.l	SRC_FWT_HUD, x						; advance cursor position as per font width table entry
 	sta	DP_TextCursor
 
 	plx								; restore tilemap index
@@ -2001,21 +2025,31 @@ FillSpriteTextBuf:
 
 ; ************************* Clearing functions *************************
 
-ClearSpriteText:
+ClearHUD:
 	Accu16
 
 	lda	#$F0F0
-	ldy	#$0000
-
--	sta	ARRAY_SpriteBuf1.Text, y				; Y, X
-	iny
-	iny
-	iny
-	iny
-	cpy	#$0080							; 128 / 4 = 32 tiles
+	ldx	#0
+-	sta	ARRAY_SpriteBuf1.HUD_TextBox, x				; Y, X
+	inx
+	inx
+	stz	ARRAY_SpriteBuf1.HUD_TextBox, x				; tile no. = 0 (empty)
+	inx
+	inx
+	cpx	#144							; 144 / 4 = 36 tiles
 	bne	-
 
-	stz	DP_SpriteTextMon					; reset filling level
+	ldx	#0
+-	sta	ARRAY_SpriteBuf1.Text, x				; Y, X
+	inx
+	inx
+	stz	ARRAY_SpriteBuf1.Text, x				; tile no. = 0 (empty)
+	inx
+	inx
+	cpx	#128							; 128 / 4 = 32 tiles
+	bne	-
+
+	stz	DP_SpriteTextMon					; reset buffer monitor
 
 	Accu8
 

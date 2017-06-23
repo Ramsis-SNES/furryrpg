@@ -30,6 +30,8 @@ LoadAreaData:
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024
 
+	jsr	ClearHUD
+
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	REG_VMAIN
 	jsr	LoadTextBoxBorderTiles					; prepare some stuff for text box
@@ -301,7 +303,7 @@ __AreaBG2TileMapDone:
 
 
 
-; -------------------------- load area soundtrack data and area name
+; -------------------------- load area soundtrack data and area name pointer
 	Accu16
 
 	lda.l	SRC_AreaProperties, x					; read default SNESGSS music track
@@ -313,7 +315,7 @@ __AreaBG2TileMapDone:
 	inx
 	inx
 	lda.l	SRC_AreaProperties, x					; read pointer to area name
-	sta	DP_AreaNamePointer
+	sta	DP_AreaNamePointerNo
 	inx
 	inx
 
@@ -341,27 +343,8 @@ __AreaBG2TileMapDone:
 
 
 
-; -------------------------- HUD font --> VRAM
-	ldx	#ADDR_VRAM_BG3_Tiles
-	stx	REG_VMADDL
-
-	DMA_CH0 $01, :GFX_FontHUD, GFX_FontHUD, $18, 2048
-
-	ldx	#0
-	lda	#$20							; priority bit
--	sta	ARRAY_BG3TileMapHi, x					; set priority bit for BG3 HUD
-	inx
-	cpx	#1024
-	bne	-
-
-
-
 ; -------------------------- misc. palettes --> CGRAM
-	stz	REG_CGADD						; reset CGRAM address
-
-	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
-
-	lda	#$80							; set CGRAM address to #256 (word address) for sprites
+	lda	#$90							; set CGRAM address to #288 (word address) for sprites
 	sta	REG_CGADD
 
 	DMA_CH0 $02, :SRC_Palette_Spritesheet_Char1, SRC_Palette_Spritesheet_Char1, $22, 32
@@ -377,14 +360,6 @@ __AreaBG2TileMapDone:
 	inx
 	inx
 	cpx	#16
-	bne	-
-
-	ldx	#0
--	lda.l	SRC_HDMA_HUD_Scroll, x
-	sta	ARRAY_HDMA_HUD_Scroll, x
-	inx
-	inx
-	cpx	#10
 	bne	-
 
 	Accu8
@@ -424,18 +399,6 @@ __AreaBG2TileMapDone:
 	stx	$4352
 	lda	#$7E
 	sta	$4354
-
-
-
-; -------------------------- HDMA channel 6: BG3 HUD scroll
-	lda	#$02							; transfer mode (2 bytes --> $2112)
-	sta	$4360
-	lda	#$12							; PPU reg. $2112 (BG3 vertical scroll)
-	sta	$4361
-	ldx	#ARRAY_HDMA_HUD_Scroll
-	stx	$4362
-	lda	#$7E
-	sta	$4364
 
 
 
@@ -498,8 +461,6 @@ __AreaBG2TileMapDone:
 	lda	#%00011111						; make sure BG1/2/3 lo/hi tilemaps get updated
 	tsb	DP_DMA_Updates
 	tsb	DP_DMA_Updates+1
-	lda	#%01000000						; enable HDMA ch. 6 (BG3 HUD scroll)
-	tsb	DP_HDMA_Channels
 
 	WaitFrames	4						; give some time for screen refresh
 
@@ -508,6 +469,20 @@ __AreaBG2TileMapDone:
 
 
 ShowArea:
+	jsr	ClearHUD
+
+	lda	#PARAM_HUD_Xpos						; initial X position of "text box" frame
+	sta	temp
+	clc								; make up for different X position of "text box" and text
+	adc	#6
+	sta	DP_TextCursor
+	lda	#PARAM_HUD_Ypos						; initial Y position (hidden)
+	sta	temp+1
+	clc
+	adc	#4
+	sta	DP_TextCursor+1
+	jsr	PutAreaNameIntoHUD
+
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
 	jsr	EffectHSplitIn
@@ -558,7 +533,7 @@ ShowArea:
 
 	Accu16
 
-	lda	#%0001001100000100					; turn on BG1/2 + sprites on subscreen, BG3 (HUD) on mainscreen
+	lda	#%0001001100000100					; turn on BG1/2 + sprites on subscreen, BG3 on mainscreen
 	sta	DP_Shadow_TSTM
 
 	Accu8
@@ -592,31 +567,10 @@ ShowArea:
 
 ;	Accu16
 
-;	lda	#%0001001100000100					; mainscreen: BG3 (HUD), subscreen: BG1/2, sprites
+;	lda	#%0001001100000100					; mainscreen: BG3, subscreen: BG1/2, sprites
 ;	sta	DP_Shadow_TSTM
 
 ;	Accu8
-
-
-
-; -------------------------- reset language/text parameters
-	lda	#TBL_Lang_Eng
-	sta	DP_TextLanguage
-
-	Accu16
-
-	stz	DP_TextPointerNo
-
-	Accu8
-
-
-
-; -------------------------- HUD contents
-	DrawFrame	3, 1, 25, 2
-;	PrintString	2, 4, "XXXXXXXXXXXXXXXXXXXXXXXX"		; area name
-	PrintString	23, 1, "Gengen"
-;	PrintString	24, 1, "HP: XXXX"
-;	PrintString	24, 20, "Time: XX:XX"
 
 
 
@@ -719,77 +673,6 @@ __HUDLogicDone:
 
 
 
-; -------------------------- HUD contents
-	lda	#:AreaNames
-	sta	DP_DataSrcAddress+2
-
-	Accu16
-
-	lda	DP_TextLanguage						; check for selected language
-	and	#$00FF							; mask off garbage bits
-	tax
-	lda	DP_AreaNamePointer
--	dex
-	cpx	#$FFFF
-	beq	+
-	clc
-	adc	#AreaNames_END-AreaNames				; add offset to sub-string address based on language
-	bra	-
-
-+	sta	DP_DataSrcAddress
-
-	Accu8
-
-	PrintString	2, 4, "%s"					; area name
-
-	lda	#:SRC_MiscTextPointerEng
-	clc
-	adc	DP_TextLanguage
-	sta	DP_DataSrcAddress+2
-	lda	DP_TextLanguage						; check language for the correct pointer table
-	bne	+
-	ldx	#STR_MiscEng000						; pointer to "HP"
-	stx	DP_DataSrcAddress
-	bra	++
-
-+	ldx	#STR_MiscGer000						; pointer to "LP"
-	stx	DP_DataSrcAddress
-
-++	PrintString	24, 1, "%s: "					; "HP" string
-
-	lda	#'X'							; placeholder for HP numbers/bar
-	sta	ARRAY_TempString
-	sta	ARRAY_TempString+1
-	sta	ARRAY_TempString+2
-	sta	ARRAY_TempString+3
-	stz	ARRAY_TempString+4
-	jsr	PrintFtemp
-
-	lda	#:SRC_MiscTextPointerEng
-	clc
-	adc	DP_TextLanguage
-	sta	DP_DataSrcAddress+2
-	lda	DP_TextLanguage						; check language for the correct pointer table
-	bne	+
-	ldx	#STR_MiscEng003						; pointer to "Time"
-	stx	DP_DataSrcAddress
-	bra	++
-
-+	ldx	#STR_MiscGer003						; pointer to "Zeit"
-	stx	DP_DataSrcAddress
-
-++	PrintString	24, 20, "%s: "					; "time" string
-	PrintHexNum	DP_GameTimeHours
-
-	lda	#':'
-	sta	ARRAY_TempString
-	stz	ARRAY_TempString+1
-	jsr	PrintFtemp
-
-	PrintHexNum	DP_GameTimeMinutes
-
-
-
 .IFDEF DEBUG
 ;	PrintString	2, 26, "X="
 ;	PrintHexNum	DP_Char1ScreenPosYX
@@ -834,8 +717,8 @@ __MainAreaNoTextBox:
 	lda	#1							; B not pressed, set slow walking speed
 	bra	__MainAreaLoopBButtonDone
 
-+	lda	DP_HUD_Status						; check whether HUD is already being displayed
-	and	#%00000001
++	lda	DP_HUD_Status						; check whether HUD is already being displayed or disappearing
+	and	#%01000001
 	beq	+
 	lda	#%01000000						; yes, set "HUD should disappear" bit
 	sta	DP_HUD_Status
@@ -852,16 +735,13 @@ __MainAreaLoopBButtonDone:
 	lda	DP_Joy1New+1
 	and	#%01000000
 	beq	__MainAreaLoopYButtonDone
-
-	stz	DP_PlayerIdleCounter					; reset both "player idle" and HUD display counters
-	stz	DP_PlayerIdleCounter+1
-	stz	DP_HUD_DispCounter
-	stz	DP_HUD_DispCounter+1
-	lda	DP_HUD_Status						; check if HUD is already being displayed
-	and	#%00000001
-	bne	__MainAreaLoopYButtonDone
+	lda	DP_HUD_Status						; check whether HUD is already being displayed or appearing
+	and	#%10000001
+	bne	+
 	lda	#%10000000						; no, set "HUD should appear" bit
 	sta	DP_HUD_Status
++	stz	DP_PlayerIdleCounter
+	stz	DP_PlayerIdleCounter+1
 
 __MainAreaLoopYButtonDone:
 
@@ -1118,6 +998,7 @@ __MainAreaLoopSkipDpadABXY:
 	sta	REG_NMITIMEN
 ;	lda	#TBL_Char1_down|$80					; make char face the player (for menu later) // adjust when debug menu is removed
 ;	sta	DP_Char1SpriteStatus
+	jsr	ClearHUD
 
 	WaitFrames	1
 
@@ -1135,9 +1016,112 @@ __MainAreaLoopSkipDpadABXY:
 __MainAreaLoopStButtonDone:
 ;	jsr	ShowCPUload
 
-	lda	#%00010000						; make sure BG3 low tile map bytes are updated
-	tsb	DP_DMA_Updates
+;	lda	#%00010000						; make sure BG3 low tile map bytes are updated
+;	tsb	DP_DMA_Updates
 	jmp	MainAreaLoop
+
+
+
+; **************************** HUD contens *****************************
+
+PutAreaNameIntoHUD:							; HUD "text box" position (temp, temp+1) and DP_TextCursor are expected to contain sane values
+	lda	#:SRC_AreaNames						; caveat: all area names & pointers should be located in the same bank
+	sta	DP_TextStringBank
+	sta	DP_DataSrcBank
+
+	Accu16
+
+	lda	DP_TextLanguage						; check for selected language
+	and	#$00FF							; mask off garbage bits
+	asl	a
+	tax
+	lda.l	SRC_AreaNames, x					; starting address of area names of a given language into DataSrcAddress
+	sta	DP_DataSrcAddress
+	lda	DP_AreaNamePointerNo					; use area name pointer no ...
+	asl	a
+	tay
+	lda	[DP_DataSrcAddress], y					; ... to read correct pointer
+	sta	DP_TextStringPtr
+
+	Accu8
+
+PutTextIntoHUD:
+	ldy	#0							; get HUD string length
+-	lda	[DP_TextStringPtr], y
+	beq	+							; NUL terminator reached?
+	iny								; increment input pointer
+	bra	-
+
++	tya								; low byte is sufficient
+	sta	DP_HUD_StrLength					; save value for scrolling during Vblank
+	stz	DP_SpriteTextPalette					; use palette 0
+	jsr	PrintSpriteText
+
+	lda	DP_HUD_StrLength
+	sta	REG_M7A
+	stz	REG_M7A
+	lda	#6							; HUD_StrLength × 6 (average width of font chars)
+	sta	REG_M7B
+	lda	REG_MPYL
+	lsr	a							; divide result by 16 for loop index as each text box frame tile is 16 px wide
+	lsr	a
+	lsr	a
+	lsr	a
+	tay
+	sta	DP_HUD_TextBoxSize					; save value (reused during Vblank for scrolling)
+	ldx	#0
+	lda	temp							; X
+	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	clc
+	adc	#16							; X += 16
+	sta	temp
+	inx
+	lda	temp+1							; Y
+	sta	DP_HUD_Ypos						; save to var for Vblank scrolling
+	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	inx
+	lda	#2							; tile no. of left border
+	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	inx
+	lda	#%00110000						; attributes, set highest priority
+	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	inx
+	dey
+
+-	lda	temp							; X
+	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	clc
+	adc	#16							; X += 16
+	sta	temp
+	inx
+	lda	temp+1							; Y
+	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	inx
+	lda	#3							; tile no. of main box
+	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	inx
+	lda	#%00110000						; attributes, set highest priority
+	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	inx
+	dey
+	bne	-
+
+	lda	temp							; X
+	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	clc
+	adc	#16							; X += 16
+	sta	temp
+	inx
+	lda	temp+1							; Y
+	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	inx
+	lda	#4							; tile no. of right border
+	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	inx
+	lda	#%00110000						; attributes, set highest priority
+	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+
+	rts
 
 
 

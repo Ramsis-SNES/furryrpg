@@ -11,6 +11,18 @@
 
 ; ****************************** Defines *******************************
 
+.DEFINE FONT_8x8		"gfx/font_8x8.pic"			; 2048 bytes
+.DEFINE FONT_HUD		"gfx/font_hud_vwf.pic"
+.DEFINE FONT_HUD_PAL		"gfx/font_hud_vwf.pal"
+.DEFINE FONT_MODE5		"gfx/font_mode5_vwf.pic"		; 4096 bytes
+
+.DEFINE LOGO			"gfx/logo-gr.pic"
+.DEFINE LOGO_MAP		"gfx/logo-gr.map"
+.DEFINE LOGO_PAL		"gfx/logo-gr.pal"
+
+.DEFINE MENU_SPRITES		"gfx/menu-sprites.pic"
+.DEFINE MENU_SPRITES_PAL	"gfx/menu-sprites.pal"
+
 .DEFINE PORTRAIT_CHAR1		"gfx/portrait_kimahri.pic"
 .DEFINE PORTRAIT_CHAR1_PAL	"gfx/portrait_kimahri.pal"
 .DEFINE PORTRAIT_CHAR2		"gfx/portrait_zakari.pic"
@@ -19,17 +31,6 @@
 .DEFINE PORTRAIT_CHAR3_PAL	"gfx/portrait_gengen.pal"
 .DEFINE PORTRAIT_CHAR4		"gfx/portrait_linkwolf.pic"
 .DEFINE PORTRAIT_CHAR4_PAL	"gfx/portrait_linkwolf.pal"
-
-.DEFINE FONT_HUD		"gfx/font_hud.pic"			; 2048 bytes
-.DEFINE FONT_MODE5		"gfx/font_mode5_vwf.pic"		; 4096 bytes
-.DEFINE FONT_SPRITES		"gfx/font_spr.pic"
-
-.DEFINE LOGO			"gfx/logo-gr.pic"
-.DEFINE LOGO_MAP		"gfx/logo-gr.map"
-.DEFINE LOGO_PAL		"gfx/logo-gr.pal"
-
-.DEFINE MENU_SPRITES		"gfx/menu-sprites.pic"
-.DEFINE MENU_SPRITES_PAL	"gfx/menu-sprites.pal"
 
 .DEFINE SPRITESHEET_CHAR1	"gfx/Gengen2.pic"
 .DEFINE SPRITESHEET_CHAR1_PAL	"gfx/Gengen2.pal"
@@ -41,7 +42,7 @@
 SRC_Palettes_Text:
 	.DW $0000							; background (transparent)
 	.DW $0C63							; font drop shadow (dark grey)
-	.DW $5EF7 ;3DEF							; font color #2 (light grey, only used by HUD font)
+	.DW $5EF7 ;3DEF							; font color #2 (light grey, only used by 8x8 font)
 	.DW $7FFF							; font (white)
 
 	.DW $0000							; background (transparent)
@@ -64,6 +65,9 @@ SRC_Palettes_Items:							; 4-color palette for item name gfx
 	.DW $2108
 	.DW $4210
 	.DW $7FFF
+
+SRC_Palettes_HUD:							; 16-color palette for HUD content
+.INCBIN FONT_HUD_PAL READ 32
 
 SRC_Palette_Portrait_Char1:
 .INCBIN PORTRAIT_CHAR1_PAL						; 32 bytes
@@ -90,8 +94,8 @@ SRC_Palette_Sprites_InGameMenu:
 GFX_FontMode5:
 .INCBIN FONT_MODE5							; 2bpp font for BG2 (4096 bytes)
 
-GFX_FontHUD:
-.INCBIN FONT_HUD							; 2bpp font for HUD on BG3 (2048 bytes)
+GFX_Font8x8:
+.INCBIN FONT_8x8							; 2bpp font for BG3 (2048 bytes)
 
 
 
@@ -113,8 +117,8 @@ GFX_Portrait_Char4:
 
 ; *********************** Sprite character data ************************
 
-GFX_Sprites_Smallfont:
-.INCBIN FONT_SPRITES							; 4096 bytes
+GFX_Sprites_HUDfont:
+.INCBIN FONT_HUD							; 4096 bytes
 
 GFX_Spritesheet_Char1:
 .INCBIN SPRITESHEET_CHAR1

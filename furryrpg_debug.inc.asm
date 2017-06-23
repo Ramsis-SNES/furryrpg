@@ -52,11 +52,11 @@ DebugMenu:
 	ldx	#ADDR_VRAM_BG3_Tiles
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_FontHUD, GFX_FontHUD, $18, 2048
+	DMA_CH0 $01, :GFX_Font8x8, GFX_Font8x8, $18, 2048
 
 	ldx	#0
 	lda	#$20							; priority bit
--	sta	ARRAY_BG3TileMapHi, x					; set priority bit for BG3 HUD
+-	sta	ARRAY_BG3TileMapHi, x					; set priority bit for BG3 tiles
 	inx
 	cpx	#1024
 	bne	-
@@ -64,7 +64,7 @@ DebugMenu:
 	ldx	#ADDR_VRAM_SpriteTiles					; set VRAM address for sprite tiles
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_Sprites_Smallfont, GFX_Sprites_Smallfont, $18, 4096
+	DMA_CH0 $01, :GFX_Sprites_HUDfont, GFX_Sprites_HUDfont, $18, 4096
 
 	stz	REG_CGADD						; reset CGRAM address
 
@@ -73,7 +73,7 @@ DebugMenu:
 	lda	#$80							; set CGRAM address to #256 (word address) for sprites
 	sta	REG_CGADD
 
-	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
+	DMA_CH0 $02, :SRC_Palettes_HUD, SRC_Palettes_HUD, $22, 32
 
 	Accu16
 
@@ -137,7 +137,7 @@ DebugMenu:
 
 	stz	DP_SpriteTextMon					; reset sprite text filling level so it won't draw more than 1 cursor ;-)
 
-	PrintSpriteText	10, 2, $10, 0					; put cursor on first line ($10 = cursor tile no.)
+	PrintSpriteText	10, 2, ">", 0					; put cursor on first line
 
 	wai
 

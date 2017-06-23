@@ -41,7 +41,7 @@ SRC_AreaProperty000:
 	.DB :SRC_AreaMetaMap000						; source bank of collision map
 	.DW $FFFF							; default SNESGSS music track ($FFFF = none)
 	.DW $FFFF							; default MSU1 ambient track ($FFFF = none)
-	.DW STR_AreaNameEng000						; area name
+	.DW 0								; no. of area name pointer
 	.DW $5078							; hero screen position (low byte = X, high byte = Y, numbers refer to top left of sprite)
 	.DW $0078							; hero map position (X)
 	.DW $0050							; hero map position (Y)
@@ -65,7 +65,7 @@ SRC_AreaProperty001:
 	.DB :SRC_AreaMetaMap001
 	.DW 12								; music track: "Furlorn Village"
 	.DW $FFFF							; no MSU1 ambient track
-	.DW STR_AreaNameEng001
+	.DW 1
 	.DW $5078							; hero screen position (low byte = X, high byte = Y, numbers refer to top left of sprite)
 	.DW $0078							; hero map position (X)
 	.DW $0050							; hero map position (Y)
@@ -89,7 +89,7 @@ SRC_AreaProperty002:
 	.DB :SRC_AreaMetaMap002
 	.DW $FFFF							; music track: none
 	.DW $FFFF							; MSU1 ambient track: none
-	.DW STR_AreaNameEng002
+	.DW 2
 	.DW $20D0							; hero screen position (low byte = X, high byte = Y, numbers refer to top left of sprite)
 	.DW $00D0							; hero map position (X)
 	.DW $0020							; hero map position (Y)
@@ -113,7 +113,7 @@ SRC_AreaProperty003:
 	.DB :SRC_AreaMetaMap003
 	.DW 10								; music track: "Temba's Theme"
 	.DW 1								; MSU1 ambient track: Nightingale
-	.DW STR_AreaNameEng003
+	.DW 3
 	.DW $2098							; hero screen position (low byte = X, high byte = Y, numbers refer to top left of sprite)
 	.DW $0098							; hero map position (X)
 	.DW $0020							; hero map position (Y)

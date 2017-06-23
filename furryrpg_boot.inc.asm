@@ -198,26 +198,16 @@ Boot:
 	ldx	#ADDR_VRAM_BG3_Tiles					; set VRAM address for BG3 tiles
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_FontHUD, GFX_FontHUD, $18, 2048
+	DMA_CH0 $01, :GFX_Font8x8, GFX_Font8x8, $18, 2048
 
 	ldx	#0
 	lda	#$20							; priority bit
--	sta	ARRAY_BG3TileMapHi, x					; set priority bit for BG3 HUD
+-	sta	ARRAY_BG3TileMapHi, x					; set priority bit for BG3 tiles
 	inx
 	cpx	#1024
 	bne	-
 
-	ldx	#ADDR_VRAM_SpriteTiles					; set VRAM address for sprite tiles
-	stx	REG_VMADDL
-
-	DMA_CH0 $01, :GFX_Sprites_Smallfont, GFX_Sprites_Smallfont, $18, 4096
-
 	stz	REG_CGADD						; reset CGRAM address
-
-	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
-
-	lda	#$80							; set CGRAM address to #256 (word address) for sprites
-	sta	REG_CGADD
 
 	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
 
@@ -808,8 +798,7 @@ __Init_OAM_lo:
 	sta	ARRAY_SpriteBuf1, x					; initialize all sprites to be off the screen
 	inx
 	inx
-	lda	#$0000
-	sta	ARRAY_SpriteBuf1, x
+	stz	ARRAY_SpriteBuf1, x
 	inx
 	inx
 	cpx	#$0200
@@ -817,16 +806,15 @@ __Init_OAM_lo:
 
 	Accu8
 
-	lda	#%10101010						; large sprites for everything except the sprite font
 	ldx	#$0000
 
 __Init_OAM_hi1:
-	sta	ARRAY_SpriteBuf2, x
+	stz	ARRAY_SpriteBuf2, x					; small sprites for the sprite font
 	inx
-	cpx	#24							; see .STRUCT oam_high
+	cpx	#8							; see .STRUCT oam_high
 	bne	__Init_OAM_hi1
 
-	lda	#%00000000						; small sprites
+	lda	#%10101010						; large sprites for everything else
 
 __Init_OAM_hi2:
 	sta	ARRAY_SpriteBuf2, x

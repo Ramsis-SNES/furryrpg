@@ -194,20 +194,6 @@ SRC_HDMA_ColMathMainMenu:
 
 
 
-SRC_HDMA_HUD_Scroll:
-	.DB 48								; 48 scanlines = 6 lines of text at top of the screen
-	.DW $002F							; scroll HUD up by $30 lines (value to be manipulated in WRAM)
-
-	.DB 128
-	.DW $00FF							; reset scroll value for middle of the screen
-
-	.DB 48								; 48 scanlines = 6 lines of text at bottom of the screen
-	.DW $00CF							; scroll HUD down by $30 lines (value to be manipulated in WRAM)
-
-	.DB 0
-
-
-
 SRC_HDMA_FX_1Byte:
 	.DB 112|$80							; 112 scanlines, continuous mode flag set
 	.DW ARRAY_HDMA_FX_1Byte

@@ -262,11 +262,11 @@ InGameMenu:
 	ldx	#ADDR_VRAM_BG3_Tiles
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_FontHUD, GFX_FontHUD, $18, 2048
+	DMA_CH0 $01, :GFX_Font8x8, GFX_Font8x8, $18, 2048
 
 	ldx	#0
 	lda	#$20							; priority bit
--	sta	ARRAY_BG3TileMapHi, x					; set priority bit for BG3 HUD
+-	sta	ARRAY_BG3TileMapHi, x					; set priority bit for BG3 tiles
 	inx
 	cpx	#1024
 	bne	-
@@ -942,7 +942,7 @@ GotoInventory:
 	ldx	#$3000 ;ADDR_VRAM_BG3_Tiles
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_FontHUD, GFX_FontHUD, $18, 2048
+	DMA_CH0 $01, :GFX_Font8x8, GFX_Font8x8, $18, 2048
 	DMA_CH0 $01, :GFX_Items_Eng, GFX_Items_Eng, $18, 160*30
 
 

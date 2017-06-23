@@ -298,12 +298,14 @@
 .DEFINE PARAM_CollMarginRight	3
 .DEFINE PARAM_CollMarginTop	1					; the top margin value differs from the other two in that it acts as a protection against getting trapped when moving along upper edges horizontally
 
+.DEFINE PARAM_HUD_Xpos		24					; X position (in px) of HUD text box start
+.DEFINE PARAM_HUD_Ypos		239
+.DEFINE PARAM_Mode7SkyLines	72					; number of scanlines for sky above Mode 7 landscape
+
 .DEFINE PARAM_RingMenuCenterX	128
 .DEFINE PARAM_RingMenuCenterY	112
 .DEFINE PARAM_RingMenuRadiusMin	0
 .DEFINE PARAM_RingMenuRadiusMax	60
-
-.DEFINE PARAM_Mode7SkyLines	72					; number of scanlines for sky above Mode 7 landscape
 
 .DEFINE PARAM_TextBox		$02C0					; tilemap entry for start of whole text box area
 .DEFINE PARAM_TextBoxAnimSpd	4					; scrolling speed for text box animation (must be a divisor of 48)
@@ -646,7 +648,7 @@
 	DP_AreaMetaMapAddr	dsb 3					; holds 24-bit address of collision map
 	DP_AreaMetaMapIndex	dw
 	DP_AreaMetaMapIndex2	dw
-	DP_AreaNamePointer	dw
+	DP_AreaNamePointerNo	dw
 	DP_AreaProperties	dw					; 0000000000bayxss [s = screen size, as in BGXSC regs, x/y = area is scrollable horizontally/vertically, a/b = auto-scroll area horizontally/vertically, 0 = reserved]
 	DP_AutoJoy1		dw
 	DP_AutoJoy2		dw
@@ -657,7 +659,8 @@
 	DP_Char1SpriteStatus	db					; irrrrddd [i = not walking (idle), ddd = facing direction (0 = down, 1 = up, 2 = left, 3 = right)]
 	DP_Char1WalkingSpd	dw
 ;	DP_CurrentScanline	dw					; holds no. of current scanline (for CPU load meter)
-	DP_DataSrcAddress	dsb 3					; holds a 24-bit source address e.g. for string pointers, data transfers to SRAM, etc.
+	DP_DataSrcAddress	dsb 2					; holds a 24-bit source address e.g. for string pointers, data transfers to SRAM, etc.
+	DP_DataSrcBank		db
 	DP_DMA_Updates		dw					; rrrcbbaarrr32211 [123 = BG no. that needs to have its tile map(s) updated on next Vblank (low bytes), abc = same thing for high bytes, r = reserved. The lower bit of each BG represents the first half of a 64×32/32×64 tile map, the higher one represents the second half.]
 	DP_EffectSpeed		dw
 	DP_EventCodeAddress	dsb 3
@@ -672,6 +675,9 @@
 	DP_HiResPrintMon	db					; keep track of BG we're printing on: $00 = BG1 (start), $01 = BG2
 	DP_HUD_DispCounter	dw					; holds frame count since HUD appeared
 	DP_HUD_Status		db					; adrrrrrp [a/d = HUD should (re-)appear/disappear, p = HUD is present on screen]
+	DP_HUD_StrLength	db					; holds no. of HUD text characters
+	DP_HUD_TextBoxSize	db					; holds no. of HUD text box (frame) sprites
+	DP_HUD_Ypos		db					; holds current Y position of HUD
 	DP_Joy1			dw					; Current button state of joypad1, bit0=0 if it is a valid joypad
 	DP_Joy2			dw					; same thing for all pads...
 	DP_Joy1Press		dw					; Holds joypad1 keys that are pressed and have been pressed since clearing this mem location
@@ -741,20 +747,19 @@
 ; ****************************** .STRUCTs ******************************
 
 .STRUCT oam_high
-	Cursor			db
-	NPCs			dsb 10
-	RingMenu		dsb 4
-	Reserved		dsb 7
-	PlayableChar		dsb 2
 	Text			dsb 8
+	HUD_TextBox		dsb 9
+	RingMenu		dsb 4
+	NPCs			dsb 7
+	PlayableChar		dsb 2
+	Reserved		dsb 2
 .ENDST
 
 
 
 .STRUCT oam_low
-	Cursor			dsb 4
-	CursorReserved		dsb 12
-	NPCs			dsb 160
+	Text			dsb 128					; for one line of text (32 chars)
+	HUD_TextBox		dsb 144					; 144 / 2 = 72, i. e. a full box can hold at least 18 characters
 	RingMenuCursor		dsb 4
 	RingMenuItem1		dsb 4
 	RingMenuItem2		dsb 4
@@ -765,10 +770,10 @@
 	RingMenuItem7		dsb 4
 	RingMenuItem8		dsb 4
 	RingMenuMisc		dsb 28
-	Reserved		dsb 112
+	NPCs			dsb 112					; 112 / 2 = 56, i. e. max. 14 (16×32) furries possible
 	PlayableChar		dsb 24
 	PlayableCharReserved	dsb 8
-	Text			dsb 128					; for one line of text (32 chars)
+	Reserved		dsb 32
 .ENDST
 
 
@@ -851,7 +856,6 @@
 	ARRAY_HDMA_FX_1Byte		dsb 224
 	ARRAY_HDMA_FX_2Bytes		dsb 448
 	ARRAY_HDMA_BG_Scroll		dsb 16
-	ARRAY_HDMA_HUD_Scroll		dsb 10
 
 	ARRAY_TempString		dsb 32				; for temp strings
 

@@ -48,45 +48,110 @@ __TextBoxVblankDone:
 
 
 ; -------------------------- update HUD if necessary
-;	lda	DP_TextBoxStatus					; don't update HUD if text box is open
-;	and	#%00000010
-;	bne	__UpdateHUDDone
 	bit	DP_HUD_Status						; check HUD status
 	bmi	__ShowHUD
 	bvs	__HideHUD
-	bra	__UpdateHUDDone
+	jmp	__UpdateHUDDone
 
 __ShowHUD:
-	lda	ARRAY_HDMA_HUD_Scroll+1
-	dec	a							; make it appear faster than it disappears (hence multiple decrements)
-	dec	a
-	dec	a
-	sta	ARRAY_HDMA_HUD_Scroll+1
-	lda	ARRAY_HDMA_HUD_Scroll+7
-	inc	a
-	inc	a
-	inc	a
-	bmi	+							; only negative values allowed
-	lda	#$FF							; overflow, set final scroll value
-+	sta	ARRAY_HDMA_HUD_Scroll+7
-	cmp	#$FF							; final scroll value reached?
-	bne	__UpdateHUDDone
+	Accu16								; take care about "text box" sprites
+
+	lda	DP_HUD_TextBoxSize
+	and	#$00FF							; remove garbage in high byte
+	inc	a							; +1 for right edge of "text box" frame
+	tay
+
+	Accu8
+
+	lda	DP_HUD_Ypos
+	clc								; DP_HUD_Ypos += 5
+	adc	#5
+	sta	DP_HUD_Ypos
+	ldx	#1							; start at Y value
+-	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	inx
+	inx
+	inx
+	inx
+	dey								; all "text box" sprites done?
+	bne	-
+
+	Accu16								; next, scroll text as well
+
+	lda	DP_HUD_StrLength
+	and	#$00FF							; remove garbage in high byte
+	tay
+
+	Accu8
+
+	lda	DP_HUD_Ypos
+	clc								; make up for different Y position of "text box" and text
+	adc	#4
+	ldx	#1							; start at Y value
+-	sta	ARRAY_SpriteBuf1.Text, x
+	inx
+	inx
+	inx
+	inx
+	dey								; all "text box" sprites done?
+	bne	-
+
+	lda	DP_HUD_Ypos						; final Y value (18) reached?
+	bmi	+
+	cmp	#18
+	bcc	+
 	lda	#%00000001						; yes, set "HUD is being displayed" bit
 	sta	DP_HUD_Status
 	stz	DP_HUD_DispCounter					; and reset display counter values
 	stz	DP_HUD_DispCounter+1
-	bra	__UpdateHUDDone
++	bra	__UpdateHUDDone
 
 __HideHUD:
-	lda	ARRAY_HDMA_HUD_Scroll+1
-	inc	a
-	sta	ARRAY_HDMA_HUD_Scroll+1
-	lda	ARRAY_HDMA_HUD_Scroll+7
+	Accu16								; take care about "text box" sprites
+
+	lda	DP_HUD_TextBoxSize
+	and	#$00FF							; remove garbage in high byte
+	inc	a							; +1 for right edge of "text box" frame
+	tay
+
+	Accu8
+
+	lda	DP_HUD_Ypos						; final Y value (240) reached?
 	dec	a
-	sta	ARRAY_HDMA_HUD_Scroll+7
-	cmp	#$CF							; final scroll value reached?
-	bne	__UpdateHUDDone
+	sta	DP_HUD_Ypos						; DP_HUD_Ypos -= 1
+	cmp	#239
+	bne	+
 	stz	DP_HUD_Status						; yes, clear HUD status bits
+	bra	__UpdateHUDDone
+
++	ldx	#1							; start at Y value
+-	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	inx
+	inx
+	inx
+	inx
+	dey								; all "text box" sprites done?
+	bne	-
+
+	Accu16								; next, scroll text as well
+
+	lda	DP_HUD_StrLength
+	and	#$00FF							; remove garbage in high byte
+	tay
+
+	Accu8
+
+	lda	DP_HUD_Ypos
+	clc								; make up for different Y position of "text box" and text
+	adc	#4
+	ldx	#1							; start at Y value
+-	sta	ARRAY_SpriteBuf1.Text, x
+	inx
+	inx
+	inx
+	inx
+	dey								; all "text box" sprites done?
+	bne	-
 
 __UpdateHUDDone:
 
@@ -95,7 +160,7 @@ __UpdateHUDDone:
 ; -------------------------- animate playable character
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	REG_VMAIN
-	ldx	#ADDR_VRAM_SpriteTiles					; set VRAM address for sprite tiles
+	ldx	#ADDR_VRAM_SpriteTiles+$800				; set VRAM address for sprite tiles, skip sprite font
 	stx	REG_VMADDL
 	lda	DP_Char1SpriteStatus
 	and	#%00000111						; isolate direction parameter
@@ -168,7 +233,9 @@ __Char1WalkingDone:
 	Accu16
 
 	and	#$00FF							; remove garbage bits
-	ora	#$2000							; add sprite priority
+	ora	#$2200							; add sprite priority, use palette no. 1
+	clc
+	adc	#$0080							; skip $80 tiles = sprite font
 	sta	ARRAY_SpriteBuf1.PlayableChar+2				; tile no. (upper half of body)
 	clc
 	adc	#$0020
@@ -191,6 +258,12 @@ __Char1WalkingDone:
 	stz	REG_OAMADDH
 
 	DMA_CH0 $00, $7E, ARRAY_SpriteBuf1, $04, 544
+
+;	lda	#$80							; set OAM Priority Rotation flag
+;	sta	REG_OAMADDH
+;	lda	#36							; obj. no. with lowest priority (reserved area)
+;	asl	a							; shift to bits 1-7
+;	sta	REG_OAMADDL
 
 
 
@@ -1040,17 +1113,17 @@ ErrorHandlerBRK:
 
 
 
-; -------------------------- HUD font --> VRAM
+; -------------------------- 8x8 font --> VRAM
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	REG_VMAIN
 	ldx	#ADDR_VRAM_BG3_Tiles
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_FontHUD, GFX_FontHUD, $18, 2048
+	DMA_CH0 $01, :GFX_Font8x8, GFX_Font8x8, $18, 2048
 
 	ldx	#0
 	lda	#$20							; priority bit
--	sta	ARRAY_BG3TileMapHi, x					; set priority bit for BG3 HUD
+-	sta	ARRAY_BG3TileMapHi, x					; set priority bit for BG3 tiles
 	inx
 	cpx	#1024
 	bne	-
@@ -1188,17 +1261,17 @@ ErrorHandlerCOP:
 
 
 
-; -------------------------- HUD font --> VRAM
+; -------------------------- 8x8 font --> VRAM
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	REG_VMAIN
 	ldx	#ADDR_VRAM_BG3_Tiles
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_FontHUD, GFX_FontHUD, $18, 2048
+	DMA_CH0 $01, :GFX_Font8x8, GFX_Font8x8, $18, 2048
 
 	ldx	#0
 	lda	#$20							; priority bit
--	sta	ARRAY_BG3TileMapHi, x					; set priority bit for BG3 HUD
+-	sta	ARRAY_BG3TileMapHi, x					; set priority bit for BG3 tiles
 	inx
 	cpx	#1024
 	bne	-

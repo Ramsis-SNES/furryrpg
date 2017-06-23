@@ -232,7 +232,7 @@ TestMode7:
 
 
 
-; -------------------------- load sprite font
+; -------------------------- load HUD font
 	jsr	SpriteInit						; purge OAM
 
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
@@ -240,7 +240,7 @@ TestMode7:
 	ldx	#ADDR_VRAM_SpriteTiles					; set VRAM address for sprite tiles
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_Sprites_Smallfont, GFX_Sprites_Smallfont, $18, 4096
+	DMA_CH0 $01, :GFX_Sprites_HUDfont, GFX_Sprites_HUDfont, $18, 4096
 
 
 
