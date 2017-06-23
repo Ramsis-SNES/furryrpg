@@ -24,8 +24,9 @@
 
 
 
-; *************************** Item pointers ****************************
+; *************************** Text pointers ****************************
 
+SRC_MainMenuTextPtrEng:
 	.DW STR_MainMenuEng000
 	.DW STR_MainMenuEng001
 	.DW STR_MainMenuEng002

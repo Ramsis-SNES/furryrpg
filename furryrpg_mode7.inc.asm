@@ -210,7 +210,7 @@ TestMode7:
 
 	lda	#$58							; BG2 tile map VRAM offset: $5800, Tile Map size: 32×32 tiles
 	sta	REG_BG2SC
-	lda	#$40							; BG4 character data VRAM offset: $4000 (ignore BG1 bits)
+	lda	#$40							; BG2 character data VRAM offset: $4000 (ignore BG1 bits)
 	sta	REG_BG12NBA
 	ldx	#$4000							; set VRAM address $4000
 	stx	REG_VMADDL

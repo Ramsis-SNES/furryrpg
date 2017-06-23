@@ -512,6 +512,21 @@
 	DialogStringNo0186	db
 	DialogStringNo0187	db
 	DialogStringNo0188	db
+	DialogStringNo0189	db
+	DialogStringNo0190	db
+	DialogStringNo0191	db
+	DialogStringNo0192	db
+	DialogStringNo0193	db
+	DialogStringNo0194	db
+	DialogStringNo0195	db
+	DialogStringNo0196	db
+	DialogStringNo0197	db
+	DialogStringNo0198	db
+	DialogStringNo0199	db
+	DialogStringNo0200	db
+	DialogStringNo0201	db
+	DialogStringNo0202	db
+	DialogStringNo0203	db
 .ENDE
 
 

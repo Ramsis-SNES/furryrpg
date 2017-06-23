@@ -83,9 +83,8 @@ DebugMenu:
 
 	Accu8
 
-	lda	#$02
 	ldx	#0
--	sta	ARRAY_SpriteBuf1.PlayableChar, x			; overwrite char sprite buffer area with some unused sprite font tiles
+-	stz	ARRAY_SpriteBuf1.PlayableChar, x			; overwrite char sprite buffer area with sprite 0 (empty)
 	inx
 	inx
 	cpx	#24
@@ -106,7 +105,6 @@ DebugMenu:
 	sta	REG_BG34NBA
 	lda	#$01							; set BG Mode 1
 	sta	REG_BGMODE
-
 	stz	REG_CGADD						; reset CGRAM address
 	stz	REG_CGDATA						; $1C00 = dark blue as background color
 	lda	#$1C
