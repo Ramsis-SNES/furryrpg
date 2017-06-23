@@ -19,8 +19,7 @@
 .DEFINE	uuml		$85						; ü
 .DEFINE	szlig		$86						; ß
 .DEFINE	SYM_heart	$87, $88					; heart symbol
-.DEFINE	SYM_quot	$89						; quotation mark
-.DEFINE	SYM_mult	$8A						; multiplication sign
+.DEFINE SYM_mult	$89						; multiplication sign
 
 
 
@@ -38,7 +37,7 @@ STR_DialogEng0000:
 	.DB "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG.", CC_NewLine
 	.DB "the quick brown fox jumps over the lazy dog.", CC_NewLine
 	.DB "0123456789 ", Auml, Ouml, Uuml, auml, ouml, uuml, szlig, CC_NewLine
-	.DB "!\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~", SYM_heart, SYM_quot, SYM_mult, CC_End
+	.DB "!\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~", SYM_heart, SYM_mult, CC_End
 
 STR_DialogEng0001:
 	.DB CC_Portrait, 0, CC_BoxBlue
@@ -358,7 +357,7 @@ STR_DialogEng0051:
 STR_DialogEng0052:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
-	.DB CC_Indent, "Don't call me ", SYM_quot, "Leonido!\"", CC_End
+	.DB CC_Indent, "Don't call me \"Leonido!''", CC_End
 
 STR_DialogEng0053:
 	.DB CC_Portrait, 0, CC_BoxRed
@@ -418,7 +417,7 @@ STR_DialogEng0062:
 STR_DialogEng0063:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "WOLFEN SOLDIER:", CC_NewLine
-	.DB CC_Indent, "You call that cursing, ", SYM_quot, "Leonido?\"", CC_End
+	.DB CC_Indent, "You call that cursing, \"Leonido?''", CC_End
 
 STR_DialogEng0064:
 	.DB CC_Portrait, 0, CC_BoxAlert
@@ -433,9 +432,9 @@ STR_DialogEng0065:
 STR_DialogEng0066:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "WOLFEN SOLDIER:", CC_NewLine
-	.DB CC_Indent, "She's right, ", SYM_quot, "Leonido.\" In quotes, mind you ...", CC_ClearTextBox
+	.DB CC_Indent, "She's right, \"Leonido.'' In quotes, mind you ...", CC_ClearTextBox
 ; --------------------------------------------------------------------------------
-	.DB CC_Indent, "By the way, I've been ", SYM_quot, "cursed\" at many times", CC_NewLine
+	.DB CC_Indent, "By the way, I've been \"cursed'' at many times", CC_NewLine
 	.DB CC_Indent, "before, myself, albeit for other reasons.", CC_ClearTextBox
 ; --------------------------------------------------------------------------------
 	.DB CC_Indent, "To be perfectly honest, I stopped bothering", CC_NewLine
@@ -1036,7 +1035,7 @@ STR_DialogEng0164:
 STR_DialogEng0165:
 	.DB CC_Portrait, 2, CC_BoxBlue
 	.DB "LILY:", CC_NewLine
-	.DB CC_Indent, "So there we have our ", SYM_quot, "ghost.\"", CC_End
+	.DB CC_Indent, "So there we have our \"ghost.''", CC_End
 
 STR_DialogEng0166:
 	.DB CC_Portrait, 0, CC_BoxBlue

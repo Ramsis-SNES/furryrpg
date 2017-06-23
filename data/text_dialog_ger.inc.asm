@@ -19,8 +19,7 @@
 ;.DEFINE uuml		$85						; ü
 ;.DEFINE szlig		$86						; ß
 ;.DEFINE SYM_heart	$87, $88					; heart symbol
-;.DEFINE SYM_quot	$89						; quotation mark
-;.DEFINE SYM_mult	$8A						; multiplication sign
+;.DEFINE SYM_mult	$89						; multiplication sign
 
 
 
@@ -38,7 +37,7 @@ STR_DialogGer0000:
 	.DB "J", Ouml, "RG B", Auml, "CKT QUASI ZWEI HAXENF", Uuml, "SSE VOM WILDPONY.", CC_NewLine
 	.DB "j", ouml, "rg b", auml, "ckt quasi zwei haxenf", uuml, szlig, "e vom wildpony.", CC_NewLine
 	.DB "0123456789 ", Auml, Ouml, Uuml, auml, ouml, uuml, szlig, CC_NewLine
-	.DB "!\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~", SYM_heart, SYM_quot, SYM_mult, CC_End
+	.DB "!\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~", SYM_heart, SYM_mult, CC_End
 
 STR_DialogGer0001:
 	.DB CC_Portrait, 0, CC_BoxBlue
@@ -371,7 +370,7 @@ STR_DialogGer0051:
 STR_DialogGer0052:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
-	.DB CC_Indent, "Nenn mich nicht ", SYM_quot, "Leonido\"!", CC_End
+	.DB CC_Indent, "Nenn mich nicht ,,Leonido\"!", CC_End
 
 STR_DialogGer0053:
 	.DB CC_Portrait, 0, CC_BoxRed
@@ -433,7 +432,7 @@ STR_DialogGer0062:
 STR_DialogGer0063:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "WOLFENSOLDAT:", CC_NewLine
-	.DB CC_Indent, "Das nennst du anschnauzen, ", SYM_quot, "Leonido\"?", CC_End
+	.DB CC_Indent, "Das nennst du anschnauzen, ,,Leonido\"?", CC_End
 
 STR_DialogGer0064:
 	.DB CC_Portrait, 0, CC_BoxAlert
@@ -450,11 +449,11 @@ STR_DialogGer0065:
 STR_DialogGer0066:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "WOLFENSOLDAT:", CC_NewLine
-	.DB CC_Indent, "Da h", ouml, "rst du's, ", SYM_quot, "Leonido\". Wieder ein", CC_NewLine
+	.DB CC_Indent, "Da h", ouml, "rst du's, ,,Leonido\". Wieder ein", CC_NewLine
 	.DB CC_Indent, "Zitat, versteht sich ...", CC_ClearTextBox
 ; --------------------------------------------------------------------------------
 	.DB CC_Indent, Uuml, "brigens bin ich selber schon oft genug", CC_NewLine
-	.DB CC_Indent, SYM_quot, "angeschnauzt\" worden, wenn auch aus anderen", CC_NewLine
+	.DB CC_Indent, ",,angeschnauzt\" worden, wenn auch aus anderen", CC_NewLine
 	.DB CC_Indent, "Gr", uuml, "nden.", CC_ClearTextBox
 ; --------------------------------------------------------------------------------
 	.DB CC_Indent, "Um ehrlich zu sein, ist mir das v", ouml, "llig schnuppe.", CC_NewLine
@@ -1064,7 +1063,7 @@ STR_DialogGer0164:
 STR_DialogGer0165:
 	.DB CC_Portrait, 2, CC_BoxBlue
 	.DB "LILY:", CC_NewLine
-	.DB CC_Indent, "So there we have our ", SYM_quot, "ghost.\"", CC_End
+	.DB CC_Indent, "Da haben wir also unseren ,,Geist\".", CC_End
 
 STR_DialogGer0166:
 	.DB CC_Portrait, 0, CC_BoxBlue
