@@ -9,9 +9,22 @@
 
 
 
+Build #00286:
+- added window masking and blurring sprites to Mode 1 world map, which makes for a nice planet curvature :-)
+
+
+Build #00285:
+- made HUD look sleeker and less intrusive
+- moved HUD to the sprite layer so BG3 can be used e.g. for weather effects
+- overhauled Mode 1 world map with sky graphics and HDMA-based vertical scrolling displacement to simulate a curved planet surface (WIP)
+- added lots of new dialog strings
+- more work on the German localization (dialog, typography)
+
+
+
 Build #00284:
 - more work on the event handler
-- converted some loops to subroutines in preparation of one (or more) main game loop(s), this allows e.g. dialogue to appear while sprites are moving on the screen
+- converted some loops to subroutines in preparation of one (or more) main game loop(s), this allows e.g. dialog to appear while sprites are moving on the screen
 
 
 
