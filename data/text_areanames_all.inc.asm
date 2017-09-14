@@ -19,8 +19,7 @@
 .DEFINE HUD_uuml	$1E						; ü
 .DEFINE HUD_szlig	$1F						; ß
 ;.DEFINE SYM_heart	$87, $88					; heart symbol
-;.DEFINE SYM_quot	$89						; quotation mark
-;.DEFINE SYM_mult	$8A						; multiplication sign
+;.DEFINE SYM_mult	$89						; multiplication sign
 
 
 
