@@ -828,7 +828,7 @@ Goto???1:
 
 	SetIRQ	TBL_HIRQ_MainMenu
 
-	lda	#44							; H-IRQ setup: dot number for interrupt
+	lda	#50							; H-IRQ setup: dot number for interrupt
 	sta	REG_HTIMEL						; set low byte of H-timer
 	stz	REG_HTIMEH						; set high byte of H-timer
 	lda	#%11000000						; enable HDMA channels 6 (BG1/2 char data area designation), 7 (BG Mode 5)

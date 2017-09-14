@@ -252,6 +252,8 @@ AlphaIntro:
 
 	DisableIRQs
 
+	jsl	music_stop						; stop music if it's playing
+
 	ldx	#(ARRAY_BG1TileMap1 & $FFFF)				; clear BG1/2 tile map buffers
 	stx	REG_WMADDL
 	stz	REG_WMADDH

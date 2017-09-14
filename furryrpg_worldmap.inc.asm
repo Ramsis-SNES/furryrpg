@@ -16,8 +16,9 @@ LoadWorldMap:
 	lda	#$80							; enter forced blank
 	sta	REG_INIDISP
 	stz	DP_HDMA_Channels					; disable HDMA
+	jsr	SpriteInit
 
-	wai								; wait for reg $420C to get cleared
+	wai
 
 	DisableIRQs
 

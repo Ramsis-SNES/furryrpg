@@ -22,7 +22,7 @@ LoadEvent:								; expects valid event no. in 16-bit Accu
 	Accu8
 
 	lda	#:SRC_EventPointer					; set bank
-	sta	DP_EventCodeAddress+2
+	sta	DP_EventCodeBank
 
 
 
@@ -119,8 +119,10 @@ __ProcessEventContinue:
 	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y				; load next code byte
 	cmp	#EC_END
-	beq	+
-	iny								; increment code pointer
+	bne	+
+	rtl								; end control code reached, return
+
++	iny								; increment code pointer
 	sty	DP_EventCodePointer
 
 	Accu16
@@ -128,9 +130,13 @@ __ProcessEventContinue:
 	and	#$00FF							; remove garbage in B
 	asl	a							; use code byte ...
 	tax								; ... as an index ...
-	jmp	(__ProcessEventCode, x)					; ... into our WIP collection of event processing routines
+	jmp	(ProcessEventCode, x)					; ... into our WIP collection of event processing routines
 
-__ProcessEventCode:
+
+
+; ********************* Event processing routines **********************
+
+ProcessEventCode:
 	.DW Process_EC_DIALOG
 	.DW Process_EC_GSS_LOAD_TRACK
 	.DW Process_EC_GSS_TRACK_FADEIN
@@ -159,16 +165,6 @@ __ProcessEventCode:
 	.DW Process_EC_WAIT_JOY1
 	.DW Process_EC_WAIT_JOY2
 	.DW Process_EC_WAIT_FRAMES
-
-.ACCU 8
-
-+	rtl
-
-
-
-; ********************* Event processing routines **********************
-
-.ACCU 16
 
 Process_EC_DIALOG:
 	ldy	DP_EventCodePointer
@@ -311,8 +307,6 @@ Process_EC_LOAD_AREA:
 	jsr	LoadAreaData
 
 	jmp	ProcessEventLoop
-
-
 
 .ACCU 16
 
@@ -547,12 +541,7 @@ Process_EC_TOGGLE_AUTO_MODE:
 	Accu8
 
 	lda	DP_GameMode
-	eor	#$FF							; invert bits
-	and	#%10000000						; only keep new auto-mode bit
-	sta	temp
-	lda	DP_GameMode
-	and	#%01111111						; make sure auto-mode won't stay on forever ;-)
-	ora	temp
+	eor	#%10000000						; flip auto-mode bit
 	sta	DP_GameMode
 	jmp	ProcessEventLoop
 

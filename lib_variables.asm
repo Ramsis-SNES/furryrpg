@@ -678,7 +678,8 @@
 	DP_DataSrcBank		db
 	DP_DMA_Updates		dw					; rrrcbbaarrr32211 [123 = BG no. that needs to have its tile map(s) updated on next Vblank (low bytes), abc = same thing for high bytes, r = reserved. The lower bit of each BG represents the first half of a 64×32/32×64 tile map, the higher one represents the second half.]
 	DP_EffectSpeed		dw
-	DP_EventCodeAddress	dsb 3
+	DP_EventCodeAddress	dsb 2
+	DP_EventCodeBank	db
 	DP_EventCodePointer	dw
 	DP_EventWaitFrames	dw
 	DP_GameMode		db					; arrrrrrr [a = auto-mode, r = reserved]

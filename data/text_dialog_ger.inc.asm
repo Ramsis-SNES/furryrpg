@@ -1251,7 +1251,7 @@ STR_DialogGer0195:
 STR_DialogGer0196:
 	.DB CC_Portrait, 2, CC_BoxBlue
 	.DB "LILY:", CC_NewLine
-	.DB CC_Indent, "Alec hat recht. Schlie", szlig, "lich sind wir schuld an,", CC_NewLine
+	.DB CC_Indent, "Alec hat recht. Schlie", szlig, "lich sind wir schuld an", CC_NewLine
 	.DB CC_Indent, "deinem Verlust und daher verpflichtet, dir Ersatz", CC_NewLine
 	.DB CC_Indent, "zu beschaffen.", CC_End
 

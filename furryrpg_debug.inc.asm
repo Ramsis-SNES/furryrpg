@@ -42,11 +42,12 @@ DebugMenu:
 	WaitFrames	3						; wait for regs/tilemaps to get cleared
 
 	DisableIRQs
-	SetNMI	TBL_NMI_DebugMenu
 
 
 
 ; -------------------------- load new NMI handler & GFX data
+	SetNMI	TBL_NMI_DebugMenu
+
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	REG_VMAIN
 	ldx	#ADDR_VRAM_BG3_Tiles
