@@ -86,18 +86,18 @@ Event00001:
 		.DW 0							; clear input
 	.DB EC_WAIT_FRAMES
 		.DW 130
-	.DB EC_SCR_EFFECT_TRANSITION
-		.DW EffectNoFadeToBlack
-		.DB CMD_EffectSpeed1
 	.DB EC_SIMULATE_INPUT_JOY1
 		.DW %1000000000000000					; B button (to clear the text box after event has finished)
 	.DB EC_SIMULATE_INPUT_JOY1
 		.DW 0							; clear input
+	.DB EC_WAIT_FRAMES
+		.DW 100
+	.DB EC_SCR_EFFECT_TRANSITION
+		.DW EffectNoFadeToBlack
+		.DB CMD_EffectSpeed1
 .IFNDEF NOMUSIC
 	.DB EC_GSS_TRACK_STOP
 .ENDIF
-	.DB EC_WAIT_FRAMES
-		.DW 30
 	.DB EC_TOGGLE_AUTO_MODE
 	.DB EC_END
 
