@@ -354,11 +354,28 @@ SRC_HDMA_ResetBGScroll:
 
 
 
+SRC_HDMA_WorMapCurvature:
+	.DB 32								; for 32 scanlines, show everything
+	.DB 0, 255
+	.DB 1								; gradually increase window content
+	.DB 104, 151
+	.DB 1
+	.DB 56, 199
+	.DB 1
+	.DB 32, 223
+	.DB 1
+	.DB 16, 239
+	.DB 1								; for the remaining scanlines, show everything
+	.DB 0, 255
+	.DB 0
+
+
+
 SRC_HDMA_WorMapLayerControl:
-	.DB 32								; for 32 scanlines, show BG layer 2 and sprites
-	.DB %00010010, %00010010
-	.DB 1								; for all remaining scanlines, show BG layer 1 and sprites
-	.DB %00010001, %00010001
+	.DB 32								; for 32 scanlines, show ((BG layer 2 and)) sprites
+	.DB %00000000, %00010000
+	.DB 1								; for all remaining scanlines, show BG layers 1, 2 and sprites
+	.DB %00000011, %00010000
 	.DB 0
 
 
@@ -375,55 +392,99 @@ SRC_HDMA_WorMapVertScr:
 
 
 SRC_HDMA_WorMapVertScrDisplacement:
-.REPEAT 32
+.REPEAT 32								; 32 scanlines = sky
 	.DW 0
 .ENDR
+	.DW 64
+	.DW 62
+	.DW 60
+	.DW 58
+	.DW 56
+	.DW 54
+	.DW 52
+	.DW 50
+	.DW 48
+	.DW 46
+	.DW 44
+	.DW 44
+	.DW 42
+	.DW 42
+	.DW 40
+	.DW 40
+	.DW 38
+	.DW 38
+	.DW 36
 	.DW 36
 	.DW 34
+	.DW 34
+	.DW 32
 	.DW 32
 	.DW 30
+	.DW 30
+	.DW 28
 	.DW 28
 	.DW 26
+	.DW 26
+	.DW 24
 	.DW 24
 	.DW 23
+	.DW 23
+	.DW 22
 	.DW 22
 	.DW 21
+	.DW 21
 	.DW 20
+	.DW 20
+	.DW 19
 	.DW 19
 	.DW 18
 	.DW 18
+	.DW 18
+	.DW 17
 	.DW 17
 	.DW 17
 	.DW 16
 	.DW 16
+	.DW 16
+	.DW 15
 	.DW 15
 	.DW 15
 	.DW 14
 	.DW 14
+	.DW 14
 	.DW 13
 	.DW 13
+	.DW 13
+	.DW 12
 	.DW 12
 	.DW 12
 	.DW 12
 	.DW 11
 	.DW 11
 	.DW 11
+	.DW 11
+	.DW 10
 	.DW 10
 	.DW 10
 	.DW 10
 	.DW 9
 	.DW 9
 	.DW 9
+	.DW 9
+	.DW 8
 	.DW 8
 	.DW 8
 	.DW 8
 	.DW 7
 	.DW 7
 	.DW 7
+	.DW 7
 	.DW 6
 	.DW 6
 	.DW 6
 	.DW 6
+	.DW 6
+	.DW 5
 	.DW 5
 	.DW 5
 	.DW 5
@@ -431,6 +492,8 @@ SRC_HDMA_WorMapVertScrDisplacement:
 	.DW 4
 	.DW 4
 	.DW 4
+	.DW 4
+	.DW 3
 	.DW 3
 	.DW 3
 	.DW 3
@@ -439,11 +502,13 @@ SRC_HDMA_WorMapVertScrDisplacement:
 	.DW 2
 	.DW 2
 	.DW 2
+	.DW 2
 	.DW 1
 	.DW 1
 	.DW 1
 	.DW 1
-.REPEAT 127
+	.DW 1
+.REPEAT 79
 	.DW 0
 .ENDR
 
@@ -934,6 +999,73 @@ SRC_HDMA_TextBoxGradientAlert:
 	.DW $0000,$0000							; 3 scanlines black
 	.DW $0000,$0000
 	.DW $0000,$0000
+
+
+
+SRC_HDMA_WorldMapSky:
+	.DW $0000,$7905
+	.DW $0000,$7905
+	.DW $0000,$7926
+	.DW $0000,$7946
+	.DW $0000,$7947
+	.DW $0000,$7967
+	.DW $0000,$7968
+	.DW $0000,$7989
+	.DW $0000,$79A9
+	.DW $0000,$79AA
+	.DW $0000,$79CA
+	.DW $0000,$79EB
+	.DW $0000,$79EB
+	.DW $0000,$7A0C
+	.DW $0000,$7A0C
+	.DW $0000,$7A2D
+	.DW $0000,$7A2E
+	.DW $0000,$7A4E
+	.DW $0000,$7A6F
+	.DW $0000,$7A6F
+	.DW $0000,$7A90
+	.DW $0000,$7A91
+	.DW $0000,$7AB1
+	.DW $0000,$7AD2
+	.DW $0000,$7AD2
+	.DW $0000,$7AF3
+	.DW $0000,$7B14
+	.DW $0000,$7B14
+	.DW $0000,$7B35
+	.DW $0000,$7B35
+	.DW $0000,$7B35
+	.DW $0000,$7B35
+	.DW $0000,$7B35
+	.DW $0000,$7B35
+	.DW $0000,$7B35
+	.DW $0000,$7B35
+
+
+
+SRC_HDMA_Diamond1:							; 448 bytes, usable with ARRAY_HDMA_FX_2Bytes --> $2126, $2127 for a diamond-shaped window // UNUSED
+.DEFINE Value2126	$7F
+.DEFINE Value2127	$80
+
+.REPEAT 112								; create a 224 byte-long pattern of 7F 80 7E 81 ... 11 EE 10 EF
+	.DB Value2126
+	.DB Value2127
+
+.REDEFINE Value2126	Value2126-1
+.REDEFINE Value2127	Value2127+1
+
+.ENDR
+
+.REDEFINE Value2126	$10
+.REDEFINE Value2127	$EF
+
+.REPEAT 112								; create a 224 byte-long pattern of 10 EF 11 EE ... 7E 81 7F 80 (inverse of above pattern)
+	.DB Value2126
+	.DB Value2127
+
+.REDEFINE Value2126	Value2126+1
+.REDEFINE Value2127	Value2127-1
+
+.ENDR
 
 
 

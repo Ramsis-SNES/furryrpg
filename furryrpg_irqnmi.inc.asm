@@ -527,10 +527,10 @@ Vblank_WorldMap:
 
 
 ; -------------------------- refresh sprites
-;	stz	REG_OAMADDL						; reset OAM address
-;	stz	REG_OAMADDH
+	stz	REG_OAMADDL						; reset OAM address
+	stz	REG_OAMADDH
 
-;	DMA_CH0 $00, $7E, ARRAY_SpriteBuf1, $04, 544
+	DMA_CH0 $00, $7E, ARRAY_SpriteBuf1, $04, 544
 
 
 
@@ -540,27 +540,13 @@ Vblank_WorldMap:
 	lda	DP_WorldMapBG1HScroll+1
 	and	#$3F							; limit value to $3FFF
 	sta	REG_BG1HOFS
-	ldx	#ARRAY_HDMA_WorMapVertScr				; set data address for upcoming loop
-	stx	DP_DataSrcAddress
-	stz	DP_DataSrcAddress+2
 
-	Accu16
-
-	ldx	#0
-	ldy	#0
--	lda	DP_WorldMapBG1VScroll
-	sec
-	sbc.l	SRC_HDMA_WorMapVertScrDisplacement, x			; subtract displacement value for each scanline
-	and	#$3FFF
-	sta	[DP_DataSrcAddress], y					; save to HDMA array
-	inx
-	inx
-	iny
-	iny
-	cpy	#448							; 224 scanlines done?
-	bne	-
-
-	Accu8
+	ldx	#(ARRAY_ScratchSpace & $FFFF)				; copy over scroll displacement table to HDMA array
+	ldy	#ARRAY_HDMA_WorMapVertScr
+	lda	#$01							; $01BF = 447 (i.e., 448 bytes are transferred)
+	xba
+	lda	#$BF
+	mvn	$00, $7E
 
 
 

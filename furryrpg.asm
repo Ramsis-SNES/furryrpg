@@ -499,6 +499,12 @@ SRC_Tilemap_WorldMap:
 ;.INCBIN "thg.zst" SKIP $28C13 READ $2000
 .INCBIN "gfx/thg.map"
 
+GFX_Sprites_SkyBlur:
+.INCBIN "gfx/sky_blur.pic"
+
+SRC_Palette_Sprites_SkyBlur:
+.INCBIN "gfx/sky_blur.pal"						; 32 bytes
+
 .ENDS
 
 
