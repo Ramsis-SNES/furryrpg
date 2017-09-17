@@ -488,9 +488,9 @@ __WorldMapLoopStButtonDone:
 
 CalculateVerticalScrollDisplacement:
 	ldx	#(ARRAY_ScratchSpace & $FFFF)				; set data address for upcoming loop
-	stx	DP_DataSrcAddress
+	stx	DP_DataAddress
 	lda	#$7E
-	sta	DP_DataSrcBank
+	sta	DP_DataBank
 
 	Accu16
 
@@ -500,7 +500,7 @@ CalculateVerticalScrollDisplacement:
 	sec
 	sbc.l	SRC_HDMA_WorMapVertScrDisplacement, x			; subtract displacement value for each scanline
 	and	#$3FFF
-	sta	[DP_DataSrcAddress], y					; save to HDMA array
+	sta	[DP_DataAddress], y					; save to HDMA array
 	inx
 	inx
 	iny

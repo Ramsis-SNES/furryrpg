@@ -157,12 +157,12 @@ DebugMenuLoop:
 	asl	a
 	tax
 	lda.l	SRC_TrackPointerTable, x				; load track name pointer
-	sta	DP_DataSrcAddress
+	sta	DP_DataAddress
 
 	Accu8
 
 	lda	#:SRC_TrackPointerTable
-	sta	DP_DataSrcAddress+2
+	sta	DP_DataBank
 
 	SetTextPos	11, 14
 	PrintHexNum	DP_AreaCurrent+1				; print no. of area to load

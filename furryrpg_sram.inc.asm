@@ -72,10 +72,10 @@ __SRAMGood:
 
 
 
-WriteDataToSRAM:							; this routine expects the 24-bit source data address in DP_DataSrcAddress, destination offset (with data length added) in X, and data length in Y
+WriteDataToSRAM:							; this routine expects the 24-bit source data address in DP_DataAddress, destination offset (with data length added) in X, and data length in Y
 	dex								; decrement X for actual dest offset of last data byte
 	dey								; decrement Y for actual src offset of last data byte
--	lda	[DP_DataSrcAddress], y
+-	lda	[DP_DataAddress], y
 	sta.l	$B00000, x
 	dex
 	dey

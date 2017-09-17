@@ -755,9 +755,9 @@ VerifyROMIntegrity:
 	lda	#$01							; remember that ROM integrity check was passed
 	sta	temp							; source data in temp
 	ldx	#temp							; source data offset
-	stx	DP_DataSrcAddress
+	stx	DP_DataAddress
 	lda	#$7E							; source data bank
-	sta	DP_DataSrcAddress+2
+	sta	DP_DataBank
 	ldx	#(ADDR_SRAM_GoodROM & $FFFF) + 1			; destination offset + data length
 	ldy	#1							; data length
 	jsl	WriteDataToSRAM

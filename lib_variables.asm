@@ -674,8 +674,8 @@
 	DP_Char1SpriteStatus	db					; irrrrddd [i = not walking (idle), ddd = facing direction (0 = down, 1 = up, 2 = left, 3 = right)]
 	DP_Char1WalkingSpd	dw
 ;	DP_CurrentScanline	dw					; holds no. of current scanline (for CPU load meter)
-	DP_DataSrcAddress	dsb 2					; holds a 24-bit source address e.g. for string pointers, data transfers to SRAM, etc.
-	DP_DataSrcBank		db
+	DP_DataAddress		dsb 2					; holds a 24-bit data address e.g. for string pointers, data transfers to SRAM, etc.
+	DP_DataBank		db
 	DP_DMA_Updates		dw					; rrrcbbaarrr32211 [123 = BG no. that needs to have its tile map(s) updated on next Vblank (low bytes), abc = same thing for high bytes, r = reserved. The lower bit of each BG represents the first half of a 64×32/32×64 tile map, the higher one represents the second half.]
 	DP_EffectSpeed		dw
 	DP_EventCodeAddress	dsb 2

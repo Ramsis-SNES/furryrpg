@@ -687,7 +687,7 @@ __M7FlightY:
 
 CalcMode7Matrix:
 	lda	#:SRC_Mode7Scaling
-	sta	DP_DataSrcAddress+2
+	sta	DP_DataBank
 
 
 
@@ -696,7 +696,7 @@ CalcMode7Matrix:
 	ldx	#0
 -	stz	temp+6
 	txy
-	lda	[DP_DataSrcAddress], y
+	lda	[DP_DataAddress], y
 	sta	REG_WRMPYA
 
 	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the cos table
@@ -713,7 +713,7 @@ CalcMode7Matrix:
 
 ; 8×8 multiplication for upper 8 bits of multiplicand
 	iny
-	lda	[DP_DataSrcAddress], y
+	lda	[DP_DataAddress], y
 	sta	REG_WRMPYA
 
 	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the cos table
@@ -751,7 +751,7 @@ CalcMode7Matrix:
 	ldx	#0
 -	stz	temp+6
 	txy
-	lda	[DP_DataSrcAddress], y
+	lda	[DP_DataAddress], y
 	sta	REG_WRMPYA
 
 	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the sin table
@@ -768,7 +768,7 @@ CalcMode7Matrix:
 
 ; 8×8 multiplication for upper 8 bits of multiplicand
 	iny
-	lda	[DP_DataSrcAddress], y
+	lda	[DP_DataAddress], y
 	sta	REG_WRMPYA
 
 	ldx	DP_Mode7_RotAngle					; angle into X for indexing into the sin table
@@ -818,7 +818,7 @@ CalcMode7Matrix:
 .ELSE
 
 CalcMode7Matrix:
-	ldx	DP_DataSrcAddress					; set WRAM address to beginning of table (based on current altitude, as set during Vblank)
+	ldx	DP_DataAddress						; set WRAM address to beginning of table (based on current altitude, as set during Vblank)
 	stx	REG_WMADDL
 	lda	#$01
 	sta	REG_WMADDH
@@ -874,7 +874,7 @@ CalcMode7Matrix:
 	cpx	#448-(PARAM_Mode7SkyLines*2)
 	bne	-
 
-	ldx	DP_DataSrcAddress					; reset WRAM address to beginning of table
+	ldx	DP_DataAddress						; reset WRAM address to beginning of table
 	stx	REG_WMADDL
 
 

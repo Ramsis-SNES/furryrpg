@@ -109,16 +109,16 @@ LoadAreaData:
 
 ; -------------------------- "deinterleave" BG1 tile map, add tile no. offset
 	phx								; preserve area data pointer
-	ldx	#(ARRAY_ScratchSpace & $FFFF)				; set DP_DataSrcAddress to scratch space for postindexed long addressing
-	stx	DP_DataSrcAddress
+	ldx	#(ARRAY_ScratchSpace & $FFFF)				; set DP_DataAddress to scratch space for postindexed long addressing
+	stx	DP_DataAddress
 	lda	#$7E
-	sta	DP_DataSrcAddress+2
+	sta	DP_DataAddress+2
 	ldx	#0
 	ldy	#0
 
 -	Accu16
 
-	lda	[DP_DataSrcAddress], y					; read original tile map data (16 bit)
+	lda	[DP_DataAddress], y					; read original tile map data (16 bit)
 	iny
 	iny
 	clc								; add offset (font, portrait)
@@ -138,7 +138,7 @@ LoadAreaData:
 
 -	Accu16
 
-	lda	[DP_DataSrcAddress], y					; read original tile map data (16 bit)
+	lda	[DP_DataAddress], y					; read original tile map data (16 bit)
 	iny
 	iny
 	clc								; add offset (font, portrait)
@@ -205,16 +205,16 @@ LoadAreaData:
 
 ; -------------------------- "deinterleave" BG2 tile map, add tile no. offset
 	phx								; preserve area data pointer
-	ldx	#(ARRAY_ScratchSpace & $FFFF)				; set DP_DataSrcAddress to scratch space for postindexed long addressing
-	stx	DP_DataSrcAddress
+	ldx	#(ARRAY_ScratchSpace & $FFFF)				; set DP_DataAddress to scratch space for postindexed long addressing
+	stx	DP_DataAddress
 	lda	#$7E
-	sta	DP_DataSrcAddress+2
+	sta	DP_DataAddress+2
 	ldx	#0
 	ldy	#0
 
 -	Accu16
 
-	lda	[DP_DataSrcAddress], y					; read original tile map data (16 bit)
+	lda	[DP_DataAddress], y					; read original tile map data (16 bit)
 	iny
 	iny
 	clc								; add offset (font, portrait)
@@ -234,7 +234,7 @@ LoadAreaData:
 
 -	Accu16
 
-	lda	[DP_DataSrcAddress], y					; read original tile map data (16 bit)
+	lda	[DP_DataAddress], y					; read original tile map data (16 bit)
 	iny
 	iny
 	clc								; add offset (font, portrait)
@@ -1027,7 +1027,7 @@ __MainAreaLoopStButtonDone:
 PutAreaNameIntoHUD:							; HUD "text box" position (temp, temp+1) and DP_TextCursor are expected to contain sane values
 	lda	#:SRC_AreaNames						; caveat: all area names & pointers should be located in the same bank
 	sta	DP_TextStringBank
-	sta	DP_DataSrcBank
+	sta	DP_DataBank
 
 	Accu16
 
@@ -1035,12 +1035,12 @@ PutAreaNameIntoHUD:							; HUD "text box" position (temp, temp+1) and DP_TextCu
 	and	#$00FF							; mask off garbage bits
 	asl	a
 	tax
-	lda.l	SRC_AreaNames, x					; starting address of area names of a given language into DataSrcAddress
-	sta	DP_DataSrcAddress
+	lda.l	SRC_AreaNames, x					; starting address of area names of a given language into DataAddress
+	sta	DP_DataAddress
 	lda	DP_AreaNamePointerNo					; use area name pointer no ...
 	asl	a
 	tay
-	lda	[DP_DataSrcAddress], y					; ... to read correct pointer
+	lda	[DP_DataAddress], y					; ... to read correct pointer
 	sta	DP_TextStringPtr
 
 	Accu8

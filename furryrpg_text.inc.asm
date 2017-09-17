@@ -1599,7 +1599,7 @@ _sf:	CMP	#'s'
 	phy								; preserve current format string pointer
 
 	ldy	#0
--	lda	[DP_DataSrcAddress], y					; read sub string character
+-	lda	[DP_DataAddress], y					; read sub string character
 	beq	__PrintSubstringDone					; check for NUL terminator
 	iny								; increment input pointer
 	jsr	FillTextBuffer						; write sub string character to text buffer
