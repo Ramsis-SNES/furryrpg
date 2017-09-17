@@ -279,15 +279,9 @@ DebugMenuLoop:
 	lda	ARRAY_SpriteBuf1.Text+1
 	cmp	#78
 	bne	+
-
-	Accu16
-
-	lda	#0
-	jsl	LoadEvent
+	jsl	ShowAlphaIntro
 
 	jmp	DebugMenu
-
-.ACCU 8
 
 +	cmp	#86
 	bne	+

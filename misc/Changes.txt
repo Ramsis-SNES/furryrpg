@@ -9,8 +9,14 @@
 
 
 
+Build #00287:
+- more work on the event handler
+
+
+
 Build #00286:
 - added window masking and blurring sprites to Mode 1 world map, which makes for a nice planet curvature :-)
+
 
 
 Build #00285:

@@ -23,16 +23,40 @@ LoadEvent:								; expects valid event no. in 16-bit Accu
 
 	lda	#:SRC_EventPointer					; set bank
 	sta	DP_EventCodeBank
+	stz	DP_EventControl						; clear all event control bits
 
 
 
 ; -------------------------- process event script
 ProcessEventLoop:
-	ldx	DP_EventWaitFrames					; check if we need to pause event processing
-	beq	__ProcessEventContinue
+	ldx	DP_EventWaitFrames					; check if we need to enter main loop (i.e., for screen elements to catch up, read joypads etc.)
+	bne	__ProcessEventSubLoop
+	jmp	__ProcessEventContinue
 
 __ProcessEventSubLoop:
 	WaitFrames	1
+
+	lda	DP_EventControl						; check if we need to monitor joypad 1
+	and	#%00000001
+	beq	__PESL_Joy1Done
+
+	Accu16								; yes, check buttons
+
+	lda	DP_Joy1New
+	and	DP_EventMonitorJoy1
+	beq	+
+
+	lda	DP_EventCodeJump					; button pressed, set new event code position
+	sta	DP_EventCodePointer
+	stz	DP_EventWaitFrames					; reset frame counter so event processing continues immediately
+
+	Accu8
+
+	bra	__ProcessEventContinue
+
++	Accu8
+
+__PESL_Joy1Done:
 
 	lda	DP_TextBoxStatus					; check if text box is open
 	and	#%00000010
@@ -111,9 +135,8 @@ __PESL_MoveHeroDone2:
 +	ldx	DP_EventWaitFrames
 	dex
 	stx	DP_EventWaitFrames
-	bne	__ProcessEventSubLoop
-
-
+	beq	__ProcessEventContinue
+	jmp	__ProcessEventSubLoop
 
 __ProcessEventContinue:
 	ldy	DP_EventCodePointer
@@ -123,7 +146,6 @@ __ProcessEventContinue:
 	rtl								; end control code reached, return
 
 +	iny								; increment code pointer
-	sty	DP_EventCodePointer
 
 	Accu16
 
@@ -138,15 +160,22 @@ __ProcessEventContinue:
 
 ProcessEventCode:
 	.DW Process_EC_DIALOG
+	.DW Process_EC_DISABLE_HDMA_CH
+	.DW Process_EC_DMA_ROM2CGRAM
+	.DW Process_EC_DMA_ROM2VRAM
+	.DW Process_EC_ENABLE_HDMA_CH
 	.DW Process_EC_GSS_LOAD_TRACK
 	.DW Process_EC_GSS_TRACK_FADEIN
 	.DW Process_EC_GSS_TRACK_FADEOUT
 	.DW Process_EC_GSS_TRACK_PLAY
 	.DW Process_EC_GSS_TRACK_STOP
-	.DW Process_EC_INIT_ALPHAINTRO
 	.DW Process_EC_INIT_GAMEINTRO
+	.DW Process_EC_JSL
+	.DW Process_EC_JSR
 	.DW Process_EC_LOAD_AREA
 	.DW Process_EC_LOAD_PARTY_FORMATION
+	.DW Process_EC_MONITOR_INPUT_JOY1
+;	.DW Process_EC_MONITOR_INPUT_JOY2
 	.DW Process_EC_MOVE_ALLY
 	.DW Process_EC_MOVE_HERO
 	.DW Process_EC_MOVE_NPC
@@ -159,6 +188,7 @@ ProcessEventCode:
 	.DW Process_EC_SCR_EFFECT
 	.DW Process_EC_SCR_EFFECT_TRANSITION
 	.DW Process_EC_SCR_SCROLL
+	.DW Process_EC_SET_REGISTER
 	.DW Process_EC_SIMULATE_INPUT_JOY1
 	.DW Process_EC_SIMULATE_INPUT_JOY2
 	.DW Process_EC_TOGGLE_AUTO_MODE
@@ -167,7 +197,6 @@ ProcessEventCode:
 	.DW Process_EC_WAIT_FRAMES
 
 Process_EC_DIALOG:
-	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
 	sta	DP_TextPointerNo
 	iny
@@ -182,8 +211,109 @@ Process_EC_DIALOG:
 
 .ACCU 16
 
+Process_EC_DISABLE_HDMA_CH:
+	Accu8
+
+	lda	[DP_EventCodeAddress], y
+	trb	DP_HDMA_Channels
+	iny
+	sty	DP_EventCodePointer
+	jmp	ProcessEventLoop
+
+.ACCU 16
+
+Process_EC_DMA_ROM2CGRAM:						; CGRAM target address (8), ROM source address (16), ROM source bank (8), size (16)
+	Accu8
+
+	lda	[DP_EventCodeAddress], y				; read CGRAM target address
+	sta.l	REG_CGADD
+	iny
+
+	Accu16
+
+	lda	#(REG_CGDATA & $FF) << 8 | $02				; B bus register (high byte), DMA mode (low byte)
+ 	sta.l	$004300
+
+	lda	[DP_EventCodeAddress], y				; read data source address
+	sta.l	$004302
+	iny
+	iny
+
+	Accu8
+
+	lda	[DP_EventCodeAddress], y				; read data source bank
+	sta.l	$004304
+	iny
+
+	Accu16
+
+	lda	[DP_EventCodeAddress], y				; read data length
+	sta.l	$004305
+
+	Accu8
+
+	lda	#%00000001						; initiate DMA transfer (channel 0)
+	sta.l	REG_MDMAEN
+	iny
+	iny
+	sty	DP_EventCodePointer
+	jmp	ProcessEventLoop
+
+.ACCU 16
+
+Process_EC_DMA_ROM2VRAM:						; VRAM target address (16), ROM source address (16), ROM source bank (8), size (16)
+	Accu8
+
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta.l	REG_VMAIN
+
+	Accu16
+
+	lda	[DP_EventCodeAddress], y				; read VRAM target address
+	sta.l	REG_VMADDL
+	iny
+	iny
+	lda	#(REG_VMDATAL & $FF) << 8 | $01				; B bus register (high byte), DMA mode (low byte)
+ 	sta.l	$004300
+	lda	[DP_EventCodeAddress], y				; read data source address
+	sta.l	$004302
+	iny
+	iny
+
+	Accu8
+
+	lda	[DP_EventCodeAddress], y				; read data source bank
+	sta.l	$004304
+	iny
+
+	Accu16
+
+	lda	[DP_EventCodeAddress], y				; read data length
+	sta.l	$004305
+
+	Accu8
+
+	lda	#%00000001						; initiate DMA transfer (channel 0)
+	sta.l	REG_MDMAEN
+	iny
+	iny
+	sty	DP_EventCodePointer
+	jmp	ProcessEventLoop
+
+.ACCU 16
+
+Process_EC_ENABLE_HDMA_CH:
+	Accu8
+
+	lda	[DP_EventCodeAddress], y
+	tsb	DP_HDMA_Channels
+	iny
+	sty	DP_EventCodePointer
+	jmp	ProcessEventLoop
+
+.ACCU 16
+
 Process_EC_GSS_LOAD_TRACK:
-	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
 	sta	DP_NextTrack
 	iny
@@ -199,7 +329,6 @@ Process_EC_GSS_LOAD_TRACK:
 .ACCU 16
 
 Process_EC_GSS_TRACK_FADEIN:
-	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
 	sta	DP_SPC_VolFadeSpeed
 	iny
@@ -218,7 +347,6 @@ Process_EC_GSS_TRACK_FADEIN:
 .ACCU 16
 
 Process_EC_GSS_TRACK_FADEOUT:
-	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
 	;use value
 	iny
@@ -232,10 +360,10 @@ Process_EC_GSS_TRACK_FADEOUT:
 .ACCU 16
 
 Process_EC_GSS_TRACK_PLAY:
+	sty	DP_EventCodePointer
+
 	Accu8
-
 	DisableIRQs
-
 	Accu16
 
 	lda	#SCMD_STEREO						; default output is mono, so issue stereo command ...
@@ -262,8 +390,9 @@ Process_EC_GSS_TRACK_PLAY:
 .ACCU 16
 
 Process_EC_GSS_TRACK_STOP:
-	Accu8
+	sty	DP_EventCodePointer
 
+	Accu8
 	DisableIRQs
 
 	jsl	music_stop
@@ -276,16 +405,9 @@ Process_EC_GSS_TRACK_STOP:
 
 .ACCU 16
 
-Process_EC_INIT_ALPHAINTRO:
-	Accu8
-
-	jsl	AlphaIntro
-
-	jmp	ProcessEventLoop
-
-.ACCU 16
-
 Process_EC_INIT_GAMEINTRO:
+	sty	DP_EventCodePointer
+
 	Accu8
 
 ;	jsl	GameIntro
@@ -294,8 +416,47 @@ Process_EC_INIT_GAMEINTRO:
 
 .ACCU 16
 
+Process_EC_JSL:
+	lda	[DP_EventCodeAddress], y
+	sta	DP_DataAddress
+	iny
+	iny
+
+	Accu8
+
+	lda	[DP_EventCodeAddress], y
+	sta	DP_DataBank
+	iny
+	sty	DP_EventCodePointer
+	phk								; push current program bank onto stack
+	pea	__ReturnAdressJSL-1					; push return address minus 1 (RTL adds 1) onto stack
+	jml	[DP_DataAddress]
+
+__ReturnAdressJSL:
+
+	jmp	ProcessEventLoop
+
+.ACCU 16
+
+Process_EC_JSR:
+	lda	[DP_EventCodeAddress], y
+	sta	DP_DataAddress
+	iny
+	iny
+	sty	DP_EventCodePointer
+
+	Accu8								; assume 8-bit Accu in subroutine
+
+	pea	__ReturnAdressJSR-1					; push return address minus 1 (RTS adds 1) onto stack
+	jmp	(DP_DataAddress)					; jump to subroutine
+
+__ReturnAdressJSR:
+
+	jmp	ProcessEventLoop
+
+.ACCU 16
+
 Process_EC_LOAD_AREA:
-	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
 	sta	DP_AreaCurrent
 	iny
@@ -311,7 +472,6 @@ Process_EC_LOAD_AREA:
 .ACCU 16
 
 Process_EC_LOAD_PARTY_FORMATION:
-	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
 	;use value
 	iny
@@ -324,8 +484,26 @@ Process_EC_LOAD_PARTY_FORMATION:
 
 .ACCU 16
 
+Process_EC_MONITOR_INPUT_JOY1:
+	lda	[DP_EventCodeAddress], y				; read buttons to monitor
+	sta	DP_EventMonitorJoy1
+	iny
+	iny
+	lda	[DP_EventCodeAddress], y				; read event script code position to jump to
+	sta	DP_EventCodeJump
+
+	Accu8
+
+	lda	#%00000001						; set "monitor joypad 1" bit
+	sta	DP_EventControl
+	iny
+	iny
+	sty	DP_EventCodePointer
+	jmp	ProcessEventLoop
+
+.ACCU 16
+
 Process_EC_MOVE_ALLY:
-	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
 	;use value
 	iny
@@ -339,7 +517,6 @@ Process_EC_MOVE_ALLY:
 .ACCU 16
 
 Process_EC_MOVE_HERO:
-	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
 	sta	VAR_Char1TargetScrPosYX					; target screen position
 	iny
@@ -356,7 +533,6 @@ Process_EC_MOVE_HERO:
 .ACCU 16
 
 Process_EC_MOVE_NPC:
-	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
 	;use value
 	iny
@@ -370,7 +546,6 @@ Process_EC_MOVE_NPC:
 .ACCU 16
 
 Process_EC_MOVE_OBJ:
-	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
 	;use value
 	iny
@@ -387,15 +562,15 @@ Process_EC_MSU_LOAD_TRACK:
 	lda	DP_MSU1_Present
 	and	#$0001
 	beq	+
-	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
 	sta	DP_MSU1_NextTrack
 -	lda	MSU_STATUS						; wait for Audio Busy bit to clear
 	and	#%0000000001000000
 	bne	-
 
-+	inc	DP_EventCodePointer
-	inc	DP_EventCodePointer
++	iny
+	iny
+	sty	DP_EventCodePointer
 
 	Accu8
 
@@ -404,7 +579,6 @@ Process_EC_MSU_LOAD_TRACK:
 .ACCU 16
 
 Process_EC_MSU_TRACK_FADEIN:
-	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
 	;use value
 	iny
@@ -418,7 +592,6 @@ Process_EC_MSU_TRACK_FADEIN:
 .ACCU 16
 
 Process_EC_MSU_TRACK_FADEOUT:
-	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
 	;use value
 	iny
@@ -438,8 +611,9 @@ Process_EC_MSU_TRACK_PLAY:
 	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
 	sta	MSU_VOLUME
-+	inc	DP_EventCodePointer
-	inc	DP_EventCodePointer
++	iny
+	iny
+	sty	DP_EventCodePointer
 
 	Accu8
 
@@ -448,6 +622,8 @@ Process_EC_MSU_TRACK_PLAY:
 .ACCU 16
 
 Process_EC_MSU_TRACK_STOP:
+	sty	DP_EventCodePointer
+
 	Accu8
 
 	lda	DP_MSU1_Present
@@ -459,7 +635,6 @@ Process_EC_MSU_TRACK_STOP:
 .ACCU 16
 
 Process_EC_SCR_EFFECT:
-	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
 	;use value
 	iny
@@ -473,7 +648,6 @@ Process_EC_SCR_EFFECT:
 .ACCU 16
 
 Process_EC_SCR_EFFECT_TRANSITION:
-	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
 	tax
 	iny
@@ -492,7 +666,6 @@ Process_EC_SCR_EFFECT_TRANSITION:
 .ACCU 16
 
 Process_EC_SCR_SCROLL:
-	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
 	;use value
 	iny
@@ -505,8 +678,23 @@ Process_EC_SCR_SCROLL:
 
 .ACCU 16
 
+Process_EC_SET_REGISTER:
+	lda	[DP_EventCodeAddress], y				; load register to be written to
+	sta	DP_RegisterBuffer
+	iny
+	iny
+
+	Accu8
+
+	lda	[DP_EventCodeAddress], y				; load 8-bit value
+	sta	(DP_RegisterBuffer)					; write value to desired register // CHECKME, might want to use 24-bit addressing instead to be safe
+	iny
+	sty	DP_EventCodePointer
+	jmp	ProcessEventLoop
+
+.ACCU 16
+
 Process_EC_SIMULATE_INPUT_JOY1:
-	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
 	sta	DP_AutoJoy1
 	iny
@@ -522,7 +710,6 @@ Process_EC_SIMULATE_INPUT_JOY1:
 .ACCU 16
 
 Process_EC_SIMULATE_INPUT_JOY2:
-	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
 	sta	DP_AutoJoy2
 	iny
@@ -538,6 +725,8 @@ Process_EC_SIMULATE_INPUT_JOY2:
 .ACCU 16
 
 Process_EC_TOGGLE_AUTO_MODE:
+	sty	DP_EventCodePointer
+
 	Accu8
 
 	lda	DP_GameMode
@@ -548,7 +737,6 @@ Process_EC_TOGGLE_AUTO_MODE:
 .ACCU 16
 
 Process_EC_WAIT_JOY1:
-	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
 	;use value
 	iny
@@ -562,7 +750,6 @@ Process_EC_WAIT_JOY1:
 .ACCU 16
 
 Process_EC_WAIT_JOY2:
-	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
 	;use value
 	iny
@@ -576,7 +763,6 @@ Process_EC_WAIT_JOY2:
 .ACCU 16
 
 Process_EC_WAIT_FRAMES:
-	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
 	sta	DP_EventWaitFrames
 	iny

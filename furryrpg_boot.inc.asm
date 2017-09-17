@@ -246,13 +246,13 @@ Boot:
 
 
 ; -------------------------- intro / title screen
-AlphaIntro:
+ShowAlphaIntro:
 	lda	#$80							; enter forced blank
 	sta	REG_INIDISP
 
 	DisableIRQs
 
-	jsl	music_stop						; stop music if it's playing
+	jsl	music_stop						; stop music in case it's playing
 
 	ldx	#(ARRAY_BG1TileMap1 & $FFFF)				; clear BG1/2 tile map buffers
 	stx	REG_WMADDL
@@ -375,198 +375,13 @@ AlphaIntro:
 	lda	DP_Shadow_NMITIMEN					; reenable interrupts
 	sta	REG_NMITIMEN
 	cli
-	lda	#$FF
-	ldx	#0
--	wai
-	inc	a
-	inc	a
-	sta	REG_INIDISP
-	inx
-	cpx	#8
-	bne	-
-
-	WaitFrames	80
-
-	lda	#$0F
-	ldx	#0
--	wai
-	dec	a
-	dec	a
-	sta	REG_INIDISP
-	inx
-	cpx	#8
-	bne	-
-
-	lda	#$80							; enter forced blank
-	sta	REG_INIDISP
-	lda	#$03							; set BG Mode 3
-	sta	REG_BGMODE
 
 	Accu16
 
-	lda	#%0000000100000001					; turn on BG1 only
-	sta	REG_TM							; on mainscreen and subscreen
-	sta	DP_Shadow_TSTM						; copy to shadow variable
-	lda	#7							; set music track // CHANGEME
-	sta	DP_NextTrack
+	lda	#0							; rest of intro = event #0
+	jsl	LoadEvent
 
-	Accu8
-
-.IFNDEF NOMUSIC
-	jsl	PlayTrack
-.ENDIF
-
-	stz	REG_CGADD						; reset CGRAM address
-
-	DMA_CH0 $02, :SRC_RamsisPal, SRC_RamsisPal, $22, 512
-
-	lda	#$80							; increment VRAM address by one word after writing to $2119
-	sta	REG_VMAIN
-	ldx	#$0000
-	stx	REG_VMADDL
-
-	DMA_CH0 $01, :GFX_RamsisPic, GFX_RamsisPic, $18, 40384
-
-	ldx	#$5000
-	stx	REG_VMADDL
-
-	DMA_CH0 $01, :SRC_RamsisMap, SRC_RamsisMap, $18, 2048
-
-	lda	#$FF
-	ldx	#0
--	wai
-	inc	a
-	inc	a
-	sta	REG_INIDISP
-	inx
-	cpx	#8
-	bne	-
-
-	WaitFrames	150
-
-	lda	#$0F
-	ldx	#0
--	wai
-	dec	a
-	dec	a
-	sta	REG_INIDISP
-	inx
-	cpx	#8
-	bne	-
-
-	lda	#$80							; enter forced blank
-	sta	REG_INIDISP
-	stz	REG_CGADD						; reset CGRAM address
-
-	DMA_CH0 $02, :SRC_RamsisPresentsPal, SRC_RamsisPresentsPal, $22, 512
-
-	ldx	#$0000
-	stx	REG_VMADDL
-
-	DMA_CH0 $01, :GFX_RamsisPresentsPic, GFX_RamsisPresentsPic, $18, 40384
-
-	ldx	#$5000
-	stx	REG_VMADDL
-
-	DMA_CH0 $01, :SRC_RamsisPresentsMap, SRC_RamsisPresentsMap, $18, 2048
-
-	lda	#$FF
-	ldx	#0
--	wai
-	inc	a
-	inc	a
-	sta	REG_INIDISP
-	inx
-	cpx	#8
-	bne	-
-
-	WaitFrames	150
-
-	lda	#$0F
-	ldx	#0
--	wai
-	dec	a
-	dec	a
-	sta	REG_INIDISP
-	inx
-	cpx	#8
-	bne	-
-
-	lda	#$80							; enter forced blank
-	sta	REG_INIDISP
-	stz	REG_CGADD						; reset CGRAM address
-
-	DMA_CH0 $02, :SRC_StartPal, SRC_StartPal, $22, 512
-
-	ldx	#$0000
-	stx	REG_VMADDL
-
-	DMA_CH0 $01, :GFX_StartPic, GFX_StartPic, $18, 26304
-
-	ldx	#$5000
-	stx	REG_VMADDL
-
-	DMA_CH0 $01, :SRC_StartMap, SRC_StartMap, $18, 1792
-
-	lda	#$FF
-	ldx	#0
--	wai
-	inc	a
-	inc	a
-	sta	REG_INIDISP
-	inx
-	cpx	#8
-	bne	-
-
-	WaitFrames	150
-
-	lda	#$0F
-	ldx	#0
--	wai
-	dec	a
-	dec	a
-	sta	REG_INIDISP
-	inx
-	cpx	#8
-	bne	-
-
-	lda	#$80							; enter forced blank
-	sta	REG_INIDISP
-	stz	REG_CGADD						; reset CGRAM address
-
-	DMA_CH0 $02, :SRC_SoundEnginesPal, SRC_SoundEnginesPal, $22, 512
-
-	ldx	#$0000
-	stx	REG_VMADDL
-
-	DMA_CH0 $01, :GFX_SoundEnginesPic, GFX_SoundEnginesPic, $18, 40384
-
-	ldx	#$5000
-	stx	REG_VMADDL
-
-	DMA_CH0 $01, :SRC_SoundEnginesMap, SRC_SoundEnginesMap, $18, 2048
-
-	lda	#$FF
-	ldx	#0
--	wai
-	inc	a
-	inc	a
-	sta	REG_INIDISP
-	inx
-	cpx	#8
-	bne	-
-
-	WaitFrames	150
-
-	lda	#$0F
-	ldx	#0
--	wai
-	dec	a
-	dec	a
-	sta	REG_INIDISP
-	inx
-	cpx	#8
-	bne	-
+.ACCU 8
 
 	lda	#$80							; enter forced blank
 	sta	REG_INIDISP

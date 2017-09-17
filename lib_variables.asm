@@ -191,37 +191,38 @@
 
 .ENUM $00								; argument(s) (8/16 bit) / effect(s)
 	EC_DIALOG				db			; dialog pointer (16)
-
+	EC_DISABLE_HDMA_CH			db			; HDMA channel(s) no. # (8)
+	EC_DMA_ROM2CGRAM			db			; CGRAM target address (8), ROM source address (16), ROM source bank (8), size (16)
+	EC_DMA_ROM2VRAM				db			; VRAM target address (16), ROM source address (16), ROM source bank (8), size (16)
+	EC_ENABLE_HDMA_CH			db			; HDMA channel(s) no. # (8)
 	EC_GSS_LOAD_TRACK			db			; track no. # (16)
 	EC_GSS_TRACK_FADEIN			db			; speed (16), target volume (16)
 	EC_GSS_TRACK_FADEOUT			db			; speed (16), target volume (16)
-	EC_GSS_TRACK_PLAY			db
-	EC_GSS_TRACK_STOP			db
-
-	EC_INIT_ALPHAINTRO			db
-	EC_INIT_GAMEINTRO			db
-
+	EC_GSS_TRACK_PLAY			db			; none
+	EC_GSS_TRACK_STOP			db			; none
+	EC_INIT_GAMEINTRO			db			; none
+	EC_JSL					db			; address (16) / go to some subroutine
+	EC_JSR					db			; address (24) / go to some subroutine
 	EC_LOAD_AREA				db			; no. # of area (16)
 	EC_LOAD_PARTY_FORMATION			db			; no. # of party formation
-
+	EC_MONITOR_INPUT_JOY1			db			; joypad data (16), position in event script to jump to (16)
+;	EC_MONITOR_INPUT_JOY2			db			; joypad data (16), position in event script to jump to (16)
 	EC_MOVE_ALLY				db			; ally no. #, direction(s), speed
 	EC_MOVE_HERO				db			; target screen position (16), speed (8) // caveat: position difference has to be divisible by speed value
 	EC_MOVE_NPC				db			; NPC no. #, direction(s), speed
 	EC_MOVE_OBJ				db			; obj. no. #, direction(s), speed
-
 	EC_MSU_LOAD_TRACK			db			; track no. # (16)
 	EC_MSU_TRACK_FADEIN			db			; speed
 	EC_MSU_TRACK_FADEOUT			db			; speed
-	EC_MSU_TRACK_PLAY			db			; 000000rpvvvvvvvv [r = Repeat flag, p = Play flag, v = volume]
-	EC_MSU_TRACK_STOP			db
-
+	EC_MSU_TRACK_PLAY			db			; 000000rpvvvvvvvv [r = Repeat flag, p = Play flag, v = volume] (16)
+	EC_MSU_TRACK_STOP			db			; none
 	EC_SCR_EFFECT				db			; effect no. #
 	EC_SCR_EFFECT_TRANSITION		db			; transition effect no. #, speed
 	EC_SCR_SCROLL				db			; BG(s), direction(s), speed
-
+	EC_SET_REGISTER				db			; register (16), value (8) 
 	EC_SIMULATE_INPUT_JOY1			db			; joypad data (16)
 	EC_SIMULATE_INPUT_JOY2			db			; joypad data (16)
-	EC_TOGGLE_AUTO_MODE			db			; switch auto-mode on/off
+	EC_TOGGLE_AUTO_MODE			db			; none / switch auto-mode on/off
 	EC_WAIT_JOY1				db			; joypad data (16)
 	EC_WAIT_JOY2				db			; joypad data (16)
 	EC_WAIT_FRAMES				db			; no. of frames (16)
@@ -680,7 +681,10 @@
 	DP_EffectSpeed		dw
 	DP_EventCodeAddress	dsb 2
 	DP_EventCodeBank	db
-	DP_EventCodePointer	dw
+	DP_EventCodeJump	dw					; holds event script code pointer to jump to
+	DP_EventCodePointer	dw					; holds current event script code pointer
+	DP_EventControl		db					; rrrrrrrm [m = monitor joypad 1, r = reserved]
+	DP_EventMonitorJoy1	dw					; joypad bits to be monitored by event handler
 	DP_EventWaitFrames	dw
 	DP_GameMode		db					; arrrrrrr [a = auto-mode, r = reserved]
 	DP_GameTimeSeconds	db					; 1 game time second = 1 frame (??)
@@ -719,6 +723,7 @@
 	DP_NextTrack		dw					; holds no. of music track to load
 	DP_NextEvent		dw					; holds no. of event to load
 	DP_PlayerIdleCounter	dw					; holds frame count since last button press
+	DP_RegisterBuffer	dw					; holds register to be written to next by event handler
 	DP_RingMenuAngle	dw
 	DP_RingMenuAngleOffset	dw
 	DP_RingMenuRadius	db
@@ -754,7 +759,7 @@
 	DP_VWF_Loop		db
 	DP_WorldMapBG1VScroll	dw
 	DP_WorldMapBG1HScroll	dw
-.ENDE									; 175 of 256 bytes used
+.ENDE									; 181 of 256 bytes used
 
 
 

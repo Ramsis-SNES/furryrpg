@@ -201,7 +201,7 @@ STR_SoftwareBuild:
 	.DB "Build #"
 
 STR_SoftwareBuildNo:
-	.DB "00286"
+	.DB "00287"
 	.DB 0
 
 STR_SoftwareBuildTimestamp:
@@ -428,6 +428,8 @@ SRC_SoundEnginesPal:
 
 GFX_SoundEnginesPic:
 .INCBIN "gfx/sound-engines-256.pic"
+
+GFX_SoundEnginesPic_END:
 
 .ENDS
 
