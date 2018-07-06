@@ -23,6 +23,9 @@ LoadAreaData:
 
 	DisableIRQs
 
+	jsl	music_stop						; stop music in case it's playing
+
+	stz	MSU_CONTROL						; stop MSU1 track in case it's playing
 	stz	DP_HDMA_Channels					; disable HDMA
 	stz	REG_HDMAEN
 	ldx	#(ARRAY_BG3TileMap & $FFFF)				; clear BG3 text
@@ -425,6 +428,19 @@ __AreaBG2TileMapDone:
 
 
 
+; -------------------------- pre-load GSS music track
+	lda	DP_NextTrack+1
+	cmp	#$FF							; DP_NextTrack = $FFFF --> don't load any music
+	bne	+
+	lda	DP_NextTrack
+	cmp	#$FF
+	beq	__AreaGSSLoadTrackDone
++	jsl	LoadTrackGSS
+
+__AreaGSSLoadTrackDone:
+
+
+
 ; -------------------------- misc. settings
 	stz	DP_HUD_DispCounter					; reset HUD status
 	stz	DP_HUD_DispCounter+1
@@ -575,11 +591,12 @@ ShowArea:
 	bne	+
 	lda	DP_NextTrack
 	cmp	#$FF
-	beq	__AreaGSSTrackDone
-+	jsl	PlayTrack
+	beq	__AreaGSSPlayTrackDone
++	jsl	PlayTrackGSS
 
-__AreaGSSTrackDone:
-	lda	DP_MSU1_Present
+__AreaGSSPlayTrackDone:
+	lda	DP_GameConfig
+	and	#%00000001						; check for "MSU1 present" flag
 	beq	__AreaMSU1TrackDone
 
 	Accu16
@@ -592,7 +609,7 @@ __AreaGSSTrackDone:
 	and	#%0000000001000000
 	bne	-
 
-	lda	#%0000001111111111					; set play, repeat flags, max. volume (16-bit write)
+	lda	#%0000001111111111					; set play, repeat flags, max. volume (16-bit write to MSU_CONTROL, too)
 	sta	MSU_VOLUME
 
 +	Accu8
@@ -999,7 +1016,8 @@ __MainAreaLoopSkipDpadABXY:
 .IFNDEF NOMUSIC
 	jsl	music_stop						; stop music
 
-	lda	DP_MSU1_Present
+	lda	DP_GameConfig
+	and	#%00000001						; check for "MSU1 present" flag
 	beq	+
 	stz	MSU_CONTROL						; stop ambient soundtrack
 +

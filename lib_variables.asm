@@ -784,6 +784,7 @@
 	DP_EventControl		db					; rrrrrrrm [m = monitor joypad 1, r = reserved]
 	DP_EventMonitorJoy1	dw					; joypad bits to be monitored by event handler
 	DP_EventWaitFrames	dw
+	DP_GameConfig		db					; rrrrrrrm [m = MSU1 present, r = reserved]
 	DP_GameMode		db					; arrrrrrr [a = auto-mode, r = reserved]
 	DP_GameTimeSeconds	db					; 1 game time second = 1 frame (??)
 	DP_GameTimeMinutes	db
@@ -812,7 +813,6 @@
 	DP_Mode7_ScrollOffsetX	dw
 	DP_Mode7_ScrollOffsetY	dw
 	DP_MSU1_NextTrack	dw
-	DP_MSU1_Present		db
 	DP_Multi5_Reg0lo	db
 	DP_Multi5_Reg0hi	db
 	DP_Multi5_Reg1lo	db

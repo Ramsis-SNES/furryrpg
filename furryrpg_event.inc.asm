@@ -560,7 +560,7 @@ Process_EC_MOVE_OBJ:
 .ACCU 16
 
 Process_EC_MSU_LOAD_TRACK:
-	lda	DP_MSU1_Present
+	lda	DP_GameConfig
 	and	#$0001
 	beq	+
 	lda	[DP_EventCodeAddress], y
@@ -606,7 +606,7 @@ Process_EC_MSU_TRACK_FADEOUT:
 .ACCU 16
 
 Process_EC_MSU_TRACK_PLAY:
-	lda	DP_MSU1_Present
+	lda	DP_GameConfig
 	and	#$0001
 	beq	+
 	ldy	DP_EventCodePointer
@@ -627,7 +627,7 @@ Process_EC_MSU_TRACK_STOP:
 
 	Accu8
 
-	lda	DP_MSU1_Present
+	lda	DP_GameConfig
 	and	#$01
 	beq	+
 	stz	MSU_CONTROL

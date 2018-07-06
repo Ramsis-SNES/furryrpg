@@ -205,7 +205,8 @@ InGameMenu:
 .IFNDEF NOMUSIC
 	jsl	music_stop						; stop music // REMOVEME when done with menu
 
-	lda	DP_MSU1_Present
+	lda	DP_GameConfig
+	and	#%00000001						; check for "MSU1 present" flag
 	beq	+
 	stz	MSU_CONTROL						; stop MSU1 track
 	stz	MSU_VOLUME
