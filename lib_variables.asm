@@ -407,6 +407,7 @@
 
 .DEFINE PARAM_TextBox		$02C0					; tilemap entry for start of whole text box area
 .DEFINE PARAM_TextBoxAnimSpd	4					; scrolling speed for text box animation (must be a divisor of 48)
+.DEFINE PARAM_TextBoxColMath1st	57					; start of first line in a text box selection
 ;.DEFINE PARAM_TextBoxInside	$02E0					; tilemap entry for inside of text box
 .DEFINE PARAM_TextBoxLine1	$02E7					; tilemap entry for start of line 1 in text box
 .DEFINE PARAM_TextBoxLine2	$0307					; tilemap entry for start of line 2 in text box
@@ -836,7 +837,7 @@
 	DP_TextASCIIChar	dw					; holds current ASCII character no.
 	DP_TextBoxBG		db					; bnnnnnnn [b = change text box background, n = no. of color table (0-127)
 	DP_TextBoxCharPortrait	db					; pnnnnnnn [p = change character portrait, n = no. of portrait (0-127)
-	DP_TextBoxSelection	db					; rrrr4321 [1-4 = text box contains selection on line no. 1-4, r = reserved], also holds selection made by player
+	DP_TextBoxSelection	db					; dcba4321 [1-4 = text box contains selection on line no. 1-4, a-d = selection made by player (1-4)
 	DP_TextBoxSelMax	db					; for HDMA selection bar
 	DP_TextBoxSelMin	db					; ditto
 	DP_TextBoxStatus	db					; cmfrrrot [c = clear text box, f = freeze text box until player presses A, m = there is more text to process, o = text box is open, r = reserved, t = VWF buffer full, transfer to VRAM]

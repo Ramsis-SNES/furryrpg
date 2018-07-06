@@ -153,10 +153,10 @@ SRC_HDMA_ColMathMode7:
 
 
 SRC_HDMA_ColMathDialogSel:
-	.DB 127								; for 127 + 57 = 184 scanlines,
+	.DB 127								; for 127 + PARAM_TextBoxColMath1st (at least 57) = 184 (or more) scanlines,
 	.DB $E0, $E0							; apply black (i.e., don't affect display)
 
-	.DB 57								; patch this in WRAM
+	.DB PARAM_TextBoxColMath1st					; patch this one in WRAM
 	.DB $E0, $E0
 
 	.DB 1								; for 8 scanlines (= line height), apply color

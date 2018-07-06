@@ -421,7 +421,7 @@ TextBoxHandleSelection:
 
 +	lda	#24							; else, selection starts on line 4, even though that doesn't make much sense :p
 ++	clc
-	adc	#57
+	adc	#PARAM_TextBoxColMath1st
 	sta	ARRAY_HDMA_ColorMath+3
 	sta	DP_TextBoxSelMin
 	stz	DP_TextBoxSelMax
@@ -490,6 +490,34 @@ __TBHSLoopDpadDownDone:
 
 
 
+; -------------------------- check for A button = make selection
+	lda	DP_Joy1New
+	bpl	__TBHSLoopAButtonDone
+	lda	ARRAY_HDMA_ColorMath+3					; determine selection made by checking position of selection bar
+	cmp	#PARAM_TextBoxColMath1st
+	bne	+
+	lda	#%00010000						; line 1 = 4th bit (a)
+	bra	++
++	cmp	#PARAM_TextBoxColMath1st+8
+	bne	+
+	lda	#%00100000						; line 2 = 5th bit (b)
+	bra	++
++	cmp	#PARAM_TextBoxColMath1st+16
+	bne	+
+	lda	#%01000000						; line 3 = 6th bit (c)
+	bra	++
++	cmp	#PARAM_TextBoxColMath1st+24
+	beq	+
+	stz	DP_TextBoxSelection					; invalid value, clear all selection bits
+	bra	__TBHSDone
++	lda	#%10000000						; line 4 = 7th bit (d)
+++	sta	DP_TextBoxSelection					; bits 0-3 cleared
+	bra	__TBHSDone
+
+__TBHSLoopAButtonDone:
+
+
+
 ; -------------------------- check for B button = leave selection
 	lda	DP_Joy1New+1
 	bpl	__TBHSLoop
@@ -499,9 +527,9 @@ __TBHSLoopDpadDownDone:
 	lda	DP_Joy1New+1						; wait for player to release button so the text box won't instantly close
 	bmi	-
 
+	stz	DP_TextBoxSelection					; clear all selection bits
+
 __TBHSDone:
-	lda	#%00001111						; clear selection bits // FIXME, write selection made by player to this variable instead
-	trb	DP_TextBoxSelection
 	lda	#%00001000						; disable HDMA channel 3 (color math) // FIXME for CM on playfield!!
 	trb	DP_HDMA_Channels
 	rts
