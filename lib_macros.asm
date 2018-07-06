@@ -67,6 +67,17 @@ __ReturnAdress\@:
 
 
 
+; Macro sev by ManuLöwe
+;
+; Usage: sev
+; Effect: Set the overflow flag (just because we can).
+
+.MACRO sev
+	sep	#$40							; set overflow flag
+.ENDM
+
+
+
 ; -------------------------- frequently-used "code snippet" macros
 .ACCU 8
 
