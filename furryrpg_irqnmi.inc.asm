@@ -363,6 +363,124 @@ Vblank_DebugMenu:
 
 
 
+Vblank_Error:
+	AccuIndex16
+
+	pha								; push 16 bit registers onto stack
+	phx
+	phy
+
+	Accu8
+
+
+
+; -------------------------- refresh BG3 (low tilemap bytes)
+	stz	REG_VMAIN						; increment VRAM address by 1 after writing to $2118
+	ldx	#ADDR_VRAM_BG3_TileMap1					; set VRAM address to BG3 tile map
+	stx	REG_VMADDL
+
+	DMA_CH0 $00, $7E, ARRAY_BG3TileMap, $18, 1024
+
+
+
+; -------------------------- refresh BG3 (high tilemap bytes)
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
+	ldx	#ADDR_VRAM_BG3_TileMap1					; set VRAM address to BG3 tile map
+	stx	REG_VMADDL
+
+	DMA_CH0 $00, $7E, ARRAY_BG3TileMapHi, $19, 1024
+
+
+
+; -------------------------- misc. tasks
+	jsr	GetInput
+
+	stz	REG_BG3HOFS						; reset BG3 horizontal scroll
+	stz	REG_BG3HOFS
+	lda	#$FF							; set BG3 vertical scroll = -1
+	sta	REG_BG3VOFS
+	stz	REG_BG3VOFS
+
+	stz	REG_HDMAEN						; disable HDMA
+	lda	REG_RDNMI						; acknowledge NMI
+
+	AccuIndex16
+
+	ply								; pull original 16 bit registers back
+	plx
+	pla
+	rti
+
+
+
+Vblank_Intro:
+	AccuIndex16
+
+	pha								; push 16 bit registers onto stack
+	phx
+	phy
+
+	Accu8
+
+
+
+; -------------------------- refresh sprites
+;	stz	REG_OAMADDL						; reset OAM address
+;	stz	REG_OAMADDH
+
+;	DMA_CH0 $00, $7E, ARRAY_SpriteBuf1, $04, 544
+
+
+
+; -------------------------- update registers
+	jsl	RAM_Code.UpdatePPURegs
+
+
+
+; -------------------------- misc. tasks
+	jsr	GetInput
+
+	lda	DP_HDMA_Channels					; initiate HDMA transfers
+	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
+	sta	REG_HDMAEN
+	lda	REG_RDNMI						; acknowledge NMI
+
+	AccuIndex16
+
+	ply								; pull original 16 bit registers back
+	plx
+	pla
+	rti
+
+
+
+Vblank_Minimal:
+	AccuIndex16
+
+	pha								; push 16 bit registers onto stack
+	phx
+	phy
+
+	Accu8
+
+	jsl	RAM_Code.UpdatePPURegs
+	jsr	GetInput
+
+	lda	DP_HDMA_Channels					; initiate HDMA transfers
+	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
+	sta	REG_HDMAEN
+	lda	REG_RDNMI						; acknowledge NMI
+
+	AccuIndex16
+
+	ply								; pull original 16 bit registers back
+	plx
+	pla
+	rti
+
+
+
 Vblank_Mode7:
 	AccuIndex16
 
@@ -531,93 +649,6 @@ Vblank_WorldMap:
 	xba
 	lda	#$BF
 	mvn	$00, $7E
-
-
-
-; -------------------------- misc. tasks
-	jsr	GetInput
-
-	lda	DP_HDMA_Channels					; initiate HDMA transfers
-	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
-	sta	REG_HDMAEN
-	lda	REG_RDNMI						; acknowledge NMI
-
-	AccuIndex16
-
-	ply								; pull original 16 bit registers back
-	plx
-	pla
-	rti
-
-
-
-Vblank_Error:
-	AccuIndex16
-
-	pha								; push 16 bit registers onto stack
-	phx
-	phy
-
-	Accu8
-
-
-
-; -------------------------- refresh BG3 (low tilemap bytes)
-	stz	REG_VMAIN						; increment VRAM address by 1 after writing to $2118
-	ldx	#ADDR_VRAM_BG3_TileMap1					; set VRAM address to BG3 tile map
-	stx	REG_VMADDL
-
-	DMA_CH0 $00, $7E, ARRAY_BG3TileMap, $18, 1024
-
-
-
-; -------------------------- refresh BG3 (high tilemap bytes)
-	lda	#$80							; increment VRAM address by 1 after writing to $2119
-	sta	REG_VMAIN
-	ldx	#ADDR_VRAM_BG3_TileMap1					; set VRAM address to BG3 tile map
-	stx	REG_VMADDL
-
-	DMA_CH0 $00, $7E, ARRAY_BG3TileMapHi, $19, 1024
-
-
-
-; -------------------------- misc. tasks
-	jsr	GetInput
-
-	stz	REG_BG3HOFS						; reset BG3 horizontal scroll
-	stz	REG_BG3HOFS
-	lda	#$FF							; set BG3 vertical scroll = -1
-	sta	REG_BG3VOFS
-	stz	REG_BG3VOFS
-
-	stz	REG_HDMAEN						; disable HDMA
-	lda	REG_RDNMI						; acknowledge NMI
-
-	AccuIndex16
-
-	ply								; pull original 16 bit registers back
-	plx
-	pla
-	rti
-
-
-
-Vblank_Intro:
-	AccuIndex16
-
-	pha								; push 16 bit registers onto stack
-	phx
-	phy
-
-	Accu8
-
-
-
-; -------------------------- refresh sprites
-;	stz	REG_OAMADDL						; reset OAM address
-;	stz	REG_OAMADDH
-
-;	DMA_CH0 $00, $7E, ARRAY_SpriteBuf1, $04, 544
 
 
 
