@@ -394,6 +394,8 @@
 .DEFINE PARAM_CollMarginRight	3
 .DEFINE PARAM_CollMarginTop	1					; the top margin value differs from the other two in that it acts as a protection against getting trapped when moving along upper edges horizontally
 
+.DEFINE PARAM_DebugMenu1stLine	78					; Y position of cursor sprite on first debug menu line
+
 .DEFINE PARAM_HUD_Xpos		24					; X position (in px) of HUD text box start
 .DEFINE PARAM_HUD_Ypos		239
 .DEFINE PARAM_Mode7SkyLines	72					; number of scanlines for sky above Mode 7 landscape

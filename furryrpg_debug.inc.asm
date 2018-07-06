@@ -181,15 +181,12 @@ DebugMenuLoop:
 	and	#%00001000
 	beq	++
 	lda	ARRAY_SpriteBuf1.Text+1					; Y coord of cursor
-	cmp	#78
-	beq	+
 	sec
 	sbc	#8
-	sta	ARRAY_SpriteBuf1.Text+1
-	bra	++
-
-+	lda	#126
-	sta	ARRAY_SpriteBuf1.Text+1
+	cmp	#PARAM_DebugMenu1stLine
+	bcs	+
+	lda	#PARAM_DebugMenu1stLine + 7 * 8				; underflow, put cursor on last line // no. of last menu item (7) * line height (8)
++	sta	ARRAY_SpriteBuf1.Text+1
 
 ++
 
@@ -200,15 +197,12 @@ DebugMenuLoop:
 	and	#%00000100
 	beq	++
 	lda	ARRAY_SpriteBuf1.Text+1
-	cmp	#126
-	beq	+
 	clc
 	adc	#8
-	sta	ARRAY_SpriteBuf1.Text+1
-	bra	++
-
-+	lda	#78
-	sta	ARRAY_SpriteBuf1.Text+1
+	cmp	#PARAM_DebugMenu1stLine + 8 * 8				; no. of menu items (8) * line height (8)
+	bcc	+
+	lda	#PARAM_DebugMenu1stLine					; overflow, put cursor on first line
++	sta	ARRAY_SpriteBuf1.Text+1
 
 ++
 
@@ -219,7 +213,7 @@ DebugMenuLoop:
 	and	#%00000010
 	beq	++
 	lda	ARRAY_SpriteBuf1.Text+1					; only do anything if cursor is on area loader ...
-	cmp	#86
+	cmp	#PARAM_DebugMenu1stLine + 8
 	bne	+
 
 	Accu16
@@ -231,7 +225,7 @@ DebugMenuLoop:
 	bra	++
 
 +	lda	ARRAY_SpriteBuf1.Text+1					; ... or on music test
-	cmp	#126
+	cmp	#PARAM_DebugMenu1stLine + 7 * 8
 	bne	++
 	lda	DP_NextTrack						; go to previous track
 	dec	a
@@ -248,7 +242,7 @@ DebugMenuLoop:
 	and	#%00000001
 	beq	++
 	lda	ARRAY_SpriteBuf1.Text+1					; only do anything if cursor is on area loader ...
-	cmp	#86
+	cmp	#PARAM_DebugMenu1stLine + 8
 	bne	+
 
 	Accu16
@@ -260,7 +254,7 @@ DebugMenuLoop:
 	bra	++
 
 +	lda	ARRAY_SpriteBuf1.Text+1					; ... or on music test
-	cmp	#126
+	cmp	#PARAM_DebugMenu1stLine + 7 * 8
 	bne	++
 	lda	DP_NextTrack						; go to next track
 	inc	a
