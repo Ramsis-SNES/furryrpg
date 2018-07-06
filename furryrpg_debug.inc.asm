@@ -127,10 +127,11 @@ DebugMenu:
 	PrintString	12, 3, "In-game menu"
 	PrintString	13, 3, "Mode1 world map"
 	PrintString	14, 3, "Mode7 world map"
-	PrintString	15, 3, "Show sprite gallery"
-	PrintString	16, 3, "SNESGSS music test:"
-;	PrintString	17, 3, ""
+	PrintString	15, 3, "Random number (0-255):"
+	PrintString	16, 3, "Show sprite gallery"
+	PrintString	17, 3, "SNESGSS music test:"
 ;	PrintString	18, 3, ""
+;	PrintString	19, 3, ""
 
 	stz	DP_SpriteTextMon					; reset sprite text filling level so it won't draw more than 1 cursor ;-)
 
@@ -167,7 +168,8 @@ DebugMenuLoop:
 
 	SetTextPos	11, 16
 	PrintHexNum	DP_AreaCurrent
-	PrintString	17, 4, "%s"					; print current SNESGSS song title
+
+	PrintString	18, 4, "%s"					; print current SNESGSS song title
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMA_Updates
@@ -274,51 +276,65 @@ DebugMenuLoop:
 ; -------------------------- check for A button
 	lda	DP_Joy1New
 	and	#%10000000
-	beq	++
-	lda	ARRAY_SpriteBuf1.Text+1
-	cmp	#78
-	bne	+
-	jsl	ShowAlphaIntro
+	beq	+
 
+	Accu16
+
+	lda	ARRAY_SpriteBuf1.Text+1					; read Y position of cursor
+	and	#$00FF							; remove garbage in high byte
+	sec								; subtract Y value of first debug menu line
+	sbc	#PARAM_DebugMenu1stLine
+	lsr	a							; line height is 8 px, so we just need to divide by 4 to get the correct index
+	lsr	a
+	tax
+
+	Accu8
+
+	jmp	(DebugMenuEntryTable, x)
+
+DebugMenuEntryTable:
+	.DW GoToShowAlphaIntro
+	.DW LoadArea
+	.DW InGameMenu
+	.DW LoadWorldMap
+	.DW TestMode7
+	.DW PrintRandomNumber
+	.DW ShowSpriteGallery
+	.DW GoToPlayTrack						; sound test works even .IFDEF NOMUSIC ;-)
+
+GoToShowAlphaIntro:
+	jsl	ShowAlphaIntro
 	jmp	DebugMenu
 
-+	cmp	#86
-	bne	+
-	jmp	LoadArea
+GoToPlayTrack:
+	jsl	PlayTrackNow
+	bra	+
 
-+	cmp	#94
-	bne	+
-	jmp	InGameMenu
+PrintRandomNumber:
+	jsr	CreateRandomNr
 
-+	cmp	#102
-	bne	+
-	jmp	LoadWorldMap
+	SetTextPos	15, 26
+	PrintNum	ARRAY_RandomNumbers
 
-+	cmp	#110
-	bne	+
-	jmp	TestMode7
+	stz	DP_TextStringPtr
+	stz	DP_TextStringPtr+1
+	lda	#:DebugMenu
+	sta	DP_TextStringBank
+	jsr	PrintF
 
-+	cmp	#118
-	bne	+
-	jmp	ShowSpriteGallery
+	.DB "  ", 0							; clear trailing ciphers from old values
 +
 
-.IFNDEF NOMUSIC
-	jsl	PlayTrack						; else, cursor must be on music test
-.ENDIF
-
-++
 
 
+; -------------------------- check for Y button
+;	bit	DP_Joy1New+1
+;	bvc	+
+;	jsr	ShowCPUload
 
-; -------------------------- check for Start
-;	lda	DP_Joy1Press+1
-;	and	#%00010000
-;	beq	+
-;	jsr	CreateRandomNr
 ;+
 
-;	jsr	ShowCPUload
+
 
 ; -------------------------- check for Start
 	lda	DP_Joy1Press+1
@@ -479,10 +495,10 @@ ShowCPUload:
 	SetTextPos	2, 2
 	PrintNum	DP_CurrentScanline
 
-	stz	DP_StringBank
-	stz	DP_StringBank+1
+	stz	DP_TextStringPtr
+	stz	DP_TextStringPtr+1
 	lda	#:ShowCPUload
-	sta	DP_StringBank+2
+	sta	DP_TextStringBank
 	jsr	PrintF
 
 	.DB "  ", 0							; clear trailing numbers from old values

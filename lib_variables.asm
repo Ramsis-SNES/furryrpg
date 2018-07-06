@@ -962,29 +962,27 @@
 ; ******************* Variables in lower 8K of WRAM ********************
 
 .ENUM $0200
-	ARRAY_SpriteBuf1		INSTANCEOF oam_low		; 512 bytes
-	ARRAY_SpriteBuf2		INSTANCEOF oam_high		; 32 bytes
-
-	ARRAY_VWF_TileBuffer		dsb 32
-	ARRAY_VWF_TileBuffer2		dsb 32
-
 	ARRAY_HDMA_ColorMath		dsb 96
-
 	ARRAY_HDMA_M7A			dsb 448
 	ARRAY_HDMA_M7B			dsb 448
 	ARRAY_HDMA_M7C			dsb 448
 	ARRAY_HDMA_M7D			dsb 448
-
 	ARRAY_HDMA_FX_1Byte		dsb 224
 	ARRAY_HDMA_FX_2Bytes		dsb 448
 	ARRAY_HDMA_BG_Scroll		dsb 16
 	ARRAY_HDMA_WorMapVertScr	dsb 448
-
+	ARRAY_RandomNumbers		dsb 130				; for random numbers
+	ARRAY_SpriteBuf1		INSTANCEOF oam_low		; 512 bytes
+	ARRAY_SpriteBuf2		INSTANCEOF oam_high		; 32 bytes
+	ARRAY_Temp			dsb 32				; for misc. temp bytes
 	ARRAY_TempString		dsb 32				; for temp strings
+	ARRAY_VWF_TileBuffer		dsb 32
+	ARRAY_VWF_TileBuffer2		dsb 32
 
 	VAR_Char1TargetScrPosYX		dw				; high byte = Y position, low byte = X position (in px)
+	VAR_GameDataItemQty		db
 	VAR_TextBox_TSTM		dw				; shadow copies of subscreen (high) & mainscreen (low) designation registers ($212C/212D) for text box area
-.ENDE									; $D9C bytes + $200 = $F9C bytes used (stack resides at $1FFF)
+.ENDE									; $FF7 bytes + $200 = $11F7 bytes used (initial stack pointer is set to $1FFF)
 
 
 
