@@ -147,9 +147,6 @@ DebugMenu:
 DebugMenuLoop:
 	wai
 
--	lda	REG_HVBJOY						; are we still on Vblank?
-	bmi	-							; yes, wait
-
 	Accu16
 
 	lda	DP_NextTrack

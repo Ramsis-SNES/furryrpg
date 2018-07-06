@@ -276,7 +276,6 @@ __SkipRefreshes3:
 
 	lda	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
-;	stz	REG_SETINI
 
 
 

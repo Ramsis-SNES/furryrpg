@@ -740,18 +740,6 @@
 	DP_IRQJump		dsb 4					; holds a 4-byte instruction like jml SomeIRQRoutine (IRQ vector points here)
 
 	temp			dsb 8
-
-;	scrollYCounter		db
-;	scrollYUp		db
-;	scrollYDown		db
-;	cursorX			db
-;	cursorY			db
-;	cursorYCounter		db
-;	cursorYUp		db
-;	cursorYDown		db
-;	speedCounter		db
-;	speedScroll		db
-
 	sneslib_ptr		dsb 4
 ;	sneslib_temp		dsb 2
 ;	sneslib_rand1		dsb 2

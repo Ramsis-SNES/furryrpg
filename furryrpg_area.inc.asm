@@ -779,7 +779,6 @@ __MainAreaLoopDpadNewDone:
 	stz	DP_PlayerIdleCounter+1
 	lda	#TBL_Char1_up
 	sta	DP_Char1SpriteStatus
-
 	jsr	MakeCollIndexUp
 
 	ldy	DP_AreaMetaMapIndex
@@ -830,7 +829,6 @@ __MainAreaLoopDpadUpDone:
 	stz	DP_PlayerIdleCounter+1
 	lda	#TBL_Char1_down
 	sta	DP_Char1SpriteStatus
-
 	jsr	MakeCollIndexDown
 
 	ldy	DP_AreaMetaMapIndex
@@ -877,7 +875,6 @@ __MainAreaLoopDpadDownDone:
 	stz	DP_PlayerIdleCounter+1
 	lda	#TBL_Char1_left
 	sta	DP_Char1SpriteStatus
-
 	jsr	MakeCollIndexLeft
 
 	ldy	DP_AreaMetaMapIndex
@@ -923,7 +920,6 @@ __MainAreaLoopDpadLeftDone:
 	stz	DP_PlayerIdleCounter+1
 	lda	#TBL_Char1_right
 	sta	DP_Char1SpriteStatus
-
 	jsr	MakeCollIndexRight
 
 	ldy	DP_AreaMetaMapIndex
