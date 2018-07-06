@@ -107,69 +107,69 @@ TestMode7:
 
 ; -------------------------- HDMA channel 3: color math
 	lda	#$02							; transfer mode (2 bytes --> $2132)
-	sta	$4330
+	sta	REG_DMAP3
 	lda	#$32							; PPU register $2132 (color math subscreen backdrop color)
-	sta	$4331
+	sta	REG_BBAD3
 	ldx	#ARRAY_HDMA_ColorMath
-	stx	$4332
+	stx	REG_A1T3L
 	lda	#$7E							; table in WRAM expected
-	sta	$4334
+	sta	REG_A1B3
 
 
 
 ; -------------------------- HDMA channel 4: Mode 7 A
 	lda	#$42							; transfer mode (2 bytes --> $211B), indirect table mode
-	sta	$4340
+	sta	REG_DMAP4
 	lda	#$1B							; PPU reg. $211B
-	sta	$4341
+	sta	REG_BBAD4
 	ldx	#SRC_HDMA_M7A
-	stx	$4342
+	stx	REG_A1T4L
 	lda	#:SRC_HDMA_M7A
-	sta	$4344
+	sta	REG_A1B4
 	lda	#$7E							; indirect HDMA CPU bus data address bank
-	sta	$4347
+	sta	REG_DASB4
 
 
 
 ; -------------------------- HDMA channel 5: Mode 7 B
 	lda	#$42							; transfer mode (2 bytes --> $211C), indirect table mode
-	sta	$4350
+	sta	REG_DMAP5
 	lda	#$1C							; PPU reg. $211C
-	sta	$4351
+	sta	REG_BBAD5
 	ldx	#SRC_HDMA_M7B
-	stx	$4352
+	stx	REG_A1T5L
 	lda	#:SRC_HDMA_M7B
-	sta	$4354
+	sta	REG_A1B5
 	lda	#$7E							; indirect HDMA CPU bus data address bank
-	sta	$4357
+	sta	REG_DASB5
 
 
 
 ; -------------------------- HDMA channel 6: Mode 7 C
 	lda	#$42							; transfer mode (2 bytes --> $211D), indirect table mode
-	sta	$4360
+	sta	REG_DMAP6
 	lda	#$1D							; PPU reg. $211D
-	sta	$4361
+	sta	REG_BBAD6
 	ldx	#SRC_HDMA_M7C
-	stx	$4362
+	stx	REG_A1T6L
 	lda	#:SRC_HDMA_M7C
-	sta	$4364
+	sta	REG_A1B6
 	lda	#$7E							; indirect HDMA CPU bus data address bank
-	sta	$4367
+	sta	REG_DASB6
 
 
 
 ; -------------------------- HDMA channel 7: Mode 7 D
 	lda	#$42							; transfer mode (2 bytes --> $211E), indirect table mode
-	sta	$4370
+	sta	REG_DMAP7
 	lda	#$1E							; PPU reg. $211E
-	sta	$4371
+	sta	REG_BBAD7
 	ldx	#SRC_HDMA_M7D
-	stx	$4372
+	stx	REG_A1T7L
 	lda	#:SRC_HDMA_M7D
-	sta	$4374
+	sta	REG_A1B7
 	lda	#$7E							; indirect HDMA CPU bus data address bank
-	sta	$4377
+	sta	REG_DASB7
 
 
 

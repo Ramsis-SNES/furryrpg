@@ -153,14 +153,14 @@ EffectHSplitIn:								; FIXME (occasional gfx glitches on real SNES)
 
 ; -------------------------- channel 1: main effects channel
 	lda	#$40							; transfer mode (1 byte --> $2100), indirect table mode
-	sta	$4310
-	stz	$4311							; PPU reg. $2100
+	sta	REG_DMAP1
+	stz	REG_BBAD1							; PPU reg. $2100
 	ldx	#SRC_HDMA_FX_1Byte
-	stx	$4312
+	stx	REG_A1T1L
 	lda	#:SRC_HDMA_FX_1Byte
-	sta	$4314
+	sta	REG_A1B1
 	lda	#$7E							; indirect HDMA CPU bus data address bank
-	sta	$4317
+	sta	REG_DASB1
 
 
 
@@ -244,14 +244,14 @@ EffectHSplitOut:							; split out from the middle of the screen // FIXME (occas
 
 ; -------------------------- channel 1: main effects channel
 	lda	#$40							; transfer mode (1 byte --> $2100), indirect table mode
-	sta	$4310
-	stz	$4311							; PPU reg. $2100
+	sta	REG_DMAP1
+	stz	REG_BBAD1							; PPU reg. $2100
 	ldx	#SRC_HDMA_FX_1Byte
-	stx	$4312
+	stx	REG_A1T1L
 	lda	#:SRC_HDMA_FX_1Byte
-	sta	$4314
+	sta	REG_A1B1
 	lda	#$7E							; indirect HDMA CPU bus data address bank
-	sta	$4317
+	sta	REG_DASB1
 
 
 
@@ -337,14 +337,14 @@ EffectHSplitOut2:							; split out towards the middle of the screen // FIXME (o
 
 ; -------------------------- channel 1: main effects channel
 	lda	#$40							; transfer mode (1 byte --> $2100), indirect table mode
-	sta	$4310
-	stz	$4311							; PPU reg. $2100
+	sta	REG_DMAP1
+	stz	REG_BBAD1							; PPU reg. $2100
 	ldx	#SRC_HDMA_FX_1Byte
-	stx	$4312
+	stx	REG_A1T1L
 	lda	#:SRC_HDMA_FX_1Byte
-	sta	$4314
+	sta	REG_A1B1
 	lda	#$7E							; indirect HDMA CPU bus data address bank
-	sta	$4317
+	sta	REG_DASB1
 
 
 
@@ -432,15 +432,15 @@ EffectShutterIn:
 
 ; -------------------------- channel 1: main effects channel
 	lda	#$41							; transfer mode (1 byte --> $2126, $2127), indirect table mode
-	sta	$4310
+	sta	REG_DMAP1
 	lda	#$26							; PPU reg. $2126
-	sta	$4311
+	sta	REG_BBAD1
 	ldx	#SRC_HDMA_FX_2Bytes
-	stx	$4312
+	stx	REG_A1T1L
 	lda	#:SRC_HDMA_FX_2Bytes
-	sta	$4314
+	sta	REG_A1B1
 	lda	#$7E							; indirect HDMA CPU bus data address bank
-	sta	$4317
+	sta	REG_DASB1
 
 
 
@@ -559,15 +559,15 @@ EffectShutterOut:
 
 ; -------------------------- channel 1: main effects channel
 	lda	#$41							; transfer mode (1 byte --> $2126, $2127), indirect table mode
-	sta	$4310
+	sta	REG_DMAP1
 	lda	#$26							; PPU reg. $2126
-	sta	$4311
+	sta	REG_BBAD1
 	ldx	#SRC_HDMA_FX_2Bytes
-	stx	$4312
+	stx	REG_A1T1L
 	lda	#:SRC_HDMA_FX_2Bytes
-	sta	$4314
+	sta	REG_A1B1
 	lda	#$7E							; indirect HDMA CPU bus data address bank
-	sta	$4317
+	sta	REG_DASB1
 
 
 

@@ -22,115 +22,113 @@ Boot:
 
 ; -------------------------- initialize registers
 	lda	#$8F							; INIDISP (Display Control 1): forced blank
-	sta	$00
-	stz	$01							; regs $2101-$210C: set sprite, character, tile sizes to lowest, and set addresses to $0000
-	stz	$02
-	stz	$03
+	sta	<REG_INIDISP
+	stz	<REG_OBSEL						; regs $2101-$210C: set sprite, character, tile sizes to lowest, and set addresses to $0000
+	stz	<REG_OAMADDL
+	stz	<REG_OAMADDH
 
 	; reg $2104: OAM data write
 
-	stz	$05
-	stz	$06
-	stz	$07
-	stz	$08
-	stz	$09
-	stz	$0A
-	stz	$0B
-	stz	$0C
-	stz	$0D							; regs $210D-$2114: set all BG scroll values to $0000
-	stz	$0D
-	stz	$0E
-	stz	$0E
-	stz	$0F
-	stz	$0F
-	stz	$10
-	stz	$10
-	stz	$11
-	stz	$11
-	stz	$12
-	stz	$12
-	stz	$13
-	stz	$13
-	stz	$14
-	stz	$14
+	stz	<REG_BGMODE
+	stz	<REG_MOSAIC
+	stz	<REG_BG1SC
+	stz	<REG_BG2SC
+	stz	<REG_BG3SC
+	stz	<REG_BG4SC
+	stz	<REG_BG12NBA
+	stz	<REG_BG34NBA
+	stz	<REG_BG1HOFS						; regs $210D-$2114: set all BG scroll values to $0000
+	stz	<REG_BG1HOFS
+	stz	<REG_BG1VOFS
+	stz	<REG_BG1VOFS
+	stz	<REG_BG2HOFS
+	stz	<REG_BG2HOFS
+	stz	<REG_BG2VOFS
+	stz	<REG_BG2VOFS
+	stz	<REG_BG3HOFS
+	stz	<REG_BG3HOFS
+	stz	<REG_BG3VOFS
+	stz	<REG_BG3VOFS
+	stz	<REG_BG4HOFS
+	stz	<REG_BG4HOFS
+	stz	<REG_BG4VOFS
+	stz	<REG_BG4VOFS
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
-	sta	$15
-	stz	$16							; regs $2116-$2117: VRAM address
-	stz	$17
+	sta	<REG_VMAIN
+	stz	<REG_VMADDL						; regs $2116-$2117: VRAM address
+	stz	<REG_VMADDH
 
 	; regs $2118-2119: VRAM data write
 
-	stz	$1A
-	stz	$1B							; regs $211B-$2120: Mode7 matrix values
+	stz	<REG_M7SEL
+	stz	<REG_M7A						; regs $211B-$2120: Mode7 matrix values
 	lda	#$01
-	sta	$1B
-	stz	$1C
-	stz	$1C
-	stz	$1D
-	stz	$1D
-	stz	$1E
+	sta	<REG_M7A
+	stz	<REG_M7B
+	stz	<REG_M7B
+	stz	<REG_M7C
+	stz	<REG_M7C
+	stz	<REG_M7D
 ;	lda	#$01							; never mind, 8-bit Accu still contains $01
-	sta	$1E
-	stz	$1F
-	stz	$1F
-	stz	$20
-	stz	$20
-	stz	$21
+	sta	<REG_M7D
+	stz	<REG_M7X
+	stz	<REG_M7X
+	stz	<REG_M7Y
+	stz	<REG_M7Y
+	stz	<REG_CGADD
 
 	; reg $2122: CGRAM data write
 
-	stz	$23							; regs $2123-$2133: turn off windows, main screens, sub screens, color addition,
-	stz	$24							; fixed color = $00, no super-impose (external synchronization), no interlace, normal resolution
-	stz	$25
-	stz	$26
-	stz	$27
-	stz	$28
-	stz	$29
-	stz	$2A
-	stz	$2B
-	stz	$2C
-	stz	$2D
-	stz	$2E
-	stz	$2F
+	stz	<REG_W12SEL						; regs $2123-$2133: turn off windows, main screens, sub screens, color addition,
+	stz	<REG_W34SEL						; fixed color = $00, no super-impose (external synchronization), no interlace, normal resolution
+	stz	<REG_WOBJSEL
+	stz	<REG_WH0
+	stz	<REG_WH1
+	stz	<REG_WH2
+	stz	<REG_WH3
+	stz	<REG_WBGLOG
+	stz	<REG_WOBJLOG
+	stz	<REG_TM
+	stz	<REG_TS
+	stz	<REG_TMW
+	stz	<REG_TSW
 	lda	#$30
-	sta	$30
-	stz	$31
+	sta	<REG_CGWSEL
+	stz	<REG_CGADSUB
 	lda	#$E0
-	sta	$32
-	stz	$33
+	sta	<REG_COLDATA
+	stz	<REG_SETINI
 
 	; regs $2134-$213F: PPU read registers, no initialization needed
 	; regs $2140-$2143: APU communication regs, no initialization required
 	; reg $2180: WRAM data read/write
 
-	stz	$81							; regs $2181-$2183: WRAM address
-	stz	$82
-	stz	$83
+	stz	<REG_WMADDL						; regs $2181-$2183: WRAM address
+	stz	<REG_WMADDM
+	stz	<REG_WMADDH
 
 	; regs $4016-$4017: serial JoyPad read registers, no need to initialize
 
 	Accu16
-
 	SetDPag	$4200							; set Direct Page to CPU registers
-
 	Accu8
 
-	stz	$00							; reg $4200: disable timers, NMI, and auto-joyread
+	stz	<REG_NMITIMEN						; reg $4200: disable timers, NMI, and auto-joyread
 	lda	#$FF
-	sta	$01							; reg $4201: programmable I/O write port, initalize to allow reading at in-port
-	stz	$02							; regs $4202-$4203: multiplication registers
-	stz	$03
-	stz	$04							; regs $4204-$4206: division registers
-	stz	$05
-	stz	$06
-	stz	$07							; regs $4207-$4208: Horizontal-IRQ timer setting
-	stz	$08
-	stz	$09							; regs $4209-$420A: Vertical-IRQ timer setting
-	stz	$0A
-	stz	$0B							; reg $420B: turn off all general DMA channels
-	stz	$0C							; reg $420C: turn off all HDMA channels
+	sta	<REG_WRIO						; reg $4201: programmable I/O write port, initalize to allow reading at in-port
+	stz	<REG_WRMPYA						; regs $4202-$4203: multiplication registers
+	stz	<REG_WRMPYB
+	stz	<REG_WRDIVL						; regs $4204-$4206: division registers
+	stz	<REG_WRDIVH
+	stz	<REG_WRDIVB
+	stz	<REG_HTIMEL						; regs $4207-$4208: Horizontal-IRQ timer setting
+	stz	<REG_HTIMEH
+	stz	<REG_VTIMEL						; regs $4209-$420A: Vertical-IRQ timer setting
+	stz	<REG_VTIMEH
+	stz	<REG_MDMAEN						; reg $420B: turn off all general DMA channels
+	stz	<REG_HDMAEN						; reg $420C: turn off all HDMA channels
 	lda	#$01							; reg $420D: set Memory-2 area to 3.58 MHz (FastROM)
-	sta	$0D
+	sta	<REG_MEMSEL
 
 	; regs $420E-$420F: unused registers
 	; reg $4210: RDNMI (R)
@@ -148,10 +146,10 @@ Boot:
 	Accu16
 	SetDPag	$0000							; set Direct Page = $0000
 	Accu8
-	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 0		; VRAM (length $0000 = 65536 bytes)
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $22, 512		; CGRAM (512 bytes)
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $04, 512+32		; OAM (low+high OAM tables = 512+32 bytes)
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 0		; WRAM (length $0000 = 65536 bytes = lower 64K of WRAM)
+	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, <REG_VMDATAL, 0	; VRAM (length $0000 = 65536 bytes)
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, <REG_CGDATA, 512	; CGRAM (512 bytes)
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, <REG_OAMDATA, 544	; OAM (low+high OAM tables = 512+32 bytes)
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, <REG_WMDATA, 0	; WRAM (length $0000 = 65536 bytes = lower 64K of WRAM)
 
 ;	lda	#$01							; never mind, Accu still contains this value
 	sta	REG_MDMAEN						; WRAM address in $2181-$2183 has reached $10000 now, re-initiate DMA transfer for the upper 64K of WRAM
@@ -161,15 +159,15 @@ Boot:
 
 ; -------------------------- HDMA channel 2: main backdrop color
 	lda	#%01000011						; transfer mode (4 bytes --> $2121, $2121, $2122, $2122), indirect table mode
-	sta	$4320
-	lda	#$21							; PPU register $2121 (color index)
-	sta	$4321
+	sta	REG_DMAP2
+	lda	#<REG_CGADD						; PPU register $2121 (color index)
+	sta	REG_BBAD2
 	ldx	#SRC_HDMA_ColorGradient
-	stx	$4322
+	stx	REG_A1T2L
 	lda	#:SRC_HDMA_ColorGradient
-	sta	$4324
+	sta	REG_A1B2
 	lda	#$7E							; indirect HDMA CPU bus data address bank
-	sta	$4327
+	sta	REG_DASB2
 
 
 
@@ -193,7 +191,7 @@ Boot:
 	ldx	#ADDR_VRAM_BG3_Tiles					; set VRAM address for BG3 tiles
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_Font8x8, GFX_Font8x8, $18, 2048
+	DMA_CH0 $01, :GFX_Font8x8, GFX_Font8x8, <REG_VMDATAL, 2048
 
 	ldx	#0
 	lda	#$20							; priority bit
@@ -204,7 +202,7 @@ Boot:
 
 	stz	REG_CGADD						; reset CGRAM address
 
-	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
+	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, <REG_CGDATA, 32
 
 
 
@@ -253,14 +251,14 @@ ShowAlphaIntro:
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 8192
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, <REG_WMDATA, 8192
 
 	lda	#$80							; increment VRAM address by one word after writing to $2119
 	sta	REG_VMAIN
 	ldx	#$0000
 	stx	REG_VMADDL
 
-	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 0		; clear VRAM
+	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, <REG_VMDATAL, 0	; clear VRAM
 
 	lda	#5							; set BG Mode 5
 	sta	REG_BGMODE
@@ -292,9 +290,9 @@ ShowAlphaIntro:
 	stz	REG_CGADD						; reset CGRAM address
 	stz	REG_CGDATA						; $3C00 = blue background color
 	lda	#$3C
-	sta	REG_CGDATA
+	sta	REG_CGDATA						; next DMA skips background color (2 bytes)
 
-	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text+2, $22, 30	; skip background color (2 bytes)
+	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text+2, <REG_CGDATA, 30
 
 	lda	#$80							; increment VRAM address by one word after writing to $2119
 	sta	REG_VMAIN
@@ -357,12 +355,12 @@ ShowAlphaIntro:
 	ldx	#$5000							; set VRAM address for BG1 tile map
 	stx	REG_VMADDL
 
-	DMA_CH0 $02, $7E, (ARRAY_BG1TileMap1 & $FFFF), $18, 1024	; update tile maps
+	DMA_CH0 $02, $7E, (ARRAY_BG1TileMap1 & $FFFF), <REG_VMDATAL, 1024
 
 	ldx	#$5400							; set VRAM address for BG2 tile map
 	stx	REG_VMADDL
 
-	DMA_CH0 $02, $7E, (ARRAY_BG2TileMap1 & $FFFF), $18, 1024
+	DMA_CH0 $02, $7E, (ARRAY_BG2TileMap1 & $FFFF), <REG_VMDATAL, 1024
 
 	SetNMI	TBL_NMI_Intro
 
@@ -398,7 +396,7 @@ ShowAlphaIntro:
 	ldx	#$0000
 	stx	REG_VMADDL
 
-	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 0		; clear VRAM
+	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, <REG_VMDATAL, 0	; clear VRAM
 
 	lda	REG_RDNMI						; clear NMI flag
 	lda	#$81							; reenable interrupts
@@ -651,14 +649,14 @@ SRC_CodeDoDMA:
 
 	SetDBR	$00							; set Data Bank = $00 for easy register access
 
-	ldx	#$FFFF							; DMA mode (low byte), B bus register (high byte) // RAM_Code + 14
- 	stx	$4300
-	ldx	#$FFFF							; data offset (16 bit) // RAM_Code + 20
-	stx	$4302
-	lda	#$FF							; data bank (8 bit) // RAM_Code + 26
-	sta	$4304
-	ldx	#$FFFF							; data length (16 bit) // RAM_Code + 31
-	stx	$4305
+	ldx	#$FFFF							; DMA mode (low byte), B bus register (high byte) // RAM_Code.DoDMA + 14
+ 	stx	REG_DMAP0
+	ldx	#$FFFF							; data offset (16 bit) // RAM_Code.DoDMA + 20
+	stx	REG_A1T0L
+	lda	#$FF							; data bank (8 bit) // RAM_Code.DoDMA + 26
+	sta	REG_A1B0
+	ldx	#$FFFF							; data length (16 bit) // RAM_Code.DoDMA + 31
+	stx	REG_DAS0L
 	lda	#%00000001						; initiate DMA transfer (channel 0)
 	sta	REG_MDMAEN
 

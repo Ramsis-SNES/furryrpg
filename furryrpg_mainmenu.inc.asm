@@ -125,7 +125,7 @@ MainMenuLoop:
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, <REG_WMDATA, 1024
 
 	jmp	AreaEnter
 
@@ -226,7 +226,7 @@ InGameMenu:
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 10240
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, <REG_WMDATA, 10240
 
 	jsr	SpriteInit						; FIXME, sprite #0 isn't empty on menu sprites
 
@@ -238,7 +238,7 @@ InGameMenu:
 	stz	REG_VMADDL						; reset VRAM address
 	stz	REG_VMADDH
 
-	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 0		; clear VRAM
+	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, <REG_VMDATAL, 0	; clear VRAM
 
 
 
@@ -246,23 +246,23 @@ InGameMenu:
 	ldx	#ADDR_VRAM_BG1_Tiles					; set VRAM address for BG1 tiles
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_Logo, GFX_Logo, $18, 8000
+	DMA_CH0 $01, :GFX_Logo, GFX_Logo, <REG_VMDATAL, 8000
 
 	ldx	#(ARRAY_BG1TileMap1 & $FFFF)
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
-	DMA_CH0 $00, :SRC_Tilemap_Logo, SRC_Tilemap_Logo, $80, 1024
+	DMA_CH0 $00, :SRC_Tilemap_Logo, SRC_Tilemap_Logo, <REG_WMDATA, 1024
 
 	ldx	#ADDR_VRAM_SpriteTiles					; set VRAM address for sprite tiles
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_Sprites_InGameMenu, GFX_Sprites_InGameMenu, $18, 8192
+	DMA_CH0 $01, :GFX_Sprites_InGameMenu, GFX_Sprites_InGameMenu, <REG_VMDATAL, 8192
 
 	ldx	#ADDR_VRAM_BG3_Tiles
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_Font8x8, GFX_Font8x8, $18, 2048
+	DMA_CH0 $01, :GFX_Font8x8, GFX_Font8x8, <REG_VMDATAL, 2048
 
 	ldx	#0
 	lda	#$20							; priority bit
@@ -276,12 +276,12 @@ InGameMenu:
 ; -------------------------- palettes --> CGRAM
 	stz	REG_CGADD						; reset CGRAM address
 
-	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 40
+	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, <REG_CGDATA, 40
 
 	lda	#ADDR_CGRAM_Area					; set CGRAM address for BG1 tiles palette
 	sta	REG_CGADD
 
-	DMA_CH0 $02, :SRC_Palette_Logo, SRC_Palette_Logo, $22, 32
+	DMA_CH0 $02, :SRC_Palette_Logo, SRC_Palette_Logo, <REG_CGDATA, 32
 
 	lda	#ADDR_CGRAM_Area					; palette no. = CGRAM address RSH 2
 	lsr	a
@@ -295,7 +295,7 @@ InGameMenu:
 	lda	#$80							; set CGRAM address to #256 (word address) for sprites
 	sta	REG_CGADD
 
-	DMA_CH0 $02, :SRC_Palette_Sprites_InGameMenu, SRC_Palette_Sprites_InGameMenu, $22, 32
+	DMA_CH0 $02, :SRC_Palette_Sprites_InGameMenu, SRC_Palette_Sprites_InGameMenu, <REG_CGDATA, 32
 
 	lda	#%00011111						; make sure BG1/2/3 lo/hi tilemaps get updated once NMI is reenabled
 	tsb	DP_DMA_Updates
@@ -314,13 +314,13 @@ InGameMenu:
 
 ; -------------------------- HDMA channel 3: color math
 	lda	#$02							; transfer mode (2 bytes --> $2132)
-	sta	$4330
+	sta	REG_DMAP3
 	lda	#$32							; PPU register $2132 (color math subscreen backdrop color)
-	sta	$4331
+	sta	REG_BBAD3
 	ldx	#ARRAY_HDMA_ColorMath
-	stx	$4332
+	stx	REG_A1T3L
 	lda	#$7E							; table in WRAM expected
-	sta	$4334
+	sta	REG_A1B3
 
 
 
@@ -777,7 +777,7 @@ GotoInventory:
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024*9		; clear all tile map buffers (except BG3-hi)
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, <REG_WMDATA, 1024*9	; clear all tile map buffers (except BG3-hi)
 
 	jsr	SpriteInit						; purge OAM
 
@@ -796,12 +796,12 @@ GotoInventory:
 ; -------------------------- palettes --> CGRAM
 	stz	REG_CGADD						; reset CGRAM address
 
-	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
+	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, <REG_CGDATA, 32
 
 ;	lda	#$80							; set CGRAM address to #256 (word address) for sprites
 ;	sta	REG_CGADD
 
-;	DMA_CH0 $02, :SRC_Palette_Sprites_InGameMenu, SRC_Palette_Sprites_InGameMenu, $22, 32
+;	DMA_CH0 $02, :SRC_Palette_Sprites_InGameMenu, SRC_Palette_Sprites_InGameMenu, <REG_CGDATA, 32
 
 
 

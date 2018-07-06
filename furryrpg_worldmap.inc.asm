@@ -30,12 +30,12 @@ LoadWorldMap:
 	ldx	#$0000							; reset VRAM address
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_WorldMap, GFX_WorldMap, $18, 29696
+	DMA_CH0 $01, :GFX_WorldMap, GFX_WorldMap, <REG_VMDATAL, 29696
 
 	ldx	#$4000							; set VRAM address of new BG1 tilemap
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :SRC_Tilemap_WorldMap, SRC_Tilemap_WorldMap, $18, $2000
+	DMA_CH0 $01, :SRC_Tilemap_WorldMap, SRC_Tilemap_WorldMap, <REG_VMDATAL, $2000
 
 
 
@@ -43,12 +43,12 @@ LoadWorldMap:
 ;	ldx	#$5000							; set VRAM address $5000
 ;	stx	REG_VMADDL
 
-;	DMA_CH0 $01, :GFX_Mode7_Sky, GFX_Mode7_Sky, $18, 4368		; only load upper half of sky gfx
+;	DMA_CH0 $01, :GFX_Mode7_Sky, GFX_Mode7_Sky, <REG_VMDATAL, 4368	; only load upper half of sky gfx
 
 ;	ldx	#$3C00							; set VRAM address $3C00
 ;	stx	REG_VMADDL
 
-;	DMA_CH0 $01, :SRC_TileMap_Mode7_Sky, SRC_TileMap_Mode7_Sky, $18, _sizeof_SRC_TileMap_Mode7_Sky
+;	DMA_CH0 $01, :SRC_TileMap_Mode7_Sky, SRC_TileMap_Mode7_Sky, <REG_VMDATAL, _sizeof_SRC_TileMap_Mode7_Sky
 
 
 
@@ -56,24 +56,24 @@ LoadWorldMap:
 	ldx	#ADDR_VRAM_SpriteTiles					; set VRAM address $5000
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_Sprites_SkyBlur, GFX_Sprites_SkyBlur, $18, 576
+	DMA_CH0 $01, :GFX_Sprites_SkyBlur, GFX_Sprites_SkyBlur, <REG_VMDATAL, 576
 
 
 
 ; -------------------------- load palettes
 ;	stz	REG_CGADD						; reset CGRAM address
 
-;	DMA_CH0 $02, :SRC_Palette_Mode7_Sky, SRC_Palette_Mode7_Sky, $22, 32
+;	DMA_CH0 $02, :SRC_Palette_Mode7_Sky, SRC_Palette_Mode7_Sky, <REG_CGDATA, 32
 
 	lda	#$10
 	sta	REG_CGADD
 
-	DMA_CH0 $02, :SRC_Palette_WorldMap, SRC_Palette_WorldMap+32, $22, 224
+	DMA_CH0 $02, :SRC_Palette_WorldMap, SRC_Palette_WorldMap+32, <REG_CGDATA, 224
 
 	lda	#$C0
 	sta	REG_CGADD
 
-	DMA_CH0 $02, :SRC_Palette_Sprites_SkyBlur, SRC_Palette_Sprites_SkyBlur, $22, 32
+	DMA_CH0 $02, :SRC_Palette_Sprites_SkyBlur, SRC_Palette_Sprites_SkyBlur, <REG_CGDATA, 32
 
 
 
@@ -101,53 +101,53 @@ LoadWorldMap:
 
 ; -------------------------- HDMA channel 3: sky color gradient
 	lda	#%01000011						; transfer mode (4 bytes --> $2121, $2121, $2122, $2122), indirect table mode
-	sta	$4330
-	lda	#$21							; PPU register $2121 (color index)
-	sta	$4331
+	sta	REG_DMAP3
+	lda	#<REG_CGADD							; PPU register $2121 (color index)
+	sta	REG_BBAD3
 	ldx	#SRC_HDMA_ColorGradient
-	stx	$4332
+	stx	REG_A1T3L
 	lda	#:SRC_HDMA_ColorGradient
-	sta	$4334
+	sta	REG_A1B3
 	lda	#$7E							; indirect HDMA CPU bus data address bank
-	sta	$4337
+	sta	REG_DASB3
 
 
 
 ; -------------------------- HDMA channel 4: BG1 vertical scroll register
 	lda	#$42							; transfer mode (2 bytes --> $210E), indirect addressing mode
-	sta	$4340
-	lda	#$0E							; PPU reg. $210E
-	sta	$4341
+	sta	REG_DMAP4
+	lda	#<REG_BG1VOFS						; PPU reg. $210E
+	sta	REG_BBAD4
 	ldx	#SRC_HDMA_WorMapVertScr
-	stx	$4342
+	stx	REG_A1T4L
 	lda	#:SRC_HDMA_WorMapVertScr
-	sta	$4344
+	sta	REG_A1B4
 	lda	#$7E							; indirect HDMA CPU bus data address bank
-	sta	$4347
+	sta	REG_DASB4
 
 
 
 ; -------------------------- HDMA channel 5: BG layer control
 	lda	#$01							; transfer mode (1 byte --> $212C, 1 byte --> $212D)
-	sta	$4350
-	lda	#$2C							; PPU reg. $212C
-	sta	$4351
+	sta	REG_DMAP5
+	lda	#<REG_TM						; PPU reg. $212C
+	sta	REG_BBAD5
 	ldx	#SRC_HDMA_WorMapLayerControl
-	stx	$4352
+	stx	REG_A1T5L
 	lda	#:SRC_HDMA_WorMapLayerControl
-	sta	$4354
+	sta	REG_A1B5
 
 
 
 ; -------------------------- HDMA channel 6: window mask
 	lda	#$01							; transfer mode (1 byte --> $2126, 1 byte --> $2127)
-	sta	$4360
-	lda	#$26							; PPU reg. $2126
-	sta	$4361
+	sta	REG_DMAP6
+	lda	#<REG_WH0						; PPU reg. $2126
+	sta	REG_BBAD6
 	ldx	#SRC_HDMA_WorMapCurvature
-	stx	$4362
+	stx	REG_A1T6L
 	lda	#:SRC_HDMA_WorMapCurvature
-	sta	$4364
+	sta	REG_A1B6
 
 
 

@@ -859,7 +859,7 @@ LoadTextBoxBG:
 +	lda	REG_RDMPYL
 	clc
 	adc	#(SRC_HDMA_TextBoxGradientBlue & $FFFF)
-	sta	$4302							; data offset
+	sta	REG_A1T0L							; data offset
 	lda	DP_TextBoxVIRQ						; calculate WRAM address based on DP_TextBoxVIRQ (e.g. 176 * 4 - 704 = 0)
 	asl	a
 	asl	a
@@ -870,12 +870,12 @@ LoadTextBoxBG:
 	Accu8
 
 	stz	REG_WMADDH						; array is in bank $7E
- 	stz	$4300							; DMA mode
+ 	stz	REG_DMAP0						; DMA mode
 	lda	#$80							; B bus register ($2180)
-	sta	$4301
+	sta	REG_BBAD0
 	lda	#:SRC_HDMA_TextBoxGradientBlue				; data bank
-	sta	$4304
-	stx	$4305							; data length
+	sta	REG_A1B0
+	stx	REG_DAS0L						; data length
 	lda	#%00000001						; initiate DMA transfer (channel 0)
 	sta	REG_MDMAEN
 
@@ -1203,7 +1203,7 @@ MakeMode5FontBG1:							; Expects VRAM address set to BG1 tile base
 __BuildFontBG1:
 	ldy	#0
 -	lda.l	GFX_Font8x8, x						; first, copy font tile (font tiles sit on the "left")
-	sta	$2118
+	sta	REG_VMDATAL
 	inx
 	inx
 	iny
@@ -1211,7 +1211,7 @@ __BuildFontBG1:
 	bne	-
 
 	ldy	#0
--	stz	$2118							; next, add 3 blank tiles (1 blank tile because Mode 5 forces 16×8 tiles
+-	stz	REG_VMDATAL						; next, add 3 blank tiles (1 blank tile because Mode 5 forces 16×8 tiles
 	iny								; and 2 blank tiles because BG1 is 4bpp)
 	cpy	#24							; 16 bytes (8 double bytes) per tile
 	bne	-
@@ -1232,14 +1232,14 @@ MakeMode5FontBG2:							; Expects VRAM address set to BG2 tile base
 
 __BuildFontBG2:
 	ldy	#0
--	stz	$2118							; first, add 1 blank tile (Mode 5 forces 16×8 tiles,
+-	stz	REG_VMDATAL						; first, add 1 blank tile (Mode 5 forces 16×8 tiles,
 	iny								; no more blank tiles because BG2 is 2bpp)
 	cpy	#8							; 16 bytes (8 double bytes) per tile
 	bne	-
 
 	ldy	#0
 -	lda.l	GFX_Font8x8, x						; next, copy 8×8 font tile (font tiles sit on the "right")
-	sta	$2118
+	sta	REG_VMDATAL
 	inx
 	inx
 	iny

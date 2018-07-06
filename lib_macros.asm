@@ -94,15 +94,15 @@ __ReturnAdress\@:
 
 .MACRO DMA_CH0
 	lda	#\1							; DMA mode (8 bit)
- 	sta	$4300
+ 	sta	REG_DMAP0
 	lda	#\4							; B bus register (8 bit)
-	sta	$4301
+	sta	REG_BBAD0
 	ldx	#(\3 & $FFFF)						; get low word of data offset (16 bit)
-	stx	$4302
+	stx	REG_A1T0L
 	lda	#\2							; data bank (8 bit)
-	sta	$4304
+	sta	REG_A1B0
 	ldx	#\5							; data length (16 bit)
-	stx	$4305
+	stx	REG_DAS0L
 	lda	#%00000001						; initiate DMA transfer (channel 0)
 	sta	REG_MDMAEN
 .ENDM

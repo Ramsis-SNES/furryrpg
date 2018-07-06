@@ -28,7 +28,7 @@ LoadAreaData:
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, <REG_WMDATA, 1024
 
 	jsr	ClearHUD
 
@@ -347,7 +347,7 @@ __AreaBG2TileMapDone:
 	lda	#$90							; set CGRAM address to #288 (word address) for sprites
 	sta	REG_CGADD
 
-	DMA_CH0 $02, :SRC_Palette_Spritesheet_Char1, SRC_Palette_Spritesheet_Char1, $22, 32
+	DMA_CH0 $02, :SRC_Palette_Spritesheet_Char1, SRC_Palette_Spritesheet_Char1, <REG_CGDATA, 32
 
 
 
@@ -368,37 +368,37 @@ __AreaBG2TileMapDone:
 
 ; -------------------------- HDMA channel 3: color math
 	lda	#$02							; transfer mode (2 bytes --> $2132)
-	sta	$4330
+	sta	REG_DMAP3
 	lda	#$32							; PPU register $2132 (color math subscreen backdrop color)
-	sta	$4331
+	sta	REG_BBAD3
 	ldx	#ARRAY_HDMA_ColorMath
-	stx	$4332
+	stx	REG_A1T3L
 	lda	#$7E							; table in WRAM expected
-	sta	$4334
+	sta	REG_A1B3
 
 
 
 ; -------------------------- HDMA channel 4: BG1 scroll registers
 	lda	#$07							; transfer mode (2 bytes --> $210D, 2 bytes --> $210E)
-	sta	$4340
+	sta	REG_DMAP4
 	lda	#$0D							; PPU reg. $210D
-	sta	$4341
+	sta	REG_BBAD4
 	ldx	#ARRAY_HDMA_BG_Scroll
-	stx	$4342
+	stx	REG_A1T4L
 	lda	#$7E
-	sta	$4344
+	sta	REG_A1B4
 
 
 
 ; -------------------------- HDMA channel 5: BG2 scroll registers
 	lda	#$07							; transfer mode (2 bytes --> $210F, 2 bytes --> $2110)
-	sta	$4350
+	sta	REG_DMAP5
 	lda	#$0F							; PPU reg. $210F
-	sta	$4351
+	sta	REG_BBAD5
 	ldx	#ARRAY_HDMA_BG_Scroll
-	stx	$4352
+	stx	REG_A1T5L
 	lda	#$7E
-	sta	$4354
+	sta	REG_A1B5
 
 
 
