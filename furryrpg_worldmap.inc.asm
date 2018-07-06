@@ -14,7 +14,7 @@
 
 LoadWorldMap:
 	lda	#$80							; enter forced blank
-	sta	REG_INIDISP
+	sta	VAR_ShadowINIDISP
 	stz	DP_HDMA_Channels					; disable HDMA
 	jsr	SpriteInit
 
@@ -309,42 +309,44 @@ LoadWorldMap:
 
 ; -------------------------- set transparency for blurring sprites
 	lda	#$E0							; subscreen backdrop color
-	sta	REG_COLDATA
-	sta	REG_COLDATA
+	sta	VAR_ShadowCOLDATA
+	sta	VAR_ShadowCOLDATA
 	lda	#%0000010						; enable BGs/OBJs on subscreen
-	sta	REG_CGWSEL
+	sta	VAR_ShadowCGWSEL
 	lda	#%00000111						; enable color math on BG1, add subscreen
-	sta	REG_CGADSUB
+	sta	VAR_ShadowCGADSUB
 
 
 
-; -------------------------- set up NMI/misc. parameters
+; -------------------------- set up NMI and shadow PPU regs /misc. parameters
 	SetNMI	TBL_NMI_WorldMap
 
 	lda	#%01111000						; enable HDMA ch. 3 (sky color gradient), 4 (BG1 scroll), 5 (layer control) & 6 (window mask)
 	tsb	DP_HDMA_Channels
 	lda	#%00010001						; set BG Mode 1, tile size = 16×16 (layer control is done via HDMA)
-	sta	REG_BGMODE
+	sta	VAR_ShadowBGMODE
 	lda	#$43							; set BG1's Tile Map VRAM offset to $4000 (word address)
-	sta	REG_BG1SC						; and the Tile Map size to 64×64 tiles
+	sta	VAR_ShadowBG1SC						; and the Tile Map size to 64×64 tiles
 	lda	#$3C							; BG2 tile map VRAM offset: $3C00, Tile Map size: 32×32 tiles
-	sta	REG_BG2SC
+	sta	VAR_ShadowBG2SC
 	lda	#$50							; BG2 character data VRAM offset: $5000 (ignore BG1 bits)
-	sta	REG_BG12NBA
+	sta	VAR_ShadowBG12NBA
 	lda	#$FF							; scroll BG2 down by 1 px
 	sta	REG_BG2VOFS
 	stz	REG_BG2VOFS
 	lda	#%00110011						; set up window mask for planet curvature
-	sta	REG_W12SEL
+	sta	VAR_ShadowW12SEL
 	lda	#%00000011
-	sta	REG_TMW
-	sta	REG_TSW
+	sta	VAR_ShadowTMW
+	sta	VAR_ShadowTSW
 	lda	REG_RDNMI						; clear NMI flag
 	lda	#$81							; enable NMI & auto-joypad read
 	sta	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
 	cli
 	jsr	CalculateVerticalScrollDisplacement
+
+	wai								; wait for register/sprite buffer update before split-in effect
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
 	jsr	EffectHSplitIn
@@ -456,19 +458,14 @@ __WorldMapLoopDpadRightDone:
 	jsr	EffectHSplitOut2
 
 	stz	DP_HDMA_Channels					; disable HDMA
-	wai
 	lda	#%00110000						; set color math disable bits (4-5)
-	sta	REG_CGWSEL
-	stz	REG_CGADSUB
-;	ldx	#(ARRAY_BG3TileMap & $FFFF)				; clear text
-;	stx	REG_WMADDL
-;	stz	REG_WMADDH
-
-;	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024
-
-	stz	REG_W12SEL						; clear window regs
-	stz	REG_TMW
-	stz	REG_TSW
+	sta	VAR_ShadowCGWSEL
+	lda	#$00
+	sta	VAR_ShadowCGADSUB
+	sta	VAR_ShadowW12SEL					; clear window regs
+	sta	VAR_ShadowTMW
+	sta	VAR_ShadowTSW
+	wai
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	REG_VMAIN
 	stz	REG_VMADDL						; reset VRAM address

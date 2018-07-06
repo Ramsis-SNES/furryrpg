@@ -14,7 +14,7 @@
 
 TestMode7:
 	lda	#$80							; enter forced blank
-	sta	REG_INIDISP
+	sta	VAR_ShadowINIDISP
 	stz	DP_HDMA_Channels					; disable HDMA
 	wai								; wait for OAM to refresh
 
@@ -207,11 +207,6 @@ TestMode7:
 ;	DMA_CH0 $00, :GFX_Mappic, GFX_Mappic, $19, GFX_Mappic_END - GFX_Mappic
 ; ##############################################################
 
-
-	lda	#$58							; BG2 tile map VRAM offset: $5800, Tile Map size: 32×32 tiles
-	sta	REG_BG2SC
-	lda	#$40							; BG2 character data VRAM offset: $4000 (ignore BG1 bits)
-	sta	REG_BG12NBA
 	ldx	#$4000							; set VRAM address $4000
 	stx	REG_VMADDL
 
@@ -225,10 +220,6 @@ TestMode7:
 	stz	REG_CGADD						; reset CGRAM address
 
 	DMA_CH0 $02, :SRC_Palette_Mode7_Sky, SRC_Palette_Mode7_Sky, $22, 32
-
-	lda	#$FF							; scroll BG2 down by 1 px
-	sta	REG_BG2VOFS
-	stz	REG_BG2VOFS
 
 
 
@@ -305,21 +296,19 @@ TestMode7:
 
 
 ; -------------------------- set transparency for clouds
-	Accu16
-
-	lda	#%0001000000000001					; turn on BG1 on mainscreen only, sprites on subscreen
-	sta	REG_TM
-	sta	DP_Shadow_TSTM
+	lda	#%00010000						; turn on BG1 on mainscreen only, sprites on subscreen
+	sta	VAR_ShadowTM
+	sta	VAR_ShadowTS
 
 	Accu8
 
 	lda	#$E0							; subscreen backdrop color
-	sta	REG_COLDATA
-	sta	REG_COLDATA
+	sta	VAR_ShadowCOLDATA
+	sta	VAR_ShadowCOLDATA
 	lda	#%0000010						; enable BGs/OBJs on subscreen
-	sta	REG_CGWSEL
+	sta	VAR_ShadowCGWSEL
 	lda	#%01000001						; enable color math on BG1, add subscreen and div by 2
-	sta	REG_CGADSUB
+	sta	VAR_ShadowCGADSUB
 
 .ASM
 
@@ -334,6 +323,22 @@ TestMode7:
 
 
 
+; -------------------------- set (PPU shadow) registers
+	lda	#$58							; BG2 tile map VRAM offset: $5800, Tile Map size: 32×32 tiles
+	sta	VAR_ShadowBG2SC
+	lda	#$40							; BG2 character data VRAM offset: $4000 (ignore BG1 bits)
+	sta	VAR_ShadowBG12NBA
+	lda	#$01|$08						; set BG Mode 1 for sky, BG3 priority
+	sta	VAR_ShadowBGMODE
+	lda	#%00010010						; turn on BG2 and sprites
+	sta	VAR_ShadowTM						; on the mainscreen
+	sta	VAR_ShadowTS						; and on the subscreen
+	lda	#$FF							; scroll BG2 down by 1 px
+	sta	REG_BG2VOFS
+	stz	REG_BG2VOFS
+
+
+
 ; -------------------------- load horizon blur
 	ldx	#$0000
 -	lda.l	SRC_HDMA_ColMathMode7, x
@@ -343,9 +348,9 @@ TestMode7:
 	bne	-
 
 	lda	#%00000000						; clear color math disable bits (4-5)
-	sta	REG_CGWSEL
+	sta	VAR_ShadowCGWSEL
 	lda	#%00110111						; enable color math on BG1/2/3 + sprites + backdrop
-	sta	REG_CGADSUB
+	sta	VAR_ShadowCGADSUB
 
 
 

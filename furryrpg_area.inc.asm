@@ -17,8 +17,9 @@ LoadArea:
 
 LoadAreaData:
 	lda	#$80							; enter forced blank
-	sta	REG_INIDISP
+	sta	VAR_ShadowINIDISP
 	jsr	SpriteInit						; purge OAM
+	wai
 
 	DisableIRQs
 
@@ -73,7 +74,7 @@ LoadAreaData:
 	sta	VAR_DMAModeBBusReg
 	lda	#ADDR_VRAM_AreaBG1					; set VRAM address
 	sta	REG_VMADDL
-	jsl	RAM_Code
+	jsl	RAM_Code.DoDMA
 
 
 
@@ -103,7 +104,7 @@ LoadAreaData:
 	ldy	#(ARRAY_ScratchSpace & $FFFF)				; set WRAM address to scratch space
 	sty	REG_WMADDL
 	stz	REG_WMADDH
-	jsl	RAM_Code
+	jsl	RAM_Code.DoDMA
 
 
 
@@ -199,7 +200,7 @@ LoadAreaData:
 	ldy	#(ARRAY_ScratchSpace & $FFFF)				; set WRAM address to scratch space
 	sty	REG_WMADDL
 	stz	REG_WMADDH
-	jsl	RAM_Code
+	jsl	RAM_Code.DoDMA
 
 
 
@@ -283,7 +284,7 @@ __AreaBG2TileMapDone:
 
 	lda	#ADDR_CGRAM_Area					; set CGRAM address for BG1 tiles palette
 	sta	REG_CGADD
-	jsl	RAM_Code
+	jsl	RAM_Code.DoDMA
 
 
 
@@ -402,24 +403,25 @@ __AreaBG2TileMapDone:
 
 
 
-; -------------------------- screen registers
+; -------------------------- set PPU shadow registers
+	lda	#$01|$08						; set BG Mode 1 for area, BG3 priority
+	sta	VAR_ShadowBGMODE
 	lda	#%00000011						; 8×8 (small) / 16×16 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
-	sta	REG_OBSEL
-;	lda	DP_AreaProperties					; set tile map size according to area properties // never mind, BG[12]SC are written during Vblank anyway
-;	and	#%00000011						; mask off bits not related to screen size
-;	ora	#$50							; BG1 tile map VRAM offset: $5000
-;	sta	REG_BG1SC
-;	lda	DP_AreaProperties
-;	and	#%00000011
-;	ora	#$58							; BG2 tile map VRAM offset: $5800
-;	sta	REG_BG2SC
-;	lda	DP_AreaProperties
-;	and	#%00000011
+	sta	VAR_ShadowOBSEL
+	lda	DP_AreaProperties					; set tile map size according to area properties
+	and	#%00000011						; mask off bits not related to screen size
+	ora	#$50							; BG1 tile map VRAM offset: $5000
+	sta	VAR_ShadowBG1SC
+	lda	DP_AreaProperties
+	and	#%00000011
+	ora	#$58							; BG2 tile map VRAM offset: $5800
+	sta	VAR_ShadowBG2SC
 	lda	#$48							; BG3 tile map VRAM offset: $4800
-	sta	REG_BG3SC
-	stz	REG_BG12NBA						; BG1/BG2 character data VRAM offset: $0000
+	sta	VAR_ShadowBG3SC
+	lda	#$00							; BG1/BG2 character data VRAM offset: $0000
+	sta	VAR_ShadowBG12NBA
 	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
-	sta	REG_BG34NBA
+	sta	VAR_ShadowBG34NBA
 
 
 
@@ -427,17 +429,9 @@ __AreaBG2TileMapDone:
 	stz	DP_HUD_DispCounter					; reset HUD status
 	stz	DP_HUD_DispCounter+1
 	stz	DP_HUD_Status
-
-	Accu16
-
-;	sta	SpriteBuf1.PlayableChar
-;	clc
-;	adc	#$1000							; Y += 10
-;	sta	SpriteBuf1.PlayableChar+4
-	lda	#%0001011100010111					; turn on BG1/2/3 + sprites
-	sta	DP_Shadow_TSTM						; on mainscreen and subscreen
-
-	Accu8
+	lda	#%00010111						; turn on BG1/2/3 + sprites on mainscreen and subscreen
+	sta	VAR_ShadowTM
+	sta	VAR_ShadowTM
 
 	SetNMI	TBL_NMI_Area
 

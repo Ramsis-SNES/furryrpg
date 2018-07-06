@@ -27,18 +27,20 @@ Event00000:
 	.DB EC_SCR_EFFECT_TRANSITION
 		.DW EffectNoFadeToBlack
 		.DB CMD_EffectSpeed2
-	.DB EC_SET_REGISTER
-		.DW REG_INIDISP						; enter forced blank
+	.DB EC_SET_SHADOW_REGISTER
+		.DW VAR_ShadowINIDISP & $FFFF				; enter forced blank
 		.DB $80
-	.DB EC_SET_REGISTER
-		.DW REG_BGMODE						; set BG Mode 3
+	.DB EC_SET_SHADOW_REGISTER
+		.DW VAR_ShadowBGMODE & $FFFF				; set BG Mode 3
 		.DB $03
-	.DB EC_SET_REGISTER
-		.DW REG_TM						; turn on BG1 only on mainscreen ...
+	.DB EC_SET_SHADOW_REGISTER
+		.DW VAR_ShadowTM & $FFFF				; turn on BG1 only on mainscreen ...
 		.DB %00000001
-	.DB EC_SET_REGISTER
-		.DW REG_TS						; ... and subscreen
+	.DB EC_SET_SHADOW_REGISTER
+		.DW VAR_ShadowTS & $FFFF				; ... and subscreen
 		.DB %00000001
+	.DB EC_WAIT_FRAMES						; wait for reg update
+		.DW 1
 .IFNDEF NOMUSIC
 	.DB EC_GSS_LOAD_TRACK
 		.DW 7							; CHANGEME to intro tune
@@ -69,9 +71,11 @@ Event00000:
 	.DB EC_SCR_EFFECT_TRANSITION
 		.DW EffectNoFadeToBlack
 		.DB CMD_EffectSpeed2
-	.DB EC_SET_REGISTER
-		.DW REG_INIDISP						; enter forced blank
+	.DB EC_SET_SHADOW_REGISTER
+		.DW VAR_ShadowINIDISP & $FFFF				; enter forced blank
 		.DB $80
+	.DB EC_WAIT_FRAMES						; wait for reg update
+		.DW 1
 	.DB EC_DMA_ROM2CGRAM						; CGRAM target address (8), ROM source address (16), ROM source bank (8), size (16)
 		.DB $00
 		.DW SRC_RamsisPresentsPal
@@ -95,9 +99,11 @@ Event00000:
 	.DB EC_SCR_EFFECT_TRANSITION
 		.DW EffectNoFadeToBlack
 		.DB CMD_EffectSpeed2
-	.DB EC_SET_REGISTER
-		.DW REG_INIDISP						; enter forced blank
+	.DB EC_SET_SHADOW_REGISTER
+		.DW VAR_ShadowINIDISP & $FFFF				; enter forced blank
 		.DB $80
+	.DB EC_WAIT_FRAMES						; wait for reg update
+		.DW 1
 	.DB EC_DMA_ROM2CGRAM						; CGRAM target address (8), ROM source address (16), ROM source bank (8), size (16)
 		.DB $00
 		.DW SRC_StartPal
@@ -121,9 +127,11 @@ Event00000:
 	.DB EC_SCR_EFFECT_TRANSITION
 		.DW EffectNoFadeToBlack
 		.DB CMD_EffectSpeed2
-	.DB EC_SET_REGISTER
-		.DW REG_INIDISP						; enter forced blank
+	.DB EC_SET_SHADOW_REGISTER
+		.DW VAR_ShadowINIDISP & $FFFF				; enter forced blank
 		.DB $80
+	.DB EC_WAIT_FRAMES						; wait for reg update
+		.DW 1
 	.DB EC_DMA_ROM2CGRAM						; CGRAM target address (8), ROM source address (16), ROM source bank (8), size (16)
 		.DB $00
 		.DW SRC_SoundEnginesPal

@@ -189,6 +189,7 @@ ProcessEventCode:
 	.DW Process_EC_SCR_EFFECT_TRANSITION
 	.DW Process_EC_SCR_SCROLL
 	.DW Process_EC_SET_REGISTER
+	.DW Process_EC_SET_SHADOW_REGISTER
 	.DW Process_EC_SIMULATE_INPUT_JOY1
 	.DW Process_EC_SIMULATE_INPUT_JOY2
 	.DW Process_EC_TOGGLE_AUTO_MODE
@@ -688,6 +689,24 @@ Process_EC_SET_REGISTER:
 
 	lda	[DP_EventCodeAddress], y				; load 8-bit value
 	sta	(DP_RegisterBuffer)					; write value to desired register // CHECKME, might want to use 24-bit addressing instead to be safe
+	iny
+	sty	DP_EventCodePointer
+	jmp	ProcessEventLoop
+
+.ACCU 16
+
+Process_EC_SET_SHADOW_REGISTER:
+	lda	[DP_EventCodeAddress], y				; load shadow reg address to be written to
+	sta	REG_WMADDL
+	iny
+	iny
+
+	Accu8
+
+	stz	REG_WMADDH						; bank $7E
+
+	lda	[DP_EventCodeAddress], y				; load 8-bit value
+	sta	REG_WMDATA						; write value
 	iny
 	sty	DP_EventCodePointer
 	jmp	ProcessEventLoop

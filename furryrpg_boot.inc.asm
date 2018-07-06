@@ -179,11 +179,11 @@ Boot:
 
 
 ; -------------------------- copy DMA routine to WRAM
-	ldx	#RAM_Code						; set WRAM address to RAM code section
+	ldx	#RAM_Code & $FFFF					; set WRAM address to RAM code section
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
-	DMA_CH0 $00, :SRC_CodeDoDMA, SRC_CodeDoDMA, $80, _sizeof_SRC_CodeDoDMA
+	DMA_CH0 $00, :SRC_RAM_Code, SRC_RAM_Code, <REG_WMDATA, _sizeof_SRC_RAM_Code
 
 
 
@@ -206,23 +206,20 @@ Boot:
 
 
 
-; -------------------------- set screen regs
+; -------------------------- set PPU shadow registers
 	lda	#%00000011						; 8×8 (small) / 16×16 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
-	sta	REG_OBSEL
+	sta	VAR_ShadowOBSEL
 	lda	#$48|$01						; BG3 tile map VRAM offset: $4800, Tile Map size: 64×32 tiles
-	sta	REG_BG3SC
+	sta	VAR_ShadowBG3SC
 	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
-	sta	REG_BG34NBA
+	sta	VAR_ShadowBG34NBA
 	lda	#$01							; set BG mode 1
-	sta	REG_BGMODE
-
-	Accu16
-
-	lda	#%0001010000010100					; turn on BG3 + sprites
-	sta	REG_TM							; on mainscreen and subscreen
-	sta	DP_Shadow_TSTM						; copy to shadow variable
-
-	Accu8
+	sta	VAR_ShadowBGMODE
+	lda	#%00010100						; turn on BG3 + sprites on mainscreen and subscreen
+	sta	REG_TM
+	sta	REG_TS
+	sta	VAR_ShadowTM						; copy to shadow variables
+	sta	VAR_ShadowTS
 
 	SetNMI	TBL_NMI_DebugMenu
 	JoyInit								; initialize joypads and enable NMI
@@ -231,7 +228,7 @@ Boot:
 	cmp	#$01
 	beq	+
 	lda	#$0F							; turn on the screen
-	sta	REG_INIDISP
+	sta	VAR_ShadowINIDISP
 	jsr	VerifyROMIntegrity
 
 +	jml	DebugMenu
@@ -261,13 +258,13 @@ ShowAlphaIntro:
 	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, <REG_VMDATAL, 0	; clear VRAM
 
 	lda	#5							; set BG Mode 5
-	sta	REG_BGMODE
+	sta	VAR_ShadowBGMODE
 	lda	#$50							; set BG1's Tile Map VRAM offset to $5000
-	sta	REG_BG1SC						; and the Tile Map size to 32×32 tiles
+	sta	VAR_ShadowBG1SC						; and the Tile Map size to 32×32 tiles
 	lda	#$54							; set BG2's Tile Map VRAM offset to $5400
-	sta	REG_BG2SC						; and the Tile Map size to 32×32 tiles
+	sta	VAR_ShadowBG2SC						; and the Tile Map size to 32×32 tiles
 	lda	#$20							; set BG1's Character VRAM offset to $0000, BG2 to $2000
-	sta	REG_BG12NBA
+	sta	VAR_ShadowBG12NBA
 	stz	REG_BG1HOFS						; reset BG1 horizontal scroll
 	stz	REG_BG1HOFS
 	stz	REG_BG2HOFS						; reset BG2 horizontal scroll
@@ -278,15 +275,9 @@ ShowAlphaIntro:
 ;	lda	#$FF							; scroll BG2 down by 1 px
 	sta	REG_BG2VOFS
 	stz	REG_BG2VOFS
-
-	Accu16
-
-	lda	#%0000001100000011					; turn on BG1 and 2 only
-	sta	REG_TM							; on mainscreen and subscreen
-	sta	DP_Shadow_TSTM						; copy to shadow variable
-
-	Accu8
-
+	lda	#%00000011						; turn on BG1 and 2 only on mainscreen and subscreen
+	sta	VAR_ShadowTM
+	sta	VAR_ShadowTS
 	stz	REG_CGADD						; reset CGRAM address
 	stz	REG_CGDATA						; $3C00 = blue background color
 	lda	#$3C
@@ -377,7 +368,8 @@ ShowAlphaIntro:
 .ACCU 8
 
 	lda	#$80							; enter forced blank
-	sta	REG_INIDISP
+	sta	VAR_ShadowINIDISP
+	wai
 
 	DisableIRQs
 	SetNMI	TBL_NMI_DebugMenu
@@ -635,7 +627,9 @@ __Init_OAM_hi2:
 
 ; **************************** RAM routines ****************************
 
-SRC_CodeDoDMA:
+SRC_RAM_Code:
+
+;SRC_CodeDoDMA:
 	php								; preserve registers
 	phb
 
@@ -669,7 +663,81 @@ SRC_CodeDoDMA:
 	plp
 	rtl
 
-SRC_CodeDoDMA_END:
+
+
+;SRC_CodeUpdatePPURegs:
+	php								; preserve registers
+	phd
+
+	AccuIndex16
+	SetDPag	$2100							; set Direct Page to PPU registers
+	Accu8
+
+
+
+; -------------------------- update registers
+	lda	#$0F							; + 11
+	sta	<REG_INIDISP
+	lda	#$00							; + 15
+	sta	<REG_OBSEL
+	lda	#$00							; + 19
+	sta	<REG_BGMODE
+	lda	#$00							; + 23
+	sta	<REG_MOSAIC
+	lda	#$00							; + 27
+	sta	<REG_BG1SC
+	lda	#$00							; + 31
+	sta	<REG_BG2SC
+	lda	#$00							; + 35
+	sta	<REG_BG3SC
+	lda	#$00							; + 39
+	sta	<REG_BG4SC
+	lda	#$00							; + 43
+	sta	<REG_BG12NBA
+	lda	#$00							; + 47
+	sta	<REG_BG34NBA
+	lda	#$00							; + 51
+	sta	<REG_W12SEL
+	lda	#$00							; + 55
+	sta	<REG_W34SEL
+	lda	#$00							; + 59
+	sta	<REG_WOBJSEL
+	lda	#$00							; + 63
+	sta	<REG_WH0
+	lda	#$00							; + 67
+	sta	<REG_WH1
+	lda	#$00							; + 71
+	sta	<REG_WH2
+	lda	#$00							; + 75
+	sta	<REG_WH3
+	lda	#$00							; + 79
+	sta	<REG_WBGLOG
+	lda	#$00							; + 83
+	sta	<REG_WOBJLOG
+	lda	#$00							; + 87
+	sta	<REG_TM
+	lda	#$00							; + 91
+	sta	<REG_TS
+	lda	#$00							; + 95
+	sta	<REG_TMW
+	lda	#$00							; + 99
+	sta	<REG_TSW
+	lda	#$30							; + 103
+	sta	<REG_CGWSEL
+	lda	#$00							; + 107
+	sta	<REG_CGADSUB
+	lda	#$E0							; + 111
+	sta	<REG_COLDATA
+	lda	#$00							; + 115
+	sta	<REG_SETINI
+
+	pld								; restore registers
+	plp
+	rtl
+
+
+
+SRC_RAM_Code_END:
 
 
 

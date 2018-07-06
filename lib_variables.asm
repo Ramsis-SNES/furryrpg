@@ -313,7 +313,8 @@
 	EC_SCR_EFFECT				db			; effect no. #
 	EC_SCR_EFFECT_TRANSITION		db			; transition effect no. #, speed
 	EC_SCR_SCROLL				db			; BG(s), direction(s), speed
-	EC_SET_REGISTER				db			; register (16), value (8) 
+	EC_SET_REGISTER				db			; SNES register (16), value (8)
+	EC_SET_SHADOW_REGISTER			db			; PPU shadow register & $FFFF (16), value (8)
 	EC_SIMULATE_INPUT_JOY1			db			; joypad data (16)
 	EC_SIMULATE_INPUT_JOY2			db			; joypad data (16)
 	EC_TOGGLE_AUTO_MODE			db			; none / switch auto-mode on/off
@@ -822,7 +823,6 @@
 	DP_RingMenuAngleOffset	dw
 	DP_RingMenuRadius	db
 	DP_Shadow_NMITIMEN	db					; shadow copy of REG_NMITIMEN
-	DP_Shadow_TSTM		dw					; shadow copies of subscreen (high) & mainscreen (low) designation registers ($212C/212D)
 	DP_SPC_DataBank		dw
 	DP_SPC_DataOffset	dw
 	DP_SPC_DataSize		dw
@@ -895,6 +895,13 @@
 
 
 
+.STRUCT ram_code_block
+	DoDMA			dsb 49
+	UpdatePPURegs		dsb 121
+.ENDST
+
+
+
 .STRUCT sram
 	Slot1			dsb 16					; 16 bytes per slot reserved
 	Slot1Data		dsb 2032
@@ -955,8 +962,6 @@
 ; ******************* Variables in lower 8K of WRAM ********************
 
 .ENUM $0200
-	RAM_Code			dsb 256				; for modifiable routines
-
 	ARRAY_SpriteBuf1		INSTANCEOF oam_low		; 512 bytes
 	ARRAY_SpriteBuf2		INSTANCEOF oam_high		; 32 bytes
 
@@ -983,13 +988,6 @@
 
 
 
-.DEFINE VAR_DMAModeBBusReg		RAM_Code+14
-.DEFINE VAR_DMASourceOffset		RAM_Code+20
-.DEFINE VAR_DMASourceBank		RAM_Code+26
-.DEFINE VAR_DMATransferLength		RAM_Code+31
-
-
-
 ; ********************** Variables in upper WRAM ***********************
 
 .ENUM $7E2000
@@ -1006,7 +1004,41 @@
 	ARRAY_HDMA_BackgrPlayfield	dsb 704				; 16-bit palette index & 16-bit color entry for 176 scanlines
 	ARRAY_HDMA_BackgrTextBox	dsb 192				; ditto for 48 scanlines
 	ARRAY_ScratchSpace		dsb 16384
+	RAM_Code			INSTANCEOF ram_code_block	; for modifiable routines
 .ENDE
+
+.DEFINE VAR_DMAModeBBusReg		RAM_Code.DoDMA+14
+.DEFINE VAR_DMASourceOffset		RAM_Code.DoDMA+20
+.DEFINE VAR_DMASourceBank		RAM_Code.DoDMA+26
+.DEFINE VAR_DMATransferLength		RAM_Code.DoDMA+31
+
+.DEFINE VAR_ShadowINIDISP		RAM_Code.UpdatePPURegs+11
+.DEFINE VAR_ShadowOBSEL			RAM_Code.UpdatePPURegs+15
+.DEFINE VAR_ShadowBGMODE		RAM_Code.UpdatePPURegs+19
+.DEFINE VAR_ShadowMOSAIC		RAM_Code.UpdatePPURegs+23
+.DEFINE VAR_ShadowBG1SC			RAM_Code.UpdatePPURegs+27
+.DEFINE VAR_ShadowBG2SC			RAM_Code.UpdatePPURegs+31
+.DEFINE VAR_ShadowBG3SC			RAM_Code.UpdatePPURegs+35
+.DEFINE VAR_ShadowBG4SC			RAM_Code.UpdatePPURegs+39
+.DEFINE VAR_ShadowBG12NBA		RAM_Code.UpdatePPURegs+43
+.DEFINE VAR_ShadowBG34NBA		RAM_Code.UpdatePPURegs+47
+.DEFINE VAR_ShadowW12SEL		RAM_Code.UpdatePPURegs+51
+.DEFINE VAR_ShadowW34SEL		RAM_Code.UpdatePPURegs+55
+.DEFINE VAR_ShadowWOBJSEL		RAM_Code.UpdatePPURegs+59
+.DEFINE VAR_ShadowWH0			RAM_Code.UpdatePPURegs+63
+.DEFINE VAR_ShadowWH1			RAM_Code.UpdatePPURegs+67
+.DEFINE VAR_ShadowWH2			RAM_Code.UpdatePPURegs+71
+.DEFINE VAR_ShadowWH3			RAM_Code.UpdatePPURegs+75
+.DEFINE VAR_ShadowWBGLOG		RAM_Code.UpdatePPURegs+79
+.DEFINE VAR_ShadowWOBJLOG		RAM_Code.UpdatePPURegs+83
+.DEFINE VAR_ShadowTM			RAM_Code.UpdatePPURegs+87
+.DEFINE VAR_ShadowTS			RAM_Code.UpdatePPURegs+91
+.DEFINE VAR_ShadowTMW			RAM_Code.UpdatePPURegs+95
+.DEFINE VAR_ShadowTSW			RAM_Code.UpdatePPURegs+99
+.DEFINE VAR_ShadowCGWSEL		RAM_Code.UpdatePPURegs+103
+.DEFINE VAR_ShadowCGADSUB		RAM_Code.UpdatePPURegs+107
+.DEFINE VAR_ShadowCOLDATA		RAM_Code.UpdatePPURegs+111
+.DEFINE VAR_ShadowSETINI		RAM_Code.UpdatePPURegs+115
 
 
 

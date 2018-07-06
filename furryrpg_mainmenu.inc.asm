@@ -213,7 +213,7 @@ InGameMenu:
 .ENDIF
 
 	lda	#$80							; enter forced blank
-	sta	REG_INIDISP
+	sta	VAR_ShadowINIDISP
 	stz	DP_HDMA_Channels					; disable HDMA
 	wai								; wait
 
@@ -324,7 +324,7 @@ InGameMenu:
 
 
 
-; -------------------------- set up menu BG color & misc. screen registers
+; -------------------------- set up menu BG color & misc. PPU (shadow) registers
 	ldx	#0
 -	lda.l	SRC_HDMA_ColMathMainMenu, x
 	sta	ARRAY_HDMA_ColorMath, x
@@ -333,19 +333,19 @@ InGameMenu:
 	bne	-
 
 	lda	#$01|$08						; set BG Mode 1 (BG3 priority)
-	sta	REG_BGMODE
+	sta	VAR_ShadowBGMODE
 	lda	#%01100011						; 16×16 (small) / 32×32 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
-	sta	REG_OBSEL
+	sta	VAR_ShadowOBSEL
 	lda	#$50|$01						; BG1 tile map VRAM offset: $5000, Tile Map size: 64×32 tiles
-	sta	REG_BG1SC
+	sta	VAR_ShadowBG1SC
 	lda	#$58|$01						; BG2 tile map VRAM offset: $5800, Tile Map size: 64×32 tiles
-	sta	REG_BG2SC
+	sta	VAR_ShadowBG2SC
 	lda	#$48|$01						; BG3 tile map VRAM offset: $4800, Tile Map size: 64×32 tiles
-	sta	REG_BG3SC
-;	lda	#$00							; BG1/BG2 character data VRAM offset: $0000
-	stz	REG_BG12NBA
+	sta	VAR_ShadowBG3SC
+	lda	#$00							; BG1/BG2 character data VRAM offset: $0000
+	sta	VAR_ShadowBG12NBA
 	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
-	sta	REG_BG34NBA
+	sta	VAR_ShadowBG34NBA
 	stz	REG_BG1HOFS						; reset BG1 horizontal scroll
 	stz	REG_BG1HOFS
 	lda	#$FF							; set BG1 vertical scroll = -1
@@ -359,19 +359,14 @@ InGameMenu:
 	stz	REG_BG3HOFS
 	sta	REG_BG3VOFS						; set BG3 vertical scroll = -1
 	stz	REG_BG3VOFS
-	stz	REG_CGWSEL						; clear color math disable bits
+	lda	#$00							; clear color math disable bits
+	sta	VAR_ShadowCGWSEL
 	lda	#%00100001						; enable color math on BG1 + backdrop
-	sta	REG_CGADSUB
-
-	Accu16
-
-	lda	#%0001011100010111					; turn on BG1/2/3 & sprites on mainscreen and subscreen
-	sta	REG_TM
-	sta	DP_Shadow_TSTM						; copy to shadow variable (not yet used)
-
-	Accu8
-
-	lda	#%00001000						; enable HDMA channels 3 (color math)
+	sta	VAR_ShadowCGADSUB
+	lda	#%00010111						; turn on BG1/2/3 and sprites on mainscreen and subscreen
+	sta	VAR_ShadowTM
+	sta	VAR_ShadowTS
+	lda	#%00001000						; enable HDMA channel 3 (color math)
 	tsb	DP_HDMA_Channels
 
 
@@ -418,7 +413,7 @@ InGameMenu:
 	sta	ARRAY_SpriteBuf1.RingMenuItem8+3
 
 	lda	#$0F							; turn on screen
-	sta	REG_INIDISP
+	sta	VAR_ShadowINIDISP
 
 	lda	#$80							; set angle for 1st item on ring menu ($80 = 12:00 o'clock)
 	sta	DP_RingMenuAngle
@@ -764,11 +759,11 @@ GotoSettings:
 
 GotoInventory:
 	lda	#$80							; enter forced blank
-	sta	REG_INIDISP
+	sta	VAR_ShadowINIDISP
+	stz	DP_HDMA_Channels					; disable HDMA
+	wai
 
 	DisableIRQs
-
-	stz	REG_HDMAEN						; disable HDMA
 
 
 
@@ -818,12 +813,14 @@ GotoInventory:
 
 
 ; -------------------------- screen regs, additional parameters
-;	lda	#$40							; BG1/BG2 character data VRAM offset: $0000/$4000 // never mind, HDMA does this
-;	sta	REG_BG12NBA
+	lda	#$05
+	sta	VAR_ShadowBGMODE
+	lda	#$40							; BG1/BG2 character data VRAM offset: $0000/$4000 // never mind, HDMA does this
+	sta	VAR_ShadowBG12NBA
 	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
-	sta	REG_BG34NBA
+	sta	VAR_ShadowBG34NBA
 	lda	#%00100000						; enable color math on backdrop only
-	sta	REG_CGADSUB
+	sta	VAR_ShadowCGADSUB
 
 ;	lda	#%11000000						; enable HDMA channel 6 (BG1/2 char data area designation), 7 (BG Mode 5)
 ;	tsb	DP_HDMA_Channels
@@ -888,10 +885,13 @@ __RenderItem:
 	tsb	DP_DMA_Updates
 	and	#%00001111
 	tsb	DP_DMA_Updates+1
+	lda	#%00001000						; enable HDMA channel 3 (color math)
+	tsb	DP_HDMA_Channels
 
+	WaitFrames	4
 
 	lda	#$0F							; turn screen back on
-	sta	REG_INIDISP
+	sta	VAR_ShadowINIDISP
 
 	Freeze
 

@@ -14,7 +14,7 @@
 
 DebugMenu:
 	lda	#$80							; enter forced blank
-	sta	REG_INIDISP
+	sta	VAR_ShadowINIDISP
 
 	Accu16
 
@@ -76,13 +76,11 @@ DebugMenu:
 
 	DMA_CH0 $02, :SRC_Palettes_HUD, SRC_Palettes_HUD, $22, 32
 
-	Accu16
-
-	lda	#%0001011100010111					; turn on BG1/2/3 and sprites on mainscreen and subscreen
+	lda	#%00010111						; turn on BG1/2/3 and sprites on mainscreen and subscreen
 	sta	REG_TM
-	sta	DP_Shadow_TSTM						; copy to shadow variable
-
-	Accu8
+	sta	REG_TS
+	sta	VAR_ShadowTM						; copy to shadow variables
+	sta	VAR_ShadowTS
 
 	ldx	#0
 -	stz	ARRAY_SpriteBuf1.PlayableChar, x			; overwrite char sprite buffer area with sprite 0 (empty)
@@ -99,13 +97,13 @@ DebugMenu:
 
 
 
-; -------------------------- update registers in case they've been messed with
+; -------------------------- update PPU shadow registers in case they've been messed with
 	lda	#$48|$01						; BG3 tile map VRAM offset: $4800, Tile Map size: 64×32 tiles
-	sta	REG_BG3SC
+	sta	VAR_ShadowBG3SC
 	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
-	sta	REG_BG34NBA
+	sta	VAR_ShadowBG34NBA
 	lda	#$01							; set BG Mode 1
-	sta	REG_BGMODE
+	sta	VAR_ShadowBGMODE
 	stz	REG_CGADD						; reset CGRAM address
 	stz	REG_CGDATA						; $1C00 = dark blue as background color
 	lda	#$1C
@@ -141,7 +139,7 @@ DebugMenu:
 	wai
 
 	lda	#$0F							; turn on the screen
-	sta	REG_INIDISP
+	sta	VAR_ShadowINIDISP
 
 
 

@@ -62,7 +62,7 @@ LoadTextBoxBorderTiles:
 
 OpenTextBox:
 
-; -------------------------- prepare selection bar & set misc. regs/parameters
+; -------------------------- prepare selection bar & set shadow PPU regs/misc. parameters
 	ldx	#$0000
 -	lda.l	SRC_HDMA_ColMathDialogSel, x
 	sta	ARRAY_HDMA_ColorMath, x
@@ -71,15 +71,15 @@ OpenTextBox:
 	bne	-
 
 	lda	#%00010000						; set color math enable bits (4-5) to "MathWindow"
-	sta	REG_CGWSEL
+	sta	VAR_ShadowCGWSEL
 	lda	#%00100011						; enable color math on BG1/2 & mainscreen backdrop
-	sta	REG_CGADSUB
+	sta	VAR_ShadowCGADSUB
 	lda	#50							; color "window" left pos
-	sta	REG_WH0
+	sta	VAR_ShadowWH0
 	lda	#244							; color "window" right pos
-	sta	REG_WH1
+	sta	VAR_ShadowWH1
 	lda	#%00100000						; color math window 1 area = outside (why does this work??)
-	sta	REG_WOBJSEL
+	sta	VAR_ShadowWOBJSEL
 
 	Accu16
 

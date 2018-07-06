@@ -271,24 +271,8 @@ __SkipRefreshes3:
 
 
 
-; -------------------------- reset registers changed by V-IRQ for text box
-	lda	#$01|$08						; set BG Mode 1 for area, BG3 priority
-	sta	REG_BGMODE
-	lda	DP_AreaProperties					; set tile map size according to area properties
-	and	#%00000011						; mask off bits not related to screen size
-	ora	#$50							; BG1 tile map VRAM offset: $5000
-	sta	REG_BG1SC
-	lda	DP_AreaProperties
-	and	#%00000011
-	ora	#$58							; BG2 tile map VRAM offset: $5800
-	sta	REG_BG2SC
-
-	Accu16
-
-	lda	DP_Shadow_TSTM						; copy mainscreen & subscreen shadow registers
-	sta	REG_TM
-
-	Accu8
+; -------------------------- update registers
+	jsl	RAM_Code.UpdatePPURegs
 
 	lda	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
@@ -351,6 +335,11 @@ Vblank_DebugMenu:
 	stz	REG_OAMADDH
 
 	DMA_CH0 $00, $7E, ARRAY_SpriteBuf1, $04, 544
+
+
+
+; -------------------------- update registers
+	jsl	RAM_Code.UpdatePPURegs
 
 
 
@@ -484,13 +473,8 @@ Vblank_Mode7:
 
 
 
-; -------------------------- reset registers changed by V-IRQ for Mode 7
-	lda	#$01|$08						; set BG Mode 1 for sky, BG3 priority
-	sta	REG_BGMODE
-
-	lda	#%00010010						; turn on BG2 and sprites
-	sta	REG_TM							; on the mainscreen
-	sta	REG_TS							; and on the subscreen
+; -------------------------- update registers
+	jsl	RAM_Code.UpdatePPURegs
 
 
 
@@ -533,8 +517,10 @@ Vblank_WorldMap:
 
 
 
-; -------------------------- update scroll registers
-	lda	DP_WorldMapBG1HScroll
+; -------------------------- update registers
+	jsl	RAM_Code.UpdatePPURegs
+
+	lda	DP_WorldMapBG1HScroll					; update scroll regs/HDMA tables
 	sta	REG_BG1HOFS
 	lda	DP_WorldMapBG1HScroll+1
 	and	#$3F							; limit value to $3FFF

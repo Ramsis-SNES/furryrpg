@@ -225,6 +225,7 @@ SRC_VblankJumpTable:
 	jml	Vblank_DebugMenu
 	jml	Vblank_Error
 	jml	Vblank_Intro
+	jml	Vblank_Minimal
 	jml	Vblank_Mode7
 	jml	Vblank_WorldMap
 
