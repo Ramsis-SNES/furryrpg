@@ -274,9 +274,10 @@
 	TBL_NMI_Area		db
 	TBL_NMI_DebugMenu	db
 	TBL_NMI_Error		db
+	TBL_NMI_Intro		db
+	TBL_NMI_Minimal		db
 	TBL_NMI_Mode7		db
 	TBL_NMI_WorldMap	db
-	TBL_NMI_Intro		db
 .ENDE
 
 
