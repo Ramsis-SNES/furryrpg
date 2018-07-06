@@ -728,15 +728,15 @@ EffectDiamondIn:
 
 ; -------------------------- channel 1: main effects channel
 	lda	#$41							; transfer mode (1 byte --> $2126, $2127), indirect table mode
-	sta	$4310
+	sta	REG_DMAP1
 	lda	#$26							; PPU reg. $2126
-	sta	$4311
+	sta	REG_BBAD1
 	ldx	#SRC_HDMA_FX_2Bytes
-	stx	$4312
+	stx	REG_A1T1L
 	lda	#:SRC_HDMA_FX_2Bytes
-	sta	$4314
+	sta	REG_A1B1
 	lda	#$7E							; indirect HDMA CPU bus data address bank
-	sta	$4317
+	sta	REG_DASB1
 
 
 
@@ -847,15 +847,15 @@ EffectDiamondOut:
 
 ; -------------------------- channel 1: main effects channel
 	lda	#$41							; transfer mode (1 byte --> $2126, $2127), indirect table mode
-	sta	$4310
+	sta	REG_DMAP1
 	lda	#$26							; PPU reg. $2126
-	sta	$4311
+	sta	REG_BBAD1
 	ldx	#SRC_HDMA_FX_2Bytes
-	stx	$4312
+	stx	REG_A1T1L
 	lda	#:SRC_HDMA_FX_2Bytes
-	sta	$4314
+	sta	REG_A1B1
 	lda	#$7E							; indirect HDMA CPU bus data address bank
-	sta	$4317
+	sta	REG_DASB1
 
 
 

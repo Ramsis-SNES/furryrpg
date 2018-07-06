@@ -499,26 +499,23 @@ ShowArea:
 
 
 
-; NIGHT
-;	Accu16
-
-;	lda	#%0000000000010111					; turn on BG1/2/3 + sprites on mainscreen only
-;	sta	DP_Shadow_TSTM
-
-;	Accu8
-
-;	lda	#$72							; subscreen backdrop color to subtract
-;	sta	REG_COLDATA
-;	stz	REG_CGWSEL						; clear CM disable bits
-;	lda	#%10010011						; enable color math on BG1/2 + sprites, subtract color
-;	sta	REG_CGADSUB
-;	jmp	Forever
-
-
-
 .ENDASM
 
-; NIGHT W/ SPRITES, XORed palette req.
+; CM EFFECT TEST 1: NIGHT
+	lda	#%00010111						; mainscreen: BG1/2/3 + sprites
+	sta	VAR_ShadowTM
+	stz	VAR_ShadowTS						; subscreen: nothing
+	lda	#$72							; subscreen backdrop color to subtract
+	sta	REG_COLDATA
+	stz	REG_CGWSEL						; clear CM disable bits
+	lda	#%10010011						; enable color math on BG1/2 + sprites, subtract color
+	sta	REG_CGADSUB
+
+	Freeze
+
+
+
+; CM EFFECT TEST 2: NIGHT W/ SPRITES, XORed palette req.
 	lda	#$80							; enter forced blank
 	sta	REG_INIDISP
 	lda	#ADDR_CGRAM_Area					; set CGRAM address for BG1 tiles palette
@@ -541,13 +538,10 @@ ShowArea:
 	cpx	#32
 	bne	-
 
-	Accu16
-
-	lda	#%0001001100000100					; turn on BG1/2 + sprites on subscreen, BG3 on mainscreen
-	sta	DP_Shadow_TSTM
-
-	Accu8
-
+	lda	#%00000100						; mainscreen: BG3
+	sta	VAR_ShadowTM
+	lda	#%00010011						; subscreen: BG1/2, sprites
+	sta	VAR_ShadowTS
 	stz	REG_CGADD						; backdrop color to subtract
 	lda	#$52
 	sta	REG_CGDATA
@@ -559,28 +553,26 @@ ShowArea:
 	sta	REG_CGADSUB
 	lda	#$0F
 	sta	REG_INIDISP
-	jmp	Forever
+
+	Freeze
+
+
+
+; CM EFFECT TEST 3: blue overlay
+	lda	#%00000010						; clear color math disable bits (4-5), enable BGs/OBJs on subscreen
+	sta	REG_CGWSEL
+	lda	#%00100000						; enable color math on backdrop only
+	sta	REG_CGADSUB
+	stz	REG_CGADD						; set backdrop color to overlay the whole image
+	stz	REG_CGDATA						; $6C00 = bright blue
+	lda	#$6C
+	sta	REG_CGDATA
+	lda	#%00000100						; mainscreen: BG3
+	sta	VAR_ShadowTM
+	lda	#%00010011						; subscreen: BG1/2, sprites
+	sta	VAR_ShadowTS
 
 .ASM
-
-
-
-; EFFECT
-;	lda	#%00000010						; clear color math disable bits (4-5), enable BGs/OBJs on subscreen
-;	sta	REG_CGWSEL
-;	lda	#%00100000						; enable color math on backdrop only
-;	sta	REG_CGADSUB
-;	stz	REG_CGADD						; set backdrop color to overlay the whole image
-;	stz	REG_CGDATA						; $6C00 = bright blue
-;	lda	#$6C
-;	sta	REG_CGDATA
-
-;	Accu16
-
-;	lda	#%0001001100000100					; mainscreen: BG3, subscreen: BG1/2, sprites
-;	sta	DP_Shadow_TSTM
-
-;	Accu8
 
 
 
