@@ -1002,6 +1002,7 @@
 	ARRAY_BG2TileMap2Hi		dsb 1024
 	ARRAY_BG3TileMap		INSTANCEOF tilemap_bg3
 	ARRAY_BG3TileMapHi		INSTANCEOF tilemap_bg3_hi
+	ARRAY_GameDataInventory		dsb 512				; two-byte array for 256 items. Low byte = item no., high byte = quantity
 	ARRAY_HDMA_BackgrPlayfield	dsb 704				; 16-bit palette index & 16-bit color entry for 176 scanlines
 	ARRAY_HDMA_BackgrTextBox	dsb 192				; ditto for 48 scanlines
 	ARRAY_ScratchSpace		dsb 16384

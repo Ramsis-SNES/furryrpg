@@ -830,17 +830,58 @@ GotoInventory:
 	sta	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
 	cli
-	lda	#$0F
-	sta	REG_INIDISP
+
+	ldx	#0
+
+	Accu16
+
+	lda	#$0100							; item qty = 1, start with item #0
+-	sta	ARRAY_GameDataInventory, x
+	inc	a							; increment item no. #
+	inx
+	inx
+	cpx	#32							; 16 items for now
+	bne	-
+
+	Accu8
 
 	SetTextPos	2, 2
 
-	ldx	#STR_ItemEng000
-	stx	DP_TextStringPtr
-	lda	#:STR_ItemEng000
+	ldx	#0
+
+__ReadItemFromInventory:
+	lda	ARRAY_GameDataInventory, x
+	xba
+	inx
+	lda	ARRAY_GameDataInventory, x
+	bne	+
+	inx
+	cpx	#512
+	beq	__ReadItemFromInventoryDone
+	bra	__ReadItemFromInventory
+
++	sta	VAR_GameDataItemQty
+	xba
+
+	Accu16
+
+	and	#$00FF							; remove garbage in B
+	asl	a
+	asl	a
+	asl	a
+	asl	a
+	clc
+	adc	#STR_ItemsEng
+	sta	DP_TextStringPtr
+
+	Accu8
+
+	lda	#:STR_ItemsEng
 	sta	DP_TextStringBank
-	lda	#24
-	sta	temp+3
+	inx
+	cpx	#512
+	beq	__ReadItemFromInventoryDone
+	phx
 
 __RenderItem:
 	lda	#16
@@ -849,10 +890,6 @@ __RenderItem:
 
 	Accu16
 
-	lda	DP_TextStringPtr
-	clc
-	adc	#16
-	sta	DP_TextStringPtr
 	lda	DP_TextCursor
 	clc
 	adc	#24
@@ -860,8 +897,10 @@ __RenderItem:
 
 	Accu8
 
-	dec	temp+3
-	bne	__RenderItem
+	plx
+	bra	__ReadItemFromInventory
+
+__ReadItemFromInventoryDone:
 
 /*	SetTextPos	2, 16
 
