@@ -431,14 +431,6 @@ StartScreenLoop:
 
 
 
-Forever:
-	lda	#$81
-	sta	REG_NMITIMEN						; turn on NMI
--	wai								; wait for next frame
-	bra	-
-
-
-
 ; ************************* Testing functions **************************
 
 VerifyROMIntegrity:

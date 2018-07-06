@@ -1216,9 +1216,13 @@ ErrorHandlerBRK:
 	SetNMI	TBL_NMI_Error
 
 	lda	REG_RDNMI						; clear NMI flag
+	cli								; reenable interrupts
+	lda	#$81
+	sta	REG_NMITIMEN
 	lda	#$0F							; turn on screen
 	sta	REG_INIDISP
-	jmp	Forever							; go to trap loop instead of RTI
+
+	Freeze								; enter trap loop instead of RTI
 
 
 
@@ -1364,9 +1368,13 @@ ErrorHandlerCOP:
 	SetNMI	TBL_NMI_Error
 
 	lda	REG_RDNMI						; clear NMI flag
+	cli								; reenable interrupts
+	lda	#$81
+	sta	REG_NMITIMEN
 	lda	#$0F							; turn on screen
 	sta	REG_INIDISP
-	jmp	Forever							; go to trap loop instead of RTI
+
+	Freeze								; enter trap loop instead of RTI
 
 
 
