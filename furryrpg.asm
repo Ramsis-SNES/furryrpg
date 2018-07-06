@@ -68,11 +68,8 @@
 	SLOT 0		$0000
 .ENDME
 
-.ROMBANKMAP
-	BANKSTOTAL	24
-	BANKSIZE	$10000						; ROM banks are 64 KBytes in size
-	BANKS		24						; 24 ROM banks = 12 Mbit
-.ENDRO
+.ROMBANKSIZE		$10000						; ROM banks are 64 KiB in size
+.ROMBANKS		24						; 24 ROM banks = 12 Mbit
 
 .SNESHEADER								; this auto-calculates ROM checksum & complement, too
 	ID		"SNES"
