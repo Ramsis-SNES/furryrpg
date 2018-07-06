@@ -659,15 +659,15 @@ Vblank_Intro:
 .ACCU 8
 .INDEX 16
 
-HIRQ_MainMenu:
+HIRQ_XXX:
 	php								; preserve processor status
 
 	Accu8								; only use 8 bit accumulator
 
 	pha								; preserve 8 bit accumulator
-	lda	#$01|$08						; switch to BG Mode 1 (BG3 priority)
-	sta	REG_BGMODE
-	stz	REG_BG12NBA						; reset BG1/2 character data area designation to $0000
+
+	; do something here
+
 	lda	REG_TIMEUP						; acknowledge IRQ
 	pla								; restore 8 bit accumulator
 	plp								; restore processor status

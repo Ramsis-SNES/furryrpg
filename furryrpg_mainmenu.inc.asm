@@ -751,7 +751,18 @@ CalcRingMenuItemPos:
 GotoQuitGame:
 
 Goto???1:
-;GotoInventoryV-Split:
+
+Goto???2:
+
+GotoTalent:
+
+GotoParty:
+
+GotoLilysLog:
+
+GotoSettings:
+
+GotoInventory:
 	lda	#$80							; enter forced blank
 	sta	REG_INIDISP
 
@@ -795,26 +806,14 @@ Goto???1:
 
 
 ; -------------------------- set up HDMA channel 6 for char data area designation
-	ldx	#SRC_HDMA_BG12CharData
-	stx	$4362
-	lda	#:SRC_HDMA_BG12CharData
-	sta	$4364
-	lda	#$0B							; PPU reg. $210B (BG12NBA)
-	sta	$4361
-	lda	#$00							; transfer mode (1 byte)
-	sta	$4360
-
-
-
-; -------------------------- set up HDMA channel 7 for screen mode
-	ldx	#SRC_HDMA_Mode5
-	stx	$4372
-	lda	#:SRC_HDMA_Mode5
-	sta	$4374
-	lda	#$05							; PPU reg. $2105 (BGMODE)
-	sta	$4371
-	lda	#$00							; transfer mode (1 byte)
-	sta	$4370
+;	ldx	#SRC_HDMA_BG12CharData
+;	stx	REG_A1T6L
+;	lda	#:SRC_HDMA_BG12CharData
+;	sta	REG_A1B6
+;	lda	#$0B							; PPU reg. $210B (BG12NBA)
+;	sta	REG_BBAD6
+;	lda	#$00							; transfer mode (1 byte)
+;	sta	REG_DMAP6
 
 
 
@@ -826,14 +825,11 @@ Goto???1:
 	lda	#%00100000						; enable color math on backdrop only
 	sta	REG_CGADSUB
 
-	SetIRQ	TBL_HIRQ_MainMenu
+;	lda	#%11000000						; enable HDMA channel 6 (BG1/2 char data area designation), 7 (BG Mode 5)
+;	tsb	DP_HDMA_Channels
 
-	lda	#50							; H-IRQ setup: dot number for interrupt
-	sta	REG_HTIMEL						; set low byte of H-timer
-	stz	REG_HTIMEH						; set high byte of H-timer
-	lda	#%11000000						; enable HDMA channels 6 (BG1/2 char data area designation), 7 (BG Mode 5)
-	tsb	DP_HDMA_Channels
-	lda	#$91							; enable H-IRQ, NMI, and auto-joypad read
+	lda	REG_RDNMI						; clear NMI flag
+	lda	#$81							; enable NMI and auto-joypad read
 	sta	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
 	cli
@@ -870,7 +866,7 @@ __RenderItem:
 	dec	temp+3
 	bne	__RenderItem
 
-	SetTextPos	2, 16
+/*	SetTextPos	2, 16
 
 	ldx	#STR_MainMenuEng000
 	stx	DP_TextStringPtr
@@ -887,141 +883,13 @@ __RenderItem:
 	iny
 	bra	-
 +
-
-;	ldx	#(ARRAY_BG3TileMap & $FFFF)
-;	stx	REG_WMADDL
-;	stz	REG_WMADDH
-
-;	ldx	#0
-;	lda	#$83
-;-	sta	REG_WMDATA						; fill BG3 tile map (for testing)
-;	inx
-;	cpx	#1024
-;	bne	-
-
+*/
 	lda	#%00011111						; make sure BG1-3 lo and BG1/2 hi tilemaps get updated
 	tsb	DP_DMA_Updates
 	and	#%00001111
 	tsb	DP_DMA_Updates+1
 
-	Freeze
 
-
-
-Goto???2:
-
-GotoTalent:
-
-GotoParty:
-
-GotoLilysLog:
-
-GotoSettings:
-
-GotoInventory:
-	lda	#$80							; enter forced blank
-	sta	REG_INIDISP
-
-	DisableIRQs
-
-	stz	REG_HDMAEN						; disable HDMA
-
-
-
-; -------------------------- clear tilemap buffers, init sprites, load new font/GFX data
-;	ldx	#(ARRAY_BG1TileMap1 & $FFFF)
-;	stx	REG_WMADDL
-;	stz	REG_WMADDH
-
-;	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 1024*9		; clear all tile map buffers (except BG3-hi)
-
-	jsr	SpriteInit						; purge OAM
-
-	lda	#$80							; increment VRAM address by 1 after writing to $2119
-	sta	REG_VMAIN
-	ldx	#$3000 ;ADDR_VRAM_BG3_Tiles
-	stx	REG_VMADDL
-
-	DMA_CH0 $01, :GFX_Font8x8, GFX_Font8x8, $18, 2048
-	DMA_CH0 $01, :GFX_Items_Eng, GFX_Items_Eng, $18, 160*30
-
-
-
-; -------------------------- build BG3 tile map for item list area
-	lda	#$30							; palette no. 4 | priority bit
-	xba
-	lda	#15							; no. of item rows
-	sta	temp
-	lda	#$80							; first tile of item list
-	ldx	#228							; start of item list area in tile map
-
-__MakeBG3ItemTileMap:
-	ldy	#10							; max. no. of tiles for an item name
--	sta	ARRAY_BG3TileMap, x
-	xba
-	sta	ARRAY_BG3TileMapHi, x
-	xba
-
-	Accu16
-
-	inc	a
-
-	Accu8
-
-	inx
-	dey
-	bne	-
-
-	inx								; space between column 1 and 2: 5 tiles
-	inx
-	inx
-	inx
-	inx
-	ldy	#10							; max. no. of tiles for an item name
--	sta	ARRAY_BG3TileMap, x
-	xba
-	sta	ARRAY_BG3TileMapHi, x
-	xba
-
-	Accu16
-
-	inc	a
-
-	Accu8
-
-	inx
-	dey
-	bne	-
-
-	Accu16
-
-	pha
-	txa
-	clc
-	adc	#7							; go to next line in item list
-	tax
-	pla
-
-	Accu8
-
-	dec	temp
-	bne	__MakeBG3ItemTileMap
-
-	DrawFrame	1, 5, 29, 18
-
-
-
-; -------------------------- screen registers/misc. parameters
-	lda	#$03							; switch BG3 char data area designation to $3000 // FIXME
-	sta	REG_BG34NBA
-	lda	#%00011111						; make sure BG1-3 lo/hi tilemaps get updated
-	tsb	DP_DMA_Updates
-	tsb	DP_DMA_Updates+1
-	lda	REG_RDNMI						; clear NMI flag
-	lda	#$81							; enable NMI and auto-joypad read
-	sta	DP_Shadow_NMITIMEN
-	sta	REG_NMITIMEN
-	cli
 	lda	#$0F							; turn screen back on
 	sta	REG_INIDISP
 

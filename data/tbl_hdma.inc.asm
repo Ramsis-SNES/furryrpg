@@ -9,20 +9,20 @@
 
 
 
-SRC_HDMA_BG12CharData:
-	.DB 112|$80
+;SRC_HDMA_BG12CharData:							; obsolete with ditched vertical split-screen in item menu
+;	.DB 112|$80
 
-.REPEAT 112
-	.DB $40
-.ENDR
+;.REPEAT 112
+;	.DB $40
+;.ENDR
 
-	.DB 112|$80
+;	.DB 112|$80
 
-.REPEAT 112
-	.DB $40
-.ENDR
+;.REPEAT 112
+;	.DB $40
+;.ENDR
 
-	.DB 0
+;	.DB 0
 
 
 
@@ -323,20 +323,20 @@ SRC_HDMA_M7D:
 
 
 
-SRC_HDMA_Mode5:
-	.DB 112|$80
+;SRC_HDMA_Mode5:							; obsolete with ditched vertical split-screen in item menu
+;	.DB 112|$80
 
-.REPEAT 112
-	.DB $05
-.ENDR
+;.REPEAT 112
+;	.DB $05
+;.ENDR
 
-	.DB 112|$80
+;	.DB 112|$80
 
-.REPEAT 112
-	.DB $05
-.ENDR
+;.REPEAT 112
+;	.DB $05
+;.ENDR
 
-	.DB 0
+;	.DB 0
 
 
 

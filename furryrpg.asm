@@ -20,8 +20,8 @@
 ; ************************** Basic ROM layout **************************
 
 .DEFINE CurrentBank	0
-.DEFINE TotalROMBanks	20						; self-reminder: increase value when using more banks (crucial for ROM integrity check)
-.DEFINE StartOffset	$F000						; start code offset in bank $00, this must be >$8000 because of how ROM Mode 21 ("HiROM") is mapped
+.DEFINE TotalROMBanks	19						; self-reminder: increase value when using more banks (crucial for ROM integrity check)
+.DEFINE StartOffset	$F000						; start code offset in bank $00, this must be >= $8000 because of how ROM Mode 21 ("HiROM") is mapped
 
 
 
@@ -233,7 +233,6 @@ SRC_VblankJumpTable:
 
 
 SRC_IRQJumpTable:
-	jml	HIRQ_MainMenu
 	jml	VIRQ_Area
 	jml	VIRQ_Mode7
 
@@ -307,22 +306,6 @@ Startup:
 .INCLUDE "data/gfx.inc.asm"						; sprites, fonts, palettes
 .INCLUDE "data/tbl_fontwidth.inc.asm"					; font width table for sprite VWF
 .INCLUDE "data/tbl_areaproperties.inc.asm"				; area property tables & pointers
-
-.ENDS
-
-
-
-; ****************************** NEW BANK ******************************
-
-.REDEFINE CurrentBank	CurrentBank+1
-
-.BANK CurrentBank SLOT 0
-.ORG 0
-
-.SECTION "CharacterData 2"
-
-GFX_Items_Eng:
-.INCBIN "gfx/items_eng.pic"						; English item names (2bpp gfx, 40,960 bytes)
 
 .ENDS
 
