@@ -163,6 +163,7 @@ ProcessEventCode:
 	.DW Process_EC_DISABLE_HDMA_CH
 	.DW Process_EC_DMA_ROM2CGRAM
 	.DW Process_EC_DMA_ROM2VRAM
+	.DW Process_EC_DMA_ROM2WRAM
 	.DW Process_EC_ENABLE_HDMA_CH
 	.DW Process_EC_GSS_LOAD_TRACK
 	.DW Process_EC_GSS_TRACK_FADEIN
@@ -172,6 +173,7 @@ ProcessEventCode:
 	.DW Process_EC_INIT_GAMEINTRO
 	.DW Process_EC_JSL
 	.DW Process_EC_JSR
+	.DW Process_EC_JUMP
 	.DW Process_EC_LOAD_AREA
 	.DW Process_EC_LOAD_PARTY_FORMATION
 	.DW Process_EC_MONITOR_INPUT_JOY1
@@ -275,6 +277,50 @@ Process_EC_DMA_ROM2VRAM:						; VRAM target address (16), ROM source address (16
 	iny
 	iny
 	lda	#(REG_VMDATAL & $FF) << 8 | $01				; B bus register (high byte), DMA mode (low byte)
+ 	sta.l	$004300
+	lda	[DP_EventCodeAddress], y				; read data source address
+	sta.l	$004302
+	iny
+	iny
+
+	Accu8
+
+	lda	[DP_EventCodeAddress], y				; read data source bank
+	sta.l	$004304
+	iny
+
+	Accu16
+
+	lda	[DP_EventCodeAddress], y				; read data length
+	sta.l	$004305
+
+	Accu8
+
+	lda	#%00000001						; initiate DMA transfer (channel 0)
+	sta.l	REG_MDMAEN
+	iny
+	iny
+	sty	DP_EventCodePointer
+	jmp	ProcessEventLoop
+
+.ACCU 16
+
+Process_EC_DMA_ROM2WRAM:						; WRAM target address (16), WRAM target bank (8), ROM source address (16), ROM source bank (8), size (16)
+	lda	[DP_EventCodeAddress], y				; read WRAM target address
+	sta.l	REG_WMADDL
+	iny
+	iny
+
+	Accu8
+
+	lda	[DP_EventCodeAddress], y				; read WRAM target bank
+	and	#$01							; reduce to LSB (0 = bank $7E, 1 = bank $7F)
+	sta.l	REG_WMADDH
+	iny
+
+	Accu16
+
+	lda	#(REG_WMDATA & $FF) << 8				; B bus register (high byte), DMA mode (low byte, 0 in this case)
  	sta.l	$004300
 	lda	[DP_EventCodeAddress], y				; read data source address
 	sta.l	$004302
@@ -452,6 +498,16 @@ Process_EC_JSR:
 	jmp	(DP_DataAddress)					; jump to subroutine
 
 __ReturnAdressJSR:
+
+	jmp	ProcessEventLoop
+
+.ACCU 16
+
+Process_EC_JUMP:
+	lda	[DP_EventCodeAddress], y				; read new event code pointer
+	sta	DP_EventCodePointer
+
+	Accu8
 
 	jmp	ProcessEventLoop
 

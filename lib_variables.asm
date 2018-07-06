@@ -289,6 +289,7 @@
 	EC_DISABLE_HDMA_CH			db			; HDMA channel(s) no. # (8)
 	EC_DMA_ROM2CGRAM			db			; CGRAM target address (8), ROM source address (16), ROM source bank (8), size (16)
 	EC_DMA_ROM2VRAM				db			; VRAM target address (16), ROM source address (16), ROM source bank (8), size (16)
+	EC_DMA_ROM2WRAM				db			; WRAM target address (16), WRAM target bank (8), ROM source address (16), ROM source bank (8), size (16)
 	EC_ENABLE_HDMA_CH			db			; HDMA channel(s) no. # (8)
 	EC_GSS_LOAD_TRACK			db			; track no. # (16)
 	EC_GSS_TRACK_FADEIN			db			; speed (16), target volume (16)
@@ -296,8 +297,9 @@
 	EC_GSS_TRACK_PLAY			db			; none
 	EC_GSS_TRACK_STOP			db			; none
 	EC_INIT_GAMEINTRO			db			; none
-	EC_JSL					db			; address (16) / go to some subroutine
-	EC_JSR					db			; address (24) / go to some subroutine
+	EC_JSL					db			; address (24) / go to some subroutine (long)
+	EC_JSR					db			; address (16) / go to some subroutine
+	EC_JUMP					db			; position in event script to jump to (16)
 	EC_LOAD_AREA				db			; no. # of area (16)
 	EC_LOAD_PARTY_FORMATION			db			; no. # of party formation
 	EC_MONITOR_INPUT_JOY1			db			; joypad data (16), position in event script to jump to (16)
