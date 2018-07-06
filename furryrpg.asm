@@ -74,16 +74,17 @@
 	BANKS		24						; 24 ROM banks = 12 Mbit
 .ENDRO
 
-.SNESHEADER								; this also calculates ROM checksum & complement
+.SNESHEADER								; this auto-calculates ROM checksum & complement, too
 	ID		"SNES"
 	NAME		"FURRY RPG!           "
-	HIROM
+;			 123456789012345678901				; max. 21 characters
+	HIROM								; aka Mode 21
 	FASTROM
-	CARTRIDGETYPE	$02
-	ROMSIZE		$0B
-	SRAMSIZE	$03
-	COUNTRY		$01
-	LICENSEECODE	$33
+	CARTRIDGETYPE	$02						; ROM + battery-backed SRAM
+	ROMSIZE		$0B						; 1 SHL n = 2 MiB (reported as a power of 2)
+	SRAMSIZE	$03						; 8 KiB for now
+	COUNTRY		$01						; USA
+	LICENSEECODE	$33						; $33 = "pointer" to new licensee code
 	VERSION		$00
 .ENDSNES
 
@@ -92,7 +93,7 @@
 .BANK CurrentBank SLOT 0
 .ORG StartOffset + $FB0
 
-	.DB "00"							; new licensee code
+	.DB "00"							; new licensee code (unlicensed)
 
 
 
@@ -141,7 +142,7 @@ DummyCOP:
 
 .SECTION "Disclaimer" SEMIFREE
 
-STR_DisclaimerWallofText:						; max. 20 lines, 46 chars per line
+STR_DisclaimerWallofText:						; max. 20 lines, 56 chars per line
 ;	     12345678901234567890123456789012345678901234567890123456
 	.DB "12345678901234567890123456789012345678901234567890123456", "        "
 	.DB "12345678901234567890123456789012345678901234567890123456", "        "
@@ -226,9 +227,9 @@ SRC_VblankJumpTable:
 	jml	Vblank_Area
 	jml	Vblank_DebugMenu
 	jml	Vblank_Error
+	jml	Vblank_Intro
 	jml	Vblank_Mode7
 	jml	Vblank_WorldMap
-	jml	Vblank_Intro
 
 
 
@@ -287,7 +288,7 @@ SRC_IRQJumpTable:
 Startup:
 	sei								; disable interrupts
 	clc
-	xce								; switch to native mode
+	xce								; switch to 65816 native mode
 	jml	Boot
 
 .ENDS
@@ -370,7 +371,7 @@ Startup:
 .BANK CurrentBank SLOT 0
 .ORG 0
 
-.SECTION "Source tables"
+.SECTION "Data tables"
 
 .INCLUDE "data/tbl_hdma.inc.asm"					; HDMA tables
 .INCLUDE "data/tbl_mode7.inc.asm"					; Mode 7 scaling/rotation tables

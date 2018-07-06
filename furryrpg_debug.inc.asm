@@ -166,6 +166,7 @@ DebugMenuLoop:
 
 	SetTextPos	11, 14
 	PrintHexNum	DP_AreaCurrent+1				; print no. of area to load
+
 	SetTextPos	11, 16
 	PrintHexNum	DP_AreaCurrent
 	PrintString	17, 4, "%s"					; print current SNESGSS song title
@@ -459,7 +460,6 @@ ShowSpriteGallery:
 	WaitUserInput
 
 	jsr	SpriteInit						; purge OAM
-
 	jmp	DebugMenu
 
 

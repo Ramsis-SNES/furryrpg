@@ -412,8 +412,6 @@ STR_Track12:
 BootSPC700:
 	DisableIRQs
 
-;	php								; preserve processor status
-
 	Accu16
 
 	lda	#:SRC_spc700_driver
@@ -437,7 +435,6 @@ BootSPC700:
 	sta.l	REG_NMITIMEN
 	cli
 
-;	plp								; restore processor status
 	rtl
 
 

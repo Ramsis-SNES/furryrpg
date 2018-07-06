@@ -15,9 +15,7 @@ Boot:
 	tcs
 
 	SetDPag	$2100							; set Direct Page to PPU registers
-
 	Accu8
-
 	SetDBR	$00							; set Data Bank = $00
 
 
@@ -148,11 +146,8 @@ Boot:
 
 ; -------------------------- clear all directly accessible RAM areas (with parameters/addresses set/reset above)
 	Accu16
-
 	SetDPag	$0000							; set Direct Page = $0000
-
 	Accu8
-
 	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 0		; VRAM (length $0000 = 65536 bytes)
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $22, 512		; CGRAM (512 bytes)
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $04, 512+32		; OAM (low+high OAM tables = 512+32 bytes)
@@ -232,7 +227,7 @@ Boot:
 	Accu8
 
 	SetNMI	TBL_NMI_DebugMenu
-	JoyInit								; initialize joypads and enable NMI & IRQ
+	JoyInit								; initialize joypads and enable NMI
 
 	lda	ADDR_SRAM_GoodROM					; if byte is $01, then ROM integrity check was already passed
 	cmp	#$01
@@ -546,15 +541,29 @@ VerifyROMIntegrity:
 
 	lda	temp+3							; compare sum to ROM checksum
 	cmp	$C0FFDE
-	beq	+
-	jmp	__ROMIntegrityBad
-
-+	eor	#$FFFF							; compare (sum XOR $FFFF) to ROM checksum complement
+	bne	__ROMIntegrityBad
+	eor	#$FFFF							; compare (sum XOR $FFFF) to ROM checksum complement
 	cmp	$C0FFDC
-	beq	+
-	jmp	__ROMIntegrityBad
+	beq	__ROMIntegrityGood
 
-+	Accu8
+__ROMIntegrityBad:
+	Accu8
+
+	stz	REG_CGADD						; reset CGRAM address
+	lda	#$1C							; $001C = red
+	sta	REG_CGDATA
+	stz	REG_CGDATA
+
+	PrintString	11, 3, "Corrupt ROM, unable to"
+	PrintString	12, 3, "continue!"
+
+	lda	#%00010000						; make sure BG3 low tile map bytes are updated
+	tsb	DP_DMA_Updates
+
+	Freeze								; enter trap loop
+
+__ROMIntegrityGood:
+	Accu8
 
 	stz	REG_CGADD						; reset CGRAM address (i.e., set it to mainscreen backdrop color)
 	lda	#$E4							; $13E4 = light green
@@ -579,24 +588,6 @@ VerifyROMIntegrity:
 
 	WaitUserInput
 
-	bra	__ROMIntegrityGood
-
-__ROMIntegrityBad:
-	Accu8
-
-	stz	REG_CGADD						; reset CGRAM address
-	lda	#$1C							; $001C = red
-	sta	REG_CGDATA
-	stz	REG_CGDATA
-
-	PrintString	11, 3, "Corrupt ROM, unable to"
-	PrintString	12, 3, "continue!"
-
-	lda	#%00010000						; make sure BG3 low tile map bytes are updated
-	tsb	DP_DMA_Updates
-	jmp	Forever
-
-__ROMIntegrityGood:
 	rts
 
 

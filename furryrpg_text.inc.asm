@@ -425,7 +425,6 @@ TextBoxHandleSelection:
 	sta	ARRAY_HDMA_ColorMath+3
 	sta	DP_TextBoxSelMin
 	stz	DP_TextBoxSelMax
-
 	lda	DP_TextBoxSelection
 	lsr	a							; count no. of selection options available (4 max.)
 	bcc	+
@@ -447,7 +446,6 @@ TextBoxHandleSelection:
 	clc
 	adc	DP_TextBoxSelMin
 	sta	DP_TextBoxSelMax
-
 	lda	#%00001000						; enable HDMA channel 3 (color math)
 	tsb	DP_HDMA_Channels
 

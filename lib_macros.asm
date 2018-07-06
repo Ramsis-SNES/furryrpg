@@ -378,6 +378,7 @@ StringOffset\@:
 	ldx	#$0000
 	stx	DP_Joy1Press
 	stx	DP_Joy2Press
+	lda	REG_RDNMI						; clear NMI flag
 	lda	#$81
 	sta	REG_NMITIMEN						; enable JoyPad Read and NMI
 	cli								; enable interrupts

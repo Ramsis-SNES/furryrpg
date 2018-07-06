@@ -468,7 +468,6 @@ Vblank_Mode7:
 	Accu16
 
 	lda	REG_MPYL						; (number of lines * 2) * altitude setting = table offset
-	sta	DP_DataAddress
 	clc
 	adc	#(SRC_Mode7Scaling & $FFFF)
 	sta	DP_DataAddress

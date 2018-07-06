@@ -363,7 +363,7 @@ TestMode7:
 
 	SetIRQ	TBL_VIRQ_Mode7
 
-	lda	#%11111100						; enable HDMA channels 2-7
+	lda	#%11111000						; enable HDMA channels 3-7
 	sta	DP_HDMA_Channels
 	lda	REG_RDNMI						; clear NMI flag
 	lda	#%10110001						; enable NMI, auto-joypad read, and IRQ at H=HTIMEL and V=VTIMEL

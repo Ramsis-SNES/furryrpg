@@ -36,7 +36,7 @@
 
 ; *************************** SNES registers ***************************
 
-; -------------------------- processor status bits
+; -------------------------- CPU status bits
 .DEFINE DEC_MODE		$08
 .DEFINE XY_8BIT			$10
 .DEFINE A_8BIT			$20
@@ -44,7 +44,7 @@
 
 
 
-; -------------------------- CPU/PPU registers
+; -------------------------- CPU & PPU registers
 .DEFINE REG_INIDISP		$2100
 .DEFINE REG_OBSEL		$2101
 .DEFINE REG_OAMADDL		$2102
@@ -168,7 +168,7 @@
 
 ; -------------------------- IRQ routine table (for use with SetIRQ macro)
 .ENUM $00
-	TBL_HIRQ_MainMenu	db
+;	TBL_HIRQ_XXX		db
 	TBL_VIRQ_Area		db
 	TBL_VIRQ_Mode7		db
 .ENDE
@@ -579,7 +579,7 @@
 
 
 ; -------------------------- effect speed values
-.ENUM 1
+.ENUM 1									; positive numbers
 	CMD_EffectSpeed1	db
 	CMD_EffectSpeed2	db
 	CMD_EffectSpeed3	db
@@ -597,7 +597,7 @@
 
 
 ; -------------------------- effect delay values
-.ENUM $FF DESC
+.ENUM $FF DESC								; negative numbers
 	CMD_EffectDelay1	db
 	CMD_EffectDelay2	db
 	CMD_EffectDelay3	db
@@ -903,18 +903,14 @@
 	ARRAY_BG1TileMap2		dsb 1024
 	ARRAY_BG1TileMap1Hi		INSTANCEOF tilemap_bg1_hi
 	ARRAY_BG1TileMap2Hi		dsb 1024
-
 	ARRAY_BG2TileMap1		INSTANCEOF tilemap_bg2
 	ARRAY_BG2TileMap2		dsb 1024
 	ARRAY_BG2TileMap1Hi		INSTANCEOF tilemap_bg2_hi
 	ARRAY_BG2TileMap2Hi		dsb 1024
-
 	ARRAY_BG3TileMap		INSTANCEOF tilemap_bg3
 	ARRAY_BG3TileMapHi		INSTANCEOF tilemap_bg3_hi
-
 	ARRAY_HDMA_BackgrPlayfield	dsb 704				; 16-bit palette index & 16-bit color entry for 176 scanlines
 	ARRAY_HDMA_BackgrTextBox	dsb 192				; ditto for 48 scanlines
-
 	ARRAY_ScratchSpace		dsb 16384
 .ENDE
 

@@ -18,7 +18,7 @@ SRC_EventPointer:
 Event00000:
 	.DB EC_MONITOR_INPUT_JOY1
 		.DW %1111000011110000					; B, Y, Sel, Start, A, X, L, R
-		.DW __Event00000_Jump1 - Event00000			; if any of those buttons are pressed, set event code pointer to __Event00000_Jump1
+		.DW __Event00000_Jump1 - Event00000			; if any of those buttons are pressed, advance event code pointer to __Event00000_Jump1
 	.DB EC_SCR_EFFECT_TRANSITION
 		.DW EffectNoFadeFromBlack
 		.DB CMD_EffectSpeed2
