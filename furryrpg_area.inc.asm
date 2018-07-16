@@ -637,6 +637,17 @@ __PlayerIsIdle:
 
 
 
+; -------------------------- screen saver (darken screen every $1000 frames = 70-82 seconds when player is idle)
+	lda	DP_PlayerIdleCounter+1
+	lsr	a							; shift highest nibble of DP_PlayerIdleCounter (16 bit) to lower nibble of Accu
+	lsr	a
+	lsr	a
+	lsr	a
+	eor	#$0F							; convert to brightness level value ($00 --> $0F, $01 --> $0E ... $0F --> $00)
+	sta	VAR_ShadowINIDISP
+
+
+
 ; -------------------------- HUD display logic
 	lda	DP_HUD_Status						; check whether HUD is already being displayed
 	and	#%00000001
