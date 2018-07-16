@@ -118,9 +118,9 @@ LoadWorldMap:
 	sta	REG_DMAP4
 	lda	#<REG_BG1VOFS						; PPU reg. $210E
 	sta	REG_BBAD4
-	ldx	#SRC_HDMA_WorMapVertScr
+	ldx	#SRC_HDMA_WorMapVScroll
 	stx	REG_A1T4L
-	lda	#:SRC_HDMA_WorMapVertScr
+	lda	#:SRC_HDMA_WorMapVScroll
 	sta	REG_A1B4
 	lda	#$7E							; indirect HDMA CPU bus data address bank
 	sta	REG_DASB4
@@ -344,7 +344,7 @@ LoadWorldMap:
 	sta	DP_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
 	cli
-	jsr	CalculateVerticalScrollDisplacement
+	jsr	CalcVScrollDisplacement
 
 	wai								; wait for register/sprite buffer update before split-in effect
 	lda	#CMD_EffectSpeed3
@@ -477,13 +477,13 @@ __WorldMapLoopDpadRightDone:
 
 __WorldMapLoopStButtonDone:
 
-	jsr	CalculateVerticalScrollDisplacement
+	jsr	CalcVScrollDisplacement
 
 	jmp	WorldMapLoop
 
 
 
-CalculateVerticalScrollDisplacement:
+CalcVScrollDisplacement:
 	ldx	#(ARRAY_ScratchSpace & $FFFF)				; set data address for upcoming loop
 	stx	DP_DataAddress
 	lda	#$7E
@@ -495,7 +495,7 @@ CalculateVerticalScrollDisplacement:
 	ldy	#0
 -	lda	DP_WorldMapBG1VScroll
 	sec
-	sbc.l	SRC_HDMA_WorMapVertScrDisplacement, x			; subtract displacement value for each scanline
+	sbc.l	SRC_HDMA_WorMapVScrollDisplacement, x			; subtract displacement value for each scanline
 	and	#$3FFF
 	sta	[DP_DataAddress], y					; save to HDMA array
 	inx

@@ -964,7 +964,7 @@
 	ARRAY_HDMA_FX_1Byte		dsb 224
 	ARRAY_HDMA_FX_2Bytes		dsb 448
 	ARRAY_HDMA_BG_Scroll		dsb 16
-	ARRAY_HDMA_WorMapVertScr	dsb 448
+	ARRAY_HDMA_WorMapVScroll	dsb 448
 	ARRAY_RandomNumbers		dsb 130				; for random numbers
 	ARRAY_SpriteBuf1		INSTANCEOF oam_low		; 512 bytes
 	ARRAY_SpriteBuf2		INSTANCEOF oam_high		; 32 bytes

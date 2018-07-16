@@ -607,7 +607,7 @@ __RingMenuLoopDpadRightDone:
 
 	Accu8
 
-	jmp	(SRC_MainMenuSelTbl, x)
+	jmp	(PTR_MainMenuSelection, x)
 
 __RingMenuLoopAButtonDone:
 
@@ -615,15 +615,15 @@ __RingMenuLoopAButtonDone:
 
 
 
-SRC_MainMenuSelTbl:
-	.DW	GotoSettings
-	.DW	GotoQuitGame
-	.DW	Goto???1
-	.DW	Goto???2
-	.DW	GotoInventory
-	.DW	GotoTalent
-	.DW	GotoParty
-	.DW	GotoLilysLog
+PTR_MainMenuSelection:
+	.DW GotoSettings
+	.DW GotoQuitGame
+	.DW Goto???1
+	.DW Goto???2
+	.DW GotoInventory
+	.DW GotoTalent
+	.DW GotoParty
+	.DW GotoLilysLog
 
 
 

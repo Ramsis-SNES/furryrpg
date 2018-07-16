@@ -650,7 +650,7 @@ Vblank_WorldMap:
 	sta	REG_BG1HOFS
 
 	ldx	#(ARRAY_ScratchSpace & $FFFF)				; copy over scroll displacement table to HDMA array
-	ldy	#ARRAY_HDMA_WorMapVertScr
+	ldy	#ARRAY_HDMA_WorMapVScroll
 	lda	#$01							; $01BF = 447 (i.e., 448 bytes are transferred)
 	xba
 	lda	#$BF

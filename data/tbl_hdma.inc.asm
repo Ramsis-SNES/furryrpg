@@ -380,18 +380,18 @@ SRC_HDMA_WorMapLayerControl:
 
 
 
-SRC_HDMA_WorMapVertScr:
+SRC_HDMA_WorMapVScroll:
 	.DB 112|$80							; 112 scanlines, continuous mode flag set
-	.DW ARRAY_HDMA_WorMapVertScr
+	.DW ARRAY_HDMA_WorMapVScroll
 
 	.DB 112|$80
-	.DW ARRAY_HDMA_WorMapVertScr+(112*2)
+	.DW ARRAY_HDMA_WorMapVScroll+(112*2)
 
 	.DB 0								; end of HDMA table
 
 
 
-SRC_HDMA_WorMapVertScrDisplacement:
+SRC_HDMA_WorMapVScrollDisplacement:
 .REPEAT 32								; 32 scanlines = sky
 	.DW 0
 .ENDR

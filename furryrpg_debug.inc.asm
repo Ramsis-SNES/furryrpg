@@ -281,9 +281,9 @@ DebugMenuLoop:
 
 	Accu8
 
-	jmp	(DebugMenuEntryTable, x)
+	jmp	(PTR_DebugMenuEntry, x)
 
-DebugMenuEntryTable:
+PTR_DebugMenuEntry:
 	.DW GoToShowAlphaIntro
 	.DW LoadArea
 	.DW InGameMenu
@@ -293,13 +293,19 @@ DebugMenuEntryTable:
 	.DW ShowSpriteGallery
 	.DW GoToPlayTrack						; sound test works even .IFDEF NOMUSIC ;-)
 
+
+
 GoToShowAlphaIntro:
 	jsl	ShowAlphaIntro
 	jmp	DebugMenu
 
+
+
 GoToPlayTrack:
 	jsl	PlayTrackNow
 	bra	+
+
+
 
 PrintRandomNumber:
 	jsr	CreateRandomNr
