@@ -34,8 +34,6 @@ LoadAreaData:
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, <REG_WMDATA, 1024
 
-	jsr	ClearHUD
-
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	REG_VMAIN
 	jsr	LoadTextBoxBorderTiles					; prepare some stuff for text box
@@ -442,9 +440,6 @@ __AreaGSSLoadTrackDone:
 
 
 ; -------------------------- misc. settings
-	stz	DP_HUD_DispCounter					; reset HUD status
-	stz	DP_HUD_DispCounter+1
-	stz	DP_HUD_Status
 	lda	#%00010111						; turn on BG1/2/3 + sprites on mainscreen and subscreen
 	sta	VAR_ShadowTM
 	sta	VAR_ShadowTM
@@ -479,6 +474,9 @@ __AreaGSSLoadTrackDone:
 
 
 ShowArea:
+	stz	DP_HUD_DispCounter					; reset HUD status
+	stz	DP_HUD_DispCounter+1
+	stz	DP_HUD_Status
 	jsr	ClearHUD
 
 	lda	#PARAM_HUD_Xpos						; initial X position of "text box" frame
@@ -486,7 +484,7 @@ ShowArea:
 	clc								; make up for different X position of "text box" and text
 	adc	#6
 	sta	DP_TextCursor
-	lda	#PARAM_HUD_Ypos						; initial Y position (hidden)
+	lda	#PARAM_HUD_Yhidden					; initial Y position (hidden)
 	sta	temp+1
 	clc
 	adc	#4
@@ -619,13 +617,20 @@ MainAreaLoop:
 
 
 
-; -------------------------- player ###
+; -------------------------- player idle counter
 	Accu16
 
+	lda	DP_Joy1Press						; check for any input (sans Y button)
+	and	#%1011111111110000
+	beq	__PlayerIsIdle
+	stz	DP_PlayerIdleCounter					; player not idle, reset counter
+	bra	+
+
+__PlayerIsIdle:
 	lda	DP_PlayerIdleCounter
 	inc	a							; assume player is idle
-	cmp	#300
-	bcs	+							; only increment counter up to a value of #299
+	cmp	#$FFFF
+	bcs	+							; don't wrap around to 0
 	sta	DP_PlayerIdleCounter
 
 +	Accu8
@@ -639,14 +644,14 @@ MainAreaLoop:
 
 	Accu16
 
-	lda	DP_PlayerIdleCounter					; no, check if player has been idle for at least 300 frames
-	cmp	#299
+	lda	DP_PlayerIdleCounter					; no, check if player has been idle for at least 300 frames (5-6 seconds)
+	cmp	#301
 	bcc	__HUDLogicJumpOut					; no, jump out
 
 	Accu8
 
 	lda	#%10000000						; yes, set "HUD should appear" bit
-	sta	DP_HUD_Status
+	tsb	DP_HUD_Status
 	bra	__HUDLogicDone
 
 __HUDIsVisible:
@@ -654,20 +659,18 @@ __HUDIsVisible:
 
 	lda	DP_HUD_DispCounter
 	inc	a
-	cmp	#150							; show HUD for at least 150 frames before hiding it again
-	bcs	__HideHUDOrNot
 	sta	DP_HUD_DispCounter
-	bra	__HUDLogicJumpOut
+	cmp	#151							; show HUD for at least 150 frames before hiding it again
+	bcc	__HUDLogicJumpOut
 
 __HideHUDOrNot:
-	lda	DP_PlayerIdleCounter					; if player is still idle, don't do anything
-	cmp	#299
-	bcs	__HUDLogicJumpOut
+	lda	DP_PlayerIdleCounter					; if player is currently idle, don't do anything
+	bne	__HUDLogicJumpOut
 
 	Accu8
 
 	lda	#%01000000						; otherwise, set "HUD should disappear" bit
-	sta	DP_HUD_Status
+	tsb	DP_HUD_Status
 
 __HUDLogicJumpOut:
 	Accu8
@@ -720,14 +723,14 @@ __MainAreaNoTextBox:
 	lda	#1							; B not pressed, set slow walking speed
 	bra	__MainAreaLoopBButtonDone
 
-+	lda	DP_HUD_Status						; check whether HUD is already being displayed or disappearing
-	and	#%01000001
++	lda	DP_HUD_Status						; check whether HUD is already being displayed
+	and	#%00000001
 	beq	+
-	lda	#%01000000						; yes, set "HUD should disappear" bit
+	lda	DP_HUD_Status
+	ora	#%01000000						; yes, set "HUD should disappear" bit
+	and	#%01111111						; clear "HUD should appear" bit in case it's set
 	sta	DP_HUD_Status
-+	stz	DP_PlayerIdleCounter
-	stz	DP_PlayerIdleCounter+1
-	lda	#2							; B pressed, set fast walking speed
++	lda	#2							; B pressed, set fast walking speed
 
 __MainAreaLoopBButtonDone:
 	sta	DP_Char1WalkingSpd
@@ -738,13 +741,15 @@ __MainAreaLoopBButtonDone:
 	lda	DP_Joy1New+1
 	and	#%01000000
 	beq	__MainAreaLoopYButtonDone
-	lda	DP_HUD_Status						; check whether HUD is already being displayed or appearing
-	and	#%10000001
-	bne	+
-	lda	#%10000000						; no, set "HUD should appear" bit
+	lda	DP_HUD_Status						; check whether HUD is already being displayed
+	and	#%00000001
+	bne	__MainAreaLoopYButtonDone
+	lda	DP_HUD_Status
+	ora	#%10000000						; no, set "HUD should appear" bit
+	and	#%10111111						; clear "HUD should disappear" bit in case it's set
 	sta	DP_HUD_Status
-+	stz	DP_PlayerIdleCounter
-	stz	DP_PlayerIdleCounter+1
+	lda	#1							; simulate idle player so HUD won't disappear and reappear when there is no input within the next 5-7 seconds
+	sta	DP_PlayerIdleCounter
 
 __MainAreaLoopYButtonDone:
 
@@ -767,8 +772,6 @@ __MainAreaLoopDpadNewDone:
 	and	#%00001000
 	beq	__MainAreaLoopDpadUpDone
 
-	stz	DP_PlayerIdleCounter
-	stz	DP_PlayerIdleCounter+1
 	lda	#TBL_Char1_up
 	sta	DP_Char1SpriteStatus
 	jsr	MakeCollIndexUp
@@ -817,8 +820,6 @@ __MainAreaLoopDpadUpDone:
 	and	#%00000100
 	beq	__MainAreaLoopDpadDownDone
 
-	stz	DP_PlayerIdleCounter
-	stz	DP_PlayerIdleCounter+1
 	lda	#TBL_Char1_down
 	sta	DP_Char1SpriteStatus
 	jsr	MakeCollIndexDown
@@ -863,8 +864,6 @@ __MainAreaLoopDpadDownDone:
 	and	#%00000010
 	beq	__MainAreaLoopDpadLeftDone
 
-	stz	DP_PlayerIdleCounter
-	stz	DP_PlayerIdleCounter+1
 	lda	#TBL_Char1_left
 	sta	DP_Char1SpriteStatus
 	jsr	MakeCollIndexLeft
@@ -908,8 +907,6 @@ __MainAreaLoopDpadLeftDone:
 	and	#%00000001
 	beq	__MainAreaLoopDpadRightDone
 
-	stz	DP_PlayerIdleCounter
-	stz	DP_PlayerIdleCounter+1
 	lda	#TBL_Char1_right
 	sta	DP_Char1SpriteStatus
 	jsr	MakeCollIndexRight
@@ -953,8 +950,6 @@ __MainAreaLoopDpadRightDone:
 	and	#%10000000
 	beq	__MainAreaLoopAButtonDone
 
-	stz	DP_PlayerIdleCounter
-	stz	DP_PlayerIdleCounter+1
 	lda	#$80							; make character idle
 	tsb	DP_Char1SpriteStatus
 	jsr	OpenTextBox
@@ -968,8 +963,6 @@ __MainAreaLoopAButtonDone:
 	and	#%01000000
 	beq	__MainAreaLoopXButtonDone
 
-	stz	DP_PlayerIdleCounter
-	stz	DP_PlayerIdleCounter+1
 	jmp	InGameMenu
 
 __MainAreaLoopXButtonDone:
@@ -983,8 +976,6 @@ __MainAreaLoopSkipDpadABXY:
 	and	#%00010000
 	beq	__MainAreaLoopStButtonDone
 
-	stz	DP_PlayerIdleCounter
-	stz	DP_PlayerIdleCounter+1
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
 	jsr	EffectHSplitOut2

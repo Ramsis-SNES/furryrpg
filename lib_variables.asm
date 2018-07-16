@@ -400,7 +400,8 @@
 .DEFINE PARAM_DebugMenu1stLine	78					; Y position of cursor sprite on first debug menu line
 
 .DEFINE PARAM_HUD_Xpos		24					; X position (in px) of HUD text box start
-.DEFINE PARAM_HUD_Ypos		239
+.DEFINE PARAM_HUD_Yhidden	240					; Y position of hidden HUD text box
+.DEFINE PARAM_HUD_Yvisible	20					; Y position of visible HUD text box
 .DEFINE PARAM_Mode7SkyLines	72					; number of scanlines for sky above Mode 7 landscape
 
 .DEFINE PARAM_RingMenuCenterX	128
@@ -784,7 +785,7 @@
 	DP_HiResPrintLen	db					; holds length of menu hi-res string to print
 	DP_HiResPrintMon	db					; keep track of BG we're printing on: $00 = BG1 (start), $01 = BG2
 	DP_HUD_DispCounter	dw					; holds frame count since HUD appeared
-	DP_HUD_Status		db					; adrrrrrp [a/d = HUD should (re-)appear/disappear, p = HUD is present on screen]
+	DP_HUD_Status		db					; adrrrrrp [a/d = HUD should (re-)appear/disappear, p = HUD is present on screen, r = reserved]
 	DP_HUD_StrLength	db					; holds no. of HUD text characters
 	DP_HUD_TextBoxSize	db					; holds no. of HUD text box (frame) sprites
 	DP_HUD_Ypos		db					; holds current Y position of HUD

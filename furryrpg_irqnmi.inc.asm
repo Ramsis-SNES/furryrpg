@@ -64,8 +64,9 @@ __ShowHUD:
 	Accu8
 
 	lda	DP_HUD_Ypos
-	clc								; DP_HUD_Ypos += 5
-	adc	#5
+	and	#%11111100						; make value divisable by 4 so rising values in DP_HUD_Ypos will always be the same
+	clc								; DP_HUD_Ypos += 4 (HUD appears 4 times as fast as it disappears)
+	adc	#4
 	sta	DP_HUD_Ypos
 	ldx	#1							; start at Y value
 -	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
@@ -93,20 +94,24 @@ __ShowHUD:
 	inx
 	inx
 	inx
-	dey								; all "text box" sprites done?
+	dey								; all font sprites done?
 	bne	-
 
-	lda	DP_HUD_Ypos						; final Y value (18) reached?
-	bmi	+
-	cmp	#18
-	bcc	+
-	lda	#%00000001						; yes, set "HUD is being displayed" bit
+	lda	DP_HUD_Ypos						; final Y value reached?
+	cmp	#PARAM_HUD_Yvisible
+	bne	__UpdateHUDDone
+	lda	DP_HUD_Status
+	ora	#%00000001						; yes, set "HUD is being displayed" bit
+	and	#%01111111						; clear "HUD should appear" bit
 	sta	DP_HUD_Status
 	stz	DP_HUD_DispCounter					; and reset display counter values
 	stz	DP_HUD_DispCounter+1
-+	bra	__UpdateHUDDone
+	bra	__UpdateHUDDone
 
 __HideHUD:
+	lda	#%00000001						; clear "HUD is visible" bit now so the player can bring the HUD back with Y while it's disappearing
+	trb	DP_HUD_Status
+
 	Accu16								; take care about "text box" sprites
 
 	lda	DP_HUD_TextBoxSize
@@ -116,12 +121,13 @@ __HideHUD:
 
 	Accu8
 
-	lda	DP_HUD_Ypos						; final Y value (240) reached?
+	lda	DP_HUD_Ypos
 	dec	a
 	sta	DP_HUD_Ypos						; DP_HUD_Ypos -= 1
-	cmp	#239
+	cmp	#PARAM_HUD_Yhidden					; final/initial (hidden) Y value reached?
 	bne	+
-	stz	DP_HUD_Status						; yes, clear HUD status bits
+	lda	#%01000000
+	trb	DP_HUD_Status						; yes, clear "HUD should disappear" status bit
 	bra	__UpdateHUDDone
 
 +	ldx	#1							; start at Y value
@@ -150,7 +156,7 @@ __HideHUD:
 	inx
 	inx
 	inx
-	dey								; all "text box" sprites done?
+	dey								; all font sprites done?
 	bne	-
 
 __UpdateHUDDone:
