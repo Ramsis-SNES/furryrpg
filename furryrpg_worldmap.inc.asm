@@ -471,7 +471,7 @@ __WorldMapLoopDpadRightDone:
 	stz	REG_VMADDL						; reset VRAM address
 	stz	REG_VMADDH
 
-	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 0		; clear VRAM
+	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, <REG_VMDATAL, 0	; clear VRAM
 
 	jml	DebugMenu
 

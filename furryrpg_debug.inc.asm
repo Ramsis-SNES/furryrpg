@@ -33,7 +33,7 @@ DebugMenu:
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 10240
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, <REG_WMDATA, 10240
 
 	lda	#%00011111						; make sure BG1/2/3 lo/hi tilemaps get updated
 	tsb	DP_DMA_Updates
@@ -52,7 +52,7 @@ DebugMenu:
 	ldx	#ADDR_VRAM_BG3_Tiles
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_Font8x8, GFX_Font8x8, $18, 2048
+	DMA_CH0 $01, :GFX_Font8x8, GFX_Font8x8, <REG_VMDATAL, 2048
 
 	ldx	#0
 	lda	#$20							; priority bit
@@ -64,16 +64,16 @@ DebugMenu:
 	ldx	#ADDR_VRAM_SpriteTiles					; set VRAM address for sprite tiles
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_Sprites_HUDfont, GFX_Sprites_HUDfont, $18, 4096
+	DMA_CH0 $01, :GFX_Sprites_HUDfont, GFX_Sprites_HUDfont, <REG_VMDATAL, 4096
 
 	stz	REG_CGADD						; reset CGRAM address
 
-	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, $22, 32
+	DMA_CH0 $02, :SRC_Palettes_Text, SRC_Palettes_Text, <REG_CGDATA, 32
 
 	lda	#$80							; set CGRAM address to #256 (word address) for sprites
 	sta	REG_CGADD
 
-	DMA_CH0 $02, :SRC_Palettes_HUD, SRC_Palettes_HUD, $22, 32
+	DMA_CH0 $02, :SRC_Palettes_HUD, SRC_Palettes_HUD, <REG_CGDATA, 32
 
 	lda	#%00010111						; turn on BG1/2/3 and sprites on mainscreen and subscreen
 	sta	REG_TM
@@ -371,19 +371,19 @@ ShowSpriteGallery:
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 2048		; clear BG3 tile map
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, <REG_WMDATA, 2048	; clear BG3 tile map
 
 	jsr	SpriteInit						; purge OAM
 
 	ldx	#ADDR_VRAM_SpriteTiles					; set VRAM address for sprite tiles
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_Sprites_Gallery, GFX_Sprites_Gallery, $18, 2048
+	DMA_CH0 $01, :GFX_Sprites_Gallery, GFX_Sprites_Gallery, <REG_VMDATAL, 2048
 
 	lda	#$80							; set CGRAM address to #256 (word address) for sprites
 	sta	REG_CGADD
 
-	DMA_CH0 $02, :SRC_Palettes_Sprites_Gallery, SRC_Palettes_Sprites_Gallery, $22, 160
+	DMA_CH0 $02, :SRC_Palettes_Sprites_Gallery, SRC_Palettes_Sprites_Gallery, <REG_CGDATA, 160
 
 	Accu16
 

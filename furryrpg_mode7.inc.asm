@@ -108,7 +108,7 @@ TestMode7:
 ; -------------------------- HDMA channel 3: color math
 	lda	#$02							; transfer mode (2 bytes --> $2132)
 	sta	REG_DMAP3
-	lda	#$32							; PPU register $2132 (color math subscreen backdrop color)
+	lda	#<REG_COLDATA						; PPU register $2132 (color math subscreen backdrop color)
 	sta	REG_BBAD3
 	ldx	#ARRAY_HDMA_ColorMath
 	stx	REG_A1T3L
@@ -120,7 +120,7 @@ TestMode7:
 ; -------------------------- HDMA channel 4: Mode 7 A
 	lda	#$42							; transfer mode (2 bytes --> $211B), indirect table mode
 	sta	REG_DMAP4
-	lda	#$1B							; PPU reg. $211B
+	lda	#<REG_M7A						; PPU reg. $211B
 	sta	REG_BBAD4
 	ldx	#SRC_HDMA_M7A
 	stx	REG_A1T4L
@@ -134,7 +134,7 @@ TestMode7:
 ; -------------------------- HDMA channel 5: Mode 7 B
 	lda	#$42							; transfer mode (2 bytes --> $211C), indirect table mode
 	sta	REG_DMAP5
-	lda	#$1C							; PPU reg. $211C
+	lda	#<REG_M7B						; PPU reg. $211C
 	sta	REG_BBAD5
 	ldx	#SRC_HDMA_M7B
 	stx	REG_A1T5L
@@ -148,7 +148,7 @@ TestMode7:
 ; -------------------------- HDMA channel 6: Mode 7 C
 	lda	#$42							; transfer mode (2 bytes --> $211D), indirect table mode
 	sta	REG_DMAP6
-	lda	#$1D							; PPU reg. $211D
+	lda	#<REG_M7C						; PPU reg. $211D
 	sta	REG_BBAD6
 	ldx	#SRC_HDMA_M7C
 	stx	REG_A1T6L
@@ -162,7 +162,7 @@ TestMode7:
 ; -------------------------- HDMA channel 7: Mode 7 D
 	lda	#$42							; transfer mode (2 bytes --> $211E), indirect table mode
 	sta	REG_DMAP7
-	lda	#$1E							; PPU reg. $211E
+	lda	#<REG_M7D						; PPU reg. $211E
 	sta	REG_BBAD7
 	ldx	#SRC_HDMA_M7D
 	stx	REG_A1T7L
@@ -176,7 +176,7 @@ TestMode7:
 ; -------------------------- load Mode 7 palette
 	stz	REG_CGADD						; start at color 0
 
-	DMA_CH0 $02, :SRC_IoTmappal, SRC_IoTmappal, $22, 512
+	DMA_CH0 $02, :SRC_IoTmappal, SRC_IoTmappal, <REG_CGDATA, 512
 
 
 
@@ -187,7 +187,7 @@ TestMode7:
 	ldx	#$0000							; set VRAM address $0000
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_IoTmappic, GFX_IoTmappic, $18, 32768
+	DMA_CH0 $01, :GFX_IoTmappic, GFX_IoTmappic, <REG_VMDATAL, 32768
 ; ##########################################################
 
 
@@ -197,29 +197,29 @@ TestMode7:
 ;	ldx	#$0000							; set VRAM address $0000
 ;	stx	REG_VMADDL
 
-;	DMA_CH0 $00, :SRC_Maptilemap, SRC_Maptilemap, $18, SRC_Maptilemap_END - SRC_Maptilemap
+;	DMA_CH0 $00, :SRC_Maptilemap, SRC_Maptilemap, <REG_VMDATAL, SRC_Maptilemap_END - SRC_Maptilemap
 
 ;	lda	#$80							; increment VRAM address by 1 after writing to $2119
 ;	sta	REG_VMAIN
 ;	ldx	#$0000							; set VRAM address $0000
 ;	stx	REG_VMADDL
 
-;	DMA_CH0 $00, :GFX_Mappic, GFX_Mappic, $19, GFX_Mappic_END - GFX_Mappic
+;	DMA_CH0 $00, :GFX_Mappic, GFX_Mappic, <REG_VMDATAH, GFX_Mappic_END - GFX_Mappic
 ; ##############################################################
 
 	ldx	#$4000							; set VRAM address $4000
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_Mode7_Sky, GFX_Mode7_Sky, $18, _sizeof_GFX_Mode7_Sky
+	DMA_CH0 $01, :GFX_Mode7_Sky, GFX_Mode7_Sky, <REG_VMDATAL, _sizeof_GFX_Mode7_Sky
 
 	ldx	#$5800							; set VRAM address $5800
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :SRC_TileMap_Mode7_Sky, SRC_TileMap_Mode7_Sky, $18, _sizeof_SRC_TileMap_Mode7_Sky
+	DMA_CH0 $01, :SRC_TileMap_Mode7_Sky, SRC_TileMap_Mode7_Sky, <REG_VMDATAL, _sizeof_SRC_TileMap_Mode7_Sky
 
 	stz	REG_CGADD						; reset CGRAM address
 
-	DMA_CH0 $02, :SRC_Palette_Mode7_Sky, SRC_Palette_Mode7_Sky, $22, 32
+	DMA_CH0 $02, :SRC_Palette_Mode7_Sky, SRC_Palette_Mode7_Sky, <REG_CGDATA, 32
 
 
 
@@ -231,19 +231,19 @@ TestMode7:
 	ldx	#ADDR_VRAM_SpriteTiles					; set VRAM address for sprite tiles
 	stx	REG_VMADDL
 
-	DMA_CH0 $01, :GFX_Sprites_HUDfont, GFX_Sprites_HUDfont, $18, 4096
+	DMA_CH0 $01, :GFX_Sprites_HUDfont, GFX_Sprites_HUDfont, <REG_VMDATAL, 4096
 
 
 
 .ENDASM
 
 ; -------------------------- load cloud sprites
-	DMA_CH0 $01, :GFX_Sprites_Clouds, GFX_Sprites_Clouds, $18, 2048
+	DMA_CH0 $01, :GFX_Sprites_Clouds, GFX_Sprites_Clouds, <REG_VMDATAL, 2048
 
 	lda	#$A0							; start at 3rd sprite color
 	sta	REG_CGADD
 
-	DMA_CH0 $02, :SRC_Palette_Clouds, SRC_Palette_Clouds, $22, 32
+	DMA_CH0 $02, :SRC_Palette_Clouds, SRC_Palette_Clouds, <REG_CGDATA, 32
 
 
 
@@ -319,7 +319,7 @@ TestMode7:
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
-	DMA_CH0 $00, :SRC_HDMA_Mode7Sky72, SRC_HDMA_Mode7Sky72, $80, _sizeof_SRC_HDMA_Mode7Sky72
+	DMA_CH0 $00, :SRC_HDMA_Mode7Sky72, SRC_HDMA_Mode7Sky72, <REG_WMDATA, _sizeof_SRC_HDMA_Mode7Sky72
 
 
 
