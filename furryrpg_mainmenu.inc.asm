@@ -541,42 +541,61 @@ __RingMenuLoopDpadRightDone:
 
 
 ; -------------------------- update headline based on angle
-	lda	DP_RingMenuAngle
-	bne	+
+	lda	DP_RingMenuAngle					; angle $00, $20 ... $C0, $E0
+	lsr	a							; shift into lower nibble
+	lsr	a
+	lsr	a
+	lsr	a
+
+	Accu16
+
+	and	#$00FF							; remove garbage in B
+	tax								; and use as jump table index
+
+	Accu8
+
+	jmp	(PTR_MenuHeadline, x)
+
+PTR_MenuHeadline:
+	.DW PrintMenuHeadline00
+	.DW PrintMenuHeadline20
+	.DW PrintMenuHeadline40
+	.DW PrintMenuHeadline60
+	.DW PrintMenuHeadline80
+	.DW PrintMenuHeadlineA0
+	.DW PrintMenuHeadlineC0
+	.DW PrintMenuHeadlineE0
+
+PrintMenuHeadline00:
 	PrintString	2, 8, "    Settings    "
 	jmp	++
 
-+	cmp	#$20
-	bne	+
+PrintMenuHeadline20:
 	PrintString	2, 8, "   Quit Game    "
 	jmp	++
 
-+	cmp	#$40
-	bne	+
+PrintMenuHeadline40:
 	PrintString	2, 8, "      ???1      "
 	jmp	++
 
-+	cmp	#$60
-	bne	+
+PrintMenuHeadline60:
 	PrintString	2, 8, "      ???2      "
 	jmp	++
 
-+	cmp	#$80
-	bne	+
+PrintMenuHeadline80:
 	PrintString	2, 8, "   Inventory    "
 	bra	++
 
-+	cmp	#$A0
-	bne	+
+PrintMenuHeadlineA0:
 	PrintString	2, 8, "     Talent     "
 	bra	++
 
-+	cmp	#$C0
-	bne	+
+PrintMenuHeadlineC0:
 	PrintString	2, 8, "     Party      "
 	bra	++
 
-+	PrintString	2, 8, "   Lily's log   "
+PrintMenuHeadlineE0:
+	PrintString	2, 8, "   Lily's log   "
 ++
 
 ;.IFDEF DEBUG
