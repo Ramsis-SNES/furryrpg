@@ -755,7 +755,7 @@
 	DP_AreaMetaMapIndex	dw
 	DP_AreaMetaMapIndex2	dw
 	DP_AreaNamePointerNo	dw
-	DP_AreaProperties	dw					; 0000000000bayxss [s = screen size, as in BGXSC regs, x/y = area is scrollable horizontally/vertically, a/b = auto-scroll area horizontally/vertically, 0 = reserved]
+	DP_AreaProperties	dw					; rrrrrrrrrrbayxss [s = screen size, as in BGXSC regs, x/y = area is scrollable horizontally/vertically, a/b = auto-scroll area horizontally/vertically, r = reserved]
 	DP_AutoJoy1		dw
 	DP_AutoJoy2		dw
 	DP_Char1FrameCounter	db
@@ -781,7 +781,7 @@
 	DP_GameTimeSeconds	db					; 1 game time second = 1 frame (??)
 	DP_GameTimeMinutes	db
 	DP_GameTimeHours	db
-	DP_HDMA_Channels	db					; DCBAcbsr [ABCD = M7A/M7B/M7C/M7D, c = color math, b = background color gradient, s = screen mode, r = reserved]. Variable is transferred to $420C during Vblank
+	DP_HDMA_Channels	db					; variable is copied to $420C (HDMAEN) during Vblank
 	DP_HiResPrintLen	db					; holds length of menu hi-res string to print
 	DP_HiResPrintMon	db					; keep track of BG we're printing on: $00 = BG1 (start), $01 = BG2
 	DP_HUD_DispCounter	dw					; holds frame count since HUD appeared

@@ -253,7 +253,7 @@ EffectHSplitOut:							; split out from the middle of the screen // FIXME (occas
 ; -------------------------- channel 1: main effects channel
 	lda	#$40							; transfer mode (1 byte --> $2100), indirect table mode
 	sta	REG_DMAP1
-	stz	REG_BBAD1							; PPU reg. $2100
+	stz	REG_BBAD1						; PPU reg. $2100
 	ldx	#SRC_HDMA_FX_1Byte
 	stx	REG_A1T1L
 	lda	#:SRC_HDMA_FX_1Byte

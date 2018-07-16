@@ -23,9 +23,12 @@ LoadAreaData:
 
 	DisableIRQs
 
+.IFNDEF NOMUSIC
 	jsl	music_stop						; stop music in case it's playing
 
 	stz	MSU_CONTROL						; stop MSU1 track in case it's playing
+.ENDIF
+
 	stz	DP_HDMA_Channels					; disable HDMA
 	stz	REG_HDMAEN
 	ldx	#(ARRAY_BG3TileMap & $FFFF)				; clear BG3 text

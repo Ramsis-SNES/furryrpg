@@ -40,7 +40,6 @@ DebugMenu:
 	tsb	DP_DMA_Updates+1
 
 	WaitFrames	3						; wait for regs/tilemaps to get cleared
-
 	DisableIRQs
 
 
@@ -343,14 +342,14 @@ PrintRandomNumber:
 	lda	#1
 	jsl	LoadEvent
 
+.ACCU 8
+
 	jmp	DebugMenu
 +
 
 	jmp	DebugMenuLoop
 
 
-
-.ACCU 8
 
 ShowSpriteGallery:
 	lda	#$80							; enter forced blank

@@ -617,7 +617,7 @@ Process_EC_MOVE_OBJ:
 
 Process_EC_MSU_LOAD_TRACK:
 	lda	DP_GameConfig
-	and	#$0001
+	and	#%0000000000000001					; check for "MSU1 present" flag
 	beq	+
 	lda	[DP_EventCodeAddress], y
 	sta	DP_MSU1_NextTrack
@@ -663,7 +663,7 @@ Process_EC_MSU_TRACK_FADEOUT:
 
 Process_EC_MSU_TRACK_PLAY:
 	lda	DP_GameConfig
-	and	#$0001
+	and	#%0000000000000001					; check for "MSU1 present" flag
 	beq	+
 	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y
@@ -684,7 +684,7 @@ Process_EC_MSU_TRACK_STOP:
 	Accu8
 
 	lda	DP_GameConfig
-	and	#$01
+	and	#%00000001						; check for "MSU1 present" flag
 	beq	+
 	stz	MSU_CONTROL
 +	jmp	ProcessEventLoop
@@ -760,7 +760,6 @@ Process_EC_SET_SHADOW_REGISTER:
 	Accu8
 
 	stz	REG_WMADDH						; bank $7E
-
 	lda	[DP_EventCodeAddress], y				; load 8-bit value
 	sta	REG_WMDATA						; write value
 	iny

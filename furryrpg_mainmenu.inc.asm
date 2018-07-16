@@ -845,7 +845,6 @@ GotoInventory:
 	bne	-
 
 	Accu8
-
 	SetTextPos	2, 2
 
 	ldx	#0
