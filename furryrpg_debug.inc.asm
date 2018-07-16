@@ -214,7 +214,12 @@ DebugMenuLoop:
 
 	Accu16
 
-	dec	DP_AreaCurrent
+	lda	DP_AreaCurrent
+	dec	a
+	cmp	#$FFFF
+	bne	_f
+	lda	#_sizeof_SRC_PointerAreaProperty/2-1			; underflow, load no. of last existing area
+__	sta	DP_AreaCurrent
 
 	Accu8
 
@@ -243,7 +248,12 @@ DebugMenuLoop:
 
 	Accu16
 
-	inc	DP_AreaCurrent
+	lda	DP_AreaCurrent
+	inc	a
+	cmp	#_sizeof_SRC_PointerAreaProperty/2
+	bcc	_f
+	lda	#$0000							; overflow, load no. of first area
+__	sta	DP_AreaCurrent
 
 	Accu8
 
