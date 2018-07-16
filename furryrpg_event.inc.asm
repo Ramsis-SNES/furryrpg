@@ -429,7 +429,7 @@ Process_EC_GSS_TRACK_PLAY:
 	Accu8
 
 	lda.l	REG_RDNMI						; clear NMI flag
-	lda.l	DP_Shadow_NMITIMEN					; reenable interrupts
+	lda.l	VAR_Shadow_NMITIMEN					; reenable interrupts
 	sta.l	REG_NMITIMEN
 	cli
 	jmp	ProcessEventLoop
@@ -445,7 +445,7 @@ Process_EC_GSS_TRACK_STOP:
 	jsl	music_stop
 
 	lda.l	REG_RDNMI						; clear NMI flag
-	lda.l	DP_Shadow_NMITIMEN					; reenable interrupts
+	lda.l	VAR_Shadow_NMITIMEN					; reenable interrupts
 	sta.l	REG_NMITIMEN
 	cli
 	jmp	ProcessEventLoop

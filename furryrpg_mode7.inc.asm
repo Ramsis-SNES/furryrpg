@@ -372,7 +372,7 @@ TestMode7:
 	sta	DP_HDMA_Channels
 	lda	REG_RDNMI						; clear NMI flag
 	lda	#%10110001						; enable NMI, auto-joypad read, and IRQ at H=HTIMEL and V=VTIMEL
-	sta	DP_Shadow_NMITIMEN
+	sta	VAR_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
 	cli
 	jsr	ResetMode7Matrix

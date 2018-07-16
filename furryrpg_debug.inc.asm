@@ -91,7 +91,7 @@ DebugMenu:
 
 	lda	REG_RDNMI						; clear NMI flag
 	lda	#$81							; re-enable Vblank NMI + Auto Joypad Read
-	sta	DP_Shadow_NMITIMEN
+	sta	VAR_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
 	cli
 

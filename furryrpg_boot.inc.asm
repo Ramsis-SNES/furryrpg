@@ -356,7 +356,7 @@ ShowAlphaIntro:
 	SetNMI	TBL_NMI_Intro
 
 	lda	REG_RDNMI						; clear NMI flag
-	lda	DP_Shadow_NMITIMEN					; reenable interrupts
+	lda	VAR_Shadow_NMITIMEN					; reenable interrupts
 	sta	REG_NMITIMEN
 	cli
 
@@ -393,7 +393,7 @@ ShowAlphaIntro:
 	lda	REG_RDNMI						; clear NMI flag
 	lda	#$81							; reenable interrupts
 	sta	REG_NMITIMEN
-	sta	DP_Shadow_NMITIMEN
+	sta	VAR_Shadow_NMITIMEN
 	cli
 	rtl
 

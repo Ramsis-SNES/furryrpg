@@ -91,7 +91,7 @@ LoadTrackGSS:
 	jsl	spc_command_asm
 
 	lda.l	REG_RDNMI						; clear NMI flag
-	lda.l	DP_Shadow_NMITIMEN					; reenable interrupts
+	lda.l	VAR_Shadow_NMITIMEN					; reenable interrupts
 	sta.l	REG_NMITIMEN
 	cli
 	rtl
@@ -127,7 +127,7 @@ PlayTrackGSS:
 	Accu8
 
 	lda.l	REG_RDNMI						; clear NMI flag
-	lda.l	DP_Shadow_NMITIMEN					; reenable interrupts
+	lda.l	VAR_Shadow_NMITIMEN					; reenable interrupts
 	sta.l	REG_NMITIMEN
 	cli
 	rtl
@@ -365,7 +365,7 @@ BootSPC700:
 	stz	gss_param
 	jsl	spc_command_asm
 
-	lda.l	DP_Shadow_NMITIMEN					; reenable interrupts
+	lda.l	VAR_Shadow_NMITIMEN					; reenable interrupts
 	sta.l	REG_NMITIMEN
 	cli
 

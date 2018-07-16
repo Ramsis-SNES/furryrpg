@@ -817,7 +817,6 @@
 	DP_RingMenuAngle	dw
 	DP_RingMenuAngleOffset	dw
 	DP_RingMenuRadius	db
-	DP_Shadow_NMITIMEN	db					; shadow copy of REG_NMITIMEN
 	DP_SPC_DataBank		dw
 	DP_SPC_DataOffset	dw
 	DP_SPC_DataSize		dw
@@ -848,7 +847,7 @@
 	DP_VWF_Loop		db
 	DP_WorldMapBG1VScroll	dw
 	DP_WorldMapBG1HScroll	dw
-.ENDE									; 181 of 256 bytes used
+.ENDE									; 178 of 256 bytes used
 
 
 
@@ -976,6 +975,7 @@
 
 	VAR_Char1TargetScrPosYX		dw				; high byte = Y position, low byte = X position (in px)
 	VAR_GameDataItemQty		db
+	VAR_Shadow_NMITIMEN		db				; shadow copy of REG_NMITIMEN
 	VAR_TextBox_TSTM		dw				; shadow copies of subscreen (high) & mainscreen (low) designation registers ($212C/212D) for text box area
 .ENDE									; $FF7 bytes + $200 = $11F7 bytes used (initial stack pointer is set to $1FFF)
 

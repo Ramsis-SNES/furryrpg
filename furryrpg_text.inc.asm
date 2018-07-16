@@ -1453,7 +1453,7 @@ __CloseTextBoxAniLoop:
 	Accu8
 
 	lda	#%00110000						; clear IRQ enable bits
-	trb	DP_Shadow_NMITIMEN
+	trb	VAR_Shadow_NMITIMEN
 	lda	#%00110100						; deactivate used HDMA channels
 	trb	DP_HDMA_Channels
 
@@ -1478,7 +1478,7 @@ TextBoxAnimationOpen:
 	lda	#%00110100						; activate HDMA ch. 2 (backdrop color), 4, 5 (BG scrolling regs)
 	tsb	DP_HDMA_Channels
 	lda	#%00110000						; enable IRQ at H=$4207 and V=$4209
-	tsb	DP_Shadow_NMITIMEN
+	tsb	VAR_Shadow_NMITIMEN
 
 __OpenTextBoxAniLoop:
 	WaitFrames	1

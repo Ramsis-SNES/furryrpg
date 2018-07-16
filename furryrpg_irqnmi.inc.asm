@@ -280,7 +280,7 @@ __SkipRefreshes3:
 ; -------------------------- update registers
 	jsl	RAM_Code.UpdatePPURegs
 
-	lda	DP_Shadow_NMITIMEN
+	lda	VAR_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
 
 

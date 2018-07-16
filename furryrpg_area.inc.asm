@@ -460,7 +460,7 @@ __AreaGSSLoadTrackDone:
 
 	lda	REG_RDNMI						; clear NMI flag
 	lda	#$81							; enable Vblank NMI + Auto Joypad Read
-	sta	DP_Shadow_NMITIMEN
+	sta	VAR_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
 	cli								; re-enable interrupts
 	lda	#%00011111						; make sure BG1/2/3 lo/hi tilemaps get updated
@@ -612,7 +612,7 @@ __AreaMSU1TrackDone:
 MainAreaLoop:
 	WaitFrames	1						; don't use WAI here as IRQ might be enabled!
 
-;	lda	DP_Shadow_NMITIMEN
+;	lda	VAR_Shadow_NMITIMEN
 ;	sta	REG_NMITIMEN
 
 
@@ -982,9 +982,8 @@ __MainAreaLoopSkipDpadABXY:
 
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
-	lda	#%00110000						; clear IRQ enable bits
-	trb	DP_Shadow_NMITIMEN
-	lda	DP_Shadow_NMITIMEN
+	lda	VAR_Shadow_NMITIMEN
+	and	#%11001111						; clear IRQ enable bits
 	sta	REG_NMITIMEN
 ;	lda	#TBL_Char1_down|$80					; make char face the player (for menu later) // adjust when debug menu is removed
 ;	sta	DP_Char1SpriteStatus

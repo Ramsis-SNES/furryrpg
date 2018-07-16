@@ -996,7 +996,7 @@ SwitchToMinimalVblank:
 	SetNMI	TBL_NMI_Minimal
 
 	lda	REG_RDNMI						; clear NMI flag
-	lda	DP_Shadow_NMITIMEN
+	lda	VAR_Shadow_NMITIMEN
 	sta	REG_NMITIMEN
 	cli								; re-enable interrupts
 	rts
@@ -1016,7 +1016,7 @@ SwitchFromPrevVblank:
 	Accu8
 
 	lda	REG_RDNMI						; clear NMI flag
-	lda	DP_Shadow_NMITIMEN					; re-enable interrupts using shadow variable
+	lda	VAR_Shadow_NMITIMEN					; re-enable interrupts using shadow variable
 	sta	REG_NMITIMEN
 	cli
 	rts
