@@ -198,7 +198,7 @@ STR_DialogGer0026:
 ; --------------------------------------------------------------------------------
 	.DB CC_Indent, "Der B", uuml, "rgermeister verspricht demjenigen eine", CC_NewLine
 	.DB CC_Indent, "Belohnung, der rausfindet, was es mit diesem" CC_NewLine
-	.DB CC_Indent, "Geist auf sich hat, von dem alle reden. Ich hab", CC_NewLine
+	.DB CC_Indent, ",,Geist\" auf sich hat, von dem alle reden. Ich hab", CC_NewLine
 	.DB CC_Indent, "dir doch davon erz", auml, "hlt, wei", szlig, "t du noch?", CC_End
 
 STR_DialogGer0027:
@@ -211,7 +211,7 @@ STR_DialogGer0027:
 STR_DialogGer0028:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "ALEC:", CC_NewLine
-	.DB CC_Indent, "Nicht nur du. Tusker hat neulich erw", auml, "hnt, aus", CC_NewLine
+	.DB CC_Indent, "Nicht nur du. Tusker hat neulich erz", auml, "hlt, aus", CC_NewLine
 	.DB CC_Indent, "der Vorratskammer seiner Sch", auml, "nke sei ein", CC_NewLine
 	.DB CC_Indent, "Dutzend Ringe Dauerwurst geklaut worden.", CC_End
 
@@ -569,9 +569,9 @@ STR_DialogGer0083:
 STR_DialogGer0084:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "GEISSENB", Uuml, "RGERMEISTER:", CC_NewLine
-	.DB CC_Indent, "Sir Greyfur, wie Sie wahrscheinlich wissen, erwartet", CC_NewLine
-	.DB CC_Indent, "denjenigen, der uns dieser schrecklichen Bedrohung", CC_NewLine
-	.DB CC_Indent, "entledigt, ewiger Ruhm ...", CC_ClearTextBox
+	.DB CC_Indent, "Ja, nat", uuml, "rlich ... Sir Greyfur, wie Sie wahrscheinlich", CC_NewLine
+	.DB CC_Indent, "wissen, erwartet denjenigen, der uns dieser", CC_NewLine
+	.DB CC_Indent, "schrecklichen Bedrohung entledigt, ewiger Ruhm ...", CC_ClearTextBox
 ; --------------------------------------------------------------------------------
 	.DB CC_Indent, "... zumal sie unser Dorf betrifft, seit Sie hier", CC_NewLine
 	.DB CC_Indent, "eingetroffen sind.", CC_End

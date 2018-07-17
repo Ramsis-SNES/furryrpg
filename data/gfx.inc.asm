@@ -14,7 +14,7 @@
 .DEFINE FONT_8x8		"gfx/font_8x8.pic"			; 2048 bytes
 .DEFINE FONT_HUD		"gfx/font_hud_vwf.pic"
 .DEFINE FONT_HUD_PAL		"gfx/font_hud_vwf.pal"
-.DEFINE FONT_MODE5		"gfx/font_mode5_vwf.pic"		; 4096 bytes
+.DEFINE FONT_MODE5		"gfx/font_mode5_vwf1a.pic"		; 4096 bytes
 
 .DEFINE LOGO			"gfx/logo-gr.pic"
 .DEFINE LOGO_MAP		"gfx/logo-gr.map"

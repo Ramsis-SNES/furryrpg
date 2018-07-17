@@ -190,7 +190,7 @@ STR_DialogEng0026:
 	.DB CC_Indent, "But wait 'til you hear this ...", CC_ClearTextBox
 ; --------------------------------------------------------------------------------
 	.DB CC_Indent, "The mayor offers a reward to anyfur who finds", CC_NewLine
-	.DB CC_Indent, "out what's behind this ghost people have been", CC_NewLine
+	.DB CC_Indent, "out what's behind this \"ghost'' people have been", CC_NewLine
 	.DB CC_Indent, "talking about lately. You remember the stories", CC_NewLine
 	.DB CC_Indent, "I told you, don't you?", CC_End
 
@@ -216,7 +216,7 @@ STR_DialogEng0029:
 STR_DialogEng0030:
 	.DB CC_Portrait, 2, CC_BoxBlue
 	.DB "LILY:", CC_NewLine
-	.DB CC_Indent, "Right. Apart from Tusker's missing sausages,", CC_NewLine
+	.DB CC_Indent, "Right. But apart from Tusker's missing sausages,", CC_NewLine
 	.DB CC_Indent, "even more weird stuff's been going on in the", CC_NewLine
 	.DB CC_Indent, "village.", CC_ClearTextBox
 ; --------------------------------------------------------------------------------
@@ -547,9 +547,9 @@ STR_DialogEng0083:
 STR_DialogEng0084:
 	.DB CC_Portrait, 0, CC_BoxBlue
 	.DB "GOATEN MAYOR:", CC_NewLine
-	.DB CC_Indent, "Sir Greyfur, as you are probably aware, eternal", CC_NewLine
-	.DB CC_Indent, "glory awaits he who rids us of that dreadful", CC_NewLine
-	.DB CC_Indent, "threat ...", CC_ClearTextBox
+	.DB CC_Indent, "Yes, of course ... Sir Greyfur, as you are probably", CC_NewLine
+	.DB CC_Indent, "aware, eternal glory awaits he who rids us", CC_NewLine
+	.DB CC_Indent, "of that dreadful threat ...", CC_ClearTextBox
 ; --------------------------------------------------------------------------------
 	.DB CC_Indent, "... a threat which has haunted our village", CC_NewLine
 	.DB CC_Indent, "ever since you showed up here.", CC_End
