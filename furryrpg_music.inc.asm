@@ -377,38 +377,6 @@ BootSPC700:
 
 .ACCU 8
 
-CheckForMSU1:
-	lda	MSU_ID							; check for "S-MSU1"
-	cmp	#'S'
-	bne	__NoMSU1
-	lda	MSU_ID+1
-	cmp	#'-'
-	bne	__NoMSU1
-	lda	MSU_ID+2
-	cmp	#'M'
-	bne	__NoMSU1
-	lda	MSU_ID+3
-	cmp	#'S'
-	bne	__NoMSU1
-	lda	MSU_ID+4
-	cmp	#'U'
-	bne	__NoMSU1
-	lda	MSU_ID+5
-	cmp	#'1'
-	beq	__MSU1Found
-
-__NoMSU1:
-	lda	#%00000001
-	trb	DP_GameConfig						; clear "MSU1 present" flag
-	bra	+
-
-__MSU1Found:
-	lda	#%00000001
-	tsb	DP_GameConfig						; set "MSU1 present" flag
-+	rtl
-
-
-
 .ENDASM
 
 	lda	#$81							; VBlank NMI + Auto Joypad Read

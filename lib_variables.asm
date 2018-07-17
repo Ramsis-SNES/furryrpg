@@ -247,7 +247,10 @@
 .DEFINE REG_NTRL7		$437A
 .DEFINE REG_UNUSED7		$437B
 
-; -------------------------- MSU1 registers
+
+
+
+; -------------------------- Enhancement chip registers
 .DEFINE MSU_STATUS		$2000
 .DEFINE MSU_READ		$2001
 .DEFINE MSU_ID			$2002
@@ -255,6 +258,8 @@
 .DEFINE MSU_TRACK		$2004
 .DEFINE MSU_VOLUME		$2006
 .DEFINE MSU_CONTROL		$2007
+.DEFINE SRTC_READ		$2800
+.DEFINE SRTC_WRITE		$2801
 
 
 
@@ -776,7 +781,7 @@
 	DP_EventControl		db					; rrrrrrrm [m = monitor joypad 1, r = reserved]
 	DP_EventMonitorJoy1	dw					; joypad bits to be monitored by event handler
 	DP_EventWaitFrames	dw
-	DP_GameConfig		db					; rrrrrrrm [m = MSU1 present, r = reserved]
+	DP_GameConfig		db					; rrrrrrcm [c = RTC present, m = MSU1 present, r = reserved]
 	DP_GameMode		db					; arrrrrrr [a = auto-mode, r = reserved]
 	DP_GameTimeSeconds	db					; 1 game time second = 1 frame (??)
 	DP_GameTimeMinutes	db
@@ -977,7 +982,14 @@
 	VAR_GameDataItemQty		db
 	VAR_Shadow_NMITIMEN		db				; shadow copy of REG_NMITIMEN
 	VAR_TextBox_TSTM		dw				; shadow copies of subscreen (high) & mainscreen (low) designation registers ($212C/212D) for text box area
-.ENDE									; $FF7 bytes + $200 = $11F7 bytes used (initial stack pointer is set to $1FFF)
+	VAR_Time_Second			db				; RTC-based time/date variables
+	VAR_Time_Minute			db
+	VAR_Time_Hour			db
+	VAR_Time_Day			db
+	VAR_Time_Month			db
+	VAR_Time_Year			db
+	VAR_Time_Century		db
+.ENDE									; $EFF bytes + $200 = $10FF bytes used (initial stack pointer is set to $1FFF)
 
 
 

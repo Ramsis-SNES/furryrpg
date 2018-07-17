@@ -173,7 +173,7 @@ Boot:
 
 ; -------------------------- more hardware checks/initialization
 	jsl	BootSPC700						; boot APU with SNESGSS sound driver
-	jsl	CheckForMSU1						; check if MSU1 present
+	jsl	CheckForEnhChips					; check if enhancement chips like MSU1, RTC etc. are available
 	jsl	CheckSRAM						; check SRAM integrity
 
 
@@ -432,6 +432,94 @@ StartScreenLoop:
 
 
 ; ************************* Testing functions **************************
+
+CheckForEnhChips:
+
+
+
+; -------------------------- MSU1 (byuu, ikari)
+	lda	MSU_ID							; check for "S-MSU1"
+	cmp	#'S'
+	bne	__NoMSU1
+	lda	MSU_ID+1
+	cmp	#'-'
+	bne	__NoMSU1
+	lda	MSU_ID+2
+	cmp	#'M'
+	bne	__NoMSU1
+	lda	MSU_ID+3
+	cmp	#'S'
+	bne	__NoMSU1
+	lda	MSU_ID+4
+	cmp	#'U'
+	bne	__NoMSU1
+	lda	MSU_ID+5
+	cmp	#'1'
+	beq	__MSU1Found
+
+__NoMSU1:
+	lda	#%00000001
+	trb	DP_GameConfig						; clear "MSU1 present" flag
+	bra	+
+
+__MSU1Found:
+	lda	#%00000001
+	tsb	DP_GameConfig						; set "MSU1 present" flag
++
+
+
+
+; -------------------------- S-RTC (Sharp)
+	lda	SRTC_READ
+	and	#$0F							; from Fullsnes: If ([002800h] AND 0F)=0Fh then read <Timestamp(13 digits)>
+	cmp	#$0F
+	beq	__SRTCfound
+	lda	#%00000010
+	trb	DP_GameConfig						; clear "S-RTC present" flag
+	bra	+
+
+__SRTCfound:
+	lda	#%00000010
+	tsb	DP_GameConfig						; set "S-RTC present" flag
+/*	lda	#$0E							; from Fullsnes: Send <0Eh,04h,0Dh,0Eh,00h,Timestamp(12 digits),0Dh> to [002801h]
+	sta	SRTC_WRITE
+	lda	#$04
+	sta	SRTC_WRITE
+	lda	#$0D
+	sta	SRTC_WRITE
+	lda	#$0E
+	sta	SRTC_WRITE
+	stz	SRTC_WRITE
+	stz	SRTC_WRITE						; seconds (lower 4 bits)
+	stz	SRTC_WRITE						; seconds (upper 4 bits)
+	lda	#$05
+	sta	SRTC_WRITE						; minutes.lo
+	lda	#$02
+	sta	SRTC_WRITE						; minutes.hi
+	lda	#$06
+	sta	SRTC_WRITE						; hours.lo
+	lda	#$01
+	sta	SRTC_WRITE						; hours.hi
+	lda	#$07
+	sta	SRTC_WRITE						; day.lo
+	lda	#$01
+	sta	SRTC_WRITE						; day.hi
+	lda	#$07
+	sta	SRTC_WRITE						; month
+	lda	#$08
+	sta	SRTC_WRITE						; year.lo
+	lda	#$01
+	sta	SRTC_WRITE						; year.hi
+	lda	#$0A
+	sta	SRTC_WRITE						; century
+;	lda	something
+;	sta	SRTC_WRITE						; weekday
+	lda	#$0D
+	sta	SRTC_WRITE
+*/
++	rtl
+
+
 
 VerifyROMIntegrity:
 	stz	REG_CGADD						; reset CGRAM address for mainscreen BG color

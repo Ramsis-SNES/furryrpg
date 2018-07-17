@@ -172,6 +172,93 @@ DebugMenuLoop:
 
 
 
+; -------------------------- update time using RTC
+	lda	DP_GameConfig
+	and	#%00000010
+	bne	+
+	jmp	__DebugMenuRTCDone
+
++	lda	#$0D							; seems to be the "get time" command ??
+	sta	SRTC_WRITE
+	lda	SRTC_READ						; dummy read, should be $0F
+	lda	SRTC_READ						; seconds (lower 4 bits)
+	and	#$0F
+	sta	temp
+	lda	SRTC_READ						; seconds (upper 4 bits)
+	and	#$0F
+	asl	a							; shift to upper nibble
+	asl	a
+	asl	a
+	asl	a
+	ora	temp							; combine nibbles
+	sta	VAR_Time_Second
+	lda	SRTC_READ						; minutes.lo
+	and	#$0F
+	sta	temp
+	lda	SRTC_READ						; minutes.hi
+	and	#$0F
+	asl	a
+	asl	a
+	asl	a
+	asl	a
+	ora	temp
+	sta	VAR_Time_Minute
+	lda	SRTC_READ						; hours.lo
+	and	#$0F
+	sta	temp
+	lda	SRTC_READ						; hours.hi
+	and	#$0F
+	asl	a
+	asl	a
+	asl	a
+	asl	a
+	ora	temp
+	sta	VAR_Time_Hour
+	lda	SRTC_READ						; day.lo
+	and	#$0F
+	sta	temp
+	lda	SRTC_READ						; day.hi
+	and	#$0F
+	asl	a
+	asl	a
+	asl	a
+	asl	a
+	ora	temp
+	sta	VAR_Time_Day
+	lda	SRTC_READ						; month
+	and	#$0F
+	sta	VAR_Time_Month
+	lda	SRTC_READ						; year.lo
+	and	#$0F
+	sta	temp
+	lda	SRTC_READ						; year.hi
+	and	#$0F
+	asl	a
+	asl	a
+	asl	a
+	asl	a
+	ora	temp
+	sta	VAR_Time_Year
+	lda	SRTC_READ						; century
+	and	#$0F
+	sta	VAR_Time_Century
+;	lda	SRTC_READ						; weekday
+;	sta	somewhere
+
+	PrintString	25, 16, "Time:"
+	SetTextPos	25, 22
+	PrintHexNum	VAR_Time_Hour
+	PrintString	25, 24, ":"
+	SetTextPos	25, 25
+	PrintHexNum	VAR_Time_Minute
+	PrintString	25, 27, ":"
+	SetTextPos	25, 28
+	PrintHexNum	VAR_Time_Second
+
+__DebugMenuRTCDone:
+
+
+
 ; -------------------------- check for dpad up
 	lda	DP_Joy1New+1
 	and	#%00001000
