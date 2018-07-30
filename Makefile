@@ -20,6 +20,7 @@ LDFLAGS=-r -s
 
 target=furryrpg
 
+chsumscript=fix_chsum_exhirom_48mbit
 pyscript_gfx=snes-tile-tool.py
 pyscript_m7=calc_mode7_scaling_tables.py
 
@@ -36,6 +37,8 @@ all: bindata $(msu) $(sfc)
 
 $(sfc): $(obj)
 	$(LD) $(LDFLAGS) $(lnk) $(sfc)
+	cd tools && \
+	./$(chsumscript) ../$(sfc)
 
 $(msu):
 	touch $(msu)

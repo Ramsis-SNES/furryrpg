@@ -522,12 +522,6 @@ __SRTCfound:
 
 
 VerifyROMIntegrity:
-	stz	REG_CGADD						; reset CGRAM address for mainscreen BG color
-	lda	#$7E							; $077E = bright yellow
-	sta	REG_CGDATA
-	lda	#$07
-	sta	REG_CGDATA
-
 	PrintString	2, 3, "ROM integrity check"
 	PrintString	3, 3, "-------------------"
 	PrintString	5, 3, "This is done only once to"
@@ -540,7 +534,11 @@ VerifyROMIntegrity:
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMA_Updates
-	lda	#$C0							; set start address to $C00000
+
+
+
+; -------------------------- read bank $C0
+	lda	#$C0							; set start bank to $C0
 	sta	temp+7
 
 .IFDEF DEBUG
@@ -553,8 +551,8 @@ VerifyROMIntegrity:
 
 	Accu16
 
-	stz	temp+5
-	lda	#$01FE							; assume [$C0FFDC-F] = $FF, $FF, $00, $00, so add these right now
+	stz	temp+5							; reset address
+	lda	#$05FA							; checksum & checksum complement always add up to $1FE, so add these right now (3 times because banks $40...$5F will be read twice)
 	sta	temp+3
 	ldy	#0
 -	lda	[temp+5], y
@@ -579,7 +577,12 @@ VerifyROMIntegrity:
 
 	inc	temp+7							; increment bank byte
 
---
+
+
+; -------------------------- read banks $C1...$FF
+@ReadNextBank:
+
+
 .IFDEF DEBUG
 	SetTextPos	9, 17
 	PrintHexNum	temp+7
@@ -591,7 +594,7 @@ VerifyROMIntegrity:
 	Accu16
 
 	ldy	#0
--	lda	[temp+5], y						; from bank $C1 onwards, don't skip anything
+-	lda	[temp+5], y
 	and	#$00FF
 	clc
 	adc	temp+3
@@ -604,28 +607,49 @@ VerifyROMIntegrity:
 	lda	temp+7							; increment bank byte
 	inc	a
 	sta	temp+7
-	cmp	#$C0 + TotalROMBanks					; all banks checked?
-	bcc	--
+	bne	@ReadNextBank						; bank $FF done (wrapped around to 0)?
 
+
+
+; -------------------------- read banks $40...$5F twice (see Fullsnes notes on ROM sizes and checksumming)
+	jsr	ReadBanks40thru5F
+	jsr	ReadBanks40thru5F
+
+
+
+; -------------------------- perform checksum checks
 	Accu16
 
-	lda	temp+3							; compare sum to ROM checksum
-	cmp	$C0FFDE
+	lda	temp+3
+	cmp	$C0FFDE							; compare sum to "HiROM" ROM checksum
 	bne	__ROMIntegrityBad
-	eor	#$FFFF							; compare (sum XOR $FFFF) to ROM checksum complement
-	cmp	$C0FFDC
-	beq	__ROMIntegrityGood
+	cmp	$40FFDE							; compare sum to "ExHiROM" ROM checksum
+	bne	__ROMIntegrityBad
+	eor	#$FFFF
+	cmp	$C0FFDC							; compare (sum XOR $FFFF) to "HiROM" ROM checksum complement
+	bne	__ROMIntegrityBad
+	cmp	$40FFDC							; compare (sum XOR $FFFF) to "ExHiROM" ROM checksum complement
+	bne	__ROMIntegrityBad
+	jmp	__ROMIntegrityGood
 
 __ROMIntegrityBad:
 	Accu8
 
 	stz	REG_CGADD						; reset CGRAM address
-	lda	#$1C							; $001C = red
+	lda	#$1C							; $001C = red background color
 	sta	REG_CGDATA
 	stz	REG_CGDATA
 
 	PrintString	11, 3, "Corrupt ROM, unable to"
 	PrintString	12, 3, "continue!"
+
+.IFDEF DEBUG
+	PrintString	14, 3, "Chsum:"
+	SetTextPos	14, 10
+	PrintHexNum	temp+3
+	SetTextPos	14, 12
+	PrintHexNum	temp+4
+.ENDIF
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMA_Updates
@@ -635,17 +659,6 @@ __ROMIntegrityBad:
 __ROMIntegrityGood:
 	Accu8
 
-	stz	REG_CGADD						; reset CGRAM address (i.e., set it to mainscreen backdrop color)
-	lda	#$E4							; $13E4 = light green
-	sta	REG_CGDATA
-	lda	#$13
-	sta	REG_CGDATA
-
-	PrintString	11, 3, "ROM integrity check passed!"
-	PrintString	12, 3, "Press any button ..."
-
-	lda	#%00010000						; make sure BG3 low tile map bytes are updated
-	tsb	DP_DMA_Updates
 	lda	#$01							; remember that ROM integrity check was passed
 	sta	temp							; source data in temp
 	ldx	#temp							; source data offset
@@ -656,7 +669,80 @@ __ROMIntegrityGood:
 	ldy	#1							; data length
 	jsl	WriteDataToSRAM
 
-	WaitUserInput
+	rts
+
+
+
+ReadBanks40thru5F:
+	lda	#$40							; set start bank to $40
+	sta	temp+7
+
+.IFDEF DEBUG
+	SetTextPos	9, 17
+	PrintHexNum	temp+7
+
+	lda	#%00010000						; make sure BG3 low tile map bytes are updated
+	tsb	DP_DMA_Updates
+.ENDIF
+
+	Accu16
+
+	stz	temp+5							; reset address
+	ldy	#0
+-	lda	[temp+5], y
+	and	#$00FF
+	clc
+	adc	temp+3
+	sta	temp+3
+	iny
+	cpy	#$FFDC							; location of checksum complement & checksum reached?
+	bne	-
+
+	ldy	#$FFE0							; skip both
+-	lda	[temp+5], y
+	and	#$00FF
+	clc
+	adc	temp+3
+	sta	temp+3
+	iny
+	bne	-
+
+	Accu8
+
+	inc	temp+7							; increment bank byte
+
+
+
+; -------------------------- read banks $41...$5F
+@ReadNextBank:
+
+
+.IFDEF DEBUG
+	SetTextPos	9, 17
+	PrintHexNum	temp+7
+
+	lda	#%00010000						; make sure BG3 low tile map bytes are updated
+	tsb	DP_DMA_Updates
+.ENDIF
+
+	Accu16
+
+	ldy	#0
+-	lda	[temp+5], y
+	and	#$00FF
+	clc
+	adc	temp+3
+	sta	temp+3
+	iny
+	bne	-
+
+	Accu8
+
+	lda	temp+7							; increment bank byte
+	inc	a
+	sta	temp+7
+	cmp	#$60							; all banks done?
+	bne	@ReadNextBank
 
 	rts
 

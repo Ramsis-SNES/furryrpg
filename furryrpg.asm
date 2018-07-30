@@ -20,7 +20,6 @@
 ; ************************** Basic ROM layout **************************
 
 .DEFINE CurrentBank	0
-.DEFINE TotalROMBanks	19						; self-reminder: increase value when using more banks (crucial for ROM integrity check)
 .DEFINE StartOffset	$F000						; start code offset in bank $00, this must be >= $8000 because of how ROM Mode 21 ("HiROM") is mapped
 
 
@@ -69,16 +68,16 @@
 .ENDME
 
 .ROMBANKSIZE		$10000						; ROM banks are 64 KiB in size
-.ROMBANKS		24						; 24 ROM banks = 12 Mbit
+.ROMBANKS		96						; 96 ROM banks = 48 Mbit
 
-.SNESHEADER								; this auto-calculates ROM checksum & complement, too
+.SNESHEADER								; this auto-calculates ROM checksum & complement, too (although invalid for ExHiROM)
 	ID		"SNES"
 	NAME		"FURRY RPG!           "
 ;			 123456789012345678901				; max. 21 characters
-	HIROM								; aka Mode 21
+	HIROM								; aka Mode 21 // this is corrected below
 	FASTROM
-	CARTRIDGETYPE	$02						; ROM + battery-backed SRAM
-	ROMSIZE		$0B						; 1 SHL n = 2 MiB (reported as a power of 2)
+	CARTRIDGETYPE	$55						; ROM, RTC + battery-backed SRAM
+	ROMSIZE		$0D						; 1 SHL n = 2 MiB (reported as a power of 2)
 	SRAMSIZE	$03						; 8 KiB for now
 	COUNTRY		$01						; USA
 	LICENSEECODE	$33						; $33 = "pointer" to new licensee code
@@ -91,6 +90,12 @@
 .ORG StartOffset + $FB0
 
 	.DB "00"							; new licensee code (unlicensed)
+
+
+
+.ORG StartOffset + $FD5
+
+	.DB $35								; ExHiROM header correction
 
 
 
@@ -122,7 +127,7 @@
 .BANK CurrentBank SLOT 0
 .ORG StartOffset
 
-.SECTION "Dummy/empty vectors" SEMIFREE
+.SECTION "Dummy/empty vectors" FORCE
 
 EmptyHandler:
 	rti
@@ -199,7 +204,7 @@ STR_SoftwareBuild:
 	.DB "Build #"
 
 STR_SoftwareBuildNo:
-	.DB "00297"
+	.DB "00301"
 	.DB 0
 
 STR_SoftwareBuildTimestamp:
@@ -837,6 +842,66 @@ SRC_track_09_samples_END:
 
 SRC_track_09_Notes:
 .INCBIN Track09_Notes
+
+.ENDS
+
+
+
+; ****************************** Bank $40 ******************************
+
+.BASE $40
+
+.REDEFINE CurrentBank	$40
+
+.BANK CurrentBank SLOT 0
+.ORG StartOffset
+
+.SECTION "ExHiROM Dummy/empty vectors" FORCE				; copied from bank $C0
+
+;EmptyHandler:
+	rti
+
+;DummyBRK:
+	jml	ErrorHandlerBRK
+
+;DummyCOP:
+	jml	ErrorHandlerCOP
+
+.ENDS
+
+
+
+.ORG StartOffset + $FA0
+
+.SECTION "ExHiROM Startup 2" FORCE					; copied from bank $C0
+
+;Startup:
+	sei								; disable interrupts
+	clc
+	xce								; switch to 65816 native mode
+	jml	Boot
+
+.ENDS
+
+
+
+.ORG StartOffset + $FB0
+
+.SECTION "ExHiROM ID" FORCE						; copied from bank $C0
+
+	.DB "00SNES"
+
+.ENDS
+
+
+
+.ORG StartOffset + $FC0
+
+.SECTION "ExHiROM header/vectors" FORCE					; copied from bank $C0 (with dummy checksum)
+
+	.DB "FURRY RPG!           ", $35, $55, $0D, $03, $01, $33, $00, $FE, $FE, $01, $01
+	.DB $FF, $FF, $FF, $FF, $05, $F0, $01, $F0, $00, $F0, $00, $00, $00, $00, $04, $00
+	.DB $FF, $FF, $FF, $FF, $00, $F0, $00, $00, $00, $F0, $00, $F0, $A0, $FF, $00, $F0
 
 .ENDS
 
