@@ -122,15 +122,16 @@ DebugMenu:
 ; -------------------------- done, draw debug menu
 	PrintString	7, 3, "DEBUG MENU:"
 	PrintString	10, 3, "Alpha intro"
-	PrintString	11, 3, "Load area: XXXX"
-	PrintString	12, 3, "In-game menu"
-	PrintString	13, 3, "Mode1 world map"
-	PrintString	14, 3, "Mode7 world map"
-	PrintString	15, 3, "Random number (0-255):"
-	PrintString	16, 3, "Show sprite gallery"
-	PrintString	17, 3, "SNESGSS music test:"
-;	PrintString	18, 3, ""
+	PrintString	11, 3, "Clear SRAM"
+	PrintString	12, 3, "Load area: XXXX"
+	PrintString	13, 3, "In-game menu"
+	PrintString	14, 3, "Mode1 world map"
+	PrintString	15, 3, "Mode7 world map"
+	PrintString	16, 3, "Random number (0-255):"
+	PrintString	17, 3, "Show sprite gallery"
+	PrintString	18, 3, "SNESGSS music test:"
 ;	PrintString	19, 3, ""
+;	PrintString	20, 3, ""
 
 	stz	DP_SpriteTextMon					; reset sprite text filling level so it won't draw more than 1 cursor ;-)
 
@@ -159,13 +160,13 @@ DebugMenuLoop:
 	lda	#:SRC_TrackPointerTable
 	sta	DP_DataBank
 
-	SetTextPos	11, 14
+	SetTextPos	12, 14
 	PrintHexNum	DP_AreaCurrent+1				; print no. of area to load
 
-	SetTextPos	11, 16
+	SetTextPos	12, 16
 	PrintHexNum	DP_AreaCurrent
 
-	PrintString	18, 4, "%s"					; print current SNESGSS song title
+	PrintString	19, 4, "%s"					; print current SNESGSS song title
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMA_Updates
@@ -262,41 +263,41 @@ __DebugMenuRTCDone:
 ; -------------------------- check for dpad up
 	lda	DP_Joy1New+1
 	and	#%00001000
-	beq	++
+	beq	@DpadUpDone
 	lda	ARRAY_SpriteBuf1.Text+1					; Y coord of cursor
 	sec
 	sbc	#8
 	cmp	#PARAM_DebugMenu1stLine
 	bcs	+
-	lda	#PARAM_DebugMenu1stLine + 7 * 8				; underflow, put cursor on last line // no. of last menu item (7) * line height (8)
+	lda	#PARAM_DebugMenu1stLine + 8 * 8				; underflow, put cursor on last line // no. of last menu item (8) * line height (8)
 +	sta	ARRAY_SpriteBuf1.Text+1
 
-++
+@DpadUpDone:
 
 
 
 ; -------------------------- check for dpad down
 	lda	DP_Joy1New+1
 	and	#%00000100
-	beq	++
+	beq	@DpadDownDone
 	lda	ARRAY_SpriteBuf1.Text+1
 	clc
 	adc	#8
-	cmp	#PARAM_DebugMenu1stLine + 8 * 8				; no. of menu items (8) * line height (8)
+	cmp	#PARAM_DebugMenu1stLine + 9 * 8				; no. of menu items (9) * line height (8)
 	bcc	+
 	lda	#PARAM_DebugMenu1stLine					; overflow, put cursor on first line
 +	sta	ARRAY_SpriteBuf1.Text+1
 
-++
+@DpadDownDone:
 
 
 
 ; -------------------------- check for dpad left
 	lda	DP_Joy1New+1
 	and	#%00000010
-	beq	++
+	beq	@DpadLeftDone
 	lda	ARRAY_SpriteBuf1.Text+1					; only do anything if cursor is on area loader ...
-	cmp	#PARAM_DebugMenu1stLine + 8
+	cmp	#PARAM_DebugMenu1stLine + 16
 	bne	+
 
 	Accu16
@@ -310,27 +311,27 @@ __	sta	DP_AreaCurrent
 
 	Accu8
 
-	bra	++
+	bra	@DpadLeftDone
 
 +	lda	ARRAY_SpriteBuf1.Text+1					; ... or on music test
-	cmp	#PARAM_DebugMenu1stLine + 7 * 8
-	bne	++
+	cmp	#PARAM_DebugMenu1stLine + 8 * 8
+	bne	@DpadLeftDone
 	lda	DP_NextTrack						; go to previous track
 	dec	a
 	bpl	+
 	lda	#0
 +	sta	DP_NextTrack
 
-++
+@DpadLeftDone:
 
 
 
 ; -------------------------- check for dpad right
 	lda	DP_Joy1New+1
 	and	#%00000001
-	beq	++
+	beq	@DpadRightDone
 	lda	ARRAY_SpriteBuf1.Text+1					; only do anything if cursor is on area loader ...
-	cmp	#PARAM_DebugMenu1stLine + 8
+	cmp	#PARAM_DebugMenu1stLine + 16
 	bne	+
 
 	Accu16
@@ -344,11 +345,11 @@ __	sta	DP_AreaCurrent
 
 	Accu8
 
-	bra	++
+	bra	@DpadRightDone
 
 +	lda	ARRAY_SpriteBuf1.Text+1					; ... or on music test
-	cmp	#PARAM_DebugMenu1stLine + 7 * 8
-	bne	++
+	cmp	#PARAM_DebugMenu1stLine + 8 * 8
+	bne	@DpadRightDone
 	lda	DP_NextTrack						; go to next track
 	inc	a
 	cmp	#_sizeof_SRC_TrackPointerTable/2
@@ -356,14 +357,14 @@ __	sta	DP_AreaCurrent
 	lda	#_sizeof_SRC_TrackPointerTable/2-1
 +	sta	DP_NextTrack
 
-++
+@DpadRightDone:
 
 
 
 ; -------------------------- check for A button
 	lda	DP_Joy1New
 	and	#%10000000
-	beq	+
+	beq	@A_ButtonDone
 
 	Accu16
 
@@ -377,36 +378,39 @@ __	sta	DP_AreaCurrent
 
 	Accu8
 
-	jmp	(PTR_DebugMenuEntry, x)
+	jmp	(@@PTR_DebugMenuEntry, x)
 
-PTR_DebugMenuEntry:
-	.DW GoToShowAlphaIntro
+@@PTR_DebugMenuEntry:
+	.DW @@GotoShowAlphaIntro
+	.DW @@GotoClearSRAM
 	.DW LoadArea
 	.DW InGameMenu
 	.DW LoadWorldMap
 	.DW TestMode7
-	.DW PrintRandomNumber
+	.DW @@PrintRandomNumber
 	.DW ShowSpriteGallery
-	.DW GoToPlayTrack						; sound test works even .IFDEF NOMUSIC ;-)
+	.DW @@GotoPlayTrack						; sound test works even .IFDEF NOMUSIC ;-)
 
-
-
-GoToShowAlphaIntro:
+@@GotoShowAlphaIntro:
 	jsl	ShowAlphaIntro
 	jmp	DebugMenu
 
+@@GotoClearSRAM:
+	Accu16
 
+	jsl	ClearSRAM
+	jmp	DebugMenu
 
-GoToPlayTrack:
+.ACCU 8
+
+@@GotoPlayTrack:
 	jsl	PlayTrackNow
-	bra	+
+	bra	@A_ButtonDone
 
-
-
-PrintRandomNumber:
+@@PrintRandomNumber:
 	jsr	CreateRandomNr
 
-	SetTextPos	15, 26
+	SetTextPos	16, 26
 	PrintNum	ARRAY_RandomNumbers
 
 	stz	DP_TextStringPtr
@@ -416,7 +420,8 @@ PrintRandomNumber:
 	jsr	PrintF
 
 	.DB "  ", 0							; clear trailing ciphers from old values
-+
+
+@A_ButtonDone:
 
 
 
