@@ -64,18 +64,18 @@ Vblank_Area:
 	xba
 	clc
 	adc	#(GFX_Spritesheet_Char1 & $FFFF)
-	sta	$4302							; data offset
+	sta	REG_A1T0L						; data offset
 
 	Accu8
 
 	lda	#$01							; DMA mode
- 	sta	$4300
+ 	sta	REG_DMAP0
 	lda	#$18							; B bus register ($2118)
-	sta	$4301
+	sta	REG_BBAD0
 	lda	#:GFX_Spritesheet_Char1					; data bank
-	sta	$4304
+	sta	REG_A1B0
 	ldx	#2048							; data length
-	stx	$4305
+	stx	REG_DAS0L
 	lda	#%00000001						; initiate DMA transfer (channel 0)
 	sta	REG_MDMAEN
 
@@ -87,7 +87,7 @@ Vblank_Area:
 	stz	REG_OAMADDL						; reset OAM address
 	stz	REG_OAMADDH
 
-	DMA_CH0 $00, $7E, ARRAY_SpriteBuf1, $04, 544
+	DMA_CH0 $00, $7E, ARRAY_SpriteBuf1, <REG_OAMDATA, 544
 
 ;	lda	#$80							; set OAM Priority Rotation flag
 ;	sta	REG_OAMADDH
@@ -163,7 +163,7 @@ Vblank_DebugMenu:
 	stz	REG_OAMADDL						; reset OAM address
 	stz	REG_OAMADDH
 
-	DMA_CH0 $00, $7E, ARRAY_SpriteBuf1, $04, 544
+	DMA_CH0 $00, $7E, ARRAY_SpriteBuf1, <REG_OAMDATA, 544
 
 
 
@@ -257,7 +257,7 @@ Vblank_Intro:
 ;	stz	REG_OAMADDL						; reset OAM address
 ;	stz	REG_OAMADDH
 
-;	DMA_CH0 $00, $7E, ARRAY_SpriteBuf1, $04, 544
+;	DMA_CH0 $00, $7E, ARRAY_SpriteBuf1, <REG_OAMDATA, 544
 
 
 
@@ -326,7 +326,7 @@ Vblank_Mode7:
 	stz	REG_OAMADDL						; set OAM address to 0
 	stz	REG_OAMADDH
 
-	DMA_CH0 $00, $7E, ARRAY_SpriteBuf1, $04, 544
+	DMA_CH0 $00, $7E, ARRAY_SpriteBuf1, <REG_OAMDATA, 544
 
 
 
@@ -458,7 +458,7 @@ Vblank_WorldMap:
 	stz	REG_OAMADDL						; reset OAM address
 	stz	REG_OAMADDH
 
-	DMA_CH0 $00, $7E, ARRAY_SpriteBuf1, $04, 544
+	DMA_CH0 $00, $7E, ARRAY_SpriteBuf1, <REG_OAMDATA, 544
 
 
 
