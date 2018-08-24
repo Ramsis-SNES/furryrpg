@@ -654,7 +654,7 @@
 
 
 
-; -------------------------- text box control codes
+; -------------------------- text box control codes (order has to match the PTR_ProcessTextCC jump table)
 .DEFINE CC_Portrait		0
 .DEFINE CC_BoxBlue		1
 .DEFINE CC_BoxRed		2
@@ -666,7 +666,7 @@
 .DEFINE CC_NewLine		8
 .DEFINE CC_Selection		9
 .DEFINE NO_CC			10					; this has to be greater than the last control code
-.DEFINE CC_End			$FF					; end-of-string marker
+.DEFINE CC_End			255					; $FF = string terminator
 
 
 

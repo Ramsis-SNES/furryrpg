@@ -608,9 +608,30 @@ __ProcessTextLoop2:
 
 
 
-; -------------------------- control code encountered, check type (order: very likely > less likely)
-+	cmp	#CC_Portrait						; char portrait?
-	bne	+
+; -------------------------- control code encountered, use as jump index
++	Accu16
+
+	and	#$00FF							; remove garbage in high byte
+	asl	a
+	tax
+
+	Accu8
+
+	jmp	(PTR_ProcessTextCC, x)
+
+PTR_ProcessTextCC:
+	.DW Process_CC_Portrait
+	.DW Process_CC_BoxBG
+	.DW Process_CC_BoxBG
+	.DW Process_CC_BoxBG
+	.DW Process_CC_BoxBG
+	.DW Process_CC_BoxBG
+	.DW Process_CC_ClearTextBox
+	.DW Process_CC_Indent
+	.DW Process_CC_NewLine
+	.DW Process_CC_Selection
+
+Process_CC_Portrait:
 	iny								; increment string pointer to portrait no.
 	lda	[DP_TextBoxStrPtr], y					; read portrait no. (0-127)
 	ora	#$80							; set "change portrait" bit
@@ -623,19 +644,72 @@ __ProcessTextLoop2:
 
 .ACCU 8
 
-+	cmp	#CC_Indent						; indention?
+Process_CC_BoxBG:
+	lsr	a							; revert jump index back to original control code (no. of background color gradient)
+	ora	#$80							; set "change text box background" bit
+	sta	DP_TextBoxBG
+	jmp	__ProcessTextJumpOut
+
+Process_CC_ClearTextBox:
+	Accu16
+
+	lda	DP_VWF_BitsUsed						; check if bit counter <> 0
 	bne	+
+	lda	DP_VWF_BufferIndex					; check if VWF buffer index <> 0
+	beq	++
+
++	Accu8
+
+	lda	#$01							; if either <> 0, set "VWF buffer full" bit
+	tsb	DP_TextBoxStatus
+
+++	Accu8
+	WaitFrames	1
+
+	lda	#%00100000						; set "freeze text box" bit
+	tsb	DP_TextBoxStatus
+	jmp	__ProcessTextJumpOut
+
+Process_CC_Indent:
 	jmp	__ProcessTextIncTileCounter
 
-+	cmp	#CC_NewLine						; carriage return?
-	beq	__CarriageReturn
-	cmp	#CC_ClearTextBox
+Process_CC_NewLine:
+	lda	#$01							; set "VWF buffer full" bit
+	tsb	DP_TextBoxStatus
+
+	WaitFrames	1
+
+	Accu16
+
+	stz	DP_VWF_BitsUsed						; reset VWF bit counter
+	lda	DP_TextTileDataCounter					; check what line we've been on
+	cmp	#46*8							; line 1?
 	bne	+
-	jmp	__ClearTextBoxMidString
+	jmp	__ProcessTextJumpOut					; do nothing if carriage return requested after exactly 23 (16×8) tiles
 
-+	cmp	#CC_Selection						; selection?
-	bne	__OtherControlCode
++	bcs	+
+	lda	#46*8							; go to line 2
+	sta	DP_TextTileDataCounter
+	jmp	__ProcessTextJumpOut
 
+.ACCU 16
+
++	cmp	#92*8							; line 2?
+	bne	+
+	jmp	__ProcessTextJumpOut					; do nothing if carriage return requested after exactly 46 (16×8) tiles
+
++	bcs	+
+	lda	#92*8							; go to line 3
+	sta	DP_TextTileDataCounter
+	jmp	__ProcessTextJumpOut
+
+.ACCU 16
+
++	lda	#138*8							; otherwise, go to line 4
+	sta	DP_TextTileDataCounter
+	jmp	__ProcessTextJumpOut
+
+Process_CC_Selection:
 	Accu16
 
 	lda	DP_TextTileDataCounter					; selection required, check what line we've been on
@@ -672,77 +746,6 @@ __ProcessTextLoop2:
 	lda	#%00001000						; else, line 4
 ++	tsb	DP_TextBoxSelection
 	jmp	__ProcessTextLoop
-
-__OtherControlCode:
-	cmp	#CC_BoxBlue						; self-reminder: This only works because we've already checked for all other CCs!
-	bcs	+
-	jmp	__ProcessTextLoop
-
-+	ora	#$80							; set "change text box background" bit
-	sta	DP_TextBoxBG
-
-;	WaitFrames	1						; seems unnecessary
-
-	jmp	__ProcessTextJumpOut
-
-__CarriageReturn:
-	lda	#$01							; set "VWF buffer full" bit
-	tsb	DP_TextBoxStatus
-
-	WaitFrames	1
-
-	Accu16
-
-	stz	DP_VWF_BitsUsed						; reset VWF bit counter
-	lda	DP_TextTileDataCounter					; check what line we've been on
-	cmp	#46*8							; line 1?
-	bne	+
-	jmp	__ProcessTextJumpOut					; do nothing if carriage return requested after exactly 23 (16×8) tiles
-
-+	bcs	+
-	lda	#46*8							; go to line 2
-	sta	DP_TextTileDataCounter
-	jmp	__ProcessTextJumpOut
-
-.ACCU 16
-
-+	cmp	#92*8							; line 2?
-	bne	+
-	jmp	__ProcessTextJumpOut					; do nothing if carriage return requested after exactly 46 (16×8) tiles
-
-+	bcs	+
-	lda	#92*8							; go to line 3
-	sta	DP_TextTileDataCounter
-	jmp	__ProcessTextJumpOut
-
-.ACCU 16
-
-+	lda	#138*8							; otherwise, go to line 4
-	sta	DP_TextTileDataCounter
-	jmp	__ProcessTextJumpOut
-
-.ACCU 8
-
-__ClearTextBoxMidString:
-	Accu16
-
-	lda	DP_VWF_BitsUsed						; check if bit counter <> 0
-	bne	+
-	lda	DP_VWF_BufferIndex					; check if VWF buffer index <> 0
-	beq	++
-
-+	Accu8
-
-	lda	#$01							; if either <> 0, set "VWF buffer full" bit
-	tsb	DP_TextBoxStatus
-
-++	Accu8
-
-	WaitFrames	1
-
-	lda	#%00100000						; set "freeze text box" bit
-	tsb	DP_TextBoxStatus
-	jmp	__ProcessTextJumpOut
 
 
 
