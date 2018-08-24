@@ -361,7 +361,7 @@ WorldMapLoop:
 ; -------------------------- check for dpad up
 	lda	DP_Joy1Press+1
 	and	#%00001000
-	beq	__WorldMapLoopDpadUpDone
+	beq	@DpadUpDone
 
 ;	stz	DP_PlayerIdleCounter
 ;	stz	DP_PlayerIdleCounter+1
@@ -374,14 +374,14 @@ WorldMapLoop:
 
 	Accu8
 
-__WorldMapLoopDpadUpDone:
+@DpadUpDone:
 
 
 
 ; -------------------------- check for dpad down
 	lda	DP_Joy1Press+1
 	and	#%00000100
-	beq	__WorldMapLoopDpadDownDone
+	beq	@DpadDownDone
 
 ;	stz	DP_PlayerIdleCounter
 ;	stz	DP_PlayerIdleCounter+1
@@ -394,14 +394,14 @@ __WorldMapLoopDpadUpDone:
 
 	Accu8
 
-__WorldMapLoopDpadDownDone:
+@DpadDownDone:
 
 
 
 ; -------------------------- check for dpad left
 	lda	DP_Joy1Press+1
 	and	#%00000010
-	beq	__WorldMapLoopDpadLeftDone
+	beq	@DpadLeftDone
 
 ;	stz	DP_PlayerIdleCounter
 ;	stz	DP_PlayerIdleCounter+1
@@ -414,14 +414,14 @@ __WorldMapLoopDpadDownDone:
 
 	Accu8
 
-__WorldMapLoopDpadLeftDone:
+@DpadLeftDone:
 
 
 
 ; -------------------------- check for dpad right
 	lda	DP_Joy1Press+1
 	and	#%00000001
-	beq	__WorldMapLoopDpadRightDone
+	beq	@DpadRightDone
 
 ;	stz	DP_PlayerIdleCounter
 ;	stz	DP_PlayerIdleCounter+1
@@ -434,24 +434,25 @@ __WorldMapLoopDpadLeftDone:
 
 	Accu8
 
-__WorldMapLoopDpadRightDone:
+@DpadRightDone:
 
 
 
 ; -------------------------- check for A button
 ;	lda	DP_Joy1New
-;	bpl	+
+;	bpl	@AButtonDone
 ;	lda	DP_HDMA_Channels						; toggle HDMA ch. 3 (sky color gradient)
 ;	eor	#%00001000
 ;	sta	DP_HDMA_Channels
-;+
+;
+;@AButtonDone:
 
 
 
 ; -------------------------- check for Start
 	lda	DP_Joy1+1
 	and	#%00010000
-	beq	__WorldMapLoopStButtonDone
+	beq	@StartButtonDone
 
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
@@ -475,7 +476,7 @@ __WorldMapLoopDpadRightDone:
 
 	jml	DebugMenu
 
-__WorldMapLoopStButtonDone:
+@StartButtonDone:
 
 	jsr	CalcVScrollDisplacement
 

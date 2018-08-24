@@ -99,7 +99,7 @@ OpenTextBox:
 	sta	ARRAY_HDMA_BG_Scroll+5
 	stz	ARRAY_HDMA_BG_Scroll+10
 
-__ProcessNextDialog:
+@ProcessNextDialog:
 	lda	#:SRC_DiagPointerEng
 	clc								; add language constant to get the correct text bank
 	adc	DP_TextLanguage
@@ -140,14 +140,14 @@ MainTextBoxLoop:							; this routine needs to be called once per frame
 ; -------------------------- check text box status
 	lda	DP_TextBoxStatus					; don't process text if "VWF buffer full bit" is set
 	bit	#$01
-	bne	__PrintDialogTextDone
+	bne	@PrintDialogTextDone
 
 	bit	#%00100000						; text box frozen?
-	beq	__TextBoxNotFrozen
+	beq	@TextBoxNotFrozen
 	lda	DP_Joy1New						; yes, wait for player to press the A button
 	and	#%10000000
 	bne	+
-	jmp	__MainTextBoxLoopDone
+	jmp	@MainTextBoxLoopDone
 
 +	lda	#%10000000						; A pressed, set "clear text box" bit
 	tsb	DP_TextBoxStatus
@@ -158,36 +158,36 @@ MainTextBoxLoop:							; this routine needs to be called once per frame
 	stz	DP_TextTileDataCounter+1
 	lda	#%00100000						; clear "freeze text box" bit
 	trb	DP_TextBoxStatus
-	jmp	__MainTextBoxLoopDone
+	jmp	@MainTextBoxLoopDone
 
-__TextBoxNotFrozen:
+@TextBoxNotFrozen:
 	and	#%01000000						; more text pending?
-	beq	__PrintDialogTextDone
+	beq	@PrintDialogTextDone
 
 	jsr	ProcessNextText
 
-__PrintDialogTextDone:
+@PrintDialogTextDone:
 
 
 
 ; -------------------------- check for selection
 	lda	DP_TextBoxSelection
 	bit	#%00001111
-	beq	__DrawSelBarDone
+	beq	@DrawSelBarDone
 
 	bit	DP_TextBoxStatus
-	bvs	__DrawSelBarDone					; only draw sel bar after current string is finished
+	bvs	@DrawSelBarDone						; only draw sel bar after current string is finished
 
 	jsr	TextBoxHandleSelection
 
-__DrawSelBarDone:
+@DrawSelBarDone:
 
 
 
 ; -------------------------- check for dpad up = next language
 	lda	DP_Joy1New+1
 	and	#%00001000
-	beq	__MainTextBoxLoopDpadUpDone
+	beq	@DpadUpDone
 
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
@@ -209,16 +209,16 @@ __DrawSelBarDone:
 
 	WaitFrames	1
 
-	jmp	__ProcessNextDialog
+	jmp	OpenTextBox@ProcessNextDialog
 
-__MainTextBoxLoopDpadUpDone:
+@DpadUpDone:
 
 
 
 ; -------------------------- check for dpad down = previous language
 	lda	DP_Joy1New+1
 	and	#%00000100
-	beq	__MainTextBoxLoopDpadDownDone
+	beq	@DpadDownDone
 
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
@@ -240,9 +240,9 @@ __MainTextBoxLoopDpadUpDone:
 
 	WaitFrames	1
 
-	jmp	__ProcessNextDialog
+	jmp	OpenTextBox@ProcessNextDialog
 
-__MainTextBoxLoopDpadDownDone:
+@DpadDownDone:
 
 
 
@@ -250,7 +250,7 @@ __MainTextBoxLoopDpadDownDone:
 	lda	DP_Joy1Press+1						; Y pressed, check for dpad right
 	and	#%01000001
 	cmp	#%01000001
-	beq	__NextTextPointer
+	beq	@NextTextPointer
 
 
 
@@ -258,16 +258,16 @@ __MainTextBoxLoopDpadDownDone:
 	lda	DP_Joy1Press+1						; Y pressed, check for dpad right
 	and	#%01000010
 	cmp	#%01000010
-	beq	__PrevTextPointer
+	beq	@PrevTextPointer
 
 
 
 ; -------------------------- check for dpad left = previous text pointer
 	lda	DP_Joy1New+1
 	and	#%00000010
-	beq	__MainTextBoxLoopDpadLeftDone
+	beq	@DpadLeftDone
 
-__PrevTextPointer:
+@PrevTextPointer:
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
 	lda	#%00001111						; clear selection bits just in case
@@ -286,18 +286,18 @@ __PrevTextPointer:
 
 	Accu8
 
-	jmp	__ProcessNextDialog
+	jmp	OpenTextBox@ProcessNextDialog
 
-__MainTextBoxLoopDpadLeftDone:
+@DpadLeftDone:
 
 
 
 ; -------------------------- check for dpad right = next text pointer
 	lda	DP_Joy1New+1
 	and	#%00000001
-	beq	__MainTextBoxLoopDpadRightDone
+	beq	@DpadRightDone
 
-__NextTextPointer:
+@NextTextPointer:
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
 	lda	#%00001111						; clear selection bits
@@ -317,16 +317,16 @@ __NextTextPointer:
 
 	Accu8
 
-	jmp	__ProcessNextDialog
+	jmp	OpenTextBox@ProcessNextDialog
 
-__MainTextBoxLoopDpadRightDone:
+@DpadRightDone:
 
 
 
 ; -------------------------- check for L button = text pointers -= 50
 	lda	DP_Joy1New
 	and	#%00100000
-	beq	__MainTextBoxLoopLButtonDone
+	beq	@LButtonDone
 
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
@@ -348,16 +348,16 @@ __MainTextBoxLoopDpadRightDone:
 
 	Accu8
 
-	jmp	__ProcessNextDialog
+	jmp	OpenTextBox@ProcessNextDialog
 
-__MainTextBoxLoopLButtonDone:
+@LButtonDone:
 
 
 
 ; -------------------------- check for R button = text pointers += 50
 	lda	DP_Joy1New
 	and	#%00010000
-	beq	__MainTextBoxLoopRButtonDone
+	beq	@RButtonDone
 
 	lda	#%10000000						; set "clear text box" bit
 	sta	DP_TextBoxStatus
@@ -379,15 +379,15 @@ __MainTextBoxLoopLButtonDone:
 
 	Accu8
 
-	jmp	__ProcessNextDialog
+	jmp	OpenTextBox@ProcessNextDialog
 
-__MainTextBoxLoopRButtonDone:
+@RButtonDone:
 
 
 
 ; -------------------------- check for B button = close text box
 	lda	DP_Joy1New+1
-	bpl	__MainTextBoxLoopBButtonDone
+	bpl	@BButtonDone
 	jsr	TextBoxAnimationClose
 
 	lda	#%10000000						; set "clear text box" bit
@@ -395,9 +395,9 @@ __MainTextBoxLoopRButtonDone:
 
 ;	WaitFrames	1
 
-__MainTextBoxLoopBButtonDone:
+@BButtonDone:
 
-__MainTextBoxLoopDone:
+@MainTextBoxLoopDone:
 	rts
 
 
@@ -451,7 +451,7 @@ TextBoxHandleSelection:
 
 
 
-__TBHSLoop:
+TBHSLoop:
 	WaitFrames	1						; don't use WAI here as IRQ is enabled
 
 
@@ -459,7 +459,7 @@ __TBHSLoop:
 ; -------------------------- check for dpad up
 	lda	DP_Joy1New+1
 	and	#%00001000
-	beq	__TBHSLoopDpadUpDone
+	beq	@DpadUpDone
 
 	lda	ARRAY_HDMA_ColorMath+3					; move selection bar 8 scanlines up
 	sec
@@ -469,14 +469,14 @@ __TBHSLoop:
 	lda	DP_TextBoxSelMin
 +	sta	ARRAY_HDMA_ColorMath+3
 
-__TBHSLoopDpadUpDone:
+@DpadUpDone:
 
 
 
 ; -------------------------- check for dpad down
 	lda	DP_Joy1New+1
 	and	#%00000100
-	beq	__TBHSLoopDpadDownDone
+	beq	@DpadDownDone
 
 	lda	ARRAY_HDMA_ColorMath+3					; move selection bar 8 scanlines down
 	clc
@@ -486,13 +486,13 @@ __TBHSLoopDpadUpDone:
 	lda	DP_TextBoxSelMax
 +	sta	ARRAY_HDMA_ColorMath+3
 
-__TBHSLoopDpadDownDone:
+@DpadDownDone:
 
 
 
 ; -------------------------- check for A button = make selection
 	lda	DP_Joy1New
-	bpl	__TBHSLoopAButtonDone
+	bpl	@AButtonDone
 	lda	ARRAY_HDMA_ColorMath+3					; determine selection made by checking position of selection bar
 	cmp	#PARAM_TextBoxColMath1st
 	bne	+
@@ -509,18 +509,18 @@ __TBHSLoopDpadDownDone:
 +	cmp	#PARAM_TextBoxColMath1st+24
 	beq	+
 	stz	DP_TextBoxSelection					; invalid value, clear all selection bits
-	bra	__TBHSDone
+	bra	@TBHSDone
 +	lda	#%10000000						; line 4 = 7th bit (d)
 ++	sta	DP_TextBoxSelection					; bits 0-3 cleared
-	bra	__TBHSDone
+	bra	@TBHSDone
 
-__TBHSLoopAButtonDone:
+@AButtonDone:
 
 
 
 ; -------------------------- check for B button = leave selection
 	lda	DP_Joy1New+1
-	bpl	__TBHSLoop
+	bpl	TBHSLoop
 
 -	WaitFrames	1
 
@@ -529,7 +529,7 @@ __TBHSLoopAButtonDone:
 
 	stz	DP_TextBoxSelection					; clear all selection bits
 
-__TBHSDone:
+@TBHSDone:
 	lda	#%00001000						; disable HDMA channel 3 (color math) // FIXME for CM on playfield!!
 	trb	DP_HDMA_Channels
 	rts
@@ -861,7 +861,7 @@ LoadTextBoxBG:
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 192		; DP_TextBoxBG is zero, so make background black
 
-	bra	__LoadTextBoxBGDone
+	bra	@LoadTextBoxBGDone
 
 +	dec	a							; make up for number difference (blue = $01)
 	sta	REG_WRMPYA
@@ -880,7 +880,7 @@ LoadTextBoxBG:
 
 	Accu8
 
-	bra	__LoadTextBoxBGDone
+	bra	@LoadTextBoxBGDone
 
 .ACCU 16
 
@@ -907,7 +907,7 @@ LoadTextBoxBG:
 	lda	#%00000001						; initiate DMA transfer (channel 0)
 	sta	REG_MDMAEN
 
-__LoadTextBoxBGDone:
+@LoadTextBoxBGDone:
 	lda	#$80							; new table loaded, clear request bit
 	trb	DP_TextBoxBG
 	rts
@@ -1228,7 +1228,7 @@ MakeMode5FontBG1:							; Expects VRAM address set to BG1 tile base
 
 	ldx	#0
 
-__BuildFontBG1:
+@BuildFontBG1:
 	ldy	#0
 -	lda.l	GFX_Font8x8, x						; first, copy font tile (font tiles sit on the "left")
 	sta	REG_VMDATAL
@@ -1245,7 +1245,7 @@ __BuildFontBG1:
 	bne	-
 
 	cpx	#2048							; 2 KiB font done?
-	bne	__BuildFontBG1
+	bne	@BuildFontBG1
 
 	Accu8
 
@@ -1258,7 +1258,7 @@ MakeMode5FontBG2:							; Expects VRAM address set to BG2 tile base
 
 	ldx	#0
 
-__BuildFontBG2:
+@BuildFontBG2:
 	ldy	#0
 -	stz	REG_VMDATAL						; first, add 1 blank tile (Mode 5 forces 16×8 tiles,
 	iny								; no more blank tiles because BG2 is 2bpp)
@@ -1275,7 +1275,7 @@ __BuildFontBG2:
 	bne	-
 
 	cpx	#2048							; 2 KiB font done?
-	bne	__BuildFontBG2
+	bne	@BuildFontBG2
 
 	Accu8
 
@@ -1299,7 +1299,7 @@ ProcessVWFTiles:
 	lda	#16							; loop through 16 bytes per tile
 	sta	DP_VWF_Loop
 
-__VWFTilesLoop:
+@VWFTilesLoop:
 	lda.l	GFX_FontMode5, x
 	xba								; move to high byte
 	lda	#$00
@@ -1313,7 +1313,7 @@ __VWFTilesLoop:
 	inx
 	iny
 	dec	DP_VWF_Loop
-	bne	__VWFTilesLoop
+	bne	@VWFTilesLoop
 
 	ldx	DP_TextASCIIChar					; ASCII char no. --> font width table index
 	lda.l	SRC_FWT_Dialog, x
@@ -1332,14 +1332,14 @@ __VWFTilesLoop:
 
 	Accu8
 
-	bra	__ProcessVWFTilesDone
+	bra	@VWFTilesDone
 
 +	sec
 	sbc	#8
 	sta	DP_VWF_BitsUsed
 	sty	DP_VWF_BufferIndex
 
-__ProcessVWFTilesDone:
+@VWFTilesDone:
 	rts
 
 
@@ -1354,43 +1354,39 @@ VWFShiftBits:
 	lda	DP_VWF_BitsUsed
 	bne	+
 	pla
-	bra	__VWFShiftBitsDone
+	bra	@VWFShiftBitsDone
 
 +	dec	a
 	asl	a
 	tax
 	pla
-	jmp	(__VWFShiftAmount, x)
+	jmp	(@VWFShiftAmount, x)
 
+@VWFShiftAmount:
+	.DW @R1, @R2, @R3, @R4, @R5, @R6, @R7
 
-
-__VWFShiftAmount:
-	.DW __R1, __R2, __R3, __R4, __R5, __R6, __R7
-
-__R7:
+@R7:
 	lsr	a
 
-__R6:
+@R6:
 	lsr	a
 
-__R5:
+@R5:
 	lsr	a
 
-__R4:
+@R4:
 	lsr	a
 
-__R3:
+@R3:
 	lsr	a
 
-__R2:
+@R2:
 	lsr	a
 
-__R1:
+@R1:
 	lsr	a
 
-
-
-__VWFShiftBitsDone:
+@VWFShiftBitsDone:
 	Accu8
 
 	ply
@@ -1420,7 +1416,7 @@ SaveTextBoxTileToVRAM:
 TextBoxAnimationClose:
 
 ; -------------------------- closing animation (scroll text box content out vertically below the screen)
-__CloseTextBoxAniLoop:
+@CloseTextBoxAniLoop:
 	WaitFrames	1
 
 	Accu16
@@ -1448,7 +1444,7 @@ __CloseTextBoxAniLoop:
 	sta	DP_TextBoxVIRQ						; write new scanline for IRQ to fire
 	sta	REG_VTIMEL
 	cmp	#224
-	bne	__CloseTextBoxAniLoop
+	bne	@CloseTextBoxAniLoop
 
 	Accu8
 
@@ -1480,7 +1476,7 @@ TextBoxAnimationOpen:
 	lda	#%00110000						; enable IRQ at H=$4207 and V=$4209
 	tsb	VAR_Shadow_NMITIMEN
 
-__OpenTextBoxAniLoop:
+@OpenTextBoxAniLoop:
 	WaitFrames	1
 
 	Accu16
@@ -1510,7 +1506,7 @@ __OpenTextBoxAniLoop:
 	tsb	DP_TextBoxBG
 	lda	DP_TextBoxVIRQ						; lastly, write new scanline for IRQ to fire
 	sta	REG_VTIMEL
-	bra	__OpenTextBoxAniLoop
+	bra	@OpenTextBoxAniLoop
 
 +	Accu8
 
@@ -1663,15 +1659,15 @@ PrintFtemp:
 	sta	DP_TextStringBank
 	ldy	#0
 
-PrintFtempLoop:
+@Loop:
 	lda	[DP_TextStringPtr], y					; read next string character
-	beq	PrintFtempDone						; check for NUL terminator
+	beq	@Done							; check for NUL terminator
 	iny								; increment input pointer
 	jsr	FillTextBuffer						; write character to text buffer
 
-	bra	PrintFtempLoop
+	bra	@Loop
 
-PrintFtempDone:
+@Done:
 	rts
 
 
@@ -1753,22 +1749,22 @@ FillHiResTextBuffer:							; expectations: A = 8 bit, X/Y = 16 bit
 	xba								; preserve character code
 	ldx	DP_TextCursor
 	lda	DP_HiResPrintMon
-	bne	__FillHiResTextBufferBG2				; if BG monitor value is not zero, use BG2
+	bne	@FillHiResTextBufferBG2					; if BG monitor value is not zero, use BG2
 
-__FillHiResTextBufferBG1:
+@FillHiResTextBufferBG1:
 	inc	DP_HiResPrintMon					; otherwise, change value and use BG1
 	xba								; restore character code
 	sta	ARRAY_BG1TileMap1, x					; write it to the BG1 text buffer
-	bra	__FillHiResTextBufferDone				; ... and done
+	bra	@FillHiResTextBufferDone				; ... and done
 
-__FillHiResTextBufferBG2:
+@FillHiResTextBufferBG2:
 	stz	DP_HiResPrintMon					; reset BG monitor value
 	xba								; restore character code
 	sta	ARRAY_BG2TileMap1, x					; write it to the BG2 text buffer
 	inx								; ... and advance text cursor position
 	stx	DP_TextCursor
 
-__FillHiResTextBufferDone:
+@FillHiResTextBufferDone:
 	rts
 
 
@@ -1788,9 +1784,9 @@ PrintSpriteText:
 
 	ldx	DP_SpriteTextMon					; start where there is some unused sprite text buffer
 
-__PrintSpriteTextLoop:
+@PrintSpriteTextLoop:
 	lda	[DP_TextStringPtr], y					; read next string character
-	beq	__PrintSpriteTextDone					; check for NUL terminator
+	beq	@PrintSpriteTextDone					; check for NUL terminator
 	iny								; increment input pointer
 	phy
 	pha
@@ -1834,9 +1830,9 @@ __PrintSpriteTextLoop:
 	bcc	+
 	ldx	#$0000
 +	stx	DP_SpriteTextMon					; keep track of sprite text buffer filling level
-	bra	__PrintSpriteTextLoop
+	bra	@PrintSpriteTextLoop
 
-__PrintSpriteTextDone:
+@PrintSpriteTextDone:
 	plp
 	rts
 

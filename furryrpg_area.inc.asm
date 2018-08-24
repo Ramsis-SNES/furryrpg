@@ -174,7 +174,7 @@ LoadAreaData:
 	inx
 	inx
 	inx
-	jmp	__AreaBG2TileMapDone
+	jmp	@BG2TileMapDone
 
 +	sta	VAR_DMASourceOffset
 	inx
@@ -184,7 +184,7 @@ LoadAreaData:
 
 	lda.l	SRC_AreaProperties, x					; read tile map source bank (8 bits of data)
 ;	cmp	#$FF							; never mind checking those again
-;	beq	__AreaBG2TileMapDone
+;	beq	@BG2TileMapDone
 	sta	VAR_DMASourceBank
 	inx
 
@@ -192,7 +192,7 @@ LoadAreaData:
 
 	lda.l	SRC_AreaProperties, x					; read size of tile map (16 bits of data)
 ;	cmp	#$FFFF
-;	beq	__AreaBG2TileMapDone
+;	beq	@BG2TileMapDone
 	sta	VAR_DMATransferLength
 	inx
 	inx
@@ -257,7 +257,7 @@ LoadAreaData:
 
 	plx								; restore area data pointer
 
-__AreaBG2TileMapDone:
+@BG2TileMapDone:
 
 
 
@@ -435,10 +435,10 @@ __AreaBG2TileMapDone:
 	bne	+
 	lda	DP_NextTrack
 	cmp	#$FF
-	beq	__AreaGSSLoadTrackDone
+	beq	@GSSLoadTrackDone
 +	jsl	LoadTrackGSS
 
-__AreaGSSLoadTrackDone:
+@GSSLoadTrackDone:
 
 
 
@@ -584,13 +584,13 @@ ShowArea:
 	bne	+
 	lda	DP_NextTrack
 	cmp	#$FF
-	beq	__AreaGSSPlayTrackDone
+	beq	@GSSPlayTrackDone
 +	jsl	PlayTrackGSS
 
-__AreaGSSPlayTrackDone:
+@GSSPlayTrackDone:
 	lda	DP_GameConfig
 	and	#%00000001						; check for "MSU1 present" flag
-	beq	__AreaMSU1TrackDone
+	beq	@MSU1TrackDone
 
 	Accu16
 
@@ -607,7 +607,7 @@ __AreaGSSPlayTrackDone:
 
 +	Accu8
 
-__AreaMSU1TrackDone:
+@MSU1TrackDone:
 .ENDIF
 
 
@@ -625,11 +625,11 @@ MainAreaLoop:
 
 	lda	DP_Joy1Press						; check for any input (sans Y button)
 	and	#%1011111111110000
-	beq	__PlayerIsIdle
+	beq	@PlayerIsIdle
 	stz	DP_PlayerIdleCounter					; player not idle, reset counter
 	bra	+
 
-__PlayerIsIdle:
+@PlayerIsIdle:
 	lda	DP_PlayerIdleCounter
 	inc	a							; assume player is idle
 	cmp	#$FFFF
@@ -654,42 +654,43 @@ __PlayerIsIdle:
 ; -------------------------- HUD display logic
 	lda	DP_HUD_Status						; check whether HUD is already being displayed
 	and	#%00000001
-	bne	__HUDIsVisible						; yes
+	bne	@HUDIsVisible						; yes
 
 	Accu16
 
 	lda	DP_PlayerIdleCounter					; no, check if player has been idle for at least 300 frames (5-6 seconds)
 	cmp	#301
-	bcc	__HUDLogicJumpOut					; no, jump out
+	bcc	@HUDLogicJumpOut					; no, jump out
 
 	Accu8
 
 	lda	#%10000000						; yes, set "HUD should appear" bit
 	tsb	DP_HUD_Status
-	bra	__HUDLogicDone
+	bra	@HUDLogicDone
 
-__HUDIsVisible:
+@HUDIsVisible:
 	Accu16
 
 	lda	DP_HUD_DispCounter
 	inc	a
 	sta	DP_HUD_DispCounter
 	cmp	#151							; show HUD for at least 150 frames before hiding it again
-	bcc	__HUDLogicJumpOut
+	bcc	@HUDLogicJumpOut
 
-__HideHUDOrNot:
+
+@HideHUDOrNot:
 	lda	DP_PlayerIdleCounter					; if player is currently idle, don't do anything
-	bne	__HUDLogicJumpOut
+	bne	@HUDLogicJumpOut
 
 	Accu8
 
 	lda	#%01000000						; otherwise, set "HUD should disappear" bit
 	tsb	DP_HUD_Status
 
-__HUDLogicJumpOut:
+@HUDLogicJumpOut:
 	Accu8
 
-__HUDLogicDone:
+@HUDLogicDone:
 
 
 
@@ -721,12 +722,12 @@ __HUDLogicDone:
 ; -------------------------- text box
 	lda	DP_TextBoxStatus					; check if text box is open
 	and	#%00000010
-	beq	__MainAreaNoTextBox
+	beq	@NoTextBox
 	jsr	MainTextBoxLoop						; yes, go to subroutine
 
-	jmp	__MainAreaLoopSkipDpadABXY				; and skip subsequent button checks
+	jmp	@SkipDpadABXY						; and skip subsequent button checks
 
-__MainAreaNoTextBox:
+@NoTextBox:
 
 
 
@@ -735,7 +736,7 @@ __MainAreaNoTextBox:
 	and	#%10000000
 	bne	+
 	lda	#1							; B not pressed, set slow walking speed
-	bra	__MainAreaLoopBButtonDone
+	bra	@BButtonDone
 
 +	lda	DP_HUD_Status						; check whether HUD is already being displayed
 	and	#%00000001
@@ -746,7 +747,7 @@ __MainAreaNoTextBox:
 	sta	DP_HUD_Status
 +	lda	#2							; B pressed, set fast walking speed
 
-__MainAreaLoopBButtonDone:
+@BButtonDone:
 	sta	DP_Char1WalkingSpd
 
 
@@ -754,10 +755,10 @@ __MainAreaLoopBButtonDone:
 ; -------------------------- check for Y button = show HUD
 	lda	DP_Joy1New+1
 	and	#%01000000
-	beq	__MainAreaLoopYButtonDone
+	beq	@YButtonDone
 	lda	DP_HUD_Status						; check whether HUD is already being displayed
 	and	#%00000001
-	bne	__MainAreaLoopYButtonDone
+	bne	@YButtonDone
 	lda	DP_HUD_Status
 	ora	#%10000000						; no, set "HUD should appear" bit
 	and	#%10111111						; clear "HUD should disappear" bit in case it's set
@@ -765,26 +766,26 @@ __MainAreaLoopBButtonDone:
 	lda	#1							; simulate idle player so HUD won't disappear and reappear when there is no input within the next 5-7 seconds
 	sta	DP_PlayerIdleCounter
 
-__MainAreaLoopYButtonDone:
+@YButtonDone:
 
 
 
 ; -------------------------- check for dpad released
 	lda	DP_Joy1New+1
 	and	#%00001111
-	bne	__MainAreaLoopDpadNewDone
+	bne	@DpadNewDone
 
 	lda	#$80							; d-pad released, make character idle
 	tsb	DP_Char1SpriteStatus
 
-__MainAreaLoopDpadNewDone:
+@DpadNewDone:
 
 
 
 ; -------------------------- check for dpad up
 	lda	DP_Joy1Press+1
 	and	#%00001000
-	beq	__MainAreaLoopDpadUpDone
+	beq	@DpadUpDone
 
 	lda	#TBL_Char1_up
 	sta	DP_Char1SpriteStatus
@@ -792,10 +793,10 @@ __MainAreaLoopDpadNewDone:
 
 	ldy	DP_AreaMetaMapIndex
 	lda	[DP_AreaMetaMapAddr], y					; check for BG collision using meta map entries
-	bmi	__MainAreaLoopDpadUpDone
+	bmi	@DpadUpDone
 	ldy	DP_AreaMetaMapIndex2
 	lda	[DP_AreaMetaMapAddr], y
-	bmi	__MainAreaLoopDpadUpDone
+	bmi	@DpadUpDone
 
 	Accu16
 
@@ -825,14 +826,14 @@ __MainAreaLoopDpadNewDone:
 
 ++	Accu8
 
-__MainAreaLoopDpadUpDone:
+@DpadUpDone:
 
 
 
 ; -------------------------- check for dpad down
 	lda	DP_Joy1Press+1
 	and	#%00000100
-	beq	__MainAreaLoopDpadDownDone
+	beq	@DpadDownDone
 
 	lda	#TBL_Char1_down
 	sta	DP_Char1SpriteStatus
@@ -840,10 +841,10 @@ __MainAreaLoopDpadUpDone:
 
 	ldy	DP_AreaMetaMapIndex
 	lda	[DP_AreaMetaMapAddr], y					; check for BG collision using meta map entries
-	bmi	__MainAreaLoopDpadDownDone
+	bmi	@DpadDownDone
 	ldy	DP_AreaMetaMapIndex2
 	lda	[DP_AreaMetaMapAddr], y
-	bmi	__MainAreaLoopDpadDownDone
+	bmi	@DpadDownDone
 
 	Accu16
 
@@ -869,14 +870,14 @@ __MainAreaLoopDpadUpDone:
 
 ++	Accu8
 
-__MainAreaLoopDpadDownDone:
+@DpadDownDone:
 
 
 
 ; -------------------------- check for dpad left
 	lda	DP_Joy1Press+1
 	and	#%00000010
-	beq	__MainAreaLoopDpadLeftDone
+	beq	@DpadLeftDone
 
 	lda	#TBL_Char1_left
 	sta	DP_Char1SpriteStatus
@@ -884,10 +885,10 @@ __MainAreaLoopDpadDownDone:
 
 	ldy	DP_AreaMetaMapIndex
 	lda	[DP_AreaMetaMapAddr], y					; check for BG collision using meta map entries
-	bmi	__MainAreaLoopDpadLeftDone
+	bmi	@DpadLeftDone
 	ldy	DP_AreaMetaMapIndex2
 	lda	[DP_AreaMetaMapAddr], y
-	bmi	__MainAreaLoopDpadLeftDone
+	bmi	@DpadLeftDone
 
 	Accu16
 
@@ -912,14 +913,14 @@ __MainAreaLoopDpadDownDone:
 
 ++	Accu8
 
-__MainAreaLoopDpadLeftDone:
+@DpadLeftDone:
 
 
 
 ; -------------------------- check for dpad right
 	lda	DP_Joy1Press+1
 	and	#%00000001
-	beq	__MainAreaLoopDpadRightDone
+	beq	@DpadRightDone
 
 	lda	#TBL_Char1_right
 	sta	DP_Char1SpriteStatus
@@ -927,10 +928,10 @@ __MainAreaLoopDpadLeftDone:
 
 	ldy	DP_AreaMetaMapIndex
 	lda	[DP_AreaMetaMapAddr], y					; check for BG collision using meta map entries
-	bmi	__MainAreaLoopDpadRightDone
+	bmi	@DpadRightDone
 	ldy	DP_AreaMetaMapIndex2
 	lda	[DP_AreaMetaMapAddr], y
-	bmi	__MainAreaLoopDpadRightDone
+	bmi	@DpadRightDone
 
 	Accu16
 
@@ -955,40 +956,40 @@ __MainAreaLoopDpadLeftDone:
 
 ++	Accu8
 
-__MainAreaLoopDpadRightDone:
+@DpadRightDone:
 
 
 
 ; -------------------------- check for A button = open text box
 	lda	DP_Joy1New
 	and	#%10000000
-	beq	__MainAreaLoopAButtonDone
+	beq	@AButtonDone
 
 	lda	#$80							; make character idle
 	tsb	DP_Char1SpriteStatus
 	jsr	OpenTextBox
 
-__MainAreaLoopAButtonDone:
+@AButtonDone:
 
 
 
 ; -------------------------- check for X button
 	lda	DP_Joy1New
 	and	#%01000000
-	beq	__MainAreaLoopXButtonDone
+	beq	@XButtonDone
 
 	jmp	InGameMenu
 
-__MainAreaLoopXButtonDone:
+@XButtonDone:
 
-__MainAreaLoopSkipDpadABXY:
+@SkipDpadABXY:
 
 
 
 ; -------------------------- check for Start
 	lda	DP_Joy1+1
 	and	#%00010000
-	beq	__MainAreaLoopStButtonDone
+	beq	@StartButtonDone
 
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
@@ -1017,11 +1018,8 @@ __MainAreaLoopSkipDpadABXY:
 
 	jmp	DebugMenu
 
-__MainAreaLoopStButtonDone:
-;	jsr	ShowCPUload
+@StartButtonDone:
 
-;	lda	#%00010000						; make sure BG3 low tile map bytes are updated
-;	tsb	DP_DMA_Updates
 	jmp	MainAreaLoop
 
 
@@ -1049,7 +1047,7 @@ PutAreaNameIntoHUD:							; HUD "text box" position (temp, temp+1) and DP_TextCu
 
 	Accu8
 
-PutTextIntoHUD:
+@PutTextIntoHUD:
 	ldy	#0							; get HUD string length
 -	lda	[DP_TextStringPtr], y
 	beq	+							; NUL terminator reached?

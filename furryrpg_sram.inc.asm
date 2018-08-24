@@ -45,13 +45,13 @@ CheckSRAM:
 
 	lda	temp+3
 	cmp	ADDR_SRAM_Chksum
-	bne	__SRAMBad
+	bne	@ClearSRAM
 
 	eor	#$FFFF
 	cmp	ADDR_SRAM_ChksumCmpl
-	beq	__SRAMGood
+	beq	@SRAMGood
 
-__SRAMBad:
+@ClearSRAM:
 	lda	#$0000							; checksum invalid, zero out SRAM data
 	ldx	#$0000
 -	sta	ADDR_SRAM_Slot1, x
@@ -65,7 +65,7 @@ __SRAMBad:
 	xba								; write checksum complement ($FE01)
 	sta	ADDR_SRAM_ChksumCmpl
 
-__SRAMGood:
+@SRAMGood:
 	Accu8
 
 	rtl

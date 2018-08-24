@@ -206,8 +206,8 @@ __DrawLowerBorder\@:
 
 .MACRO Freeze
 
-__Freeze\@:
-	bra	__Freeze\@
+@Freeze\@:
+	bra	@Freeze\@
 .ENDM
 
 
@@ -303,17 +303,17 @@ __Freeze\@:
 .MACRO WaitFrames
 	ldx	#\1
 
-__FrameDelay\@:
+@FrameDelay\@:
 
-__WaitForVblankStart\@:
+@WaitForVblankStart\@:
 	lda	REG_HVBJOY
-	bpl	__WaitForVblankStart\@
+	bpl	@WaitForVblankStart\@
 
-__WaitForVblankEnd\@:
+@WaitForVblankEnd\@:
 	lda	REG_HVBJOY
-	bmi	__WaitForVblankEnd\@
+	bmi	@WaitForVblankEnd\@
 	dex
-	bne	__FrameDelay\@
+	bne	@FrameDelay\@
 .ENDM
 
 
@@ -328,11 +328,11 @@ __WaitForVblankEnd\@:
 .MACRO WaitUserInput
 	Accu16
 
-__CheckJoypad\@:
+@CheckJoypad\@:
 	wai
 	lda	DP_Joy1New
 	and	#$F0F0							; B, Y, Select, Start (no d-pad), A, X, L, R
-	beq	__CheckJoypad\@
+	beq	@CheckJoypad\@
 
 	Accu8
 .ENDM
@@ -344,13 +344,13 @@ __CheckJoypad\@:
 .MACRO PrintString
 	stz	DP_TextStringPtr
 	stz	DP_TextStringPtr+1
-	lda	#:StringOffset\@
+	lda	#:@StringOffset\@
 	sta	DP_TextStringBank
 	ldx	#32*\1 + \2
 	stx	DP_TextCursor
 	jsr	PrintF
 
-StringOffset\@:
+@StringOffset\@:
 	.DB \3, 0							; instead of a return address (-1), the string address (-1) is on the stack
 .ENDM
 
@@ -410,18 +410,18 @@ StringOffset\@:
 	stx	DP_TextCursor
 	lda	#\4
 	sta	DP_SpriteTextPalette
-	ldx	#STR_SpriteText_Start\@
+	ldx	#@STR_SpriteText_Start\@
 	stx	DP_TextStringPtr
-	lda.b	#:STR_SpriteText_Start\@
+	lda.b	#:@STR_SpriteText_Start\@
 	sta.b	DP_TextStringBank
 	jsr	PrintSpriteText
 
-	bra	STR_SpriteText_End\@
+	bra	@STR_SpriteText_End\@
 
-STR_SpriteText_Start\@:
+@STR_SpriteText_Start\@:
 	.DB \3, 0
 
-STR_SpriteText_End\@:
+@STR_SpriteText_End\@:
 
 .ENDM
 

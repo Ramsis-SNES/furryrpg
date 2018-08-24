@@ -37,10 +37,10 @@ Vblank_Area:
 	bpl	+
 	jsr	ClearTextBox						; bit 7 set --> wipe text
 
-	jmp	__SkipRefreshes3					; ... and skip BG refreshes (to avoid glitches due to premature end of Vblank)
+	jmp	@SkipRefreshes						; ... and skip BG refreshes (to avoid glitches due to premature end of Vblank)
 
 +	bit	#%00000001						; VWF buffer full?
-	beq	__TextBoxVblankDone
+	beq	@TextBoxDone
 	jsr	VWFTileBufferFull
 
 __TextBoxVblankDone:
@@ -160,6 +160,7 @@ __HideHUD:
 	bne	-
 
 __UpdateHUDDone:
+@TextBoxDone:
 
 
 
@@ -273,7 +274,7 @@ __Char1WalkingDone:
 
 
 
-__SkipRefreshes3:
+@SkipRefreshes:
 
 
 
@@ -801,7 +802,7 @@ GetInput:
 ; -------------------------- make sure Joypads 1, 2 are valid
 	lda	DP_GameMode
 	and	#%0000000010000000					; check if auto-mode is enabled
-	bne	_done							; yes, jump out
+	bne	@done							; yes, jump out
 
 	AccuIndex8
 
@@ -825,17 +826,17 @@ GetInput:
 	ldx	#$0001
 	lda	#$000F
 	bit	DP_Joy1							; A = joy state, if any of the bottom 4 bits are on... either nothing is plugged
-	beq	_joy2							; into the joy port, or it is not a joypad
+	beq	@joy2							; into the joy port, or it is not a joypad
 	stx	DP_Joy1							; if it is not a valid joypad put $0001 into the 2 joy state variables
 	stz	DP_Joy1Press
 
-_joy2:
+@joy2:
 	bit	DP_Joy2							; A = joy state, if any of the bottom 4 bits are on... either nothing is plugged
-	beq	_done							; into the joy port, or it is not a joypad
+	beq	@done							; into the joy port, or it is not a joypad
 	stx	DP_Joy2							; if it is not a valid joypad put $0001 into the 2 joy state variables
 	stz	DP_Joy2Press
 
-_done:
+@done:
 	plp
 	rts
 
@@ -865,7 +866,7 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 	trb	DP_DMA_Updates
 	dey								; decrement DMA counter
 	bne	+
-	jmp	__DMAUpdatesDone
+	jmp	@DMAUpdatesDone
 
 +	lda	DP_DMA_Updates
 	and	#%00000010						; check for 2nd BG1 tile map (low bytes)
@@ -879,7 +880,7 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 	trb	DP_DMA_Updates
 	dey								; decrement DMA counter
 	bne	+
-	jmp	__DMAUpdatesDone
+	jmp	@DMAUpdatesDone
 
 
 
@@ -896,7 +897,7 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 	trb	DP_DMA_Updates
 	dey								; decrement DMA counter
 	bne	+
-	jmp	__DMAUpdatesDone
+	jmp	@DMAUpdatesDone
 
 +	lda	DP_DMA_Updates
 	and	#%00001000						; check for 2nd BG2 tile map (low bytes)
@@ -910,7 +911,7 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 	trb	DP_DMA_Updates
 	dey								; decrement DMA counter
 	bne	+
-	jmp	__DMAUpdatesDone
+	jmp	@DMAUpdatesDone
 
 
 
@@ -927,7 +928,7 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 	trb	DP_DMA_Updates
 	dey
 	bne	+
-	jmp	__DMAUpdatesDone
+	jmp	@DMAUpdatesDone
 
 +	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	REG_VMAIN
@@ -947,7 +948,7 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 	trb	DP_DMA_Updates+1
 	dey								; decrement DMA counter
 	bne	+
-	jmp	__DMAUpdatesDone
+	jmp	@DMAUpdatesDone
 
 +	lda	DP_DMA_Updates+1
 	and	#%00000010						; check for 2nd BG1 tile map (high bytes)
@@ -961,7 +962,7 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 	trb	DP_DMA_Updates+1
 	dey								; decrement DMA counter
 	bne	+
-	jmp	__DMAUpdatesDone
+	jmp	@DMAUpdatesDone
 
 
 
@@ -978,7 +979,7 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 	trb	DP_DMA_Updates+1
 	dey								; decrement DMA counter
 	bne	+
-	jmp	__DMAUpdatesDone
+	jmp	@DMAUpdatesDone
 
 +	lda	DP_DMA_Updates+1
 	and	#%00001000						; check for 2nd BG2 tile map (high bytes)
@@ -991,14 +992,14 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 	lda	#%00001000						; clear respective DMA update bit
 	trb	DP_DMA_Updates+1
 	dey								; decrement DMA counter
-	beq	__DMAUpdatesDone
+	beq	@DMAUpdatesDone
 
 
 
 ; -------------------------- check/refresh BG3 (high tilemap bytes)
 +	lda	DP_DMA_Updates+1
 	and	#%00010000						; check for BG3 tile map (high bytes)
-	beq	__DMAUpdatesDone
+	beq	@DMAUpdatesDone
 
 	ldx	#ADDR_VRAM_BG3_TileMap1					; set VRAM address to BG3 tile map
 	stx	REG_VMADDL
@@ -1008,7 +1009,7 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 	lda	#%00010000						; clear respective DMA update bit
 	trb	DP_DMA_Updates+1
 
-__DMAUpdatesDone:
+@DMAUpdatesDone:
 	rts
 
 
@@ -1028,7 +1029,7 @@ UpdateCharPortrait:
 	DMA_CH0 $09, :CONST_FFs, CONST_FFs, $18, 1920			; no portrait wanted, so put masking tiles over portrait
 	DMA_CH0 $0A, :CONST_Zeroes, CONST_Zeroes, $22, 32		; and zero out palette
 
-	bra	__CharPortraitUpdated
+	bra	@PortraitUpdateDone
 
 +	Accu16								; portrait no. in A
 
@@ -1065,7 +1066,7 @@ UpdateCharPortrait:
 	lda	#%00000001						; initiate DMA transfer (channel 0)
 	sta	REG_MDMAEN
 
-__CharPortraitUpdated:
+@PortraitUpdateDone:
 	lda	#%10000000						; portrait updated, clear request flag
 	trb	DP_TextBoxCharPortrait
 	rts
@@ -1080,29 +1081,29 @@ UpdateGameTime:
 	adc	#$01
 	sta	DP_GameTimeSeconds
 	cmp	#$60							; check if 60 frames = game time seconds have elapsed
-	bcc	__GameTimeUpdateMinutes
+	bcc	@UpdateMinutes
 
 	stz	DP_GameTimeSeconds					; carry bit set, reset seconds
 
-__GameTimeUpdateMinutes:
+@UpdateMinutes:
 	lda	DP_GameTimeMinutes					; increment minutes via carry bit
 	adc	#$00
 	sta	DP_GameTimeMinutes
 	cmp	#$60							; check if 60 seconds have elapsed
-	bcc	__GameTimeUpdateHours
+	bcc	@UpdateHours
 
 	stz	DP_GameTimeMinutes					; carry bit set, reset minutes
 
-__GameTimeUpdateHours:
+@UpdateHours:
 	lda	DP_GameTimeHours					; increment hours via carry bit
 	adc	#$00
 	sta	DP_GameTimeHours
 	cmp	#$24							; check if 24 hours have elapsed
-	bcc	__GameTimeUpdateDone
+	bcc	@TimeUpdateDone
 
 	stz	DP_GameTimeHours					; carry bit set, reset hours
 
-__GameTimeUpdateDone:
+@TimeUpdateDone:
 	cld								; decimal mode off
 	rts
 

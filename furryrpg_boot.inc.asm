@@ -622,17 +622,17 @@ VerifyROMIntegrity:
 
 	lda	temp+3
 	cmp	$C0FFDE							; compare sum to "HiROM" ROM checksum
-	bne	__ROMIntegrityBad
+	bne	@ROMIntegrityBad
 	cmp	$40FFDE							; compare sum to "ExHiROM" ROM checksum
-	bne	__ROMIntegrityBad
+	bne	@ROMIntegrityBad
 	eor	#$FFFF
 	cmp	$C0FFDC							; compare (sum XOR $FFFF) to "HiROM" ROM checksum complement
-	bne	__ROMIntegrityBad
+	bne	@ROMIntegrityBad
 	cmp	$40FFDC							; compare (sum XOR $FFFF) to "ExHiROM" ROM checksum complement
-	bne	__ROMIntegrityBad
-	jmp	__ROMIntegrityGood
+	bne	@ROMIntegrityBad
+	jmp	@ROMIntegrityGood
 
-__ROMIntegrityBad:
+@ROMIntegrityBad:
 	Accu8
 
 	stz	REG_CGADD						; reset CGRAM address
@@ -656,7 +656,7 @@ __ROMIntegrityBad:
 
 	Freeze								; enter trap loop
 
-__ROMIntegrityGood:
+@ROMIntegrityGood:
 	Accu8
 
 	lda	#$01							; remember that ROM integrity check was passed
@@ -795,7 +795,7 @@ __Init_OAM_hi2:
 
 SRC_RAM_Code:
 
-;SRC_CodeDoDMA:
+@SRC_CodeDoDMA:
 	php								; preserve registers
 	phb
 
@@ -831,7 +831,7 @@ SRC_RAM_Code:
 
 
 
-;SRC_CodeUpdatePPURegs:
+@SRC_CodeUpdatePPURegs:
 	php								; preserve registers
 	phd
 

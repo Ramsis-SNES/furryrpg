@@ -426,7 +426,7 @@ Mode7Loop:
 	lda	DP_Joy1Press+1
 	and	#%00001010
 	cmp	#%00001010
-	bne	++
+	bne	@DpadUpLeftDone
 	dec	DP_Mode7_RotAngle
 	lda	DP_Mode7_Altitude
 	inc	a
@@ -436,8 +436,9 @@ Mode7Loop:
 +	sta	DP_Mode7_Altitude
 	jsr	CalcMode7Matrix
 
-	jmp	__M7SkipDpad						; skip additional d-pad checks (no more than 2 directions allowed)
-++
+	jmp	@SkipDpad						; skip additional d-pad checks (no more than 2 directions allowed)
+
+@DpadUpLeftDone:
 
 
 
@@ -445,7 +446,7 @@ Mode7Loop:
 	lda	DP_Joy1Press+1
 	and	#%00001001
 	cmp	#%00001001
-	bne	++
+	bne	@DpadUpRightDone
 	inc	DP_Mode7_RotAngle
 	lda	DP_Mode7_Altitude
 	inc	a
@@ -455,8 +456,9 @@ Mode7Loop:
 +	sta	DP_Mode7_Altitude
 	jsr	CalcMode7Matrix
 
-	bra	__M7SkipDpad
-++
+	bra	@SkipDpad
+
+@DpadUpRightDone:
 
 
 
@@ -464,7 +466,7 @@ Mode7Loop:
 	lda	DP_Joy1Press+1
 	and	#%00000110
 	cmp	#%00000110
-	bne	++
+	bne	@DpadDownLeftDone
 	dec	DP_Mode7_RotAngle
 	lda	DP_Mode7_Altitude
 	dec	a
@@ -473,8 +475,9 @@ Mode7Loop:
 +	sta	DP_Mode7_Altitude
 	jsr	CalcMode7Matrix
 
-	bra	__M7SkipDpad
-++
+	bra	@SkipDpad
+
+@DpadDownLeftDone:
 
 
 
@@ -482,7 +485,7 @@ Mode7Loop:
 	lda	DP_Joy1Press+1
 	and	#%00000101
 	cmp	#%00000101
-	bne	++
+	bne	@DpadDownRightDone
 	inc	DP_Mode7_RotAngle
 	lda	DP_Mode7_Altitude
 	dec	a
@@ -491,15 +494,16 @@ Mode7Loop:
 +	sta	DP_Mode7_Altitude
 	jsr	CalcMode7Matrix
 
-	bra	__M7SkipDpad
-++
+	bra	@SkipDpad
+
+@DpadDownRightDone:
 
 
 
 ; -------------------------- check for dpad up
 	lda	DP_Joy1Press+1
 	and	#%00001000
-	beq	++
+	beq	@DpadUpDone
 	lda	DP_Mode7_Altitude
 	inc	a
 	cmp	#112
@@ -507,142 +511,142 @@ Mode7Loop:
 	lda	#111
 +	sta	DP_Mode7_Altitude
 	jsr	CalcMode7Matrix
-++
+
+@DpadUpDone:
 
 
 
 ; -------------------------- check for dpad down
 	lda	DP_Joy1Press+1
 	and	#%00000100
-	beq	++
+	beq	@DpadDownDone
 	lda	DP_Mode7_Altitude
 	dec	a
 	bpl	+
 	lda	#0
 +	sta	DP_Mode7_Altitude
 	jsr	CalcMode7Matrix
-++
+
+@DpadDownDone:
 
 
 
 ; -------------------------- check for dpad left
 	lda	DP_Joy1Press+1
 	and	#%00000010
-	beq	+
+	beq	@DpadLeftDone
 	lda	DP_Mode7_BG2HScroll
 	sec
 	sbc	#5
 	sta	DP_Mode7_BG2HScroll
 	dec	DP_Mode7_RotAngle
 	jsr	CalcMode7Matrix
-+
+
+@DpadLeftDone:
 
 
 
 ; -------------------------- check for dpad right
 	lda	DP_Joy1Press+1
 	and	#%00000001
-	beq	+
+	beq	@DpadRightDone
 	lda	DP_Mode7_BG2HScroll
 	clc
 	adc	#5
 	sta	DP_Mode7_BG2HScroll
 	inc	DP_Mode7_RotAngle
 	jsr	CalcMode7Matrix
-+
 
+@DpadRightDone:
 
-
-__M7SkipDpad:
+@SkipDpad:
 
 
 
 ; -------------------------- check for L
 	lda	DP_Joy1Press
 	and	#%00100000
-	beq	+
+	beq	@LButtonDone
 	dec	DP_Mode7_RotAngle
 	dec	DP_Mode7_RotAngle
 	jsr	CalcMode7Matrix
-+
+
+@LButtonDone:
 
 
 
 ; -------------------------- check for R
 	lda	DP_Joy1Press
 	and	#%00010000
-	beq	+
+	beq	@RButtonDone
 	inc	DP_Mode7_RotAngle
 	inc	DP_Mode7_RotAngle
 	jsr	CalcMode7Matrix
-+
+
+@RButtonDone:
 
 
 
 ; -------------------------- check for A = fly forward
 	lda	DP_Joy1Press
-	and	#%10000000
-	beq	++
+	bpl	@AButtonDone
 	lda	DP_Mode7_RotAngle					; $00 < angle < $80 --> inc X
-	beq	__M7FlightY						; don't change X if angle = 0
+	beq	@FlightY						; don't change X if angle = 0
 	cmp	#$80
-	beq	__M7FlightY						; don't change X if angle = 128 (eq. 180°)
+	beq	@FlightY						; don't change X if angle = 128 (eq. 180°)
 	bcs	+
 	jsr	M7FlightIncX
 
-	bra	__M7FlightY
+	bra	@FlightY
 
 +	jsr	M7FlightDecX						; $80 < angle <= $FF --> dec X
 
-__M7FlightY:
+@FlightY:
 	lda	DP_Mode7_RotAngle					; $40 < angle < $C0 --> inc Y
 	cmp	#$40
-	beq	++							; don't change Y if angle = 64 (eq. 90°)
+	beq	@AButtonDone						; don't change Y if angle = 64 (eq. 90°)
 	bcc	+
 	cmp	#$C0
-	beq	++							; don't change Y if angle = 192 (eq. 270°)
+	beq	@AButtonDone						; don't change Y if angle = 192 (eq. 270°)
 	bcs	+
 	jsr	M7FlightIncY
 
-	bra	++
+	bra	@AButtonDone
 
 +	jsr	M7FlightDecY						; $C0 < angle <= $FF | $00 < angle < $40 --> dec Y
 
-++
+@AButtonDone:
 
 .ENDASM
 
 ; -------------------------- check for B
 	lda	DP_Joy1Press+1
-	and	#%10000000
-	beq	+
+	bpl	@BButtonDone
 
-+
+@BButtonDone:
 
 
 
 ; -------------------------- check for X
-	lda	DP_Joy1Press
-	and	#%01000000
-	beq	+
+	bit	DP_Joy1Press
+	bvc	@XButtonDone
 
-+
+@XButtonDone:
 
 
 
 ; -------------------------- check for Y
-	lda	DP_Joy1Press+1
-	and	#%01000000
-	beq	+
+	bit	DP_Joy1Press+1
+	bvc	@YButtonDone
 
-+
+@YButtonDone:
 
 .ASM
 
 ; -------------------------- check for Start
 	lda	DP_Joy1New+1
 	and	#%00010000
-	beq	+
+	beq	@StartButtonDone
 	lda	#CMD_EffectSpeed3
 	sta	DP_EffectSpeed
 	jsr	EffectHSplitOut2
@@ -663,20 +667,22 @@ __M7FlightY:
 	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 0		; clear VRAM
 
 	jml	DebugMenu
-+
+
+@StartButtonDone:
 
 
 
 ; -------------------------- check for Select
 	lda	DP_Joy1New+1
 	and	#%00100000
-	beq	+
+	beq	@SelButtonDone
 	jsr	ResetMode7Matrix
 
 	WaitFrames	1						; wait for altitude setting to take effect
 
 	jsr	CalcMode7Matrix
-+
+
+@SelButtonDone:
 
 	jmp	Mode7Loop
 
@@ -975,7 +981,7 @@ Div32by16:
         SEC             ; Detect overflow or /0 condition.  To find out, sub-
         LDA     temp+2     ; tract divisor from hi cell of dividend; if C flag
         SBC     temp       ; remains set, divisor was not big enough to avoid
-        BCS     uoflo   ; overflow.  This also takes care of any /0 conditions.
+        BCS     @uoflo   ; overflow.  This also takes care of any /0 conditions.
                         ; If branch not taken, C flag is left clear for 1st ROL.
                         ; We will loop 16x; but since we shift the dividend
         LDX     #17     ; over at the same time as shifting the answer in, the
@@ -983,10 +989,10 @@ Div32by16:
                         ; lo cell of the dividend (which ends up holding the
 ;       INDEX_16        ; quotient), so we start with 17 in X.  We will use Y
                         ; for temporary storage too, so set index reg.s 16-bit.
-ushftl: ROL     temp+4     ; Move lo cell of dividend left one bit, also shifting
+@ushftl: ROL     temp+4     ; Move lo cell of dividend left one bit, also shifting
                         ; answer in.  The 1st rotation brings in a 0, which
         DEX             ; later gets pushed off the other end in the last
-        BEQ     umend   ; rotation.     Branch to the end if finished.
+        BEQ     @umend   ; rotation.     Branch to the end if finished.
 
         ROL     temp+2     ; Shift hi cell of dividend left one bit, also shifting
         LDA     #0      ; next bit in from high bit of lo cell.
@@ -1000,16 +1006,16 @@ ushftl: ROL     temp+4     ; Move lo cell of dividend left one bit, also shiftin
 
         LDA     temp+6     ; Bit 0 of N+6 serves as 17th bit.
         SBC     #0      ; Complete the subtraction by doing the 17th bit before
-        BCC     ushftl  ; determining if the divisor fit into the hi 17 bits of
+        BCC     @ushftl  ; determining if the divisor fit into the hi 17 bits of
                         ; the dividend.  If so, the C flag remains set.
         STY     temp+2     ; If divisor fit into hi 17 bits, update dividend hi
-        BRA     ushftl  ; cell to what it would be after subtraction.    Branch.
+        BRA     @ushftl  ; cell to what it would be after subtraction.    Branch.
 
- uoflo: LDA     #$FFFF  ; If an overflow or /0 condition occurs, put FFFF in
+ @uoflo: LDA     #$FFFF  ; If an overflow or /0 condition occurs, put FFFF in
         STA     temp+4     ; both the quotient
         STA     temp+2     ; and the remainder.
 
- umend:
+ @umend:
 	rts
 .ENDIF
 
@@ -1019,18 +1025,18 @@ ushftl: ROL     temp+4     ; Move lo cell of dividend left one bit, also shiftin
 
 M7FlightDecX:								; expects angle in Accu
 	cmp	#$A0
-	bcc	__DoXDecByAngle
+	bcc	@DoXDecByAngle
 
 	cmp	#$E1
 	bcs	+
 	lda	#$20
-	bra	__DoXDecByAngle
+	bra	@DoXDecByAngle
 
 +	lda	#$80
 	sec
 	sbc	DP_Mode7_RotAngle
 
-__DoXDecByAngle:
+@DoXDecByAngle:
 	Accu16
 
 	and	#$003F							; remove garbage in high byte, make sure angle in low byte doesn't exceed max. index ($20)
@@ -1038,107 +1044,107 @@ __DoXDecByAngle:
 	asl	a
 	tax
 	lda	DP_Mode7_ScrollOffsetX
-	jmp	(__XDecByAngle, x)
+	jmp	(@XDecByAngle, x)
 
 
 
-__XDecByAngle:
-	.DW __DecX1, __DecX2, __DecX3, __DecX4, __DecX5, __DecX6, __DecX7, __DecX8, __DecX9, __DecX10, __DecX11, __DecX12, __DecX13, __DecX14, __DecX15, __DecX16, __DecX17, __DecX18, __DecX19, __DecX20, __DecX21, __DecX22, __DecX23, __DecX24, __DecX25, __DecX26, __DecX27, __DecX28, __DecX29, __DecX30, __DecX31, __DecX32
+@XDecByAngle:
+	.DW @DecX1, @DecX2, @DecX3, @DecX4, @DecX5, @DecX6, @DecX7, @DecX8, @DecX9, @DecX10, @DecX11, @DecX12, @DecX13, @DecX14, @DecX15, @DecX16, @DecX17, @DecX18, @DecX19, @DecX20, @DecX21, @DecX22, @DecX23, @DecX24, @DecX25, @DecX26, @DecX27, @DecX28, @DecX29, @DecX30, @DecX31, @DecX32
 
-__DecX32:
+@DecX32:
 	dec	a
 
-__DecX31:
+@DecX31:
 	dec	a
 
-__DecX30:
+@DecX30:
 	dec	a
 
-__DecX29:
+@DecX29:
 	dec	a
 
-__DecX28:
+@DecX28:
 	dec	a
 
-__DecX27:
+@DecX27:
 	dec	a
 
-__DecX26:
+@DecX26:
 	dec	a
 
-__DecX25:
+@DecX25:
 	dec	a
 
-__DecX24:
+@DecX24:
 	dec	a
 
-__DecX23:
+@DecX23:
 	dec	a
 
-__DecX22:
+@DecX22:
 	dec	a
 
-__DecX21:
+@DecX21:
 	dec	a
 
-__DecX20:
+@DecX20:
 	dec	a
 
-__DecX19:
+@DecX19:
 	dec	a
 
-__DecX18:
+@DecX18:
 	dec	a
 
-__DecX17:
+@DecX17:
 	dec	a
 
-__DecX16:
+@DecX16:
 	dec	a
 
-__DecX15:
+@DecX15:
 	dec	a
 
-__DecX14:
+@DecX14:
 	dec	a
 
-__DecX13:
+@DecX13:
 	dec	a
 
-__DecX12:
+@DecX12:
 	dec	a
 
-__DecX11:
+@DecX11:
 	dec	a
 
-__DecX10:
+@DecX10:
 	dec	a
 
-__DecX9:
+@DecX9:
 	dec	a
 
-__DecX8:
+@DecX8:
 	dec	a
 
-__DecX7:
+@DecX7:
 	dec	a
 
-__DecX6:
+@DecX6:
 	dec	a
 
-__DecX5:
+@DecX5:
 	dec	a
 
-__DecX4:
+@DecX4:
 	dec	a
 
-__DecX3:
+@DecX3:
 	dec	a
 
-__DecX2:
+@DecX2:
 	dec	a
 
-__DecX1:
+@DecX1:
 	dec	a
 
 	and	#$1FFF							; max scroll value (CHECKME)
@@ -1155,18 +1161,18 @@ __DecX1:
 
 M7FlightIncX:								; expects angle in Accu
 	cmp	#$20
-	bcc	__DoXIncByAngle
+	bcc	@DoXIncByAngle
 
 	cmp	#$61
 	bcs	+
 	lda	#$20
-	bra	__DoXIncByAngle
+	bra	@DoXIncByAngle
 
 +	lda	#$80
 	sec
 	sbc	DP_Mode7_RotAngle
 
-__DoXIncByAngle:
+@DoXIncByAngle:
 	Accu16
 
 	and	#$003F
@@ -1174,107 +1180,107 @@ __DoXIncByAngle:
 	asl	a
 	tax
 	lda	DP_Mode7_ScrollOffsetX
-	jmp	(__XIncByAngle, x)
+	jmp	(@XIncByAngle, x)
 
 
 
-__XIncByAngle:
-	.DW __IncX1, __IncX2, __IncX3, __IncX4, __IncX5, __IncX6, __IncX7, __IncX8, __IncX9, __IncX10, __IncX11, __IncX12, __IncX13, __IncX14, __IncX15, __IncX16, __IncX17, __IncX18, __IncX19, __IncX20, __IncX21, __IncX22, __IncX23, __IncX24, __IncX25, __IncX26, __IncX27, __IncX28, __IncX29, __IncX30, __IncX31, __IncX32
+@XIncByAngle:
+	.DW @IncX1, @IncX2, @IncX3, @IncX4, @IncX5, @IncX6, @IncX7, @IncX8, @IncX9, @IncX10, @IncX11, @IncX12, @IncX13, @IncX14, @IncX15, @IncX16, @IncX17, @IncX18, @IncX19, @IncX20, @IncX21, @IncX22, @IncX23, @IncX24, @IncX25, @IncX26, @IncX27, @IncX28, @IncX29, @IncX30, @IncX31, @IncX32
 
-__IncX32:
+@IncX32:
 	inc	a
 
-__IncX31:
+@IncX31:
 	inc	a
 
-__IncX30:
+@IncX30:
 	inc	a
 
-__IncX29:
+@IncX29:
 	inc	a
 
-__IncX28:
+@IncX28:
 	inc	a
 
-__IncX27:
+@IncX27:
 	inc	a
 
-__IncX26:
+@IncX26:
 	inc	a
 
-__IncX25:
+@IncX25:
 	inc	a
 
-__IncX24:
+@IncX24:
 	inc	a
 
-__IncX23:
+@IncX23:
 	inc	a
 
-__IncX22:
+@IncX22:
 	inc	a
 
-__IncX21:
+@IncX21:
 	inc	a
 
-__IncX20:
+@IncX20:
 	inc	a
 
-__IncX19:
+@IncX19:
 	inc	a
 
-__IncX18:
+@IncX18:
 	inc	a
 
-__IncX17:
+@IncX17:
 	inc	a
 
-__IncX16:
+@IncX16:
 	inc	a
 
-__IncX15:
+@IncX15:
 	inc	a
 
-__IncX14:
+@IncX14:
 	inc	a
 
-__IncX13:
+@IncX13:
 	inc	a
 
-__IncX12:
+@IncX12:
 	inc	a
 
-__IncX11:
+@IncX11:
 	inc	a
 
-__IncX10:
+@IncX10:
 	inc	a
 
-__IncX9:
+@IncX9:
 	inc	a
 
-__IncX8:
+@IncX8:
 	inc	a
 
-__IncX7:
+@IncX7:
 	inc	a
 
-__IncX6:
+@IncX6:
 	inc	a
 
-__IncX5:
+@IncX5:
 	inc	a
 
-__IncX4:
+@IncX4:
 	inc	a
 
-__IncX3:
+@IncX3:
 	inc	a
 
-__IncX2:
+@IncX2:
 	inc	a
 
-__IncX1:
+@IncX1:
 	inc	a
 
 	and	#$1FFF							; max scroll value (CHECKME)
@@ -1293,21 +1299,21 @@ M7FlightDecY:								; expects angle in Accu
 	cmp	#$40
 	bcc	+
 	cmp	#$E0
-	bcc	__DoYDecByAngle
-	bra	__DoYDecFull
+	bcc	@DoYDecByAngle
+	bra	@DoYDecFull
 
 +	cmp	#$20
 	bcs	++
 
-__DoYDecFull:
+@DoYDecFull:
 	lda	#$20
-	bra	__DoYDecByAngle
+	bra	@DoYDecByAngle
 
 ++	lda	#$40
 	sec
 	sbc	DP_Mode7_RotAngle
 
-__DoYDecByAngle:
+@DoYDecByAngle:
 	Accu16
 
 	and	#$003F
@@ -1315,107 +1321,107 @@ __DoYDecByAngle:
 	asl	a
 	tax
 	lda	DP_Mode7_ScrollOffsetY
-	jmp	(__YDecByAngle, x)
+	jmp	(@YDecByAngle, x)
 
 
 
-__YDecByAngle:
-	.DW __DecY1, __DecY2, __DecY3, __DecY4, __DecY5, __DecY6, __DecY7, __DecY8, __DecY9, __DecY10, __DecY11, __DecY12, __DecY13, __DecY14, __DecY15, __DecY16, __DecY17, __DecY18, __DecY19, __DecY20, __DecY21, __DecY22, __DecY23, __DecY24, __DecY25, __DecY26, __DecY27, __DecY28, __DecY29, __DecY30, __DecY31, __DecY32
+@YDecByAngle:
+	.DW @DecY1, @DecY2, @DecY3, @DecY4, @DecY5, @DecY6, @DecY7, @DecY8, @DecY9, @DecY10, @DecY11, @DecY12, @DecY13, @DecY14, @DecY15, @DecY16, @DecY17, @DecY18, @DecY19, @DecY20, @DecY21, @DecY22, @DecY23, @DecY24, @DecY25, @DecY26, @DecY27, @DecY28, @DecY29, @DecY30, @DecY31, @DecY32
 
-__DecY32:
+@DecY32:
 	dec	a
 
-__DecY31:
+@DecY31:
 	dec	a
 
-__DecY30:
+@DecY30:
 	dec	a
 
-__DecY29:
+@DecY29:
 	dec	a
 
-__DecY28:
+@DecY28:
 	dec	a
 
-__DecY27:
+@DecY27:
 	dec	a
 
-__DecY26:
+@DecY26:
 	dec	a
 
-__DecY25:
+@DecY25:
 	dec	a
 
-__DecY24:
+@DecY24:
 	dec	a
 
-__DecY23:
+@DecY23:
 	dec	a
 
-__DecY22:
+@DecY22:
 	dec	a
 
-__DecY21:
+@DecY21:
 	dec	a
 
-__DecY20:
+@DecY20:
 	dec	a
 
-__DecY19:
+@DecY19:
 	dec	a
 
-__DecY18:
+@DecY18:
 	dec	a
 
-__DecY17:
+@DecY17:
 	dec	a
 
-__DecY16:
+@DecY16:
 	dec	a
 
-__DecY15:
+@DecY15:
 	dec	a
 
-__DecY14:
+@DecY14:
 	dec	a
 
-__DecY13:
+@DecY13:
 	dec	a
 
-__DecY12:
+@DecY12:
 	dec	a
 
-__DecY11:
+@DecY11:
 	dec	a
 
-__DecY10:
+@DecY10:
 	dec	a
 
-__DecY9:
+@DecY9:
 	dec	a
 
-__DecY8:
+@DecY8:
 	dec	a
 
-__DecY7:
+@DecY7:
 	dec	a
 
-__DecY6:
+@DecY6:
 	dec	a
 
-__DecY5:
+@DecY5:
 	dec	a
 
-__DecY4:
+@DecY4:
 	dec	a
 
-__DecY3:
+@DecY3:
 	dec	a
 
-__DecY2:
+@DecY2:
 	dec	a
 
-__DecY1:
+@DecY1:
 	dec	a
 
 	and	#$1FFF							; max scroll value (CHECKME)
@@ -1432,17 +1438,17 @@ __DecY1:
 
 M7FlightIncY:								; expects angle in Accu
 	cmp	#$60
-	bcc	__DoYIncByAngle
+	bcc	@DoYIncByAngle
 	cmp	#$A1
 	bcs	+
 	lda	#$20							; $60 <= angle <= $A0 --> increment Y by 32
-	bra	__DoYIncByAngle
+	bra	@DoYIncByAngle
 
 +	lda	#$C0
 	sec
 	sbc	DP_Mode7_RotAngle
 
-__DoYIncByAngle:
+@DoYIncByAngle:
 	Accu16
 
 	and	#$003F
@@ -1450,107 +1456,107 @@ __DoYIncByAngle:
 	asl	a
 	tax
 	lda	DP_Mode7_ScrollOffsetY
-	jmp	(__YIncByAngle, x)
+	jmp	(@YIncByAngle, x)
 
 
 
-__YIncByAngle:
-	.DW __IncY1, __IncY2, __IncY3, __IncY4, __IncY5, __IncY6, __IncY7, __IncY8, __IncY9, __IncY10, __IncY11, __IncY12, __IncY13, __IncY14, __IncY15, __IncY16, __IncY17, __IncY18, __IncY19, __IncY20, __IncY21, __IncY22, __IncY23, __IncY24, __IncY25, __IncY26, __IncY27, __IncY28, __IncY29, __IncY30, __IncY31, __IncY32
+@YIncByAngle:
+	.DW @IncY1, @IncY2, @IncY3, @IncY4, @IncY5, @IncY6, @IncY7, @IncY8, @IncY9, @IncY10, @IncY11, @IncY12, @IncY13, @IncY14, @IncY15, @IncY16, @IncY17, @IncY18, @IncY19, @IncY20, @IncY21, @IncY22, @IncY23, @IncY24, @IncY25, @IncY26, @IncY27, @IncY28, @IncY29, @IncY30, @IncY31, @IncY32
 
-__IncY32:
+@IncY32:
 	inc	a
 
-__IncY31:
+@IncY31:
 	inc	a
 
-__IncY30:
+@IncY30:
 	inc	a
 
-__IncY29:
+@IncY29:
 	inc	a
 
-__IncY28:
+@IncY28:
 	inc	a
 
-__IncY27:
+@IncY27:
 	inc	a
 
-__IncY26:
+@IncY26:
 	inc	a
 
-__IncY25:
+@IncY25:
 	inc	a
 
-__IncY24:
+@IncY24:
 	inc	a
 
-__IncY23:
+@IncY23:
 	inc	a
 
-__IncY22:
+@IncY22:
 	inc	a
 
-__IncY21:
+@IncY21:
 	inc	a
 
-__IncY20:
+@IncY20:
 	inc	a
 
-__IncY19:
+@IncY19:
 	inc	a
 
-__IncY18:
+@IncY18:
 	inc	a
 
-__IncY17:
+@IncY17:
 	inc	a
 
-__IncY16:
+@IncY16:
 	inc	a
 
-__IncY15:
+@IncY15:
 	inc	a
 
-__IncY14:
+@IncY14:
 	inc	a
 
-__IncY13:
+@IncY13:
 	inc	a
 
-__IncY12:
+@IncY12:
 	inc	a
 
-__IncY11:
+@IncY11:
 	inc	a
 
-__IncY10:
+@IncY10:
 	inc	a
 
-__IncY9:
+@IncY9:
 	inc	a
 
-__IncY8:
+@IncY8:
 	inc	a
 
-__IncY7:
+@IncY7:
 	inc	a
 
-__IncY6:
+@IncY6:
 	inc	a
 
-__IncY5:
+@IncY5:
 	inc	a
 
-__IncY4:
+@IncY4:
 	inc	a
 
-__IncY3:
+@IncY3:
 	inc	a
 
-__IncY2:
+@IncY2:
 	inc	a
 
-__IncY1:
+@IncY1:
 	inc	a
 
 	and	#$1FFF							; max scroll value (CHECKME)

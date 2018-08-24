@@ -422,7 +422,7 @@ InGameMenu:
 	lda	#PARAM_RingMenuRadiusMin
 	sta	DP_RingMenuRadius
 
-__RingMenuOpenAnimation:
+@RingMenuOpenAnimation:
 	jsr	PutRingMenuItems
 
 	wai
@@ -435,7 +435,7 @@ __RingMenuOpenAnimation:
 	adc	#2
 	sta	DP_RingMenuRadius
 	cmp	#64
-	bcc	__RingMenuOpenAnimation
+	bcc	@RingMenuOpenAnimation
 
 	lda	#PARAM_RingMenuRadiusMax
 	sta	DP_RingMenuRadius
@@ -505,7 +505,7 @@ RingMenuLoop:
 ; -------------------------- check for dpad left
 	lda	DP_Joy1Press+1
 	and	#%00000010
-	beq	__RingMenuLoopDpadLeftDone
+	beq	@DpadLeftDone
 
 	ldy	#$0020							; change angle 32 times
 -	wai
@@ -517,14 +517,14 @@ RingMenuLoop:
 	dey
 	bne	-
 
-__RingMenuLoopDpadLeftDone:
+@DpadLeftDone:
 
 
 
 ; -------------------------- check for dpad right
 	lda	DP_Joy1Press+1
 	and	#%00000001
-	beq	__RingMenuLoopDpadRightDone
+	beq	@DpadRightDone
 
 	ldy	#$0020
 -	wai
@@ -536,7 +536,7 @@ __RingMenuLoopDpadLeftDone:
 	dey
 	bne	-
 
-__RingMenuLoopDpadRightDone:
+@DpadRightDone:
 
 
 
@@ -610,9 +610,7 @@ PrintMenuHeadlineE0:
 
 ; -------------------------- check for A button = make selection
 	lda	DP_Joy1New
-	and	#%10000000
-	beq	__RingMenuLoopAButtonDone
-
+	bpl	@AButtonDone
 	lda	DP_RingMenuAngle					; make selection based on ring menu angle
 	lsr	a							; shift into lower nibble
 	lsr	a
@@ -626,15 +624,10 @@ PrintMenuHeadlineE0:
 
 	Accu8
 
-	jmp	(PTR_MainMenuSelection, x)
+	sta	DP_SubMenuNext
+	jmp	(@PTR_MainMenuSelection, x)
 
-__RingMenuLoopAButtonDone:
-
-	jmp	RingMenuLoop
-
-
-
-PTR_MainMenuSelection:
+@PTR_MainMenuSelection:
 	.DW GotoSettings
 	.DW GotoQuitGame
 	.DW Goto???1
@@ -643,6 +636,8 @@ PTR_MainMenuSelection:
 	.DW GotoTalent
 	.DW GotoParty
 	.DW GotoLilysLog
+
+@AButtonDone:
 
 
 

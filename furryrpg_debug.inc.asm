@@ -177,7 +177,7 @@ DebugMenuLoop:
 	lda	DP_GameConfig
 	and	#%00000010
 	bne	+
-	jmp	__DebugMenuRTCDone
+	jmp	@RTCDone
 
 +	lda	#$0D							; seems to be the "get time" command ??
 	sta	SRTC_WRITE
@@ -256,7 +256,7 @@ DebugMenuLoop:
 	SetTextPos	25, 28
 	PrintHexNum	VAR_Time_Second
 
-__DebugMenuRTCDone:
+@RTCDone:
 
 
 
@@ -364,7 +364,7 @@ __	sta	DP_AreaCurrent
 ; -------------------------- check for A button
 	lda	DP_Joy1New
 	and	#%10000000
-	beq	@A_ButtonDone
+	beq	@AButtonDone
 
 	Accu16
 
@@ -398,14 +398,14 @@ __	sta	DP_AreaCurrent
 @@GotoClearSRAM:
 	Accu16
 
-	jsl	ClearSRAM
+	jsl	CheckSRAM@ClearSRAM
 	jmp	DebugMenu
 
 .ACCU 8
 
 @@GotoPlayTrack:
 	jsl	PlayTrackNow
-	bra	@A_ButtonDone
+	bra	@AButtonDone
 
 @@PrintRandomNumber:
 	jsr	CreateRandomNr
@@ -421,23 +421,23 @@ __	sta	DP_AreaCurrent
 
 	.DB "  ", 0							; clear trailing ciphers from old values
 
-@A_ButtonDone:
+@AButtonDone:
 
 
 
 ; -------------------------- check for Y button
 ;	bit	DP_Joy1New+1
-;	bvc	+
+;	bvc	@YButtonDone
 ;	jsr	ShowCPUload
 
-;+
+;@YButtonDone:
 
 
 
 ; -------------------------- check for Start
 	lda	DP_Joy1Press+1
 	and	#%00010000
-	beq	+
+	beq	@StartButtonDone
 
 	Accu16
 
@@ -447,7 +447,8 @@ __	sta	DP_AreaCurrent
 .ACCU 8
 
 	jmp	DebugMenu
-+
+
+@StartButtonDone:
 
 	jmp	DebugMenuLoop
 
