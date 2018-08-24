@@ -804,6 +804,7 @@
 	DP_Joy2New		dw
 	DP_Joy1Old		dw
 	DP_Joy2Old		dw
+	DP_LoopCounter		dw					; counts loop iterations
 	DP_Mode7_Altitude	db					; altitude setting (currently 0-127)
 	DP_Mode7_BG2HScroll	db
 	DP_Mode7_CenterCoordX	dw
@@ -834,6 +835,7 @@
 	DP_SprDataHiOAMBits	db					; holds bits to manipulate in high OAM/ARRAY_SpriteBuf2
 	DP_SpriteTextMon	dw					; keeps track of sprite-based text buffer filling level
 	DP_SpriteTextPalette	db					; holds palette to use when printing sprite-based text
+	DP_SubMenuNext		db					; holds no. of sub menu selected
 	DP_TextASCIIChar	dw					; holds current ASCII character no.
 	DP_TextBoxBG		db					; bnnnnnnn [b = change text box background, n = no. of color table (0-127)
 	DP_TextBoxCharPortrait	db					; pnnnnnnn [p = change character portrait, n = no. of portrait (0-127)

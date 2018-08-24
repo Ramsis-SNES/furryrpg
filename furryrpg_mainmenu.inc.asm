@@ -463,47 +463,9 @@ InGameMenu:
 
 	DrawFrame	7, 1, 17, 2
 
+	stz	DP_LoopCounter
 
 
-.ENDASM
-
-; -------------------------- menu "window" content
-	DrawFrame	1, 1, 13, 12
-	PrintString	2, 2, "Gengen"
-	PrintString	3, 2, "9999/9999 HP"
-	PrintString	4, 2, "9999/9999 EP"
-	PrintString	6, 5, "Warrior"
-	PrintString	7, 5, "Healthy"
-
-	DrawFrame	17, 1, 13, 12
-	PrintString	2, 18, "Lily"
-	PrintString	3, 18, "9999/9999 HP"
-	PrintString	4, 18, "9999/9999 EP"
-	PrintString	6, 21, "Scholar"
-	PrintString	7, 21, "Healthy"
-
-	DrawFrame	1, 15, 13, 12
-	PrintString	16, 2, "Mickey"
-	PrintString	17, 2, "9999/9999 HP"
-	PrintString	18, 2, "9999/9999 EP"
-	PrintString	20, 5, "M. artist"
-	PrintString	21, 5, "Healthy"
-
-	DrawFrame	17, 15, 13, 12
-	PrintString	16, 18, "Tara"
-	PrintString	17, 18, "9999/9999 HP"
-	PrintString	18, 18, "9999/9999 EP"
-	PrintString	20, 21, "Healer"
-	PrintString	21, 21, "Healthy"
-
-;	Accu16
-
-;	lda	#$3008							; set char 1 position
-;	sta	DP_Char1PosYX
-
-;	Accu8
-
-.ASM
 
 RingMenuLoop:
 	wai
@@ -549,6 +511,8 @@ RingMenuLoop:
 
 
 ; -------------------------- update headline based on angle
+	SetTextPos	2, 8
+
 	lda	DP_RingMenuAngle					; angle $00, $20 ... $C0, $E0
 	lsr	a							; shift into lower nibble
 	lsr	a
@@ -558,58 +522,17 @@ RingMenuLoop:
 	Accu16
 
 	and	#$00FF							; remove garbage in B
-	tax								; and use as jump table index
+	tax
+	lda.l	PTR_RingMenuHeadEng, x					; x = pointer no.
+	sta	DP_TextStringPtr
 
 	Accu8
 
-	jmp	(PTR_MenuHeadline, x)
-
-PTR_MenuHeadline:
-	.DW PrintMenuHeadline00
-	.DW PrintMenuHeadline20
-	.DW PrintMenuHeadline40
-	.DW PrintMenuHeadline60
-	.DW PrintMenuHeadline80
-	.DW PrintMenuHeadlineA0
-	.DW PrintMenuHeadlineC0
-	.DW PrintMenuHeadlineE0
-
-PrintMenuHeadline00:
-	PrintString	2, 8, "    Settings    "
-	jmp	++
-
-PrintMenuHeadline20:
-	PrintString	2, 8, "   Quit Game    "
-	jmp	++
-
-PrintMenuHeadline40:
-	PrintString	2, 8, "      ???1      "
-	jmp	++
-
-PrintMenuHeadline60:
-	PrintString	2, 8, "      ???2      "
-	jmp	++
-
-PrintMenuHeadline80:
-	PrintString	2, 8, "   Inventory    "
-	bra	++
-
-PrintMenuHeadlineA0:
-	PrintString	2, 8, "     Talent     "
-	bra	++
-
-PrintMenuHeadlineC0:
-	PrintString	2, 8, "     Party      "
-	bra	++
-
-PrintMenuHeadlineE0:
-	PrintString	2, 8, "   Lily's log   "
-++
-
-;.IFDEF DEBUG
-;	PrintString	23, 2, "Angle: $"
-;	PrintHexNum	DP_RingMenuAngle
-;.ENDIF
+	lda	#:PTR_RingMenuHeadEng					; assume English
+	clc
+	adc	DP_TextLanguage						; add language constant for correct bank/language
+	sta	DP_TextStringBank
+	jsr	SimplePrintF
 
 	lda	#%00010000						; make sure BG3 lo tile map gets updated
 	tsb	DP_DMA_Updates
@@ -627,7 +550,7 @@ PrintMenuHeadlineE0:
 
 	Accu16
 
-	and #$000F							; remove garbage data
+	and #$000F							; remove garbage in high byte
 	tax
 
 	Accu8
@@ -646,6 +569,27 @@ PrintMenuHeadlineE0:
 	.DW GotoLilysLog
 
 @AButtonDone:
+
+	inc	DP_LoopCounter
+	lda	DP_LoopCounter
+	cmp	#30
+	bcc	@CursorBlinkingDone
+	lda	ARRAY_SpriteDataMenu.RingCursor+3
+	cmp	#$80
+	bne	+
+	lda	#$CC
+	bra	++
+
++	lda	#$80
+++	sta	ARRAY_SpriteDataMenu.RingCursor+3
+	stz	DP_LoopCounter
+	ldx	#ARRAY_SpriteDataMenu & $FFFF				; set WRAM address for menu sprite data array
+	stx	REG_WMADDL
+	stz	REG_WMADDH
+	jsr	ConvertSpriteDataToBuffer				; write changes to sprite buffer
+
+@CursorBlinkingDone:
+	jmp	RingMenuLoop
 
 
 
@@ -765,20 +709,178 @@ CalcRingItemPos:
 ; ************************ Sub menu: Inventory *************************
 
 GotoQuitGame:
+;	jsr	RingMenuCloseAnimation
 
 Goto???1:
+;	jsr	RingMenuCloseAnimation
 
 Goto???2:
+;	jsr	RingMenuCloseAnimation
 
 GotoTalent:
+;	jsr	RingMenuCloseAnimation
 
 GotoParty:
+;	jsr	RingMenuCloseAnimation
 
 GotoLilysLog:
+;	jsr	RingMenuCloseAnimation
 
 GotoSettings:
+;	jsr	RingMenuCloseAnimation
 
 GotoInventory:
+	jsr	RingMenuCloseAnimation
+
+
+
+RingMenuCloseAnimation:
+	Accu16
+
+	lda	#$00FF							; hide cursor
+	sta	ARRAY_SpriteDataMenu.RingCursor
+
+	Accu8
+
+	lda	#$E0
+	sta	ARRAY_SpriteDataMenu.RingCursor+2
+
+	Accu16
+
+	lda	#$00CC							; $CC = empty 16×16 sprite
+	sta	ARRAY_SpriteDataMenu.RingCursor+3
+
+	Accu8
+
+-	lda	DP_RingMenuAngle					; opening animation reversed
+	clc
+	adc	#8
+	sta	DP_RingMenuAngle
+	lda	DP_RingMenuRadius					; 32 frames for moving sprites from RadiusMax (60) to RadiusMin (0)
+	cmp	#PARAM_RingMenuRadiusMin
+	beq	+
+	sec
+	sbc	#2
+	sta	DP_RingMenuRadius					; last value = 0
+	jsr	PutRingMenuItems
+
+	wai
+	bra	-
+
+
+
+; -------------------------- remove all ring menu sprites except the selected one
++	lda	DP_SubMenuNext						; $00, $02, $04 ... $0E
+	lsr	a							; table has byte entries --> $00, $01, $02 ... $07
+
+	Accu16
+
+	and	#$00FF							; remove garbage in high byte
+	tax
+
+	Accu8
+
+	lda.l	SRC_RingItemToKeep, x					; read which ring menu item sprite to keep
+	sta	temp+4
+	stz	temp+5
+	ldx	#0
+-	cpx	temp+4
+	bne	+
+	inx								; skip the selected sprite
+	inx
+	inx
+	inx
+	inx
+	bra	++							; jump out in case it's the very last one
+
++	Accu16
+
+	lda	#$00FF							; put sprites off-screen: X coordinate, sprite size
+	sta	ARRAY_SpriteDataMenu.RingItem0, x			; clear out all other ring menu sprites
+	inx
+	inx
+
+	Accu8
+
+	lda	#$E0							; Y coordinate
+	sta	ARRAY_SpriteDataMenu.RingItem0, x
+	inx
+
+	Accu16
+
+	lda	#$00CC							; $CC = empty 16×16 sprite
+	sta	ARRAY_SpriteDataMenu.RingItem0, x
+	inx
+	inx
+++	cpx	#40							; all 8 ring menu item sprites done?
+	bne	-
+
+	Accu8
+
+TestLoop:
+	wai
+
+	ldx	temp+4
+
+	lda	DP_Joy1Press+1 ; up
+	and	#%00001000
+	beq	+
+	lda	ARRAY_SpriteDataMenu.RingItem0+2, x
+	dec	a
+	sta	ARRAY_SpriteDataMenu.RingItem0+2, x
+
++	lda	DP_Joy1Press+1 ; down
+	and	#%00000100
+	beq	+
+	lda	ARRAY_SpriteDataMenu.RingItem0+2, x
+	inc	a
+	sta	ARRAY_SpriteDataMenu.RingItem0+2, x
+
++	lda	DP_Joy1Press+1 ; left
+	and	#%00000010
+	beq	+
+	lda	ARRAY_SpriteDataMenu.RingItem0, x
+	dec	a
+	sta	ARRAY_SpriteDataMenu.RingItem0, x
+
++	lda	DP_Joy1Press+1
+	and	#%00000001 ; right
+	beq	+
+	lda	ARRAY_SpriteDataMenu.RingItem0, x
+	inc	a
+	sta	ARRAY_SpriteDataMenu.RingItem0, x
+
++	lda	DP_Joy1New ; A
+	bpl	+
+	lda	#0
+	sta	ARRAY_SpriteDataMenu.RingItem0+1, x ; small spr
+
++	lda	DP_Joy1New+1 ; B
+	bpl	+
+	lda	#2
+	sta	ARRAY_SpriteDataMenu.RingItem0+1, x ; big spr
+
++	ldx	#ARRAY_SpriteDataMenu & $FFFF				; set WRAM address for menu sprite data array
+	stx	REG_WMADDL
+	stz	REG_WMADDH
+	jsr	ConvertSpriteDataToBuffer				; write changes to sprite buffer
+
+	bra	TestLoop
+
+	rts
+
+SRC_RingItemToKeep:							; DP_SubMenuNext RSH 1	| RingItemX (each * 5 bytes of sprite attributes)
+	.DB 4*5								; 0			| 4
+	.DB 5*5								; 1			| 5
+	.DB 6*5								; 2			| 6
+	.DB 7*5								; 3			| 7
+	.DB 0*5								; 4			| 0
+	.DB 1*5								; 5			| 1
+	.DB 2*5								; 6			| 2
+	.DB 3*5								; 7			| 3
+
+
+
 	lda	#$80							; enter forced blank
 	sta	VAR_ShadowINIDISP
 	stz	DP_HDMA_Channels					; disable HDMA

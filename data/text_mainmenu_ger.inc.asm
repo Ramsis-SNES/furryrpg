@@ -25,7 +25,19 @@
 
 ; *************************** Text pointers ****************************
 
-SRC_MainMenuTextPtrGer:
+PTR_RingMenuHeadGer:
+	.DW STR_RingMenuItemGer00
+	.DW STR_RingMenuItemGer20
+	.DW STR_RingMenuItemGer40
+	.DW STR_RingMenuItemGer60
+	.DW STR_RingMenuItemGer80
+	.DW STR_RingMenuItemGerA0
+	.DW STR_RingMenuItemGerC0
+	.DW STR_RingMenuItemGerE0
+
+
+
+PTR_MainMenuTextGer:
 	.DW STR_MainMenuGer000
 	.DW STR_MainMenuGer001
 	.DW STR_MainMenuGer002
@@ -44,6 +56,30 @@ SRC_MainMenuTextPtrGer:
 
 
 ; ****************************** Strings *******************************
+
+STR_RingMenuItemGer00:
+	.DB " Einstellungen  ", 0
+
+STR_RingMenuItemGer20:
+	.DB " Spiel beenden  ", 0
+
+STR_RingMenuItemGer40:
+	.DB "      ???1      ", 0
+
+STR_RingMenuItemGer60:
+	.DB "      ???2      ", 0
+
+STR_RingMenuItemGer80:
+	.DB "    Inventar    ", 0
+
+STR_RingMenuItemGerA0:
+	.DB "     Talent     ", 0
+
+STR_RingMenuItemGerC0:
+	.DB "     Gruppe     ", 0
+
+STR_RingMenuItemGerE0:
+	.DB " Lilys Logbuch  ", 0
 
 STR_MainMenuGer000:
 	.DB "Inventory", 0

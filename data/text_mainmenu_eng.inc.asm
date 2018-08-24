@@ -25,7 +25,19 @@
 
 ; *************************** Text pointers ****************************
 
-SRC_MainMenuTextPtrEng:
+PTR_RingMenuHeadEng:
+	.DW STR_RingMenuItemEng00
+	.DW STR_RingMenuItemEng20
+	.DW STR_RingMenuItemEng40
+	.DW STR_RingMenuItemEng60
+	.DW STR_RingMenuItemEng80
+	.DW STR_RingMenuItemEngA0
+	.DW STR_RingMenuItemEngC0
+	.DW STR_RingMenuItemEngE0
+
+
+
+PTR_MainMenuTextEng:
 	.DW STR_MainMenuEng000
 	.DW STR_MainMenuEng001
 	.DW STR_MainMenuEng002
@@ -44,6 +56,30 @@ SRC_MainMenuTextPtrEng:
 
 
 ; ****************************** Strings *******************************
+
+STR_RingMenuItemEng00:
+	.DB "    Settings    ", 0
+
+STR_RingMenuItemEng20:
+	.DB "   Quit Game    ", 0
+
+STR_RingMenuItemEng40:
+	.DB "      ???1      ", 0
+
+STR_RingMenuItemEng60:
+	.DB "      ???2      ", 0
+
+STR_RingMenuItemEng80:
+	.DB "   Inventory    ", 0
+
+STR_RingMenuItemEngA0:
+	.DB "     Talent     ", 0
+
+STR_RingMenuItemEngC0:
+	.DB "     Party      ", 0
+
+STR_RingMenuItemEngE0:
+	.DB "   Lily's log   ", 0
 
 STR_MainMenuEng000:
 	.DB "Inventory", 0
