@@ -15,6 +15,7 @@
 DebugMenu:
 	lda	#$80							; enter forced blank
 	sta	VAR_ShadowINIDISP
+	jsr	SpriteDataInit						; purge sprite data buffer
 
 	Accu16
 
@@ -81,8 +82,9 @@ DebugMenu:
 	sta	VAR_ShadowTM						; copy to shadow variables
 	sta	VAR_ShadowTS
 
+	lda	#0
 	ldx	#0
--	stz	ARRAY_SpriteBuf1.PlayableChar, x			; overwrite char sprite buffer area with sprite 0 (empty)
+-	sta	ARRAY_SpriteDataArea.Hero1a, x				; overwrite char sprite buffer area with sprite 0 (empty)
 	inx
 	inx
 	cpx	#24
@@ -264,13 +266,13 @@ DebugMenuLoop:
 	lda	DP_Joy1New+1
 	and	#%00001000
 	beq	@DpadUpDone
-	lda	ARRAY_SpriteBuf1.Text+1					; Y coord of cursor
+	lda	ARRAY_SpriteDataArea.Text+2				; Y coord of cursor
 	sec
 	sbc	#8
 	cmp	#PARAM_DebugMenu1stLine
 	bcs	+
 	lda	#PARAM_DebugMenu1stLine + 8 * 8				; underflow, put cursor on last line // no. of last menu item (8) * line height (8)
-+	sta	ARRAY_SpriteBuf1.Text+1
++	sta	ARRAY_SpriteDataArea.Text+2
 
 @DpadUpDone:
 
@@ -280,13 +282,13 @@ DebugMenuLoop:
 	lda	DP_Joy1New+1
 	and	#%00000100
 	beq	@DpadDownDone
-	lda	ARRAY_SpriteBuf1.Text+1
+	lda	ARRAY_SpriteDataArea.Text+2
 	clc
 	adc	#8
 	cmp	#PARAM_DebugMenu1stLine + 9 * 8				; no. of menu items (9) * line height (8)
 	bcc	+
 	lda	#PARAM_DebugMenu1stLine					; overflow, put cursor on first line
-+	sta	ARRAY_SpriteBuf1.Text+1
++	sta	ARRAY_SpriteDataArea.Text+2
 
 @DpadDownDone:
 
@@ -296,7 +298,7 @@ DebugMenuLoop:
 	lda	DP_Joy1New+1
 	and	#%00000010
 	beq	@DpadLeftDone
-	lda	ARRAY_SpriteBuf1.Text+1					; only do anything if cursor is on area loader ...
+	lda	ARRAY_SpriteDataArea.Text+2				; only do anything if cursor is on area loader ...
 	cmp	#PARAM_DebugMenu1stLine + 16
 	bne	+
 
@@ -313,7 +315,7 @@ __	sta	DP_AreaCurrent
 
 	bra	@DpadLeftDone
 
-+	lda	ARRAY_SpriteBuf1.Text+1					; ... or on music test
++	lda	ARRAY_SpriteDataArea.Text+2				; ... or on music test
 	cmp	#PARAM_DebugMenu1stLine + 8 * 8
 	bne	@DpadLeftDone
 	lda	DP_NextTrack						; go to previous track
@@ -330,7 +332,7 @@ __	sta	DP_AreaCurrent
 	lda	DP_Joy1New+1
 	and	#%00000001
 	beq	@DpadRightDone
-	lda	ARRAY_SpriteBuf1.Text+1					; only do anything if cursor is on area loader ...
+	lda	ARRAY_SpriteDataArea.Text+2				; only do anything if cursor is on area loader ...
 	cmp	#PARAM_DebugMenu1stLine + 16
 	bne	+
 
@@ -347,7 +349,7 @@ __	sta	DP_AreaCurrent
 
 	bra	@DpadRightDone
 
-+	lda	ARRAY_SpriteBuf1.Text+1					; ... or on music test
++	lda	ARRAY_SpriteDataArea.Text+2				; ... or on music test
 	cmp	#PARAM_DebugMenu1stLine + 8 * 8
 	bne	@DpadRightDone
 	lda	DP_NextTrack						; go to next track
@@ -368,7 +370,7 @@ __	sta	DP_AreaCurrent
 
 	Accu16
 
-	lda	ARRAY_SpriteBuf1.Text+1					; read Y position of cursor
+	lda	ARRAY_SpriteDataArea.Text+2				; read Y position of cursor
 	and	#$00FF							; remove garbage in high byte
 	sec								; subtract Y value of first debug menu line
 	sbc	#PARAM_DebugMenu1stLine
@@ -450,6 +452,10 @@ __	sta	DP_AreaCurrent
 
 @StartButtonDone:
 
+	ldx	#ARRAY_SpriteDataArea & $FFFF				; set WRAM address for area sprite data array
+	stx	REG_WMADDL
+	stz	REG_WMADDH
+	jsr	ConvertSpriteDataToBuffer
 	jmp	DebugMenuLoop
 
 
@@ -484,69 +490,69 @@ ShowSpriteGallery:
 
 ; -------------------------- fennec puppet
 	lda	#$2020							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1.NPCs
+	sta	ARRAY_SpriteBuf1+128
 	lda	#$0000							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1.NPCs+2
+	sta	ARRAY_SpriteBuf1+130
 	lda	#$2030							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1.NPCs+4
+	sta	ARRAY_SpriteBuf1+132
 	lda	#$0002							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1.NPCs+6
+	sta	ARRAY_SpriteBuf1+134
 	lda	#$3020							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1.NPCs+8
+	sta	ARRAY_SpriteBuf1+136
 	lda	#$0020							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1.NPCs+10
+	sta	ARRAY_SpriteBuf1+138
 	lda	#$3030							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1.NPCs+12
+	sta	ARRAY_SpriteBuf1+140
 	lda	#$0022							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1.NPCs+14
+	sta	ARRAY_SpriteBuf1+142
 
 
 
 ; -------------------------- fox
 	lda	#$2050							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1.NPCs+16
+	sta	ARRAY_SpriteBuf1+144
 	lda	#$0204							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1.NPCs+18
+	sta	ARRAY_SpriteBuf1+146
 	lda	#$3050							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1.NPCs+20
+	sta	ARRAY_SpriteBuf1+148
 	lda	#$0224							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1.NPCs+22
+	sta	ARRAY_SpriteBuf1+150
 
 
 
 ; -------------------------- wolf 1
 	lda	#$2070							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1.NPCs+24
+	sta	ARRAY_SpriteBuf1+152
 	lda	#$0406							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1.NPCs+26
+	sta	ARRAY_SpriteBuf1+154
 	lda	#$3070							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1.NPCs+28
+	sta	ARRAY_SpriteBuf1+156
 	lda	#$0426							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1.NPCs+30
+	sta	ARRAY_SpriteBuf1+158
 
 
 
 ; -------------------------- wolf 2
 	lda	#$2090							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1.NPCs+32
+	sta	ARRAY_SpriteBuf1+160
 	lda	#$0608							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1.NPCs+34
+	sta	ARRAY_SpriteBuf1+162
 	lda	#$3090							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1.NPCs+36
+	sta	ARRAY_SpriteBuf1+164
 	lda	#$0628							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1.NPCs+38
+	sta	ARRAY_SpriteBuf1+166
 
 
 
 ; -------------------------- wolf 3
 	lda	#$20B0							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1.NPCs+40
+	sta	ARRAY_SpriteBuf1+168
 	lda	#$080A							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1.NPCs+42
+	sta	ARRAY_SpriteBuf1+170
 	lda	#$30B0							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1.NPCs+44
+	sta	ARRAY_SpriteBuf1+172
 	lda	#$082A							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1.NPCs+46
+	sta	ARRAY_SpriteBuf1+174
 
 
 

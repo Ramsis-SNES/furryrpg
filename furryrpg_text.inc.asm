@@ -1655,11 +1655,13 @@ _defaultF:
 
 
 
-PrintFtemp:
-	ldx	#ARRAY_TempString
-	stx	DP_TextStringPtr
-	lda	#$7E
-	sta	DP_TextStringBank
+;PrintFtemp:
+;	ldx	#ARRAY_TempString
+;	stx	DP_TextStringPtr
+;	lda	#$7E
+;	sta	DP_TextStringBank
+
+SimplePrintF:								; expects 24-bit pointer to string in DP_TextStringPtr
 	ldy	#0
 
 @Loop:
@@ -1802,32 +1804,28 @@ PrintSpriteText:
 	Accu8
 
 	lda	DP_TextCursor
-	sta	ARRAY_SpriteBuf1.Text, x				; X
+	sta	ARRAY_SpriteDataArea.Text, x				; X
 	phx								; preserve text buffer index
-
 	tyx								; adc doesn't support absolute long addressing indexed with Y, so we have to switch to X for that
 	clc
 	adc.l	SRC_FWT_HUD, x						; advance cursor position as per font width table entry
 	sta	DP_TextCursor
-
 	plx								; restore text buffer index
 	inx
+	inx								; skip 9th bit of X coordinate and sprite size
 	lda	DP_TextCursor+1
-	sta	ARRAY_SpriteBuf1.Text, x				; Y
+	sta	ARRAY_SpriteDataArea.Text, x				; Y
 	inx
-
 	pla
 	ply
 ;	clc
 ;	adc	#$80							; diff between ASCII char and tile num
-	sta	ARRAY_SpriteBuf1.Text, x				; tile num
+	sta	ARRAY_SpriteDataArea.Text, x				; tile num
 	inx
-
 	lda	DP_SpriteTextPalette
 	asl	a							; shift palette num to bit 1-3
 	ora	#$30							; set highest priority
-	sta	ARRAY_SpriteBuf1.Text, x				; tile attributes
-
+	sta	ARRAY_SpriteDataArea.Text, x				; tile attributes
 	inx
 	cpx	#$0080							; if sprite buffer is full, reset
 	bcc	+
@@ -2013,30 +2011,27 @@ FillSpriteTextBuf:
 	Accu8
 
 	lda	DP_TextCursor
-	sta	ARRAY_SpriteBuf1.Text, x				; X
+	sta	ARRAY_SpriteDataArea.Text, x				; X
 	phx								; preserve tilemap index
-
 	tyx								; adc doesn't support absolute long addressing indexed with Y, so we have to switch to X for that
 	clc
 	adc.l	SRC_FWT_HUD, x						; advance cursor position as per font width table entry
 	sta	DP_TextCursor
-
 	plx								; restore tilemap index
 	inx
+	inx								; skip 9th bit of X coordinate and sprite size
 	lda	DP_TextCursor+1
-	sta	ARRAY_SpriteBuf1.Text, x				; Y
+	sta	ARRAY_SpriteDataArea.Text, x				; Y
 	inx
-
 	pla
 ;	clc
 ;	adc	#$80							; diff between ASCII char and tile num
-	sta	ARRAY_SpriteBuf1.Text, x				; tile num
+	sta	ARRAY_SpriteDataArea.Text, x				; tile num
 	inx
-
 	lda	DP_SpriteTextPalette
 	asl	a							; shift palette num to bit 1-3
 	ora	#$30							; set highest priority
-	sta	ARRAY_SpriteBuf1.Text, x				; tile attributes
+	sta	ARRAY_SpriteDataArea.Text, x				; tile attributes
 	inx
 	cpx	#$0080							; if sprite buffer is full, reset
 	bcc	+
@@ -2053,25 +2048,46 @@ FillSpriteTextBuf:
 ClearHUD:
 	Accu16
 
-	lda	#$F0F0
 	ldx	#0
--	sta	ARRAY_SpriteBuf1.HUD_TextBox, x				; Y, X
+-	lda	#$00F0
+	sta	ARRAY_SpriteDataArea.HUD_TextBox, x			; X (9 bits), sprite size
 	inx
 	inx
-	stz	ARRAY_SpriteBuf1.HUD_TextBox, x				; tile no. = 0 (empty)
+
+	Accu8
+
+	lda	#$F0
+	sta	ARRAY_SpriteDataArea.HUD_TextBox, x			; Y
+	inx
+
+	Accu16
+
+	lda	#0
+	sta	ARRAY_SpriteDataArea.HUD_TextBox, x			; tile no. = 0 (empty), attributes
 	inx
 	inx
-	cpx	#144							; 144 / 4 = 36 tiles
+	cpx	#180							; 180 / 5 = 36 tiles
 	bne	-
 
 	ldx	#0
--	sta	ARRAY_SpriteBuf1.Text, x				; Y, X
+-	lda	#$00F0
+	sta	ARRAY_SpriteDataArea.Text, x				; X (9 bits), sprite size
 	inx
 	inx
-	stz	ARRAY_SpriteBuf1.Text, x				; tile no. = 0 (empty)
+
+	Accu8
+
+	lda	#$F0
+	sta	ARRAY_SpriteDataArea.Text, x				; Y
+	inx
+
+	Accu16
+
+	lda	#0
+	sta	ARRAY_SpriteDataArea.Text, x				; tile no. = 0 (empty), attributes
 	inx
 	inx
-	cpx	#128							; 128 / 4 = 32 tiles
+	cpx	#160							; 160 / 5 = 32 tiles
 	bne	-
 
 	stz	DP_SpriteTextMon					; reset buffer monitor

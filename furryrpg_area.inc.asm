@@ -18,7 +18,8 @@ LoadArea:
 LoadAreaData:
 	lda	#$80							; enter forced blank
 	sta	VAR_ShadowINIDISP
-	jsr	SpriteInit						; purge OAM
+;	jsr	SpriteInit						; purge OAM
+	jsr	SpriteDataInit						; purge sprite data buffer
 	wai
 
 	DisableIRQs
@@ -1020,6 +1021,197 @@ MainAreaLoop:
 
 @StartButtonDone:
 
+
+
+; -------------------------- update HUD based on player input
+	bit	DP_HUD_Status						; check HUD status
+	bmi	@ShowHUD
+	bvs	@HideHUD
+	jmp	@UpdateHUDDone
+
+@ShowHUD:
+	Accu16								; take care about "text box" sprites
+
+	lda	DP_HUD_TextBoxSize
+	and	#$00FF							; remove garbage in high byte
+	inc	a							; +1 for right edge of "text box" frame
+	tay
+
+	Accu8
+
+	lda	DP_HUD_Ypos
+	and	#%11111100						; make value divisible by 4 so rising values in DP_HUD_Ypos will always be the same
+	clc								; DP_HUD_Ypos += 4 (HUD appears 4 times as fast as it disappears)
+	adc	#4
+	sta	DP_HUD_Ypos
+	ldx	#2							; start at Y value
+-	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
+	inx
+	inx
+	inx
+	inx
+	inx
+	dey								; all "text box" sprites done?
+	bne	-
+
+	Accu16								; next, scroll text as well
+
+	lda	DP_HUD_StrLength
+	and	#$00FF							; remove garbage in high byte
+	tay
+
+	Accu8
+
+	lda	DP_HUD_Ypos
+	clc								; make up for different Y position of "text box" and text
+	adc	#4
+	ldx	#2							; start at Y value
+-	sta	ARRAY_SpriteDataArea.Text, x
+	inx
+	inx
+	inx
+	inx
+	inx
+	dey								; all font sprites done?
+	bne	-
+
+	lda	DP_HUD_Ypos						; final Y value reached?
+	cmp	#PARAM_HUD_Yvisible
+	bne	@UpdateHUDDone
+	lda	DP_HUD_Status
+	ora	#%00000001						; yes, set "HUD is being displayed" bit
+	and	#%01111111						; clear "HUD should appear" bit
+	sta	DP_HUD_Status
+	stz	DP_HUD_DispCounter					; and reset display counter values
+	stz	DP_HUD_DispCounter+1
+	bra	@UpdateHUDDone
+
+@HideHUD:
+	lda	#%00000001						; clear "HUD is visible" bit now so the player can bring the HUD back with Y while it's disappearing
+	trb	DP_HUD_Status
+
+	Accu16								; take care about "text box" sprites
+
+	lda	DP_HUD_TextBoxSize
+	and	#$00FF							; remove garbage in high byte
+	inc	a							; +1 for right edge of "text box" frame
+	tay
+
+	Accu8
+
+	lda	DP_HUD_Ypos
+	dec	a
+	sta	DP_HUD_Ypos						; DP_HUD_Ypos -= 1
+	cmp	#PARAM_HUD_Yhidden					; final/initial (hidden) Y value reached?
+	bne	+
+	lda	#%01000000
+	trb	DP_HUD_Status						; yes, clear "HUD should disappear" status bit
+	bra	@UpdateHUDDone
+
++	ldx	#2							; start at Y value
+-	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
+	inx
+	inx
+	inx
+	inx
+	inx
+	dey								; all "text box" sprites done?
+	bne	-
+
+	Accu16								; next, scroll text as well
+
+	lda	DP_HUD_StrLength
+	and	#$00FF							; remove garbage in high byte
+	tay
+
+	Accu8
+
+	lda	DP_HUD_Ypos
+	clc								; make up for different Y position of "text box" and text
+	adc	#4
+	ldx	#2							; start at Y value
+-	sta	ARRAY_SpriteDataArea.Text, x
+	inx
+	inx
+	inx
+	inx
+	inx
+	dey								; all font sprites done?
+	bne	-
+
+@UpdateHUDDone:
+
+
+
+; -------------------------- animate characters
+	lda	DP_Char1SpriteStatus
+	bpl	@Char1IsWalking						; bit 7 set = idle
+	stz	DP_Char1FrameCounter					; char is idle, reset frame counter
+	lda	#TBL_Char1_frame00
+	bra	@Char1WalkingDone
+
+@Char1IsWalking:
+	lda	DP_Char1FrameCounter					; 0-9: frame 1, 10-19: frame 0, 20-29: frame 2, 30-39: frame 0
+	cmp	#40
+	bcc	+
+	stz	DP_Char1FrameCounter					; reset frame counter
+	bra	@Char1Frame1
+
++	cmp	#30
+	bcs	@Char1Frame0
+	cmp	#20
+	bcs	@Char1Frame2
+	cmp	#10
+	bcc	@Char1Frame1
+
+@Char1Frame0:
+	lda	#TBL_Char1_frame00
+	bra	+
+
+@Char1Frame2:
+	lda	#TBL_Char1_frame02
+	bra	+
+
+@Char1Frame1:
+	lda	#TBL_Char1_frame01
+;	bra	+
+
++	inc	DP_Char1FrameCounter					; increment animation frame counter
+
+@Char1WalkingDone:
+	asl	a							; frame no. × 2 for correct tile no. in spritesheet
+
+	Accu16
+
+	and	#$00FF							; remove garbage bits
+	ora	#$2200							; add sprite priority, use palette no. 1
+	clc
+	adc	#$0080							; skip $80 tiles = sprite font
+	sta	ARRAY_SpriteDataArea.Hero1a+3				; tile no. (upper half of body)
+	clc
+	adc	#$0020
+	sta	ARRAY_SpriteDataArea.Hero1b+3				; tile no. (lower half of body = upper half + 2 rows of 16 tiles)
+	lda	DP_Char1ScreenPosYX
+
+	Accu8
+
+	sta	ARRAY_SpriteDataArea.Hero1a
+	sta	ARRAY_SpriteDataArea.Hero1b
+	xba
+	sta	ARRAY_SpriteDataArea.Hero1a+2
+	clc
+	adc	#16							; Y += 16 for lower half
+	sta	ARRAY_SpriteDataArea.Hero1b+2
+
+	Accu8
+
+
+
+; -------------------------- misc. tasks, end loop
+	ldx	#ARRAY_SpriteDataArea & $FFFF				; set WRAM address for area sprite data array
+	stx	REG_WMADDL
+	stz	REG_WMADDH
+	jsr	ConvertSpriteDataToBuffer
 	jmp	MainAreaLoop
 
 
@@ -1055,7 +1247,7 @@ PutAreaNameIntoHUD:							; HUD "text box" position (temp, temp+1) and DP_TextCu
 	bra	-
 
 +	tya								; low byte is sufficient
-	sta	DP_HUD_StrLength					; save value for scrolling during Vblank
+	sta	DP_HUD_StrLength					; save value for later scrolling
 	stz	DP_SpriteTextPalette					; use palette 0
 	jsr	PrintSpriteText
 
@@ -1070,59 +1262,67 @@ PutAreaNameIntoHUD:							; HUD "text box" position (temp, temp+1) and DP_TextCu
 	lsr	a
 	lsr	a
 	tay
-	sta	DP_HUD_TextBoxSize					; save value (reused during Vblank for scrolling)
+	sta	DP_HUD_TextBoxSize					; save value (reused later for scrolling)
 	ldx	#0
 	lda	temp							; X
-	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
 	clc
 	adc	#16							; X += 16
 	sta	temp
 	inx
+	lda	#%00000010						; set sprite size = large
+	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
+	inx		
 	lda	temp+1							; Y
-	sta	DP_HUD_Ypos						; save to var for Vblank scrolling
-	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	sta	DP_HUD_Ypos						; save to var for scrolling
+	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
 	inx
 	lda	#2							; tile no. of left border
-	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
 	inx
 	lda	#%00110000						; attributes, set highest priority
-	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
 	inx
 	dey
 
 -	lda	temp							; X
-	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
 	clc
 	adc	#16							; X += 16
 	sta	temp
 	inx
+	lda	#%00000010						; set sprite size = large
+	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
+	inx		
 	lda	temp+1							; Y
-	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
 	inx
 	lda	#3							; tile no. of main box
-	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
 	inx
 	lda	#%00110000						; attributes, set highest priority
-	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
 	inx
 	dey
 	bne	-
 
 	lda	temp							; X
-	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
 	clc
 	adc	#16							; X += 16
 	sta	temp
 	inx
+	lda	#%00000010						; set sprite size = large
+	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
+	inx		
 	lda	temp+1							; Y
-	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
 	inx
 	lda	#4							; tile no. of right border
-	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
+	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
 	inx
 	lda	#%00110000						; attributes, set highest priority
-	sta	ARRAY_SpriteBuf1.HUD_TextBox, x
-
+	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
 	rts
 
 

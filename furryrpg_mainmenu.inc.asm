@@ -229,7 +229,9 @@ InGameMenu:
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, <REG_WMDATA, 10240
 
-	jsr	SpriteInit						; FIXME, sprite #0 isn't empty on menu sprites
+	lda	#$CC
+	sta	DP_EmptySpriteNo
+	jsr	SpriteInit
 
 
 
@@ -372,46 +374,46 @@ InGameMenu:
 
 
 
-; -------------------------- ring menu sprites
+; -------------------------- prepare ring menu item sprites
 	lda	#$00							; tile num ("Inventory" sprite)
-	sta	ARRAY_SpriteBuf1.RingMenuItem1+2
+	sta	ARRAY_SpriteDataMenu.RingItem0+3
 	lda	#%00110000						; attributes (tile num & priority bits only)
-	sta	ARRAY_SpriteBuf1.RingMenuItem1+3
+	sta	ARRAY_SpriteDataMenu.RingItem0+4
 
 	lda	#$04							; tile num ("Talent" sprite)
-	sta	ARRAY_SpriteBuf1.RingMenuItem2+2
+	sta	ARRAY_SpriteDataMenu.RingItem1+3
 	lda	#%00110000						; attributes (tile num & priority bits only)
-	sta	ARRAY_SpriteBuf1.RingMenuItem2+3
+	sta	ARRAY_SpriteDataMenu.RingItem1+4
 
 	lda	#$08							; tile num ("Party" sprite)
-	sta	ARRAY_SpriteBuf1.RingMenuItem3+2
+	sta	ARRAY_SpriteDataMenu.RingItem2+3
 	lda	#%00110000						; attributes (tile num & priority bits only)
-	sta	ARRAY_SpriteBuf1.RingMenuItem3+3
+	sta	ARRAY_SpriteDataMenu.RingItem2+4
 
 	lda	#$0C							; tile num ("Lily's log" sprite)
-	sta	ARRAY_SpriteBuf1.RingMenuItem4+2
+	sta	ARRAY_SpriteDataMenu.RingItem3+3
 	lda	#%00110000						; attributes (tile num & priority bits only)
-	sta	ARRAY_SpriteBuf1.RingMenuItem4+3
+	sta	ARRAY_SpriteDataMenu.RingItem3+4
 
 	lda	#$40							; tile num ("Settings" sprite)
-	sta	ARRAY_SpriteBuf1.RingMenuItem5+2
+	sta	ARRAY_SpriteDataMenu.RingItem4+3
 	lda	#%00110000						; attributes (tile num & priority bits only)
-	sta	ARRAY_SpriteBuf1.RingMenuItem5+3
+	sta	ARRAY_SpriteDataMenu.RingItem4+4
 
 	lda	#$44							; tile num ("Quit Game" sprite)
-	sta	ARRAY_SpriteBuf1.RingMenuItem6+2
+	sta	ARRAY_SpriteDataMenu.RingItem5+3
 	lda	#%00110000						; attributes (tile num & priority bits only)
-	sta	ARRAY_SpriteBuf1.RingMenuItem6+3
+	sta	ARRAY_SpriteDataMenu.RingItem5+4
 
 	lda	#$48							; tile num (1st "??" sprite)
-	sta	ARRAY_SpriteBuf1.RingMenuItem7+2
+	sta	ARRAY_SpriteDataMenu.RingItem6+3
 	lda	#%00110000						; attributes (tile num & priority bits only)
-	sta	ARRAY_SpriteBuf1.RingMenuItem7+3
+	sta	ARRAY_SpriteDataMenu.RingItem6+4
 
 	lda	#$4C							; tile num (2nd "??" sprite)
-	sta	ARRAY_SpriteBuf1.RingMenuItem8+2
+	sta	ARRAY_SpriteDataMenu.RingItem7+3
 	lda	#%00110000						; attributes (tile num & priority bits only)
-	sta	ARRAY_SpriteBuf1.RingMenuItem8+3
+	sta	ARRAY_SpriteDataMenu.RingItem7+4
 
 	lda	#$0F							; turn on screen
 	sta	VAR_ShadowINIDISP
@@ -445,13 +447,19 @@ InGameMenu:
 
 ; -------------------------- ring menu cursor sprite
 	lda	#PARAM_RingMenuCenterX-16				; X (subtract half of sprite width)
-	sta	ARRAY_SpriteBuf1.RingMenuCursor
+	sta	ARRAY_SpriteDataMenu.RingCursor
+	lda	#%00000010						; X (upper 1 bit), sprite size (large)
+	sta	ARRAY_SpriteDataMenu.RingCursor+1
 	lda	#PARAM_RingMenuCenterY-PARAM_RingMenuRadiusMax		; Y (subtract radius to place the cursor at the top of the menu)
-	sta	ARRAY_SpriteBuf1.RingMenuCursor+1
+	sta	ARRAY_SpriteDataMenu.RingCursor+2
 	lda	#$80							; tile num (cursor sprite)
-	sta	ARRAY_SpriteBuf1.RingMenuCursor+2
+	sta	ARRAY_SpriteDataMenu.RingCursor+3
 	lda	#%00110000						; attributes (tile num & priority bits only)
-	sta	ARRAY_SpriteBuf1.RingMenuCursor+3
+	sta	ARRAY_SpriteDataMenu.RingCursor+4
+	ldx	#ARRAY_SpriteDataMenu & $FFFF				; set WRAM address for menu sprite data array
+	stx	REG_WMADDL
+	stz	REG_WMADDH
+	jsr	ConvertSpriteDataToBuffer				; write changes to sprite buffer
 
 	DrawFrame	7, 1, 17, 2
 
@@ -644,87 +652,84 @@ PrintMenuHeadlineE0:
 PutRingMenuItems:
 	lda	DP_RingMenuAngle					; take angle for 1st item on ring menu ($80 = 12:00 o'clock)
 	sta	DP_RingMenuAngleOffset
-
-	ldx	#ARRAY_SpriteBuf1.RingMenuItem1				; set WRAM address for 1st item on ring menu
+	ldx	#ARRAY_SpriteDataMenu.RingItem0 & $FFFF			; set WRAM address for 1st item on ring menu
 	stx	REG_WMADDL
 	stz	REG_WMADDH
-	jsr	CalcRingMenuItemPos
+	jsr	CalcRingItemPos
 
 	lda	DP_RingMenuAngle					; set angle for 2nd item on ring menu ($60 = 1:30 o'clock)
 	sec
 	sbc	#$20
 	sta	DP_RingMenuAngleOffset
-
-	ldx	#ARRAY_SpriteBuf1.RingMenuItem2				; set WRAM address for 2nd item on ring menu
+	ldx	#ARRAY_SpriteDataMenu.RingItem1 & $FFFF			; set WRAM address for 2nd item on ring menu
 	stx	REG_WMADDL
 	stz	REG_WMADDH
-	jsr	CalcRingMenuItemPos
+	jsr	CalcRingItemPos
 
 	lda	DP_RingMenuAngle					; set angle for 3rd item on ring menu ($40 = 3:00 o'clock)
 	sec
 	sbc	#$40
 	sta	DP_RingMenuAngleOffset
-
-	ldx	#ARRAY_SpriteBuf1.RingMenuItem3				; set WRAM address for 3rd item on ring menu
+	ldx	#ARRAY_SpriteDataMenu.RingItem2 & $FFFF			; set WRAM address for 3rd item on ring menu
 	stx	REG_WMADDL
 	stz	REG_WMADDH
-	jsr	CalcRingMenuItemPos
+	jsr	CalcRingItemPos
 
 	lda	DP_RingMenuAngle					; set angle for 4th item on ring menu ($20 = 4:30 o'clock)
 	sec
 	sbc	#$60
 	sta	DP_RingMenuAngleOffset
-
-	ldx	#ARRAY_SpriteBuf1.RingMenuItem4				; set WRAM address for 4th item on ring menu
+	ldx	#ARRAY_SpriteDataMenu.RingItem3 & $FFFF			; set WRAM address for 4th item on ring menu
 	stx	REG_WMADDL
 	stz	REG_WMADDH
-	jsr	CalcRingMenuItemPos
+	jsr	CalcRingItemPos
 
 	lda	DP_RingMenuAngle					; set angle for 5th item on ring menu ($00 = 6:00 o'clock)
 	sec
 	sbc	#$80
 	sta	DP_RingMenuAngleOffset
-
-	ldx	#ARRAY_SpriteBuf1.RingMenuItem5				; set WRAM address for 5th item on ring menu
+	ldx	#ARRAY_SpriteDataMenu.RingItem4 & $FFFF			; set WRAM address for 5th item on ring menu
 	stx	REG_WMADDL
 	stz	REG_WMADDH
-	jsr	CalcRingMenuItemPos
+	jsr	CalcRingItemPos
 
 	lda	DP_RingMenuAngle					; set angle for 6th item on ring menu ($E0 = 7:30 o'clock)
 	clc
 	adc	#$60
 	sta	DP_RingMenuAngleOffset
-
-	ldx	#ARRAY_SpriteBuf1.RingMenuItem6				; set WRAM address for 6th item on ring menu
+	ldx	#ARRAY_SpriteDataMenu.RingItem5 & $FFFF			; set WRAM address for 6th item on ring menu
 	stx	REG_WMADDL
 	stz	REG_WMADDH
-	jsr	CalcRingMenuItemPos
+	jsr	CalcRingItemPos
 
 	lda	DP_RingMenuAngle					; set angle for 7th item on ring menu ($C0 = 9:00 o'clock)
 	clc
 	adc	#$40
 	sta	DP_RingMenuAngleOffset
-
-	ldx	#ARRAY_SpriteBuf1.RingMenuItem7				; set WRAM address for 7th item on ring menu
+	ldx	#ARRAY_SpriteDataMenu.RingItem6 & $FFFF			; set WRAM address for 7th item on ring menu
 	stx	REG_WMADDL
 	stz	REG_WMADDH
-	jsr	CalcRingMenuItemPos
+	jsr	CalcRingItemPos
 
 	lda	DP_RingMenuAngle					; set angle for 8th item on ring menu ($A0 = 10:30 o'clock)
 	clc
 	adc	#$20
 	sta	DP_RingMenuAngleOffset
-
-	ldx	#ARRAY_SpriteBuf1.RingMenuItem8				; set WRAM address for 8th item on ring menu
+	ldx	#ARRAY_SpriteDataMenu.RingItem7 & $FFFF			; set WRAM address for 8th item on ring menu
 	stx	REG_WMADDL
 	stz	REG_WMADDH
-	jsr	CalcRingMenuItemPos
+	jsr	CalcRingItemPos
+
+	ldx	#ARRAY_SpriteDataMenu & $FFFF				; set WRAM address for menu sprite data array
+	stx	REG_WMADDL
+	stz	REG_WMADDH
+	jsr	ConvertSpriteDataToBuffer				; write changes to sprite buffer
 
 	rts
 
 
 
-CalcRingMenuItemPos:
+CalcRingItemPos:
 
 ; X := CenterX + sin(angle)*radius
 ; Y := CenterY + cos(angle)*radius
@@ -739,8 +744,9 @@ CalcRingMenuItemPos:
 	lda	REG_MPYH
 	clc
 	adc	#PARAM_RingMenuCenterX-16				; add CenterX, subtract half of sprite width (as with the cursor sprite)
-	sta	REG_WMDATA						; save X
-
+	sta	REG_WMDATA						; save X (lower 8 bits)
+	lda	#%00000010
+	sta	REG_WMDATA						; save X (upper 1 bit), sprite size (large)
 	ldx	DP_RingMenuAngleOffset
 	lda.l	SRC_Mode7Cos, x
 	stz	REG_M7A

@@ -154,6 +154,7 @@ Boot:
 ;	lda	#$01							; never mind, Accu still contains this value
 	sta	REG_MDMAEN						; WRAM address in $2181-$2183 has reached $10000 now, re-initiate DMA transfer for the upper 64K of WRAM
 	jsr	SpriteInit						; set up the sprite buffer
+	jsr	SpriteDataInit
 
 
 
@@ -748,7 +749,170 @@ ReadBanks40thru5F:
 
 
 
-; *********************** Sprite initialization ************************
+; ************************* Sprite subroutines *************************
+
+ConvertSpriteDataToBuffer:						; routine expects source data address set in REG_WMADD<L/M/H>
+
+; ARRAY_SpriteData* each consist of 128 5-byte-long entries of the
+; following format:
+;
+; Byte 0 - X-Coordinate lower 8bit
+; Byte 1 - X-Coordinate upper 1bit (bit 0), OBJ size (bit 1)
+; Byte 2 - Y-Coordinate (all 8bits)
+; Byte 3 - Tile Number  (lower 8bit) (upper 1bit within Attributes)
+; Byte 4 - Attributes
+;
+; This routine, which should be called once per frame during active
+; display, converts this data to OAM hi/lo format in ARRAY_SpriteBuf1
+; and ARRAY_SpriteBuf2 (which are transferred to OAM during Vblank).
+
+	phx								; preserve super-loop indices
+	phy
+	stz	DP_SprDataObjNo						; reset object counter
+	ldx	#0							; X = index for ARRAY_SpriteBuf1
+
+@ConvertSpriteDataLoop:
+	lda	REG_WMDATA						; read X coordinate lower 8 bits
+	sta	ARRAY_SpriteBuf1, x
+	inx
+
+
+
+; -------------------------- some bitwise operation magic for 9th bit of X coordinate and sprite size in high OAM
+	lda	DP_SprDataObjNo
+	and	#%00000011						; (object no. AND $03) * 2 = amount of (single) ASL operations required for correct bit pair in current high OAM byte
+	asl	a
+	sta	temp							; temp = counter variable for upcoming bit-shifting loop
+	lda	#%00000011						; keep track of bit pair position, assume bits 0-1 for now
+	sta	DP_SprDataHiOAMBits
+	lda	DP_SprDataObjNo						; next, prepare index for ARRAY_SpriteBuf2
+	lsr	a							; object no. RSH 2 = byte in high OAM containing bit pair of current object
+	lsr	a
+
+	Accu16
+
+	and	#$00FF							; remove garbage data
+	tay								; Y = index for ARRAY_SpriteBuf2
+
+	Accu8
+
+	lda	REG_WMDATA						; read X coordinate upper 1 bit (bit 0), OBJ size (bit 1)
+	and	#%00000011						; mask off unused/irrelevant bits just in case
+-	dec	temp							; decrement counter, this needs to be done first as it could be zero (= no bit-shifting needed at all)
+	bmi	+							; counter has reached/is zero --> jump out
+	asl	a							; shift bits left until correct bit pair reached
+	asl	DP_SprDataHiOAMBits					; keep track of bit pair position (important for bits that need to be cleared)
+	bra	-
+
++	sta	temp+1							; save bit pair in correct position
+	ora	ARRAY_SpriteBuf2, y					; set bit(s) that is/are to be set in current high OAM byte
+	sta	ARRAY_SpriteBuf2, y
+	lda	temp+1							; load bit pair again
+	eor	DP_SprDataHiOAMBits					; make set bits clear, and vice versa
+	eor	#$FF							; \ these two instructions essentially replace a TRB instruction, which doesn't support indexed addressing
+	and	ARRAY_SpriteBuf2, y					; /
+	sta	ARRAY_SpriteBuf2, y
+
+
+
+; -------------------------- rest is trivial
+	lda	REG_WMDATA						; read Y coordinate
+	sta	ARRAY_SpriteBuf1, x
+	inx
+	lda	REG_WMDATA						; read tile no.
+	sta	ARRAY_SpriteBuf1, x
+	inx
+	lda	REG_WMDATA						; read attributes
+	sta	ARRAY_SpriteBuf1, x
+	inx
+	inc	DP_SprDataObjNo						; increment object counter
+	cpx	#512							; all 128 sprites done?
+	bne	@ConvertSpriteDataLoop
+
+	ply								; restore super-loop indices
+	plx
+	rts
+
+
+
+SpriteDataInit:
+	ldx	#0
+
+	Accu16
+
+@InitSprDataAreaLoop1:
+	lda	#$00FF							; X coordinate (9 bits), sprite size (10th bit) 0 = small
+	sta	ARRAY_SpriteDataArea, x					; initialize all sprites to be off the screen
+	inx
+	inx
+
+	Accu8
+
+	lda	#$E0							; Y coordinate
+	sta	ARRAY_SpriteDataArea, x
+	inx
+
+	Accu16
+
+	lda	DP_EmptySpriteNo					; acknowledge no. of empty sprite (usually 0)
+	and	#$00FF							; mask off garbage data
+	sta	ARRAY_SpriteDataArea, x					; attributes, tile num
+	inx
+	inx
+	cpx	#32*5							; sprite font done?
+	bne	@InitSprDataAreaLoop1
+
+@InitSprDataAreaLoop2:
+	lda	#$02FF							; X coordinate (9 bits), sprite size (10th bit) 1 = large
+	sta	ARRAY_SpriteDataArea, x
+	inx
+	inx
+
+	Accu8
+
+	lda	#$E0							; Y coordinate
+	sta	ARRAY_SpriteDataArea, x
+	inx
+
+	Accu16
+
+	lda	DP_EmptySpriteNo					; acknowledge no. of empty sprite (usually 0)
+	and	#$00FF							; mask off garbage data
+	sta	ARRAY_SpriteDataArea, x					; attributes, tile num
+	inx
+	inx
+	cpx	#128*5							; all sprites done?
+	bne	@InitSprDataAreaLoop2
+
+	ldx	#0
+
+@InitSprDataMenuLoop:
+	lda	#$02FF							; X coordinate (9 bits), sprite size (10th bit) 1 = large
+	sta	ARRAY_SpriteDataMenu, x
+	inx
+	inx
+
+	Accu8
+
+	lda	#$E0							; Y coordinate
+	sta	ARRAY_SpriteDataMenu, x
+	inx
+
+	Accu16
+
+	lda	DP_EmptySpriteNo					; acknowledge no. of empty sprite (usually 0)
+	and	#$00FF							; mask off garbage data
+	sta	ARRAY_SpriteDataMenu, x					; attributes, tile num
+	inx
+	inx
+	cpx	#128*5							; all sprites done?
+	bne	@InitSprDataMenuLoop
+
+	Accu8
+
+	rts
+
+
 
 SpriteInit:
 	php	
@@ -757,34 +921,36 @@ SpriteInit:
 
 	ldx	#$0000
 
-__Init_OAM_lo:
-	lda	#$F0F8
+@Init_OAM_lo:
+	lda	#$E0FF
 	sta	ARRAY_SpriteBuf1, x					; initialize all sprites to be off the screen
 	inx
 	inx
-	stz	ARRAY_SpriteBuf1, x
+	lda	DP_EmptySpriteNo					; acknowledge no. of empty sprite (usually 0)
+	and	#$00FF							; mask off garbage data
+	sta	ARRAY_SpriteBuf1, x
 	inx
 	inx
 	cpx	#$0200
-	bne	__Init_OAM_lo
+	bne	@Init_OAM_lo
 
 	Accu8
 
 	ldx	#$0000
 
-__Init_OAM_hi1:
+@Init_OAM_hi1:
 	stz	ARRAY_SpriteBuf2, x					; small sprites for the sprite font
 	inx
-	cpx	#8							; see .STRUCT oam_high
-	bne	__Init_OAM_hi1
+	cpx	#8							; 8 * 4 = 32 sprites
+	bne	@Init_OAM_hi1
 
 	lda	#%10101010						; large sprites for everything else
 
-__Init_OAM_hi2:
+@Init_OAM_hi2:
 	sta	ARRAY_SpriteBuf2, x
 	inx
 	cpx	#32
-	bne	__Init_OAM_hi2
+	bne	@Init_OAM_hi2
 
 	plp
 	rts

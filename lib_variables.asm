@@ -28,6 +28,7 @@
 ; REG_		= SNES hardware register
 ; SCMD_		= constant, as .DEFINEd (used as SPC700 command)
 ; SRC_		= array of constants / binary data, stored in ROM
+; ST_		= .STRUCT
 ; STR_		= ASCII string, stored in ROM
 ; TBL_		= constant in table, as .DEFINEd
 ; VAR_		= non-Direct Page variable
@@ -774,6 +775,7 @@
 	DP_DataBank		db
 	DP_DMA_Updates		dw					; rrrcbbaarrr32211 [123 = BG no. that needs to have its tile map(s) updated on next Vblank (low bytes), abc = same thing for high bytes, r = reserved. The lower bit of each BG represents the first half of a 64×32/32×64 tile map, the higher one represents the second half.]
 	DP_EffectSpeed		dw
+	DP_EmptySpriteNo	db					; holds no. of empty sprite in current spritesheet (usually 0), this is acknowledged in the sprite initialization routine
 	DP_EventCodeAddress	dsb 2
 	DP_EventCodeBank	db
 	DP_EventCodeJump	dw					; holds event script code pointer to jump to
@@ -828,6 +830,8 @@
 	DP_SPC_DataAddress	dw
 	DP_SPC_VolCurrent	dw
 	DP_SPC_VolFadeSpeed	dw
+	DP_SprDataObjNo		db					; holds no. of current object (0-127)
+	DP_SprDataHiOAMBits	db					; holds bits to manipulate in high OAM/ARRAY_SpriteBuf2
 	DP_SpriteTextMon	dw					; keeps track of sprite-based text buffer filling level
 	DP_SpriteTextPalette	db					; holds palette to use when printing sprite-based text
 	DP_TextASCIIChar	dw					; holds current ASCII character no.
@@ -861,38 +865,6 @@
 
 
 ; ****************************** .STRUCTs ******************************
-
-.STRUCT oam_high
-	Text			dsb 8
-	HUD_TextBox		dsb 9
-	RingMenu		dsb 4
-	NPCs			dsb 7
-	PlayableChar		dsb 2
-	Reserved		dsb 2
-.ENDST
-
-
-
-.STRUCT oam_low
-	Text			dsb 128					; for one line of text (32 chars)
-	HUD_TextBox		dsb 144					; 144 / 2 = 72, i. e. a full box can hold at least 18 characters
-	RingMenuCursor		dsb 4
-	RingMenuItem1		dsb 4
-	RingMenuItem2		dsb 4
-	RingMenuItem3		dsb 4
-	RingMenuItem4		dsb 4
-	RingMenuItem5		dsb 4
-	RingMenuItem6		dsb 4
-	RingMenuItem7		dsb 4
-	RingMenuItem8		dsb 4
-	RingMenuMisc		dsb 28
-	NPCs			dsb 112					; 112 / 2 = 56, i. e. max. 14 (16×32) furries possible
-	PlayableChar		dsb 24
-	PlayableCharReserved	dsb 8
-	Reserved		dsb 32
-.ENDST
-
-
 
 .STRUCT ram_code_block
 	DoDMA			dsb 49
@@ -958,6 +930,76 @@
 
 
 
+.STRUCT ST_SpriteDataArea
+	Text			dsb 32 * 5				; 32 chars = one line of text
+	HUD_TextBox		dsb 36 * 5				; (180 / 2) / 5 = 18 characters in a full box
+	Hero1a			dsb 5
+	Hero1b			dsb 5
+	Hero1c			dsb 5
+	Hero1d			dsb 5
+	Hero1Weapon1		dsb 5
+	Hero1Weapon2		dsb 5
+	Hero1Weapon3		dsb 5
+	Hero1Weapon4		dsb 5
+	Hero2a			dsb 5
+	Hero2b			dsb 5
+	Hero2c			dsb 5
+	Hero2d			dsb 5
+	Hero2Weapon1		dsb 5
+	Hero2Weapon2		dsb 5
+	Hero2Weapon3		dsb 5
+	Hero2Weapon4		dsb 5
+	Hero3a			dsb 5
+	Hero3b			dsb 5
+	Hero3c			dsb 5
+	Hero3d			dsb 5
+	Hero3Weapon1		dsb 5
+	Hero3Weapon2		dsb 5
+	Hero3Weapon3		dsb 5
+	Hero3Weapon4		dsb 5
+	NPCs			dsb 36 * 5				; 36 / 2 = max. 18 (16×32) furries
+.ENDST
+
+
+
+;.STRUCT ST_SpriteDataBattle
+;.ENDST
+
+
+
+.STRUCT ST_SpriteDataMenu
+	Hero1a			dsb 5
+	Hero1b			dsb 5
+	Hero1c			dsb 5
+	Hero1d			dsb 5
+	Hero2a			dsb 5
+	Hero2b			dsb 5
+	Hero2c			dsb 5
+	Hero2d			dsb 5
+	Hero3a			dsb 5
+	Hero3b			dsb 5
+	Hero3c			dsb 5
+	Hero3d			dsb 5
+	MainCursor		dsb 5
+	RingCursor		dsb 5
+	RingItem0		dsb 5
+	RingItem1		dsb 5
+	RingItem2		dsb 5
+	RingItem3		dsb 5
+	RingItem4		dsb 5
+	RingItem5		dsb 5
+	RingItem6		dsb 5
+	RingItem7		dsb 5
+	Z_Reserved		dsb 106 * 5
+.ENDST
+
+
+
+;.STRUCT ST_SpriteDataMode7
+;.ENDST
+
+
+
 ; ******************* Variables in lower 8K of WRAM ********************
 
 .ENUM $0200
@@ -971,8 +1013,8 @@
 	ARRAY_HDMA_BG_Scroll		dsb 16
 	ARRAY_HDMA_WorMapVScroll	dsb 448
 	ARRAY_RandomNumbers		dsb 130				; for random numbers
-	ARRAY_SpriteBuf1		INSTANCEOF oam_low		; 512 bytes
-	ARRAY_SpriteBuf2		INSTANCEOF oam_high		; 32 bytes
+	ARRAY_SpriteBuf1		dsb 512
+	ARRAY_SpriteBuf2		dsb 32
 	ARRAY_Temp			dsb 32				; for misc. temp bytes
 	ARRAY_TempString		dsb 32				; for temp strings
 	ARRAY_VWF_TileBuffer		dsb 32
@@ -1011,6 +1053,10 @@
 	ARRAY_HDMA_BackgrTextBox	dsb 192				; ditto for 48 scanlines
 	ARRAY_ScratchSpace		dsb 16384
 	RAM_Code			INSTANCEOF ram_code_block	; for modifiable routines
+	ARRAY_SpriteDataArea		INSTANCEOF ST_SpriteDataArea	; 128 * 5 = 640 bytes
+;	ARRAY_SpriteDataBattle		INSTANCEOF ST_SpriteDataBattle	; ditto
+	ARRAY_SpriteDataMenu		INSTANCEOF ST_SpriteDataMenu	; ditto
+;	ARRAY_SpriteDataXXX		INSTANCEOF ST_SpriteDataXXX	; ditto
 .ENDE
 
 .DEFINE VAR_DMAModeBBusReg		RAM_Code.DoDMA+14

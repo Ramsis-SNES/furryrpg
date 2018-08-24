@@ -153,157 +153,157 @@ LoadWorldMap:
 
 ; -------------------------- write horizon-blurring sprites to sprite buffer
 	lda	#0
-	sta	ARRAY_SpriteBuf1.Reserved
+	sta	ARRAY_SpriteBuf1+128
 	lda	#35
-	sta	ARRAY_SpriteBuf1.Reserved+1
+	sta	ARRAY_SpriteBuf1+129
 	lda	#0
-	sta	ARRAY_SpriteBuf1.Reserved+2
+	sta	ARRAY_SpriteBuf1+130
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1.Reserved+3
+	sta	ARRAY_SpriteBuf1+131
 
 	lda	#16
-	sta	ARRAY_SpriteBuf1.Reserved+4
+	sta	ARRAY_SpriteBuf1+132
 	lda	#34
-	sta	ARRAY_SpriteBuf1.Reserved+5
+	sta	ARRAY_SpriteBuf1+133
 	lda	#0
-	sta	ARRAY_SpriteBuf1.Reserved+6
+	sta	ARRAY_SpriteBuf1+134
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1.Reserved+7
+	sta	ARRAY_SpriteBuf1+135
 
 	lda	#32
-	sta	ARRAY_SpriteBuf1.Reserved+8
+	sta	ARRAY_SpriteBuf1+136
 	lda	#33
-	sta	ARRAY_SpriteBuf1.Reserved+9
+	sta	ARRAY_SpriteBuf1+137
 	lda	#0
-	sta	ARRAY_SpriteBuf1.Reserved+10
+	sta	ARRAY_SpriteBuf1+138
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1.Reserved+11
+	sta	ARRAY_SpriteBuf1+139
 
 	lda	#40
-	sta	ARRAY_SpriteBuf1.Reserved+12
+	sta	ARRAY_SpriteBuf1+140
 	lda	#33
-	sta	ARRAY_SpriteBuf1.Reserved+13
+	sta	ARRAY_SpriteBuf1+141
 	lda	#0
-	sta	ARRAY_SpriteBuf1.Reserved+14
+	sta	ARRAY_SpriteBuf1+142
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1.Reserved+15
+	sta	ARRAY_SpriteBuf1+143
 
 	lda	#56
-	sta	ARRAY_SpriteBuf1.Reserved+16
+	sta	ARRAY_SpriteBuf1+144
 	lda	#32
-	sta	ARRAY_SpriteBuf1.Reserved+17
+	sta	ARRAY_SpriteBuf1+145
 	lda	#0
-	sta	ARRAY_SpriteBuf1.Reserved+18
+	sta	ARRAY_SpriteBuf1+146
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1.Reserved+19
+	sta	ARRAY_SpriteBuf1+147
 
 	lda	#72
-	sta	ARRAY_SpriteBuf1.Reserved+20
+	sta	ARRAY_SpriteBuf1+148
 	lda	#32
-	sta	ARRAY_SpriteBuf1.Reserved+21
+	sta	ARRAY_SpriteBuf1+149
 	lda	#0
-	sta	ARRAY_SpriteBuf1.Reserved+22
+	sta	ARRAY_SpriteBuf1+150
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1.Reserved+23
+	sta	ARRAY_SpriteBuf1+151
 
 	lda	#88
-	sta	ARRAY_SpriteBuf1.Reserved+24
+	sta	ARRAY_SpriteBuf1+152
 	lda	#32
-	sta	ARRAY_SpriteBuf1.Reserved+25
+	sta	ARRAY_SpriteBuf1+153
 	lda	#0
-	sta	ARRAY_SpriteBuf1.Reserved+26
+	sta	ARRAY_SpriteBuf1+154
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1.Reserved+27
+	sta	ARRAY_SpriteBuf1+155
 
 	lda	#104
-	sta	ARRAY_SpriteBuf1.Reserved+28
+	sta	ARRAY_SpriteBuf1+156
 	lda	#31
-	sta	ARRAY_SpriteBuf1.Reserved+29
+	sta	ARRAY_SpriteBuf1+157
 	lda	#0
-	sta	ARRAY_SpriteBuf1.Reserved+30
+	sta	ARRAY_SpriteBuf1+158
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1.Reserved+31
+	sta	ARRAY_SpriteBuf1+159
 
 	lda	#120
-	sta	ARRAY_SpriteBuf1.NPCs
+	sta	ARRAY_SpriteBuf1+160
 	lda	#31
-	sta	ARRAY_SpriteBuf1.NPCs+1
+	sta	ARRAY_SpriteBuf1+161
 	lda	#0
-	sta	ARRAY_SpriteBuf1.NPCs+2
+	sta	ARRAY_SpriteBuf1+162
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1.NPCs+3
+	sta	ARRAY_SpriteBuf1+163
 
 	lda	#136
-	sta	ARRAY_SpriteBuf1.NPCs+4
+	sta	ARRAY_SpriteBuf1+164
 	lda	#31
-	sta	ARRAY_SpriteBuf1.NPCs+5
+	sta	ARRAY_SpriteBuf1+165
 	lda	#0
-	sta	ARRAY_SpriteBuf1.NPCs+6
+	sta	ARRAY_SpriteBuf1+166
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1.NPCs+7
+	sta	ARRAY_SpriteBuf1+167
 
 	lda	#152
-	sta	ARRAY_SpriteBuf1.NPCs+8
+	sta	ARRAY_SpriteBuf1+168
 	lda	#32
-	sta	ARRAY_SpriteBuf1.NPCs+9
+	sta	ARRAY_SpriteBuf1+169
 	lda	#0
-	sta	ARRAY_SpriteBuf1.NPCs+10
+	sta	ARRAY_SpriteBuf1+170
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1.NPCs+11
+	sta	ARRAY_SpriteBuf1+171
 
 	lda	#168
-	sta	ARRAY_SpriteBuf1.NPCs+12
+	sta	ARRAY_SpriteBuf1+172
 	lda	#32
-	sta	ARRAY_SpriteBuf1.NPCs+13
+	sta	ARRAY_SpriteBuf1+173
 	lda	#0
-	sta	ARRAY_SpriteBuf1.NPCs+14
+	sta	ARRAY_SpriteBuf1+174
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1.NPCs+15
+	sta	ARRAY_SpriteBuf1+175
 
 	lda	#184
-	sta	ARRAY_SpriteBuf1.NPCs+16
+	sta	ARRAY_SpriteBuf1+176
 	lda	#32
-	sta	ARRAY_SpriteBuf1.NPCs+17
+	sta	ARRAY_SpriteBuf1+177
 	lda	#0
-	sta	ARRAY_SpriteBuf1.NPCs+18
+	sta	ARRAY_SpriteBuf1+178
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1.NPCs+19
+	sta	ARRAY_SpriteBuf1+179
 
 	lda	#200
-	sta	ARRAY_SpriteBuf1.NPCs+20
+	sta	ARRAY_SpriteBuf1+180
 	lda	#33
-	sta	ARRAY_SpriteBuf1.NPCs+21
+	sta	ARRAY_SpriteBuf1+181
 	lda	#0
-	sta	ARRAY_SpriteBuf1.NPCs+22
+	sta	ARRAY_SpriteBuf1+182
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1.NPCs+23
+	sta	ARRAY_SpriteBuf1+183
 
 	lda	#208
-	sta	ARRAY_SpriteBuf1.NPCs+24
+	sta	ARRAY_SpriteBuf1+184
 	lda	#33
-	sta	ARRAY_SpriteBuf1.NPCs+25
+	sta	ARRAY_SpriteBuf1+185
 	lda	#0
-	sta	ARRAY_SpriteBuf1.NPCs+26
+	sta	ARRAY_SpriteBuf1+186
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1.NPCs+27
+	sta	ARRAY_SpriteBuf1+187
 
 	lda	#224
-	sta	ARRAY_SpriteBuf1.NPCs+28
+	sta	ARRAY_SpriteBuf1+188
 	lda	#34
-	sta	ARRAY_SpriteBuf1.NPCs+29
+	sta	ARRAY_SpriteBuf1+189
 	lda	#0
-	sta	ARRAY_SpriteBuf1.NPCs+30
+	sta	ARRAY_SpriteBuf1+190
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1.NPCs+31
+	sta	ARRAY_SpriteBuf1+191
 
 	lda	#240
-	sta	ARRAY_SpriteBuf1.NPCs+32
+	sta	ARRAY_SpriteBuf1+192
 	lda	#35
-	sta	ARRAY_SpriteBuf1.NPCs+33
+	sta	ARRAY_SpriteBuf1+193
 	lda	#0
-	sta	ARRAY_SpriteBuf1.NPCs+34
+	sta	ARRAY_SpriteBuf1+194
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1.NPCs+35
+	sta	ARRAY_SpriteBuf1+195
 
 
 
