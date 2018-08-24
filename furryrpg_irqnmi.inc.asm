@@ -14,7 +14,7 @@
 Vblank_Area:
 	AccuIndex16
 
-	pha								; push 16 bit registers onto stack
+	pha								; preserve 16 bit registers
 	phx
 	phy
 
@@ -138,7 +138,7 @@ Vblank_Area:
 
 	AccuIndex16
 
-	ply								; pull original 16 bit registers back
+	ply								; restore 16 bit registers
 	plx
 	pla
 	rti
@@ -148,7 +148,7 @@ Vblank_Area:
 Vblank_DebugMenu:
 	AccuIndex16
 
-	pha								; push 16 bit registers onto stack
+	pha								; preserve 16 bit registers
 	phx
 	phy
 
@@ -181,12 +181,11 @@ Vblank_DebugMenu:
 	lda	DP_HDMA_Channels					; initiate HDMA transfers
 	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
 	sta	REG_HDMAEN
-
 	lda	REG_RDNMI						; acknowledge NMI
 
 	AccuIndex16
 
-	ply								; pull original 16 bit registers back
+	ply								; restore 16 bit registers
 	plx
 	pla
 	rti
@@ -196,7 +195,7 @@ Vblank_DebugMenu:
 Vblank_Error:
 	AccuIndex16
 
-	pha								; push 16 bit registers onto stack
+	pha								; preserve 16 bit registers
 	phx
 	phy
 
@@ -231,13 +230,12 @@ Vblank_Error:
 	lda	#$FF							; set BG3 vertical scroll = -1
 	sta	REG_BG3VOFS
 	stz	REG_BG3VOFS
-
 	stz	REG_HDMAEN						; disable HDMA
 	lda	REG_RDNMI						; acknowledge NMI
 
 	AccuIndex16
 
-	ply								; pull original 16 bit registers back
+	ply								; restore 16 bit registers
 	plx
 	pla
 	rti
@@ -247,7 +245,7 @@ Vblank_Error:
 Vblank_Intro:
 	AccuIndex16
 
-	pha								; push 16 bit registers onto stack
+	pha								; preserve 16 bit registers
 	phx
 	phy
 
@@ -278,7 +276,7 @@ Vblank_Intro:
 
 	AccuIndex16
 
-	ply								; pull original 16 bit registers back
+	ply								; restore 16 bit registers
 	plx
 	pla
 	rti
@@ -288,7 +286,7 @@ Vblank_Intro:
 Vblank_Minimal:
 	AccuIndex16
 
-	pha								; push 16 bit registers onto stack
+	pha								; preserve 16 bit registers
 	phx
 	phy
 
@@ -304,7 +302,7 @@ Vblank_Minimal:
 
 	AccuIndex16
 
-	ply								; pull original 16 bit registers back
+	ply								; restore 16 bit registers
 	plx
 	pla
 	rti
@@ -314,7 +312,7 @@ Vblank_Minimal:
 Vblank_Mode7:
 	AccuIndex16
 
-	pha								; push 16 bit registers onto stack
+	pha								; preserve 16 bit registers
 	phx
 	phy
 
@@ -436,7 +434,7 @@ Vblank_Mode7:
 
 	AccuIndex16
 
-	ply								; pull original 16 bit registers back
+	ply								; restore 16 bit registers
 	plx
 	pla
 	rti
@@ -446,7 +444,7 @@ Vblank_Mode7:
 Vblank_WorldMap:
 	AccuIndex16
 
-	pha								; push 16 bit registers onto stack
+	pha								; preserve 16 bit registers
 	phx
 	phy
 
@@ -492,7 +490,7 @@ Vblank_WorldMap:
 
 	AccuIndex16
 
-	ply								; pull original 16 bit registers back
+	ply								; restore 16 bit registers
 	plx
 	pla
 	rti

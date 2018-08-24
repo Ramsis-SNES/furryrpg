@@ -274,7 +274,6 @@ MainTextBoxLoop:							; this routine needs to be called once per frame
 	trb	DP_TextBoxSelection
 
 	WaitFrames	1
-
 	Accu16
 
 	lda	DP_TextPointerNo					; decrement text pointer
@@ -304,7 +303,6 @@ MainTextBoxLoop:							; this routine needs to be called once per frame
 	trb	DP_TextBoxSelection
 
 	WaitFrames	1
-
 	Accu16
 
 	lda	DP_TextPointerNo					; increment text pointer
@@ -334,7 +332,6 @@ MainTextBoxLoop:							; this routine needs to be called once per frame
 	trb	DP_TextBoxSelection
 
 	WaitFrames	1
-
 	Accu16
 
 	lda	DP_TextPointerNo					; decrement text pointer
@@ -365,7 +362,6 @@ MainTextBoxLoop:							; this routine needs to be called once per frame
 	trb	DP_TextBoxSelection
 
 	WaitFrames	1
-
 	Accu16
 
 	lda	DP_TextPointerNo					; increment text pointer
@@ -678,7 +674,6 @@ Process_CC_NewLine:
 	tsb	DP_TextBoxStatus
 
 	WaitFrames	1
-
 	Accu16
 
 	stz	DP_VWF_BitsUsed						; reset VWF bit counter
@@ -804,7 +799,6 @@ __ProcessTextDone:
 	tsb	DP_TextBoxStatus
 
 	WaitFrames	1
-
 ++	Accu8
 
 	lda	#%01000000						; clear "more text pending" flag
@@ -1416,9 +1410,8 @@ SaveTextBoxTileToVRAM:
 
 
 
-TextBoxAnimationClose:
+TextBoxAnimationClose:							; closing animation (scroll text box content out vertically below the screen)
 
-; -------------------------- closing animation (scroll text box content out vertically below the screen)
 @CloseTextBoxAniLoop:
 	WaitFrames	1
 
@@ -1471,9 +1464,7 @@ TextBoxAnimationClose:
 
 
 
-TextBoxAnimationOpen:
-
-; -------------------------- opening animation (scroll text box content in vertically from below)
+TextBoxAnimationOpen:							; opening animation (scroll text box content in vertically from below)
 	lda	#%00110100						; activate HDMA ch. 2 (backdrop color), 4, 5 (BG scrolling regs)
 	tsb	DP_HDMA_Channels
 	lda	#%00110000						; enable IRQ at H=$4207 and V=$4209
@@ -1538,7 +1529,6 @@ TextBoxAnimationOpen:
 ;       %% -- normal %
 ;       \n -- Newline
 ;       \t -- Tab
-;       \b -- Page break	>> REMOVED
 ;       \\ -- normal slash
 ;     String pointers all refer to current Data Bank (DB)
 
@@ -1676,10 +1666,6 @@ SimplePrintF:								; expects 24-bit pointer to string in DP_TextStringPtr
 	rts
 
 
-
-; In: A -- ASCII code to print
-; Out: none
-; Modifies: P
 
 FillTextBuffer:								; expectations: A = 8 bit, X/Y = 16 bit
 	ldx	DP_TextCursor
@@ -1999,7 +1985,6 @@ _nletter2:
 
 FillSpriteTextBuf:
 	php
-
 	ldx	DP_SpriteTextMon					; start where there is some unused sprite text buffer
 	pha
 

@@ -1231,7 +1231,7 @@ PutAreaNameIntoHUD:							; HUD "text box" position (temp, temp+1) and DP_TextCu
 	tax
 	lda.l	SRC_AreaNames, x					; starting address of area names of a given language into DataAddress
 	sta	DP_DataAddress
-	lda	DP_AreaNamePointerNo					; use area name pointer no ...
+	lda	DP_AreaNamePointerNo					; use area name pointer no. ...
 	asl	a
 	tay
 	lda	[DP_DataAddress], y					; ... to read correct pointer

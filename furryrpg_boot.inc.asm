@@ -179,7 +179,7 @@ Boot:
 
 
 
-; -------------------------- copy DMA routine to WRAM
+; -------------------------- copy RAM routines to WRAM
 	ldx	#RAM_Code & $FFFF					; set WRAM address to RAM code section
 	stx	REG_WMADDL
 	stz	REG_WMADDH
@@ -217,9 +217,7 @@ Boot:
 	lda	#$01							; set BG mode 1
 	sta	VAR_ShadowBGMODE
 	lda	#%00010100						; turn on BG3 + sprites on mainscreen and subscreen
-	sta	REG_TM
-	sta	REG_TS
-	sta	VAR_ShadowTM						; copy to shadow variables
+	sta	VAR_ShadowTM
 	sta	VAR_ShadowTS
 
 	SetNMI	TBL_NMI_DebugMenu
@@ -230,7 +228,7 @@ Boot:
 	beq	+
 	lda	#$0F							; turn on the screen
 	sta	VAR_ShadowINIDISP
-	jsr	VerifyROMIntegrity
+	jsr	CheckROMIntegrity
 
 +	jml	DebugMenu
 
@@ -542,7 +540,7 @@ __SRTCfound:
 
 
 
-VerifyROMIntegrity:
+CheckROMIntegrity:
 	PrintString	2, 3, "ROM integrity check"
 	PrintString	3, 3, "-------------------"
 	PrintString	5, 3, "This is done only once to"
@@ -992,7 +990,6 @@ SRC_RAM_Code:
 	phy
 
 	Accu8
-
 	SetDBR	$00							; set Data Bank = $00 for easy register access
 
 	ldx	#$FFFF							; DMA mode (low byte), B bus register (high byte) // RAM_Code.DoDMA + 14
@@ -1086,8 +1083,6 @@ SRC_RAM_Code:
 	pld								; restore registers
 	plp
 	rtl
-
-
 
 SRC_RAM_Code_END:
 

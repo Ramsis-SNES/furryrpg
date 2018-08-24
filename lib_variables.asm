@@ -858,7 +858,7 @@
 	DP_VWF_Loop		db
 	DP_WorldMapBG1VScroll	dw
 	DP_WorldMapBG1HScroll	dw
-.ENDE									; 178 of 256 bytes used
+.ENDE									; 187 of 256 bytes used
 
 
 

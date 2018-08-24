@@ -56,7 +56,7 @@ int main (int argc, char * argv[]) {
   // read banks $40 - $5F again
   for(unsigned Offset=0x400000; Offset < lSize; ++Offset) {
     // skip checksum bytes
-    if((Offset >= 0x40FFDC && Offset < 0x40FFE0)) continue;
+    if(Offset >= 0x40FFDC && Offset < 0x40FFE0) continue;
 
     chsum += buffer[Offset] & 0xFF;
   }

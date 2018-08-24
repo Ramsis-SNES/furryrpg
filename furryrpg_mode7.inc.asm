@@ -356,7 +356,6 @@ TestMode7:
 
 ; -------------------------- set new NMI/IRQ vectors & screen parameters
 	SetNMI	TBL_NMI_Mode7
-
 	Accu16
 
 	lda	#220							; dot number for interrupt (256 = too late, 204 = too early)
@@ -365,7 +364,6 @@ TestMode7:
 	sta	REG_VTIMEL
 
 	Accu8
-
 	SetIRQ	TBL_VIRQ_Mode7
 
 	lda	#%11111000						; enable HDMA channels 3-7
@@ -378,7 +376,6 @@ TestMode7:
 	jsr	ResetMode7Matrix
 
 	WaitFrames	2						; wait for altitude setting to take effect (FIXME, doesn't work with just 1 frame?!)
-
 	Accu16
 
 	stz	temp							; clear temp vars (used in CalcMode7Matrix)
