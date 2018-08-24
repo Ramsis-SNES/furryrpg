@@ -868,14 +868,14 @@
 
 ; ****************************** .STRUCTs ******************************
 
-.STRUCT ram_code_block
+.STRUCT ST_RAM_Code
 	DoDMA			dsb 49
 	UpdatePPURegs		dsb 121
 .ENDST
 
 
 
-.STRUCT sram
+.STRUCT ST_SRAM
 	Slot1			dsb 16					; 16 bytes per slot reserved
 	Slot1Data		dsb 2032
 	Slot2			dsb 16
@@ -888,7 +888,7 @@
 
 
 
-.STRUCT tilemap_bg1
+.STRUCT ST_BG1TileMap1
 	Beginning		dsb 704
 	TextBox			dsb 192					; 6 lines, 32 tiles each
 	Unused			dsb 128
@@ -896,7 +896,7 @@
 
 
 
-.STRUCT tilemap_bg1_hi
+.STRUCT ST_BG1TileMap1Hi
 	Beginning		dsb 704
 	TextBox			dsb 192
 	Unused			dsb 128
@@ -904,7 +904,7 @@
 
 
 
-.STRUCT tilemap_bg2
+.STRUCT ST_BG2TileMap1
 	Beginning		dsb 704
 	TextBox			dsb 192
 	Unused			dsb 128
@@ -912,7 +912,7 @@
 
 
 
-.STRUCT tilemap_bg2_hi
+.STRUCT ST_BG2TileMap1Hi
 	Beginning		dsb 704
 	TextBox			dsb 192
 	Unused			dsb 128
@@ -920,13 +920,13 @@
 
 
 
-.STRUCT tilemap_bg3
+.STRUCT ST_BG3TileMap
 	AllTiles		dsb 1024
 .ENDST
 
 
 
-.STRUCT tilemap_bg3_hi
+.STRUCT ST_BG3TileMapHi
 	AllTiles		dsb 1024
 .ENDST
 
@@ -1040,25 +1040,25 @@
 ; ********************** Variables in upper WRAM ***********************
 
 .ENUM $7E2000
-	ARRAY_BG1TileMap1		INSTANCEOF tilemap_bg1		; each tile map is 1024 bytes in size (32×32 tiles)
+	ARRAY_BG1TileMap1		INSTANCEOF ST_BG1TileMap1	; each tile map is 1024 bytes in size (32×32 tiles)
 	ARRAY_BG1TileMap2		dsb 1024
-	ARRAY_BG1TileMap1Hi		INSTANCEOF tilemap_bg1_hi
+	ARRAY_BG1TileMap1Hi		INSTANCEOF ST_BG1TileMap1Hi
 	ARRAY_BG1TileMap2Hi		dsb 1024
-	ARRAY_BG2TileMap1		INSTANCEOF tilemap_bg2
+	ARRAY_BG2TileMap1		INSTANCEOF ST_BG2TileMap1
 	ARRAY_BG2TileMap2		dsb 1024
-	ARRAY_BG2TileMap1Hi		INSTANCEOF tilemap_bg2_hi
+	ARRAY_BG2TileMap1Hi		INSTANCEOF ST_BG2TileMap1Hi
 	ARRAY_BG2TileMap2Hi		dsb 1024
-	ARRAY_BG3TileMap		INSTANCEOF tilemap_bg3
-	ARRAY_BG3TileMapHi		INSTANCEOF tilemap_bg3_hi
+	ARRAY_BG3TileMap		INSTANCEOF ST_BG3TileMap
+	ARRAY_BG3TileMapHi		INSTANCEOF ST_BG3TileMapHi
 	ARRAY_GameDataInventory		dsb 512				; two-byte array for 256 items. Low byte = item no., high byte = quantity
 	ARRAY_HDMA_BackgrPlayfield	dsb 704				; 16-bit palette index & 16-bit color entry for 176 scanlines
 	ARRAY_HDMA_BackgrTextBox	dsb 192				; ditto for 48 scanlines
 	ARRAY_ScratchSpace		dsb 16384
-	RAM_Code			INSTANCEOF ram_code_block	; for modifiable routines
 	ARRAY_SpriteDataArea		INSTANCEOF ST_SpriteDataArea	; 128 * 5 = 640 bytes
 ;	ARRAY_SpriteDataBattle		INSTANCEOF ST_SpriteDataBattle	; ditto
 	ARRAY_SpriteDataMenu		INSTANCEOF ST_SpriteDataMenu	; ditto
 ;	ARRAY_SpriteDataXXX		INSTANCEOF ST_SpriteDataXXX	; ditto
+	RAM_Code			INSTANCEOF ST_RAM_Code		; for modifiable routines
 .ENDE
 
 .DEFINE VAR_DMAModeBBusReg		RAM_Code.DoDMA+14
@@ -1099,7 +1099,7 @@
 ; *************************** SRAM variables ***************************
 
 .ENUM $6000
-	SRAM				INSTANCEOF sram
+	SRAM				INSTANCEOF ST_SRAM
 .ENDE									; max. 8192 bytes
 
 
