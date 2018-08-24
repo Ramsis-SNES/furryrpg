@@ -783,7 +783,7 @@
 	DP_EventControl		db					; rrrrrrrm [m = monitor joypad 1, r = reserved]
 	DP_EventMonitorJoy1	dw					; joypad bits to be monitored by event handler
 	DP_EventWaitFrames	dw
-	DP_GameConfig		db					; rrrrrrcm [c = RTC present, m = MSU1 present, r = reserved]
+	DP_GameConfig		db					; rrrrrucm [c = RTC present, m = MSU1 present, u = Ultra16 present, r = reserved]
 	DP_GameMode		db					; arrrrrrr [a = auto-mode, r = reserved]
 	DP_GameTimeSeconds	db					; 1 game time second = 1 frame (??)
 	DP_GameTimeMinutes	db

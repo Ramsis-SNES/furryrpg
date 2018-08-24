@@ -174,7 +174,7 @@ Boot:
 
 ; -------------------------- more hardware checks/initialization
 	jsl	BootSPC700						; boot APU with SNESGSS sound driver
-	jsl	CheckForEnhChips					; check if enhancement chips like MSU1, RTC etc. are available
+	jsl	CheckHardware						; check if special hardware and/or enhancement chips like MSU1, RTC etc. are available
 	jsl	CheckSRAM						; check SRAM integrity
 
 
@@ -434,7 +434,7 @@ StartScreenLoop:
 
 ; ************************* Testing functions **************************
 
-CheckForEnhChips:
+CheckHardware:
 
 
 
@@ -518,6 +518,26 @@ __SRTCfound:
 	lda	#$0D
 	sta	SRTC_WRITE
 */
++
+
+
+
+; -------------------------- Ultra16 (d4s)
+	lda	#$AA
+	sta	$21C0
+	lda	$21C1
+	ora	#$40
+	sta	$21C1
+	lda	$21C0
+	cmp	#$55
+	beq	@U16Detected
+	lda	#%00000100
+	trb	DP_GameConfig						; clear "Ultra16 present" flag
+	bra	+
+
+@U16Detected:
+	lda	#%00000100
+	tsb	DP_GameConfig						; set "Ultra16 present" flag
 +	rtl
 
 
