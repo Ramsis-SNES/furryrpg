@@ -9,7 +9,7 @@ Welcome to Furry RPG!, an all-new Japanese-style role-playing game for the Super
 * Epic storyline spanning over multiple realms, featuring an all-Furry cast.
 * 48 Mbit ROM size (ExHiROM) with SRAM-based game save support (think *Tales of Phantasia*). ROM expansion to 64 or even 96 Mbit may or may not be necessary in the future depending on the need for fitting all game data.
 * Extendable scripting language supporting up to 32,768 commands ("event codes").
-* High resolution, VWF-based multi-language dialog rendering engine, complete with character portrait, background color gradient, and *Suikoden-*style selection bar support.
+* High resolution, VWF-based multi-language dialog rendering engine, complete with character portrait, background color gradient, and *Suikoden*-style selection bar support.
 * Fully controllable, Mode-7-based "flying" animation with rotating sky background.
 * Fully controllable, Mode-1-based world map with scrolling displacement and horizon curvature effects, simulating a planet surface (think *Treasure Hunter G*).
 * Extendable area loading engine (four/eight-directional scrolling is WIP) with fully working sprite-to-BG collision detection support.
