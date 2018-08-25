@@ -558,11 +558,11 @@ CheckROMIntegrity:
 
 ; -------------------------- read bank $C0
 	lda	#$C0							; set start bank to $C0
-	sta	temp+7
+	sta	DP_DataBank
 
 .IFDEF DEBUG
 	SetTextPos	9, 17
-	PrintHexNum	temp+7
+	PrintHexNum	DP_DataBank
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMA_Updates
@@ -570,31 +570,31 @@ CheckROMIntegrity:
 
 	Accu16
 
-	stz	temp+5							; reset address
+	stz	DP_DataAddress						; reset address
 	lda	#$05FA							; checksum & checksum complement always add up to $1FE, so add these right now (3 times because banks $40...$5F will be read twice)
-	sta	temp+3
+	sta	DP_Temp+3
 	ldy	#0
--	lda	[temp+5], y
+-	lda	[DP_DataAddress], y
 	and	#$00FF
 	clc
-	adc	temp+3
-	sta	temp+3
+	adc	DP_Temp+3
+	sta	DP_Temp+3
 	iny
 	cpy	#$FFDC							; location of checksum complement & checksum reached?
 	bne	-
 
 	ldy	#$FFE0							; skip both
--	lda	[temp+5], y
+-	lda	[DP_DataAddress], y
 	and	#$00FF
 	clc
-	adc	temp+3
-	sta	temp+3
+	adc	DP_Temp+3
+	sta	DP_Temp+3
 	iny
 	bne	-
 
 	Accu8
 
-	inc	temp+7							; increment bank byte
+	inc	DP_DataBank						; increment bank byte
 
 
 
@@ -604,7 +604,7 @@ CheckROMIntegrity:
 
 .IFDEF DEBUG
 	SetTextPos	9, 17
-	PrintHexNum	temp+7
+	PrintHexNum	DP_DataBank
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMA_Updates
@@ -613,19 +613,17 @@ CheckROMIntegrity:
 	Accu16
 
 	ldy	#0
--	lda	[temp+5], y
+-	lda	[DP_DataAddress], y
 	and	#$00FF
 	clc
-	adc	temp+3
-	sta	temp+3
+	adc	DP_Temp+3
+	sta	DP_Temp+3
 	iny
 	bne	-
 
 	Accu8
 
-	lda	temp+7							; increment bank byte
-	inc	a
-	sta	temp+7
+	inc	DP_DataBank						; increment bank byte
 	bne	@ReadNextBank						; bank $FF done (wrapped around to 0)?
 
 
@@ -639,7 +637,7 @@ CheckROMIntegrity:
 ; -------------------------- perform checksum checks
 	Accu16
 
-	lda	temp+3
+	lda	DP_Temp+3
 	cmp	$C0FFDE							; compare sum to "HiROM" ROM checksum
 	bne	@ROMIntegrityBad
 	cmp	$40FFDE							; compare sum to "ExHiROM" ROM checksum
@@ -665,9 +663,9 @@ CheckROMIntegrity:
 .IFDEF DEBUG
 	PrintString	14, 3, "Chsum:"
 	SetTextPos	14, 10
-	PrintHexNum	temp+3
+	PrintHexNum	DP_Temp+3
 	SetTextPos	14, 12
-	PrintHexNum	temp+4
+	PrintHexNum	DP_Temp+4
 .ENDIF
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
@@ -679,8 +677,8 @@ CheckROMIntegrity:
 	Accu8
 
 	lda	#$01							; remember that ROM integrity check was passed
-	sta	temp							; source data in temp
-	ldx	#temp							; source data offset
+	sta	DP_Temp							; source data in DP_Temp
+	ldx	#DP_Temp						; source data offset
 	stx	DP_DataAddress
 	lda	#$7E							; source data bank
 	sta	DP_DataBank
@@ -694,11 +692,11 @@ CheckROMIntegrity:
 
 ReadBanks40thru5F:
 	lda	#$40							; set start bank to $40
-	sta	temp+7
+	sta	DP_DataBank
 
 .IFDEF DEBUG
 	SetTextPos	9, 17
-	PrintHexNum	temp+7
+	PrintHexNum	DP_DataBank
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMA_Updates
@@ -706,29 +704,29 @@ ReadBanks40thru5F:
 
 	Accu16
 
-	stz	temp+5							; reset address
+	stz	DP_DataAddress						; reset address
 	ldy	#0
--	lda	[temp+5], y
+-	lda	[DP_DataAddress], y
 	and	#$00FF
 	clc
-	adc	temp+3
-	sta	temp+3
+	adc	DP_Temp+3
+	sta	DP_Temp+3
 	iny
 	cpy	#$FFDC							; location of checksum complement & checksum reached?
 	bne	-
 
 	ldy	#$FFE0							; skip both
--	lda	[temp+5], y
+-	lda	[DP_DataAddress], y
 	and	#$00FF
 	clc
-	adc	temp+3
-	sta	temp+3
+	adc	DP_Temp+3
+	sta	DP_Temp+3
 	iny
 	bne	-
 
 	Accu8
 
-	inc	temp+7							; increment bank byte
+	inc	DP_DataBank						; increment bank byte
 
 
 
@@ -738,7 +736,7 @@ ReadBanks40thru5F:
 
 .IFDEF DEBUG
 	SetTextPos	9, 17
-	PrintHexNum	temp+7
+	PrintHexNum	DP_DataBank
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMA_Updates
@@ -747,19 +745,19 @@ ReadBanks40thru5F:
 	Accu16
 
 	ldy	#0
--	lda	[temp+5], y
+-	lda	[DP_DataAddress], y
 	and	#$00FF
 	clc
-	adc	temp+3
-	sta	temp+3
+	adc	DP_Temp+3
+	sta	DP_Temp+3
 	iny
 	bne	-
 
 	Accu8
 
-	lda	temp+7							; increment bank byte
+	lda	DP_DataBank						; increment bank byte
 	inc	a
-	sta	temp+7
+	sta	DP_DataBank
 	cmp	#$60							; all banks done?
 	bne	@ReadNextBank
 
@@ -781,17 +779,17 @@ ConvertSpriteDataToBuffer:						; routine expects source data address set in REG
 ; Byte 4 - Attributes
 ;
 ; This routine, which should be called once per frame during active
-; display, converts this data to OAM hi/lo format in ARRAY_SpriteBuf1
-; and ARRAY_SpriteBuf2 (which are transferred to OAM during Vblank).
+; display, converts this data to OAM hi/lo format in ARRAY_ShadowOAM_Lo
+; and ARRAY_ShadowOAM_Hi (which are transferred to OAM during Vblank).
 
 	phx								; preserve super-loop indices
 	phy
 	stz	DP_SprDataObjNo						; reset object counter
-	ldx	#0							; X = index for ARRAY_SpriteBuf1
+	ldx	#0							; X = index for ARRAY_ShadowOAM_Lo
 
 @ConvertSpriteDataLoop:
 	lda	REG_WMDATA						; read X coordinate lower 8 bits
-	sta	ARRAY_SpriteBuf1, x
+	sta	ARRAY_ShadowOAM_Lo, x
 	inx
 
 
@@ -800,48 +798,48 @@ ConvertSpriteDataToBuffer:						; routine expects source data address set in REG
 	lda	DP_SprDataObjNo
 	and	#%00000011						; (object no. AND $03) * 2 = amount of (single) ASL operations required for correct bit pair in current high OAM byte
 	asl	a
-	sta	temp							; temp = counter variable for upcoming bit-shifting loop
+	sta	DP_Temp							; DP_Temp = counter variable for upcoming bit-shifting loop
 	lda	#%00000011						; keep track of bit pair position, assume bits 0-1 for now
 	sta	DP_SprDataHiOAMBits
-	lda	DP_SprDataObjNo						; next, prepare index for ARRAY_SpriteBuf2
+	lda	DP_SprDataObjNo						; next, prepare index for ARRAY_ShadowOAM_Hi
 	lsr	a							; object no. RSH 2 = byte in high OAM containing bit pair of current object
 	lsr	a
 
 	Accu16
 
 	and	#$00FF							; remove garbage data
-	tay								; Y = index for ARRAY_SpriteBuf2
+	tay								; Y = index for ARRAY_ShadowOAM_Hi
 
 	Accu8
 
 	lda	REG_WMDATA						; read X coordinate upper 1 bit (bit 0), OBJ size (bit 1)
 	and	#%00000011						; mask off unused/irrelevant bits just in case
--	dec	temp							; decrement counter, this needs to be done first as it could be zero (= no bit-shifting needed at all)
+-	dec	DP_Temp							; decrement counter, this needs to be done first as it could be zero (= no bit-shifting needed at all)
 	bmi	+							; counter has reached/is zero --> jump out
 	asl	a							; shift bits left until correct bit pair reached
 	asl	DP_SprDataHiOAMBits					; keep track of bit pair position (important for bits that need to be cleared)
 	bra	-
 
-+	sta	temp+1							; save bit pair in correct position
-	ora	ARRAY_SpriteBuf2, y					; set bit(s) that is/are to be set in current high OAM byte
-	sta	ARRAY_SpriteBuf2, y
-	lda	temp+1							; load bit pair again
++	sta	DP_Temp+1						; save bit pair in correct position
+	ora	ARRAY_ShadowOAM_Hi, y					; set bit(s) that is/are to be set in current high OAM byte
+	sta	ARRAY_ShadowOAM_Hi, y
+	lda	DP_Temp+1						; load bit pair again
 	eor	DP_SprDataHiOAMBits					; make set bits clear, and vice versa
 	eor	#$FF							; \ these two instructions essentially replace a TRB instruction, which doesn't support indexed addressing
-	and	ARRAY_SpriteBuf2, y					; /
-	sta	ARRAY_SpriteBuf2, y
+	and	ARRAY_ShadowOAM_Hi, y					; /
+	sta	ARRAY_ShadowOAM_Hi, y
 
 
 
 ; -------------------------- rest is trivial
 	lda	REG_WMDATA						; read Y coordinate
-	sta	ARRAY_SpriteBuf1, x
+	sta	ARRAY_ShadowOAM_Lo, x
 	inx
 	lda	REG_WMDATA						; read tile no.
-	sta	ARRAY_SpriteBuf1, x
+	sta	ARRAY_ShadowOAM_Lo, x
 	inx
 	lda	REG_WMDATA						; read attributes
-	sta	ARRAY_SpriteBuf1, x
+	sta	ARRAY_ShadowOAM_Lo, x
 	inx
 	inc	DP_SprDataObjNo						; increment object counter
 	cpx	#512							; all 128 sprites done?
@@ -941,12 +939,12 @@ SpriteInit:
 
 @Init_OAM_lo:
 	lda	#$E0FF
-	sta	ARRAY_SpriteBuf1, x					; initialize all sprites to be off the screen
+	sta	ARRAY_ShadowOAM_Lo, x					; initialize all sprites to be off the screen
 	inx
 	inx
 	lda	DP_EmptySpriteNo					; acknowledge no. of empty sprite (usually 0)
 	and	#$00FF							; mask off garbage data
-	sta	ARRAY_SpriteBuf1, x
+	sta	ARRAY_ShadowOAM_Lo, x
 	inx
 	inx
 	cpx	#$0200
@@ -957,7 +955,7 @@ SpriteInit:
 	ldx	#$0000
 
 @Init_OAM_hi1:
-	stz	ARRAY_SpriteBuf2, x					; small sprites for the sprite font
+	stz	ARRAY_ShadowOAM_Hi, x					; small sprites for the sprite font
 	inx
 	cpx	#8							; 8 * 4 = 32 sprites
 	bne	@Init_OAM_hi1
@@ -965,7 +963,7 @@ SpriteInit:
 	lda	#%10101010						; large sprites for everything else
 
 @Init_OAM_hi2:
-	sta	ARRAY_SpriteBuf2, x
+	sta	ARRAY_ShadowOAM_Hi, x
 	inx
 	cpx	#32
 	bne	@Init_OAM_hi2

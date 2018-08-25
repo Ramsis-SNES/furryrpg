@@ -340,19 +340,19 @@
 
 ; -------------------------- playable character 1 walking frames table (matches spritesheet)
 .ENUM $00
-	TBL_Char1_frame00	db
-	TBL_Char1_frame01	db
-	TBL_Char1_frame02	db
+	TBL_Hero1_frame00	db
+	TBL_Hero1_frame01	db
+	TBL_Hero1_frame02	db
 .ENDE
 
 
 
 ; -------------------------- playable character 1 direction table (matches spritesheet)
 .ENUM $00
-	TBL_Char1_down		db
-	TBL_Char1_up		db
-	TBL_Char1_left		db
-	TBL_Char1_right		db
+	TBL_Hero1_down		db
+	TBL_Hero1_up		db
+	TBL_Hero1_left		db
+	TBL_Hero1_right		db
 .ENDE
 
 
@@ -743,18 +743,8 @@
 ; *********************** Direct page variables ************************
 
 .ENUM $00
-	DP_VblankJump		dsb 4					; holds a 4-byte instruction like jml SomeVblankRoutine (NMI vector points here)
-	DP_IRQJump		dsb 4					; holds a 4-byte instruction like jml SomeIRQRoutine (IRQ vector points here)
-
-	temp			dsb 8
-	sneslib_ptr		dsb 4
-;	sneslib_temp		dsb 2
-;	sneslib_rand1		dsb 2
-;	sneslib_rand2		dsb 2
-	gss_param		dsb 2
-	gss_command		dsb 2
-;	brr_stream_src		dsb 4
-;	brr_stream_list		dsb 4
+	ONE_JumpVblank		dsb 4	; DON'T RELOCATE THIS!!		; holds a 4-byte instruction like jml SomeVblankRoutine (NMI vector points here)
+	TWO_JumpIRQ		dsb 4	; DON'T RELOCATE THIS!!		; holds a 4-byte instruction like jml SomeIRQRoutine (IRQ vector points here)
 
 	DP_AreaCurrent		dw					; holds no. of current area
 	DP_AreaMetaMapAddr	dsb 3					; holds 24-bit address of collision map
@@ -764,12 +754,14 @@
 	DP_AreaProperties	dw					; rrrrrrrrrrbayxss [s = screen size, as in BGXSC regs, x/y = area is scrollable horizontally/vertically, a/b = auto-scroll area horizontally/vertically, r = reserved]
 	DP_AutoJoy1		dw
 	DP_AutoJoy2		dw
-	DP_Char1FrameCounter	db
-	DP_Char1MapPosX		dw					; in px
-	DP_Char1MapPosY		dw					; in px
-	DP_Char1ScreenPosYX	dw					; high byte = Y position, low byte = X position (in px)
-	DP_Char1SpriteStatus	db					; irrrrddd [i = not walking (idle), ddd = facing direction (0 = down, 1 = up, 2 = left, 3 = right)]
-	DP_Char1WalkingSpd	dw
+;	DP_BRR_stream_src	dsb 4					; SNESGSS
+;	DP_BRR_stream_list	dsb 4					; SNESGSS
+	DP_Hero1FrameCounter	db
+	DP_Hero1MapPosX		dw					; in px
+	DP_Hero1MapPosY		dw					; in px
+	DP_Hero1ScreenPosYX	dw					; high byte = Y position, low byte = X position (in px)
+	DP_Hero1SpriteStatus	db					; irrrrddd [i = not walking (idle), ddd = facing direction (0 = down, 1 = up, 2 = left, 3 = right)]
+	DP_Hero1WalkingSpd	dw
 ;	DP_CurrentScanline	dw					; holds no. of current scanline (for CPU load meter)
 	DP_DataAddress		dsb 2					; holds a 24-bit data address e.g. for string pointers, data transfers to SRAM, etc.
 	DP_DataBank		db
@@ -788,6 +780,8 @@
 	DP_GameTimeSeconds	db					; 1 game time second = 1 frame (??)
 	DP_GameTimeMinutes	db
 	DP_GameTimeHours	db
+	DP_GSS_command		dsb 2					; SNESGSS
+	DP_GSS_param		dsb 2					; SNESGSS
 	DP_HDMA_Channels	db					; variable is copied to $420C (HDMAEN) during Vblank
 	DP_HiResPrintLen	db					; holds length of menu hi-res string to print
 	DP_HiResPrintMon	db					; keep track of BG we're printing on: $00 = BG1 (start), $01 = BG2
@@ -825,6 +819,10 @@
 	DP_RingMenuAngle	dw
 	DP_RingMenuAngleOffset	dw
 	DP_RingMenuRadius	db
+	DP_SNESlib_ptr		dsb 4					; SNESGSS
+;	DP_SNESlib_rand1	dsb 2					; SNESGSS
+;	DP_SNESlib_rand2	dsb 2					; SNESGSS
+;	DP_SNESlib_temp		dsb 2					; SNESGSS
 	DP_SPC_DataBank		dw
 	DP_SPC_DataOffset	dw
 	DP_SPC_DataSize		dw
@@ -836,6 +834,7 @@
 	DP_SpriteTextMon	dw					; keeps track of sprite-based text buffer filling level
 	DP_SpriteTextPalette	db					; holds palette to use when printing sprite-based text
 	DP_SubMenuNext		db					; holds no. of sub menu selected
+	DP_Temp			dsb 8
 	DP_TextASCIIChar	dw					; holds current ASCII character no.
 	DP_TextBoxBG		db					; bnnnnnnn [b = change text box background, n = no. of color table (0-127)
 	DP_TextBoxCharPortrait	db					; pnnnnnnn [p = change character portrait, n = no. of portrait (0-127)
@@ -1015,15 +1014,15 @@
 	ARRAY_HDMA_BG_Scroll		dsb 16
 	ARRAY_HDMA_WorMapVScroll	dsb 448
 	ARRAY_RandomNumbers		dsb 130				; for random numbers
-	ARRAY_SpriteBuf1		dsb 512
-	ARRAY_SpriteBuf2		dsb 32
+	ARRAY_ShadowOAM_Lo		dsb 512
+	ARRAY_ShadowOAM_Hi		dsb 32
 	ARRAY_Temp			dsb 32				; for misc. temp bytes
 	ARRAY_TempString		dsb 32				; for temp strings
 	ARRAY_VWF_TileBuffer		dsb 32
 	ARRAY_VWF_TileBuffer2		dsb 32
 
-	VAR_Char1TargetScrPosYX		dw				; high byte = Y position, low byte = X position (in px)
 	VAR_GameDataItemQty		db
+	VAR_Hero1TargetScrPosYX		dw				; high byte = Y position, low byte = X position (in px)
 	VAR_Shadow_NMITIMEN		db				; shadow copy of REG_NMITIMEN
 	VAR_TextBox_TSTM		dw				; shadow copies of subscreen (high) & mainscreen (low) designation registers ($212C/212D) for text box area
 	VAR_Time_Second			db				; RTC-based time/date variables

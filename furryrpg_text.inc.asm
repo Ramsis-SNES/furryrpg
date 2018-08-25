@@ -196,12 +196,12 @@ MainTextBoxLoop:							; this routine needs to be called once per frame
 	jsr	ClearHUD
 
 	lda	#PARAM_HUD_Xpos						; load initial X starting position of HUD
-	sta	temp							; used in upcoming subroutine
+	sta	DP_Temp							; used in upcoming subroutine
 	clc								; make up for different X position of "text box" and text
 	adc	#6
 	sta	DP_TextCursor
 	lda	DP_HUD_Ypos						; ditto for Y position
-	sta	temp+1
+	sta	DP_Temp+1
 	clc
 	adc	#4
 	sta	DP_TextCursor+1
@@ -227,12 +227,12 @@ MainTextBoxLoop:							; this routine needs to be called once per frame
 	jsr	ClearHUD
 
 	lda	#PARAM_HUD_Xpos						; load initial X starting position of HUD
-	sta	temp							; used in upcoming subroutine
+	sta	DP_Temp							; used in upcoming subroutine
 	clc								; make up for different X position of "text box" and text
 	adc	#6
 	sta	DP_TextCursor
 	lda	DP_HUD_Ypos						; ditto for Y position
-	sta	temp+1
+	sta	DP_Temp+1
 	clc
 	adc	#4
 	sta	DP_TextCursor+1

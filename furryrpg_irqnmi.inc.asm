@@ -52,7 +52,7 @@ Vblank_Area:
 	sta	REG_VMAIN
 	ldx	#ADDR_VRAM_SpriteTiles+$800				; set VRAM address for sprite tiles, skip sprite font
 	stx	REG_VMADDL
-	lda	DP_Char1SpriteStatus
+	lda	DP_Hero1SpriteStatus
 	and	#%00000111						; isolate direction parameter
 	sta	REG_WRMPYA
 	lda	#$08							; multiply direction with #$0800 (2048) to get offset for upcoming DMA
@@ -63,7 +63,7 @@ Vblank_Area:
 	lda	REG_RDMPYL						; 5 cycles (4 + 1 for 16-bit Accu)
 	xba
 	clc
-	adc	#(GFX_Spritesheet_Char1 & $FFFF)
+	adc	#(GFX_Spritesheet_Hero1 & $FFFF)
 	sta	REG_A1T0L						; data offset
 
 	Accu8
@@ -72,7 +72,7 @@ Vblank_Area:
  	sta	REG_DMAP0
 	lda	#$18							; B bus register ($2118)
 	sta	REG_BBAD0
-	lda	#:GFX_Spritesheet_Char1					; data bank
+	lda	#:GFX_Spritesheet_Hero1					; data bank
 	sta	REG_A1B0
 	ldx	#2048							; data length
 	stx	REG_DAS0L
@@ -87,7 +87,7 @@ Vblank_Area:
 	stz	REG_OAMADDL						; reset OAM address
 	stz	REG_OAMADDH
 
-	DMA_CH0 $00, $7E, ARRAY_SpriteBuf1, <REG_OAMDATA, 544
+	DMA_CH0 $00, $7E, ARRAY_ShadowOAM_Lo, <REG_OAMDATA, 544
 
 ;	lda	#$80							; set OAM Priority Rotation flag
 ;	sta	REG_OAMADDH
@@ -163,7 +163,7 @@ Vblank_DebugMenu:
 	stz	REG_OAMADDL						; reset OAM address
 	stz	REG_OAMADDH
 
-	DMA_CH0 $00, $7E, ARRAY_SpriteBuf1, <REG_OAMDATA, 544
+	DMA_CH0 $00, $7E, ARRAY_ShadowOAM_Lo, <REG_OAMDATA, 544
 
 
 
@@ -257,7 +257,7 @@ Vblank_Intro:
 ;	stz	REG_OAMADDL						; reset OAM address
 ;	stz	REG_OAMADDH
 
-;	DMA_CH0 $00, $7E, ARRAY_SpriteBuf1, <REG_OAMDATA, 544
+;	DMA_CH0 $00, $7E, ARRAY_ShadowOAM_Lo, <REG_OAMDATA, 544
 
 
 
@@ -326,7 +326,7 @@ Vblank_Mode7:
 	stz	REG_OAMADDL						; set OAM address to 0
 	stz	REG_OAMADDH
 
-	DMA_CH0 $00, $7E, ARRAY_SpriteBuf1, <REG_OAMDATA, 544
+	DMA_CH0 $00, $7E, ARRAY_ShadowOAM_Lo, <REG_OAMDATA, 544
 
 
 
@@ -458,7 +458,7 @@ Vblank_WorldMap:
 	stz	REG_OAMADDL						; reset OAM address
 	stz	REG_OAMADDH
 
-	DMA_CH0 $00, $7E, ARRAY_SpriteBuf1, <REG_OAMDATA, 544
+	DMA_CH0 $00, $7E, ARRAY_ShadowOAM_Lo, <REG_OAMDATA, 544
 
 
 
@@ -864,7 +864,7 @@ UpdateCharPortrait:
 
 	Accu8
 
-	lda	#:GFX_Portrait_Char1					; data bank (all portraits need to be in the same bank)
+	lda	#:GFX_Portrait_Hero1					; data bank (all portraits need to be in the same bank)
 	sta	$4304
 	ldy	#1920							; data length
 	sty	$4305
@@ -880,7 +880,7 @@ UpdateCharPortrait:
 
 	Accu8
 
-	lda	#:SRC_Palette_Portrait_Char1				; data bank (all portrait palettes need to be in the same bank)
+	lda	#:SRC_Palette_Portrait_Hero1				; data bank (all portrait palettes need to be in the same bank)
 	sta	$4304
 	ldx	#32							; data length (16 colors)
 	stx	$4305
@@ -1018,59 +1018,58 @@ ErrorHandlerBRK:
 	PrintString	6, 2, "Error address: $"
 
 	lda	10, s
-	sta	temp
+	sta	DP_Temp
 
-	PrintHexNum	temp
+	PrintHexNum	DP_Temp
 
 	lda	9, s
-	sta	temp
+	sta	DP_Temp
 
-	PrintHexNum	temp
+	PrintHexNum	DP_Temp
 
 	lda	8, s
-	sta	temp
+	sta	DP_Temp
 
-	PrintHexNum	temp
+	PrintHexNum	DP_Temp
 	PrintString	7, 2, "Status register: $"
 
 	lda	7, s
-	sta	temp
+	sta	DP_Temp
 
-	PrintHexNum	temp
+	PrintHexNum	DP_Temp
 	PrintString	9, 2, "Accuml.: $"
 
 	lda	6, s
-	sta	temp
+	sta	DP_Temp
 
-	PrintHexNum	temp
+	PrintHexNum	DP_Temp
 
 	lda	5, s
-	sta	temp
+	sta	DP_Temp
 
-	PrintHexNum	temp
+	PrintHexNum	DP_Temp
 	PrintString	10, 2, "X index: $"
 
 	lda	4, s
-	sta	temp
+	sta	DP_Temp
 
-	PrintHexNum	temp
+	PrintHexNum	DP_Temp
 
 	lda	3, s
-	sta	temp
+	sta	DP_Temp
 
-	PrintHexNum	temp
+	PrintHexNum	DP_Temp
 	PrintString	11, 2, "Y index: $"
 
 	lda	2, s
-	sta	temp
+	sta	DP_Temp
 
-	PrintHexNum	temp
+	PrintHexNum	DP_Temp
 
 	lda	1, s
-	sta	temp
+	sta	DP_Temp
 
-	PrintHexNum	temp
-
+	PrintHexNum	DP_Temp
 	SetNMI	TBL_NMI_Error
 
 	lda	REG_RDNMI						; clear NMI flag
@@ -1170,59 +1169,58 @@ ErrorHandlerCOP:
 	PrintString	6, 2, "Error address: $"
 
 	lda	10, s
-	sta	temp
+	sta	DP_Temp
 
-	PrintHexNum	temp
+	PrintHexNum	DP_Temp
 
 	lda	9, s
-	sta	temp
+	sta	DP_Temp
 
-	PrintHexNum	temp
+	PrintHexNum	DP_Temp
 
 	lda	8, s
-	sta	temp
+	sta	DP_Temp
 
-	PrintHexNum	temp
+	PrintHexNum	DP_Temp
 	PrintString	7, 2, "Status register: $"
 
 	lda	7, s
-	sta	temp
+	sta	DP_Temp
 
-	PrintHexNum	temp
+	PrintHexNum	DP_Temp
 	PrintString	9, 2, "Accuml.: $"
 
 	lda	6, s
-	sta	temp
+	sta	DP_Temp
 
-	PrintHexNum	temp
+	PrintHexNum	DP_Temp
 
 	lda	5, s
-	sta	temp
+	sta	DP_Temp
 
-	PrintHexNum	temp
+	PrintHexNum	DP_Temp
 	PrintString	10, 2, "X index: $"
 
 	lda	4, s
-	sta	temp
+	sta	DP_Temp
 
-	PrintHexNum	temp
+	PrintHexNum	DP_Temp
 
 	lda	3, s
-	sta	temp
+	sta	DP_Temp
 
-	PrintHexNum	temp
+	PrintHexNum	DP_Temp
 	PrintString	11, 2, "Y index: $"
 
 	lda	2, s
-	sta	temp
+	sta	DP_Temp
 
-	PrintHexNum	temp
+	PrintHexNum	DP_Temp
 
 	lda	1, s
-	sta	temp
+	sta	DP_Temp
 
-	PrintHexNum	temp
-
+	PrintHexNum	DP_Temp
 	SetNMI	TBL_NMI_Error
 
 	lda	REG_RDNMI						; clear NMI flag

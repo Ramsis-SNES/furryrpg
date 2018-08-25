@@ -28,9 +28,9 @@ spc_load_data:
 	lda	DP_SPC_DataSize ;7,s					;size
 	tax
 	lda	DP_SPC_DataOffset ;9,s					;src
-	sta	sneslib_ptr
+	sta	DP_SNESlib_ptr
 	lda	DP_SPC_DataBank ;11,s					;srch
-	sta	sneslib_ptr+2
+	sta	DP_SNESlib_ptr+2
 	lda.w	#$bbaa							;IPL ready signature
 
 _wait1:
@@ -58,7 +58,7 @@ _wait2:
 
 _load1:
 
-	lda	[sneslib_ptr],y
+	lda	[DP_SNESlib_ptr],y
 	sta.w	REG_APUIO1
 	tya
 	sta.w	REG_APUIO0
@@ -138,9 +138,9 @@ spc_command_asm:
 
 	Accu16
 
-	lda	gss_param
+	lda	DP_GSS_param
 	sta.l	REG_APUIO2
-	lda	gss_command
+	lda	DP_GSS_command
 	sta.l	REG_APUIO0
 	cmp.w	#SCMD_LOAD						;don't wait acknowledge
 	beq	+
@@ -172,9 +172,9 @@ spc_command:
 	AccuIndex16
 
 	lda	7,s							;param
-	sta	gss_param
+	sta	DP_GSS_param
 	lda	5,s							;command
-	sta	gss_command
+	sta	DP_GSS_command
 	jsl	spc_command_asm
 
 	plp
@@ -190,9 +190,9 @@ spc_stereo:
 	AccuIndex16
 
 	lda	5,s							;stereo
-	sta	gss_param
+	sta	DP_GSS_param
 	lda.w	#SCMD_STEREO
-	sta	gss_command
+	sta	DP_GSS_command
 	jsl	spc_command_asm
 
 	plp
@@ -210,13 +210,13 @@ spc_global_volume:
 	lda	DP_SPC_VolFadeSpeed ;7,s				;speed
 	xba
 	and.w	#$ff00
-	sta	gss_param
+	sta	DP_GSS_param
 	lda	DP_SPC_VolCurrent ;5,s					;volume
 	and.w	#$00ff
-	ora	gss_param
-	sta	gss_param
+	ora	DP_GSS_param
+	sta	DP_GSS_param
 	lda.w	#SCMD_GLOBAL_VOLUME
-	sta	gss_command
+	sta	DP_GSS_command
 	jsl	spc_command_asm
 
 	plp
@@ -234,13 +234,13 @@ spc_channel_volume:
 	lda	5,s							;channels
 	xba
 	and.w	#$ff00
-	sta	gss_param
+	sta	DP_GSS_param
 	lda	7,s							;volume
 	and.w	#$00ff
-	ora	gss_param
-	sta	gss_param
+	ora	DP_GSS_param
+	sta	DP_GSS_param
 	lda.w	#SCMD_CHANNEL_VOLUME
-	sta	gss_command
+	sta	DP_GSS_command
 	jsl	spc_command_asm
 
 	plp
@@ -256,8 +256,8 @@ music_stop:
 	AccuIndex16
 
 	lda.w	#SCMD_MUSIC_STOP
-	sta	gss_command
-	stz	gss_param
+	sta	DP_GSS_command
+	stz	DP_GSS_param
 	jsl	spc_command_asm
 
 	plp
@@ -273,9 +273,9 @@ music_pause:
 	AccuIndex16
 
 	lda	5,s							;pause
-	sta	gss_param
+	sta	DP_GSS_param
 	lda.w	#SCMD_MUSIC_PAUSE
-	sta	gss_command
+	sta	DP_GSS_command
 	jsl	spc_command_asm
 
 	plp
@@ -291,8 +291,8 @@ sound_stop_all:
 	AccuIndex16
 
 	lda.w	#SCMD_STOP_ALL_SOUNDS
-	sta	gss_command
-	stz	gss_param
+	sta	DP_GSS_command
+	stz	DP_GSS_param
 	jsl	spc_command_asm
 
 	plp
@@ -318,15 +318,15 @@ sfx_play:
 
 	xba
 	and.w	#$ff00
-	sta	gss_param
+	sta	DP_GSS_param
 	lda	7,s							;sfx number
 	and.w	#$00ff
-	ora	gss_param
-	sta	gss_param
+	ora	DP_GSS_param
+	sta	DP_GSS_param
 	lda	9,s							;volume
 	xba
 	and.w	#$ff00
-	sta	gss_command
+	sta	DP_GSS_command
 	lda	5,s							;chn
 	asl	a
 	asl	a
@@ -334,8 +334,8 @@ sfx_play:
 	asl	a
 	and.w	#$00f0
 	ora.w	#SCMD_SFX_PLAY
-	ora	gss_command
-	sta	gss_command
+	ora	DP_GSS_command
+	sta	DP_GSS_command
 	jsl	spc_command_asm
 
 	plp

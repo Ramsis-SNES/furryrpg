@@ -186,61 +186,61 @@ DebugMenuLoop:
 	lda	SRTC_READ						; dummy read, should be $0F
 	lda	SRTC_READ						; seconds (lower 4 bits)
 	and	#$0F
-	sta	temp
+	sta	DP_Temp
 	lda	SRTC_READ						; seconds (upper 4 bits)
 	and	#$0F
 	asl	a							; shift to upper nibble
 	asl	a
 	asl	a
 	asl	a
-	ora	temp							; combine nibbles
+	ora	DP_Temp							; combine nibbles
 	sta	VAR_Time_Second
 	lda	SRTC_READ						; minutes.lo
 	and	#$0F
-	sta	temp
+	sta	DP_Temp
 	lda	SRTC_READ						; minutes.hi
 	and	#$0F
 	asl	a
 	asl	a
 	asl	a
 	asl	a
-	ora	temp
+	ora	DP_Temp
 	sta	VAR_Time_Minute
 	lda	SRTC_READ						; hours.lo
 	and	#$0F
-	sta	temp
+	sta	DP_Temp
 	lda	SRTC_READ						; hours.hi
 	and	#$0F
 	asl	a
 	asl	a
 	asl	a
 	asl	a
-	ora	temp
+	ora	DP_Temp
 	sta	VAR_Time_Hour
 	lda	SRTC_READ						; day.lo
 	and	#$0F
-	sta	temp
+	sta	DP_Temp
 	lda	SRTC_READ						; day.hi
 	and	#$0F
 	asl	a
 	asl	a
 	asl	a
 	asl	a
-	ora	temp
+	ora	DP_Temp
 	sta	VAR_Time_Day
 	lda	SRTC_READ						; month
 	and	#$0F
 	sta	VAR_Time_Month
 	lda	SRTC_READ						; year.lo
 	and	#$0F
-	sta	temp
+	sta	DP_Temp
 	lda	SRTC_READ						; year.hi
 	and	#$0F
 	asl	a
 	asl	a
 	asl	a
 	asl	a
-	ora	temp
+	ora	DP_Temp
 	sta	VAR_Time_Year
 	lda	SRTC_READ						; century
 	and	#$0F
@@ -490,69 +490,69 @@ ShowSpriteGallery:
 
 ; -------------------------- fennec puppet
 	lda	#$2020							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1+128
+	sta	ARRAY_ShadowOAM_Lo+128
 	lda	#$0000							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1+130
+	sta	ARRAY_ShadowOAM_Lo+130
 	lda	#$2030							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1+132
+	sta	ARRAY_ShadowOAM_Lo+132
 	lda	#$0002							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1+134
+	sta	ARRAY_ShadowOAM_Lo+134
 	lda	#$3020							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1+136
+	sta	ARRAY_ShadowOAM_Lo+136
 	lda	#$0020							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1+138
+	sta	ARRAY_ShadowOAM_Lo+138
 	lda	#$3030							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1+140
+	sta	ARRAY_ShadowOAM_Lo+140
 	lda	#$0022							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1+142
+	sta	ARRAY_ShadowOAM_Lo+142
 
 
 
 ; -------------------------- fox
 	lda	#$2050							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1+144
+	sta	ARRAY_ShadowOAM_Lo+144
 	lda	#$0204							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1+146
+	sta	ARRAY_ShadowOAM_Lo+146
 	lda	#$3050							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1+148
+	sta	ARRAY_ShadowOAM_Lo+148
 	lda	#$0224							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1+150
+	sta	ARRAY_ShadowOAM_Lo+150
 
 
 
 ; -------------------------- wolf 1
 	lda	#$2070							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1+152
+	sta	ARRAY_ShadowOAM_Lo+152
 	lda	#$0406							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1+154
+	sta	ARRAY_ShadowOAM_Lo+154
 	lda	#$3070							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1+156
+	sta	ARRAY_ShadowOAM_Lo+156
 	lda	#$0426							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1+158
+	sta	ARRAY_ShadowOAM_Lo+158
 
 
 
 ; -------------------------- wolf 2
 	lda	#$2090							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1+160
+	sta	ARRAY_ShadowOAM_Lo+160
 	lda	#$0608							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1+162
+	sta	ARRAY_ShadowOAM_Lo+162
 	lda	#$3090							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1+164
+	sta	ARRAY_ShadowOAM_Lo+164
 	lda	#$0628							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1+166
+	sta	ARRAY_ShadowOAM_Lo+166
 
 
 
 ; -------------------------- wolf 3
 	lda	#$20B0							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1+168
+	sta	ARRAY_ShadowOAM_Lo+168
 	lda	#$080A							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1+170
+	sta	ARRAY_ShadowOAM_Lo+170
 	lda	#$30B0							; x (low), y (high)
-	sta	ARRAY_SpriteBuf1+172
+	sta	ARRAY_ShadowOAM_Lo+172
 	lda	#$082A							; tile no (low), attributes (high)
-	sta	ARRAY_SpriteBuf1+174
+	sta	ARRAY_ShadowOAM_Lo+174
 
 
 

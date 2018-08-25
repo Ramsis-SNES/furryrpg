@@ -329,23 +329,23 @@ LoadAreaData:
 
 ; -------------------------- load hero parameters for this area
 	lda.l	SRC_AreaProperties, x					; read hero screen position
-	sta	DP_Char1ScreenPosYX
-	sta	VAR_Char1TargetScrPosYX
+	sta	DP_Hero1ScreenPosYX
+	sta	VAR_Hero1TargetScrPosYX
 	inx
 	inx
 	lda.l	SRC_AreaProperties, x					; read hero map position (X)
-	sta	DP_Char1MapPosX
+	sta	DP_Hero1MapPosX
 	inx
 	inx
 	lda.l	SRC_AreaProperties, x					; read hero map position (Y)
-	sta	DP_Char1MapPosY
+	sta	DP_Hero1MapPosY
 	inx
 	inx
 
 	Accu8
 
 	lda.l	SRC_AreaProperties, x					; read hero sprite status
-	sta	DP_Char1SpriteStatus
+	sta	DP_Hero1SpriteStatus
 
 
 
@@ -353,7 +353,7 @@ LoadAreaData:
 	lda	#$90							; set CGRAM address to #288 (word address) for sprites
 	sta	REG_CGADD
 
-	DMA_CH0 $02, :SRC_Palette_Spritesheet_Char1, SRC_Palette_Spritesheet_Char1, <REG_CGDATA, 32
+	DMA_CH0 $02, :SRC_Palette_Spritesheet_Hero1, SRC_Palette_Spritesheet_Hero1, <REG_CGDATA, 32
 
 
 
@@ -484,12 +484,12 @@ ShowArea:
 	jsr	ClearHUD
 
 	lda	#PARAM_HUD_Xpos						; initial X position of "text box" frame
-	sta	temp
+	sta	DP_Temp
 	clc								; make up for different X position of "text box" and text
 	adc	#6
 	sta	DP_TextCursor
 	lda	#PARAM_HUD_Yhidden					; initial Y position (hidden)
-	sta	temp+1
+	sta	DP_Temp+1
 	clc
 	adc	#4
 	sta	DP_TextCursor+1
@@ -533,7 +533,7 @@ ShowArea:
 	lda	#$80							; set CGRAM address to #256 (word address) for sprites
 	sta	REG_CGADD
 	ldx	#0
--	lda.l	SRC_Palette_Spritesheet_Char1, x
+-	lda.l	SRC_Palette_Spritesheet_Hero1, x
 	eor	#$FF
 	sta	REG_CGDATA
 	inx
@@ -697,9 +697,9 @@ MainAreaLoop:
 
 .IFDEF DEBUG
 ;	PrintString	2, 26, "X="
-;	PrintHexNum	DP_Char1ScreenPosYX
+;	PrintHexNum	DP_Hero1ScreenPosYX
 ;	PrintString	3, 26, "Y="
-;	PrintHexNum	DP_Char1ScreenPosYX+1
+;	PrintHexNum	DP_Hero1ScreenPosYX+1
 
 ;	PrintString	2, 22, "ScrX="
 ;	PrintHexNum	ARRAY_HDMA_BGScroll+2
@@ -710,12 +710,12 @@ MainAreaLoop:
 ;	PrintHexNum	ARRAY_HDMA_BGScroll+3
 
 ;	PrintString	7, 5, "MapPosX="
-;	PrintHexNum	DP_Char1MapPosX+1
-;	PrintHexNum	DP_Char1MapPosX
+;	PrintHexNum	DP_Hero1MapPosX+1
+;	PrintHexNum	DP_Hero1MapPosX
 
 ;	PrintString	8, 5, "MapPosY="
-;	PrintHexNum	DP_Char1MapPosY+1
-;	PrintHexNum	DP_Char1MapPosY
+;	PrintHexNum	DP_Hero1MapPosY+1
+;	PrintHexNum	DP_Hero1MapPosY
 .ENDIF
 
 
@@ -749,7 +749,7 @@ MainAreaLoop:
 +	lda	#2							; B pressed, set fast walking speed
 
 @BButtonDone:
-	sta	DP_Char1WalkingSpd
+	sta	DP_Hero1WalkingSpd
 
 
 
@@ -777,7 +777,7 @@ MainAreaLoop:
 	bne	@DpadNewDone
 
 	lda	#$80							; d-pad released, make character idle
-	tsb	DP_Char1SpriteStatus
+	tsb	DP_Hero1SpriteStatus
 
 @DpadNewDone:
 
@@ -788,8 +788,8 @@ MainAreaLoop:
 	and	#%00001000
 	beq	@DpadUpDone
 
-	lda	#TBL_Char1_up
-	sta	DP_Char1SpriteStatus
+	lda	#TBL_Hero1_up
+	sta	DP_Hero1SpriteStatus
 	jsr	MakeCollIndexUp
 
 	ldy	DP_AreaMetaMapIndex
@@ -801,23 +801,23 @@ MainAreaLoop:
 
 	Accu16
 
-	lda	DP_Char1MapPosY
+	lda	DP_Hero1MapPosY
 	sec
-	sbc	DP_Char1WalkingSpd
-	sta	DP_Char1MapPosY
+	sbc	DP_Hero1WalkingSpd
+	sta	DP_Hero1MapPosY
 	lda	DP_AreaProperties					; check if area may be scrolled vertically
 	and	#%0000000000001000
 	bne	+
-	lda	DP_Char1ScreenPosYX					; area not scrollable, move hero sprite instead
-	ldx	DP_Char1WalkingSpd
+	lda	DP_Hero1ScreenPosYX					; area not scrollable, move hero sprite instead
+	ldx	DP_Hero1WalkingSpd
 -	sec
 	sbc	#$0100							; Y -= 1
-	dex								; as many times as DP_Char1WalkingSpd
+	dex								; as many times as DP_Hero1WalkingSpd
 	bne	-
-	sta	DP_Char1ScreenPosYX
+	sta	DP_Hero1ScreenPosYX
 	bra	++
 
-+	lda	DP_Char1WalkingSpd
++	lda	DP_Hero1WalkingSpd
 	eor	#$FFFF							; make negative
 	inc	a
 	clc
@@ -836,8 +836,8 @@ MainAreaLoop:
 	and	#%00000100
 	beq	@DpadDownDone
 
-	lda	#TBL_Char1_down
-	sta	DP_Char1SpriteStatus
+	lda	#TBL_Hero1_down
+	sta	DP_Hero1SpriteStatus
 	jsr	MakeCollIndexDown
 
 	ldy	DP_AreaMetaMapIndex
@@ -849,21 +849,21 @@ MainAreaLoop:
 
 	Accu16
 
-	lda	DP_Char1MapPosY
+	lda	DP_Hero1MapPosY
 	clc
-	adc	DP_Char1WalkingSpd
-	sta	DP_Char1MapPosY
+	adc	DP_Hero1WalkingSpd
+	sta	DP_Hero1MapPosY
 	lda	DP_AreaProperties					; check if area may be scrolled vertically
 	and	#%0000000000001000
 	bne	+
-	lda	DP_Char1WalkingSpd					; area not scrollable, move hero sprite instead
+	lda	DP_Hero1WalkingSpd					; area not scrollable, move hero sprite instead
 	xba								; shift to high byte for Y value
 	clc
-	adc	DP_Char1ScreenPosYX					; Y += DP_Char1WalkingSpd
-	sta	DP_Char1ScreenPosYX
+	adc	DP_Hero1ScreenPosYX					; Y += DP_Hero1WalkingSpd
+	sta	DP_Hero1ScreenPosYX
 	bra	++
 
-+	lda	DP_Char1WalkingSpd
++	lda	DP_Hero1WalkingSpd
 	clc
 	adc	ARRAY_HDMA_BG_Scroll+3					; scroll area
 	and	#$3FFF
@@ -880,8 +880,8 @@ MainAreaLoop:
 	and	#%00000010
 	beq	@DpadLeftDone
 
-	lda	#TBL_Char1_left
-	sta	DP_Char1SpriteStatus
+	lda	#TBL_Hero1_left
+	sta	DP_Hero1SpriteStatus
 	jsr	MakeCollIndexLeft
 
 	ldy	DP_AreaMetaMapIndex
@@ -893,22 +893,22 @@ MainAreaLoop:
 
 	Accu16
 
-	lda	DP_Char1MapPosX
+	lda	DP_Hero1MapPosX
 	sec
-	sbc	DP_Char1WalkingSpd
-	sta	DP_Char1MapPosX
+	sbc	DP_Hero1WalkingSpd
+	sta	DP_Hero1MapPosX
 	lda	DP_AreaProperties					; check if area may be scrolled horizontally
 	and	#%0000000000000100
 	bne	+
-	lda	DP_Char1ScreenPosYX					; area not scrollable, move hero sprite instead
+	lda	DP_Hero1ScreenPosYX					; area not scrollable, move hero sprite instead
 	sec
-	sbc	DP_Char1WalkingSpd					; X -= DP_Char1WalkingSpd
-	sta	DP_Char1ScreenPosYX
+	sbc	DP_Hero1WalkingSpd					; X -= DP_Hero1WalkingSpd
+	sta	DP_Hero1ScreenPosYX
 	bra	++
 
 +	lda	ARRAY_HDMA_BG_Scroll+1					; scroll area
 	sec
-	sbc	DP_Char1WalkingSpd
+	sbc	DP_Hero1WalkingSpd
 	and	#$3FFF
 	sta	ARRAY_HDMA_BG_Scroll+1
 
@@ -923,8 +923,8 @@ MainAreaLoop:
 	and	#%00000001
 	beq	@DpadRightDone
 
-	lda	#TBL_Char1_right
-	sta	DP_Char1SpriteStatus
+	lda	#TBL_Hero1_right
+	sta	DP_Hero1SpriteStatus
 	jsr	MakeCollIndexRight
 
 	ldy	DP_AreaMetaMapIndex
@@ -936,22 +936,22 @@ MainAreaLoop:
 
 	Accu16
 
-	lda	DP_Char1MapPosX
+	lda	DP_Hero1MapPosX
 	clc
-	adc	DP_Char1WalkingSpd
-	sta	DP_Char1MapPosX
+	adc	DP_Hero1WalkingSpd
+	sta	DP_Hero1MapPosX
 	lda	DP_AreaProperties					; check if area may be scrolled horizontally
 	and	#%0000000000000100
 	bne	+
-	lda	DP_Char1ScreenPosYX					; area not scrollable, move hero sprite instead
+	lda	DP_Hero1ScreenPosYX					; area not scrollable, move hero sprite instead
 	clc
-	adc	DP_Char1WalkingSpd					; X += DP_Char1WalkingSpd
-	sta	DP_Char1ScreenPosYX
+	adc	DP_Hero1WalkingSpd					; X += DP_Hero1WalkingSpd
+	sta	DP_Hero1ScreenPosYX
 	bra	++
 
 +	lda	ARRAY_HDMA_BG_Scroll+1					; scroll area
 	clc
-	adc	DP_Char1WalkingSpd
+	adc	DP_Hero1WalkingSpd
 	and	#$3FFF
 	sta	ARRAY_HDMA_BG_Scroll+1
 
@@ -967,7 +967,7 @@ MainAreaLoop:
 	beq	@AButtonDone
 
 	lda	#$80							; make character idle
-	tsb	DP_Char1SpriteStatus
+	tsb	DP_Hero1SpriteStatus
 	jsr	OpenTextBox
 
 @AButtonDone:
@@ -1001,8 +1001,8 @@ MainAreaLoop:
 	lda	VAR_Shadow_NMITIMEN
 	and	#%11001111						; clear IRQ enable bits
 	sta	REG_NMITIMEN
-;	lda	#TBL_Char1_down|$80					; make char face the player (for menu later) // adjust when debug menu is removed
-;	sta	DP_Char1SpriteStatus
+;	lda	#TBL_Hero1_down|$80					; make char face the player (for menu later) // adjust when debug menu is removed
+;	sta	DP_Hero1SpriteStatus
 	jsr	ClearHUD
 
 	WaitFrames	1
@@ -1191,7 +1191,7 @@ MainAreaLoop:
 	clc
 	adc	#$0020
 	sta	ARRAY_SpriteDataArea.Hero1b+3				; tile no. (lower half of body = upper half + 2 rows of 16 tiles)
-	lda	DP_Char1ScreenPosYX
+	lda	DP_Hero1ScreenPosYX
 
 	Accu8
 
@@ -1218,7 +1218,7 @@ MainAreaLoop:
 
 ; **************************** HUD contens *****************************
 
-PutAreaNameIntoHUD:							; HUD "text box" position (temp, temp+1) and DP_TextCursor are expected to contain sane values
+PutAreaNameIntoHUD:							; HUD "text box" position (DP_Temp, DP_Temp+1) and DP_TextCursor are expected to contain sane values
 	lda	#:SRC_AreaNames						; caveat: all area names & pointers should be located in the same bank
 	sta	DP_TextStringBank
 	sta	DP_DataBank
@@ -1264,16 +1264,16 @@ PutAreaNameIntoHUD:							; HUD "text box" position (temp, temp+1) and DP_TextCu
 	tay
 	sta	DP_HUD_TextBoxSize					; save value (reused later for scrolling)
 	ldx	#0
-	lda	temp							; X
+	lda	DP_Temp							; X
 	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
 	clc
 	adc	#16							; X += 16
-	sta	temp
+	sta	DP_Temp
 	inx
 	lda	#%00000010						; set sprite size = large
 	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
 	inx		
-	lda	temp+1							; Y
+	lda	DP_Temp+1							; Y
 	sta	DP_HUD_Ypos						; save to var for scrolling
 	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
 	inx
@@ -1285,16 +1285,16 @@ PutAreaNameIntoHUD:							; HUD "text box" position (temp, temp+1) and DP_TextCu
 	inx
 	dey
 
--	lda	temp							; X
+-	lda	DP_Temp							; X
 	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
 	clc
 	adc	#16							; X += 16
-	sta	temp
+	sta	DP_Temp
 	inx
 	lda	#%00000010						; set sprite size = large
 	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
 	inx		
-	lda	temp+1							; Y
+	lda	DP_Temp+1							; Y
 	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
 	inx
 	lda	#3							; tile no. of main box
@@ -1306,16 +1306,16 @@ PutAreaNameIntoHUD:							; HUD "text box" position (temp, temp+1) and DP_TextCu
 	dey
 	bne	-
 
-	lda	temp							; X
+	lda	DP_Temp							; X
 	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
 	clc
 	adc	#16							; X += 16
-	sta	temp
+	sta	DP_Temp
 	inx
 	lda	#%00000010						; set sprite size = large
 	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
 	inx		
-	lda	temp+1							; Y
+	lda	DP_Temp+1							; Y
 	sta	ARRAY_SpriteDataArea.HUD_TextBox, x
 	inx
 	lda	#4							; tile no. of right border
@@ -1337,7 +1337,7 @@ MakeCollIndexUp:
 	Accu16
 
 	ldy	#0
-	lda	DP_Char1MapPosX						; MapPosX/Y references the upper leftmost sprite pixel
+	lda	DP_Hero1MapPosX						; MapPosX/Y references the upper leftmost sprite pixel
 	clc								; acknowledge left collision margin
 	adc	#PARAM_CollMarginLeft
 -	cmp	#16							; value still >=16?
@@ -1349,7 +1349,7 @@ MakeCollIndexUp:
 
 +	sty	DP_AreaMetaMapIndex					; save interim result (horizontal position in meta map)
 	ldy	#0
-	lda	DP_Char1MapPosY
+	lda	DP_Hero1MapPosY
 	clc								; add 1 row (w/o top margin) --> check character's lower 16×16 sprite (upper half of body is unaffected)
 	adc	#16-PARAM_CollMarginTop
 -	cmp	#16							; value still >=16?
@@ -1374,7 +1374,7 @@ MakeCollIndexUp:
 
 ; -------------------------- create collision index for right edge of char sprite
 	ldy	#0
-	lda	DP_Char1MapPosX
+	lda	DP_Hero1MapPosX
 	clc								; go to right edge, acknowledge right collision margin
 	adc	#16-PARAM_CollMarginRight
 -	cmp	#16							; same thing as above
@@ -1403,7 +1403,7 @@ MakeCollIndexDown:
 	Accu16
 
 	ldy	#0
-	lda	DP_Char1MapPosX
+	lda	DP_Hero1MapPosX
 	clc								; acknowledge left collision margin
 	adc	#PARAM_CollMarginLeft
 -	cmp	#16
@@ -1415,7 +1415,7 @@ MakeCollIndexDown:
 
 +	sty	DP_AreaMetaMapIndex
 	ldy	#0
-	lda	DP_Char1MapPosY
+	lda	DP_Hero1MapPosY
 	clc								; add 2 rows (+1 px) --> check tile below character's lower 16×16 sprite
 	adc	#33
 -	cmp	#16
@@ -1440,7 +1440,7 @@ MakeCollIndexDown:
 
 ; -------------------------- create collision index for right edge of char sprite
 	ldy	#0
-	lda	DP_Char1MapPosX
+	lda	DP_Hero1MapPosX
 	clc								; go to right edge, acknowledge right collision margin
 	adc	#16-PARAM_CollMarginRight
 -	cmp	#16
@@ -1469,7 +1469,7 @@ MakeCollIndexLeft:
 	Accu16
 
 	ldy	#0
-	lda	DP_Char1MapPosX
+	lda	DP_Hero1MapPosX
 -	cmp	#16
 	bcc	+
 	sec
@@ -1480,7 +1480,7 @@ MakeCollIndexLeft:
 +	sty	DP_AreaMetaMapIndex
 	sty	DP_AreaMetaMapIndex2					; save interim result for later
 	ldy	#0
-	lda	DP_Char1MapPosY
+	lda	DP_Hero1MapPosY
 	clc								; add 1 row for lower char sprite
 	adc	#16+PARAM_CollMarginTop
 -	cmp	#16
@@ -1504,7 +1504,7 @@ MakeCollIndexLeft:
 
 ; -------------------------- create collision index for lower corner of lower char sprite
 	ldy	#0
-	lda	DP_Char1MapPosY
+	lda	DP_Hero1MapPosY
 	clc								; add 2 rows (-1 px)
 	adc	#31
 -	cmp	#16
@@ -1538,7 +1538,7 @@ MakeCollIndexRight:
 	Accu16
 
 	ldy	#0
-	lda	DP_Char1MapPosX
+	lda	DP_Hero1MapPosX
 	clc								; go to right edge
 	adc	#16
 -	cmp	#16
@@ -1551,7 +1551,7 @@ MakeCollIndexRight:
 +	sty	DP_AreaMetaMapIndex
 	sty	DP_AreaMetaMapIndex2					; save interim result for later
 	ldy	#0
-	lda	DP_Char1MapPosY
+	lda	DP_Hero1MapPosY
 	clc								; add 1 row for lower char sprite
 	adc	#16+PARAM_CollMarginTop
 -	cmp	#16
@@ -1575,7 +1575,7 @@ MakeCollIndexRight:
 
 ; -------------------------- create collision index for lower corner of lower char sprite
 	ldy	#0
-	lda	DP_Char1MapPosY
+	lda	DP_Hero1MapPosY
 	clc								; add 2 rows (-1 px)
 	adc	#31
 -	cmp	#16

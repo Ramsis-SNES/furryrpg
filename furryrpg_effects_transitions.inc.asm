@@ -182,19 +182,19 @@ EffectHSplitIn:								; FIXME (occasional gfx glitches on real SNES)
 
 ; -------------------------- gradually increment screen brightness values
 	lda	#2							; scanline counter max.
-	sta	temp+4
-	stz	temp+5
+	sta	DP_Temp+4
+	stz	DP_Temp+5
 	lda	DP_EffectSpeed
-	sta	temp+6
+	sta	DP_Temp+6
 
 __HSplitInMainLoop:
-	dec	temp+6							; only wait for a new frame every Nth iteration (where N = value in DP_EffectSpeed)
+	dec	DP_Temp+6						; only wait for a new frame every Nth iteration (where N = value in DP_EffectSpeed)
 	bne	+
 
 	WaitFrames	1
 
 	lda	DP_EffectSpeed
-	sta	temp+6
+	sta	DP_Temp+6
 
 +	ldx	#112							; start in the middle of the table
 	ldy	#0
@@ -207,7 +207,7 @@ __HSplitInSubLoop1:							; loop 1: go towards end of table
 	sta	ARRAY_HDMA_FX_1Byte, x
 +	inx
 	iny
-	cpy	temp+4							; max. no. of scanlines done?
+	cpy	DP_Temp+4						; max. no. of scanlines done?
 	bne	__HSplitInSubLoop1
 
 	ldx	#112
@@ -221,14 +221,14 @@ __HSplitInSubLoop2:							; loop 2: go towards start of table
 	inc	a
 	sta	ARRAY_HDMA_FX_1Byte, x
 +	iny
-	cpy	temp+4
+	cpy	DP_Temp+4
 	bne	__HSplitInSubLoop2
 
-	lda	temp+4							; 112 scanlines in each direction done?
+	lda	DP_Temp+4						; 112 scanlines in each direction done?
 	cmp	#112
 	bcs	+
-	inc	temp+4							; no, scanline counter max. += 2
-	inc	temp+4
+	inc	DP_Temp+4						; no, scanline counter max. += 2
+	inc	DP_Temp+4
 
 +	lda	ARRAY_HDMA_FX_1Byte					; yes, repeat a few more times until first byte of table is #$0F
 	cmp	#$0F
@@ -282,19 +282,19 @@ EffectHSplitOut:							; split out from the middle of the screen // FIXME (occas
 
 ; -------------------------- gradually decrement screen brightness values
 	lda	#2							; scanline counter max.
-	sta	temp+4
-	stz	temp+5
+	sta	DP_Temp+4
+	stz	DP_Temp+5
 	lda	DP_EffectSpeed
-	sta	temp+6
+	sta	DP_Temp+6
 
 __HSplitOutMainLoop:
-	dec	temp+6
+	dec	DP_Temp+6
 	bne	+
 
 	WaitFrames	1
 
 	lda	DP_EffectSpeed
-	sta	temp+6
+	sta	DP_Temp+6
 
 +	ldx	#112							; start in the middle of the table
 	ldy	#0
@@ -306,7 +306,7 @@ __HSplitOutSubLoop1:							; loop 1: go towards end of table
 	sta	ARRAY_HDMA_FX_1Byte, x
 +	inx
 	iny
-	cpy	temp+4							; max. no. of scanlines done?
+	cpy	DP_Temp+4						; max. no. of scanlines done?
 	bne	__HSplitOutSubLoop1
 
 	ldx	#112
@@ -319,14 +319,14 @@ __HSplitOutSubLoop2:							; loop 2: go towards start of table
 	dec	a
 	sta	ARRAY_HDMA_FX_1Byte, x
 +	iny
-	cpy	temp+4
+	cpy	DP_Temp+4
 	bne	__HSplitOutSubLoop2
 
-	lda	temp+4							; 112 scanlines in each direction done?
+	lda	DP_Temp+4						; 112 scanlines in each direction done?
 	cmp	#112
 	bcs	+
-	inc	temp+4							; no, scanline counter max. += 2
-	inc	temp+4
+	inc	DP_Temp+4						; no, scanline counter max. += 2
+	inc	DP_Temp+4
 
 +	lda	ARRAY_HDMA_FX_1Byte					; yes, repeat a few more times until first byte of table is #$00
 	bne	__HSplitOutMainLoop
@@ -380,19 +380,19 @@ EffectHSplitOut2:							; split out towards the middle of the screen // FIXME (o
 
 ; -------------------------- gradually decrement screen brightness values
 	lda	#2							; scanline counter max.
-	sta	temp+4
-	stz	temp+5
+	sta	DP_Temp+4
+	stz	DP_Temp+5
 	lda	DP_EffectSpeed
-	sta	temp+6
+	sta	DP_Temp+6
 
 __HSplitOut2MainLoop:
-	dec	temp+6
+	dec	DP_Temp+6
 	bne	+
 
 	WaitFrames	1
 
 	lda	DP_EffectSpeed
-	sta	temp+6
+	sta	DP_Temp+6
 
 +	ldx	#224							; loop 1: go from end towards middle of table
 	ldy	#0
@@ -404,7 +404,7 @@ __HSplitOut2SubLoop1:
 	dec	a
 	sta	ARRAY_HDMA_FX_1Byte, x
 +	iny
-	cpy	temp+4							; max. no. of scanlines done?
+	cpy	DP_Temp+4						; max. no. of scanlines done?
 	bne	__HSplitOut2SubLoop1
 
 	ldx	#0							; loop 2: go from beginning towards middle of table
@@ -417,14 +417,14 @@ __HSplitOut2SubLoop2:
 	sta	ARRAY_HDMA_FX_1Byte, x
 +	inx
 	iny
-	cpy	temp+4
+	cpy	DP_Temp+4
 	bne	__HSplitOut2SubLoop2
 
-	lda	temp+4							; 112 scanlines in each direction done?
+	lda	DP_Temp+4						; 112 scanlines in each direction done?
 	cmp	#112
 	bcs	+
-	inc	temp+4							; no, scanline counter max. += 2
-	inc	temp+4
+	inc	DP_Temp+4						; no, scanline counter max. += 2
+	inc	DP_Temp+4
 
 +	lda	ARRAY_HDMA_FX_1Byte+112					; yes, repeat a few more times until the byte in the middle of the table is #$00
 	bne	__HSplitOut2MainLoop
@@ -497,49 +497,49 @@ EffectShutterIn:
 	lda	#$0F							; turn screen on
 	sta	REG_INIDISP
 	ldx	#222							; initial value for upper vertical boundary = scanline 111 (times 2 as each entry in the HDMA table is 2 bytes)
-	stx	temp
+	stx	DP_Temp
 	ldx	#226							; initial value for lower vertical boundary = scanline 113 (ditto)
-	stx	temp+2
+	stx	DP_Temp+2
 	lda	#$7F							; initial values that get stored to HDMA array for a rectangular window shape
-	sta	temp+4
+	sta	DP_Temp+4
 	lda	#$80
-	sta	temp+5
+	sta	DP_Temp+5
 
 __ShutterInLoop1:
 	WaitFrames	1
 
-	ldx	temp							; load current upper vertical boundary
--	lda	temp+4
+	ldx	DP_Temp							; load current upper vertical boundary
+-	lda	DP_Temp+4
 	sta	ARRAY_HDMA_FX_2Bytes, x					; store new X1 value
 	inx
-	lda	temp+5
+	lda	DP_Temp+5
 	sta	ARRAY_HDMA_FX_2Bytes, x					; store new X2 value
 	inx
-	cpx	temp+2							; do this again for next scanlines until lower vertical boundary reached
+	cpx	DP_Temp+2						; do this again for next scanlines until lower vertical boundary reached
 	bne	-
 
 	Accu16
 
-	dec	temp							; increase vertical window size
-	dec	temp
-	dec	temp
-	dec	temp
-	inc	temp+2
-	inc	temp+2
-	inc	temp+2
-	inc	temp+2
+	dec	DP_Temp							; increase vertical window size
+	dec	DP_Temp
+	dec	DP_Temp
+	dec	DP_Temp
+	inc	DP_Temp+2
+	inc	DP_Temp+2
+	inc	DP_Temp+2
+	inc	DP_Temp+2
 
 	Accu8
 
-	dec	temp+4							; increase horizontal window size
-	dec	temp+4
-	inc	temp+5
-	inc	temp+5
-	lda	temp+2							; repeat until all 224 scanlines are done
+	dec	DP_Temp+4						; increase horizontal window size
+	dec	DP_Temp+4
+	inc	DP_Temp+5
+	inc	DP_Temp+5
+	lda	DP_Temp+2						; repeat until all 224 scanlines are done
 	cmp	#$C2
 	bne	__ShutterInLoop1
 
-	lda	temp+3
+	lda	DP_Temp+3
 	cmp	#$01
 	bne	__ShutterInLoop1
 
@@ -549,16 +549,16 @@ __ShutterInLoop1:
 __ShutterInLoop2:
 	WaitFrames	1
 
-	lda	temp+4							; as the SNES screen is 256×224 px, we still need to adjust the window width (16 px missing on either side) to its final value
+	lda	DP_Temp+4						; as the SNES screen is 256×224 px, we still need to adjust the window width (16 px missing on either side) to its final value
 	cmp	#$FF
 	beq	__ShutterInDone
 	sta	REG_WH0
-	lda	temp+5
+	lda	DP_Temp+5
 	sta	REG_WH1
-	dec	temp+4
-	dec	temp+4
-	inc	temp+5
-	inc	temp+5
+	dec	DP_Temp+4
+	dec	DP_Temp+4
+	inc	DP_Temp+5
+	inc	DP_Temp+5
 	bra	__ShutterInLoop2
 
 __ShutterInDone:
@@ -610,12 +610,12 @@ EffectShutterOut:
 	jsr	SwitchToMinimalVblank
 
 	ldx	#2							; initial value for upper vertical boundary = scanline 1 (times 2 as each entry in the HDMA table is 2 bytes)
-	stx	temp
+	stx	DP_Temp
 	ldx	#446							; initial value for lower vertical boundary = scanline 223 (ditto)
-	stx	temp+2
-	stz	temp+4							; initial values that get stored to HDMA array
+	stx	DP_Temp+2
+	stz	DP_Temp+4						; initial values that get stored to HDMA array
 	lda	#$FF
-	sta	temp+5
+	sta	DP_Temp+5
 
 
 
@@ -637,16 +637,16 @@ EffectShutterOut:
 __ShutterOutLoop1:
 	WaitFrames	1
 
-	lda	temp+4							; as the SNES screen is 256×224 px, we need to adjust the window width first (16 px missing on either side)
+	lda	DP_Temp+4						; as the SNES screen is 256×224 px, we need to adjust the window width first (16 px missing on either side)
 	cmp	#$12
 	beq	+
 	sta	REG_WH0
-	lda	temp+5
+	lda	DP_Temp+5
 	sta	REG_WH1
-	inc	temp+4
-	inc	temp+4
-	dec	temp+5
-	dec	temp+5
+	inc	DP_Temp+4
+	inc	DP_Temp+4
+	dec	DP_Temp+5
+	dec	DP_Temp+5
 	bra	__ShutterOutLoop1
 
 +	lda	#%00000010						; activate HDMA channel 1
@@ -662,16 +662,16 @@ __ShutterOutLoop2:
 	lda	#$7F
 	sta	ARRAY_HDMA_FX_2Bytes, x
 	inx
-	cpx	temp
+	cpx	DP_Temp
 	bne	-
 
--	lda	temp+4
+-	lda	DP_Temp+4
 	sta	ARRAY_HDMA_FX_2Bytes, x					; within window, store current X1 value
 	inx
-	lda	temp+5
+	lda	DP_Temp+5
 	sta	ARRAY_HDMA_FX_2Bytes, x					; store current X2 value
 	inx
-	cpx	temp+2							; do this again for all scanlines until lower horizontal boundary reached
+	cpx	DP_Temp+2						; do this again for all scanlines until lower horizontal boundary reached
 	bne	-
 
 -	lda	#$80
@@ -685,22 +685,22 @@ __ShutterOutLoop2:
 
 	Accu16
 
-	inc	temp							; decrease vertical window size
-	inc	temp
-	inc	temp
-	inc	temp
-	dec	temp+2
-	dec	temp+2
-	dec	temp+2
-	dec	temp+2
+	inc	DP_Temp							; decrease vertical window size
+	inc	DP_Temp
+	inc	DP_Temp
+	inc	DP_Temp
+	dec	DP_Temp+2
+	dec	DP_Temp+2
+	dec	DP_Temp+2
+	dec	DP_Temp+2
 
 	Accu8
 
-	inc	temp+4							; decrease horizontal window size
-	inc	temp+4
-	dec	temp+5
-	dec	temp+5
-	lda	temp							; repeat until window collapses
+	inc	DP_Temp+4						; decrease horizontal window size
+	inc	DP_Temp+4
+	dec	DP_Temp+5
+	dec	DP_Temp+5
+	lda	DP_Temp							; repeat until window collapses
 	cmp	#226
 	bne	__ShutterOutLoop2
 
@@ -776,34 +776,34 @@ EffectDiamondIn:
 	sta	REG_INIDISP
 
 	ldx	#222							; initial value for upper vertical boundary (times 2 as each entry in the HDMA table is 2 bytes)
-	stx	temp
+	stx	DP_Temp
 	ldx	#226							; initial value for lower vertical boundary (ditto)
-	stx	temp+2
+	stx	DP_Temp+2
 
 __DiamondInLoop1:
 	WaitFrames	1
 
-	ldx	temp
+	ldx	DP_Temp
 -	dec	ARRAY_HDMA_FX_2Bytes, x
 	inx
 	inc	ARRAY_HDMA_FX_2Bytes, x
 	inx
-	cpx	temp+2
+	cpx	DP_Temp+2
 	bne	-
 
 	Accu16
 
-	dec	temp
-	dec	temp
-	inc	temp+2
-	inc	temp+2
+	dec	DP_Temp
+	dec	DP_Temp
+	inc	DP_Temp+2
+	inc	DP_Temp+2
 
 	Accu8
 
-	lda	temp+1
+	lda	DP_Temp+1
 	bne	__DiamondInLoop1
 
-	lda	temp
+	lda	DP_Temp
 	bne	__DiamondInLoop1
 
 __DiamondInLoop2:							; up to this point, we created a diamond-shaped window, so repeat manipulating HDMA values for all scanlines until the whole screen is visible
@@ -875,9 +875,9 @@ EffectDiamondOut:
 	jsr	SwitchToMinimalVblank
 
 	ldx	#2							; initial value for upper vertical boundary = scanline 1 (times 2 as each entry in the HDMA table is 2 bytes)
-	stx	temp
+	stx	DP_Temp
 	ldx	#446							; initial value for lower vertical boundary = scanline 223 (ditto)
-	stx	temp+2
+	stx	DP_Temp+2
 
 
 
@@ -912,10 +912,10 @@ __DiamondOutLoop1:
 	beq	+
 	dec	ARRAY_HDMA_FX_2Bytes, x
 +	inx
-	cpx	temp
+	cpx	DP_Temp
 	bne	-
 
-	ldx	temp+2
+	ldx	DP_Temp+2
 -	lda	ARRAY_HDMA_FX_2Bytes, x
 	cmp	#$80
 	beq	+
@@ -931,14 +931,14 @@ __DiamondOutLoop1:
 
 	Accu16
 
-	inc	temp							; decrease vertical window size
-	inc	temp
-	dec	temp+2
-	dec	temp+2
+	inc	DP_Temp							; decrease vertical window size
+	inc	DP_Temp
+	dec	DP_Temp+2
+	dec	DP_Temp+2
 
 	Accu8
 
-	lda	temp							; repeat until diamond-shaped window has appeared
+	lda	DP_Temp							; repeat until diamond-shaped window has appeared
 	cmp	#226
 	bne	__DiamondOutLoop1
 
@@ -986,9 +986,9 @@ SwitchToMinimalVblank:
 
 	Accu16
 
-	lda	DP_VblankJump						; preserve original Vblank JMP address
+	lda	ONE_JumpVblank						; preserve original Vblank JMP address
 	sta	ARRAY_Temp
-	lda	DP_VblankJump+2
+	lda	ONE_JumpVblank+2
 	sta	ARRAY_Temp+2
 
 	Accu8
@@ -1009,9 +1009,9 @@ SwitchFromPrevVblank:
 	Accu16
 
 	lda	ARRAY_Temp						; restore original Vblank JMP address
-	sta	DP_VblankJump
+	sta	ONE_JumpVblank
 	lda	ARRAY_Temp+2
-	sta	DP_VblankJump+2
+	sta	ONE_JumpVblank+2
 
 	Accu8
 

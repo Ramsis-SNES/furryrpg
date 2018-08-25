@@ -49,9 +49,9 @@ TestMode7:
 
 	Accu8
 
-	lda	temp+4							; location of quotient
+	lda	DP_Temp+4						; location of quotient
 	sta	REG_WMDATA
-	lda	temp+5
+	lda	DP_Temp+5
 	sta	REG_WMDATA
 
 	Accu16
@@ -85,9 +85,9 @@ TestMode7:
 
 	Accu8
 
-	lda	temp+4							; location of quotient
+	lda	DP_Temp+4						; location of quotient
 	sta	REG_WMDATA
-	lda	temp+5
+	lda	DP_Temp+5
 	sta	REG_WMDATA
 
 	Accu16
@@ -251,47 +251,47 @@ TestMode7:
 	Accu16
 
 	lda	#$1870							; Y, X start values of upper left corner of 128×32 GFX
-	sta	temp
+	sta	DP_Temp
 
 	lda	#$3480							; tile properties (highest priority, fixed), tile num (start value)
-	sta	temp+2
+	sta	DP_Temp+2
 
 	ldx	#$0000
--	lda	temp							; Y, X
+-	lda	DP_Temp							; Y, X
 	sta	SpriteBuf1.Reserved, x
 	clc
 	adc	#$0010							; X += 16
-	sta	temp
+	sta	DP_Temp
 	inx
 	inx
 
-	lda	temp+2							; tile properties, tile num
+	lda	DP_Temp+2						; tile properties, tile num
 	sta	SpriteBuf1.Reserved, x
 	clc
 	adc	#$0002							; tile num += 2
-	sta	temp+2
+	sta	DP_Temp+2
 	inx
 	inx
 
 	bit	#$000F							; check if last 4 bits of tile num clear = one row of 8 (large) sprites done?
 	bne	-							; "inner loop"
 
-	lda	temp
+	lda	DP_Temp
 	and	#$FF70							; reset X = 8
 	clc
 	adc	#$1000							; Y += 16
-	sta	temp
-	lda	temp+2
+	sta	DP_Temp
+	lda	DP_Temp+2
 	clc
 	adc	#$0010							; tile num += 16 (i.e., skip one row of 8*8 tiles)
-	sta	temp+2
+	sta	DP_Temp+2
 
 	cpx	#$40							; 16 large sprites done?
 	bne	-							; "outer loop"
 
 	Accu8
 
-	stz	temp+2							; see Mode 7 matrix calculations below
+	stz	DP_Temp+2						; see Mode 7 matrix calculations below
 
 
 
@@ -378,10 +378,10 @@ TestMode7:
 	WaitFrames	2						; wait for altitude setting to take effect (FIXME, doesn't work with just 1 frame?!)
 	Accu16
 
-	stz	temp							; clear temp vars (used in CalcMode7Matrix)
-	stz	temp+2
-	stz	temp+4
-	stz	temp+6
+	stz	DP_Temp							; clear DP_Temp vars (used in CalcMode7Matrix)
+	stz	DP_Temp+2
+	stz	DP_Temp+4
+	stz	DP_Temp+6
 
 	Accu8
 
@@ -395,7 +395,7 @@ TestMode7:
 
 Mode7Loop:
 ;	PrintSpriteText	25, 22, "V-Line: $", 1
-;	PrintSpriteHexNum	temp+7
+;	PrintSpriteHexNum	DP_Temp+7
 
 	PrintSpriteText	25, 20, "Altitude: $", 1
 	PrintSpriteHexNum	DP_Mode7_Altitude
@@ -695,7 +695,7 @@ Mode7Loop:
 ; -------------------------- calculate Mode 7 matrix parameters for next frame
 
 ; This is the algorithm to do signed 8×16 bit multiplication required for Mode 7 registers using hardware multiplication:
-; - do unsigned 8×8 bit multiplication for lower 8 bits of multiplicand (while keeping track of multiplier sign), store 16-bit interim result in temp
+; - do unsigned 8×8 bit multiplication for lower 8 bits of multiplicand (while keeping track of multiplier sign), store 16-bit interim result in DP_Temp
 ; - do unsigned 8×8 bit multiplication for upper 8 bits of multiplicand, add (interim result >> 8) and store as 16-bit final result (if multiplier sign was negative, make result negative)
 
 .IFDEF PrecalcMode7Tables
@@ -709,7 +709,7 @@ CalcMode7Matrix:
 ; -------------------------- calculate M7A/M7D for next frame
 ; 8×8 multiplication for lower 8 bits of multiplicand
 	ldx	#0
--	stz	temp+6
+-	stz	DP_Temp+6
 	txy
 	lda	[DP_DataAddress], y
 	sta	REG_WRMPYA
@@ -719,12 +719,12 @@ CalcMode7Matrix:
 	bpl	+							; check for negative multiplier
 	eor	#$FF							; make multiplier positive
 	inc	a
-	dec	temp+6							; remember that multplier has wrong sign
+	dec	DP_Temp+6						; remember that multplier has wrong sign
 +	sta	REG_WRMPYB
 	nop								; burn a few cycles
 	nop
 	ldx	REG_RDMPYL						; store interim result
-	stx	temp
+	stx	DP_Temp
 
 ; 8×8 multiplication for upper 8 bits of multiplicand
 	iny
@@ -744,8 +744,8 @@ CalcMode7Matrix:
 
 	lda	REG_RDMPYL						; 3 // store final result
 	clc
-	adc	temp+1
-	bit	temp+5							; check for multiplier sign
+	adc	DP_Temp+1
+	bit	DP_Temp+5						; check for multiplier sign
 	bpl	+
 	eor	#$FFFF							; multiplier was negative, so make final result negative
 	inc	a
@@ -764,7 +764,7 @@ CalcMode7Matrix:
 ; -------------------------- calculate M7B/M7C for next frame
 ; 8×8 multiplication for lower 8 bits of multiplicand
 	ldx	#0
--	stz	temp+6
+-	stz	DP_Temp+6
 	txy
 	lda	[DP_DataAddress], y
 	sta	REG_WRMPYA
@@ -774,12 +774,12 @@ CalcMode7Matrix:
 	bpl	+							; check for negative multiplier
 	eor	#$FF							; make multiplier positive
 	inc	a
-	dec	temp+6							; remember that multplier has wrong sign
+	dec	DP_Temp+6						; remember that multplier has wrong sign
 +	sta	REG_WRMPYB
 	nop								; burn a few cycles
 	nop
 	ldx	REG_RDMPYL						; store interim result
-	stx	temp
+	stx	DP_Temp
 
 ; 8×8 multiplication for upper 8 bits of multiplicand
 	iny
@@ -799,8 +799,8 @@ CalcMode7Matrix:
 
 	lda	REG_RDMPYL						; 3 // store final result
 	clc
-	adc	temp+1
-	bit	temp+5							; check for multiplier sign
+	adc	DP_Temp+1
+	bit	DP_Temp+5						; check for multiplier sign
 	bmi	+
 	sta	ARRAY_HDMA_M7C+(PARAM_Mode7SkyLines*2), x
 	eor	#$FFFF							; make M7C parameter negative and store in M7B
@@ -843,7 +843,7 @@ CalcMode7Matrix:
 ; -------------------------- calculate M7A/M7D for next frame
 ; 8×8 multiplication for lower 8 bits of multiplicand
 	ldx	#0
--	stz	temp+6
+-	stz	DP_Temp+6
 	lda	REG_WMDATA						; read table entry
 	sta	REG_WRMPYA
 	txy								; preserve X in Y, this is faster than using the stack
@@ -852,12 +852,12 @@ CalcMode7Matrix:
 	bpl	+							; check for negative multiplier
 	eor	#$FF							; make multiplier positive
 	inc	a
-	dec	temp+6							; remember that multplier has wrong sign
+	dec	DP_Temp+6						; remember that multplier has wrong sign
 +	sta	REG_WRMPYB
 	nop								; burn a few cycles
 	nop
 	ldx	REG_RDMPYL						; store interim result
-	stx	temp
+	stx	DP_Temp
 
 ; 8×8 multiplication for upper 8 bits of multiplicand
 	lda	REG_WMDATA						; read table entry
@@ -874,8 +874,8 @@ CalcMode7Matrix:
 
 	lda	REG_RDMPYL						; 3 // store final result
 	clc
-	adc	temp+1
-	bit	temp+5							; check for multiplier sign
+	adc	DP_Temp+1
+	bit	DP_Temp+5						; check for multiplier sign
 	bpl	+
 	eor	#$FFFF							; multiplier was negative, so make final result negative
 	inc	a
@@ -897,7 +897,7 @@ CalcMode7Matrix:
 ; -------------------------- calculate M7B/M7C for next frame
 ; 8×8 multiplication for lower 8 bits of multiplicand
 	ldx	#0
--	stz	temp+6
+-	stz	DP_Temp+6
 	lda	REG_WMDATA						; read table entry
 	sta	REG_WRMPYA
 	txy								; preserve X
@@ -906,12 +906,12 @@ CalcMode7Matrix:
 	bpl	+							; check for negative multiplier
 	eor	#$FF							; make multiplier positive
 	inc	a
-	dec	temp+6							; remember that multplier has wrong sign
+	dec	DP_Temp+6						; remember that multplier has wrong sign
 +	sta	REG_WRMPYB
 	nop								; burn a few cycles
 	nop
 	ldx	REG_RDMPYL						; store interim result
-	stx	temp
+	stx	DP_Temp
 
 ; 8×8 multiplication for upper 8 bits of multiplicand
 	lda	REG_WMDATA						; read table entry
@@ -928,8 +928,8 @@ CalcMode7Matrix:
 
 	lda	REG_RDMPYL						; 3 // store final result
 	clc
-	adc	temp+1
-	bit	temp+5							; check for multiplier sign
+	adc	DP_Temp+1
+	bit	DP_Temp+5						; check for multiplier sign
 	bmi	+
 	sta	ARRAY_HDMA_M7C+(PARAM_Mode7SkyLines*2), x
 	eor	#$FFFF							; make M7C parameter negative and store in M7B
@@ -975,49 +975,51 @@ CalcMode7Matrix:
 ;
 Div32by16:
 	lda	7, s							; high word of 32-bit dividend
-	sta	temp+2
+	sta	DP_Temp+2
 	lda	5, s							; low word of 32-bit dividend
-	sta	temp+4
+	sta	DP_Temp+4
 	lda	3, s							; 16-bit divisor
-	sta	temp
-	stz	temp+6							; clear 16-bit of temp storage
+	sta	DP_Temp
+	stz	DP_Temp+6						; clear 16-bit of temp storage
 
-        SEC             ; Detect overflow or /0 condition.  To find out, sub-
-        LDA     temp+2     ; tract divisor from hi cell of dividend; if C flag
-        SBC     temp       ; remains set, divisor was not big enough to avoid
-        BCS     @uoflo   ; overflow.  This also takes care of any /0 conditions.
-                        ; If branch not taken, C flag is left clear for 1st ROL.
-                        ; We will loop 16x; but since we shift the dividend
-        LDX     #17     ; over at the same time as shifting the answer in, the
-                        ; operation must start AND finish with a shift of the
-                        ; lo cell of the dividend (which ends up holding the
-;       INDEX_16        ; quotient), so we start with 17 in X.  We will use Y
-                        ; for temporary storage too, so set index reg.s 16-bit.
-@ushftl: ROL     temp+4     ; Move lo cell of dividend left one bit, also shifting
-                        ; answer in.  The 1st rotation brings in a 0, which
-        DEX             ; later gets pushed off the other end in the last
-        BEQ     @umend   ; rotation.     Branch to the end if finished.
+        SEC								; Detect overflow or /0 condition.  To find out, sub-
+        LDA     DP_Temp+2						; tract divisor from hi cell of dividend; if C flag
+        SBC     DP_Temp							; remains set, divisor was not big enough to avoid
+        BCS     @uoflo							; overflow.  This also takes care of any /0 conditions.
+									; If branch not taken, C flag is left clear for 1st ROL.
+									; We will loop 16x; but since we shift the dividend
+        LDX     #17							; over at the same time as shifting the answer in, the
+									; operation must start AND finish with a shift of the
+									; lo cell of the dividend (which ends up holding the
+;       INDEX_16							; quotient), so we start with 17 in X.  We will use Y
+									; for temporary storage too, so set index reg.s 16-bit.
+@ushftl:
+	ROL     DP_Temp+4						; Move lo cell of dividend left one bit, also shifting
+									; answer in.  The 1st rotation brings in a 0, which
+        DEX								; later gets pushed off the other end in the last
+        BEQ     @umend							; rotation.     Branch to the end if finished.
 
-        ROL     temp+2     ; Shift hi cell of dividend left one bit, also shifting
-        LDA     #0      ; next bit in from high bit of lo cell.
+        ROL     DP_Temp+2						; Shift hi cell of dividend left one bit, also shifting
+        LDA     #0							; next bit in from high bit of lo cell.
         ROL     A
-        STA     temp+6     ; Store old hi bit of dividend in N+6.
+        STA     DP_Temp+6						; Store old hi bit of dividend in N+6.
 
-        SEC             ; See if divisor will fit into hi 17 bits of dividend
-        LDA     temp+2     ; by subtracting and then looking at carry flag.
-        SBC     temp       ; If carry got cleared, divisor did not fit.
-        TAY             ; Save the difference in Y until we know if we need it.
+        SEC								; See if divisor will fit into hi 17 bits of dividend
+        LDA     DP_Temp+2						; by subtracting and then looking at carry flag.
+        SBC     DP_Temp							; If carry got cleared, divisor did not fit.
+        TAY								; Save the difference in Y until we know if we need it.
 
-        LDA     temp+6     ; Bit 0 of N+6 serves as 17th bit.
-        SBC     #0      ; Complete the subtraction by doing the 17th bit before
-        BCC     @ushftl  ; determining if the divisor fit into the hi 17 bits of
-                        ; the dividend.  If so, the C flag remains set.
-        STY     temp+2     ; If divisor fit into hi 17 bits, update dividend hi
-        BRA     @ushftl  ; cell to what it would be after subtraction.    Branch.
+        LDA     DP_Temp+6						; Bit 0 of N+6 serves as 17th bit.
+        SBC     #0							; Complete the subtraction by doing the 17th bit before
+        BCC     @ushftl							; determining if the divisor fit into the hi 17 bits of
+									; the dividend.  If so, the C flag remains set.
+        STY     DP_Temp+2						; If divisor fit into hi 17 bits, update dividend hi
+        BRA     @ushftl							; cell to what it would be after subtraction.    Branch.
 
- @uoflo: LDA     #$FFFF  ; If an overflow or /0 condition occurs, put FFFF in
-        STA     temp+4     ; both the quotient
-        STA     temp+2     ; and the remainder.
+ @uoflo:
+ 	LDA     #$FFFF							; If an overflow or /0 condition occurs, put FFFF in
+        STA     DP_Temp+4						; both the quotient
+        STA     DP_Temp+2						; and the remainder.
 
  @umend:
 	rts

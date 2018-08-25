@@ -781,10 +781,10 @@ RingMenuCloseAnimation:
 	Accu8
 
 	lda.l	SRC_RingItemToKeep, x					; read which ring menu item sprite to keep
-	sta	temp+4
-	stz	temp+5
+	sta	DP_Temp+4
+	stz	DP_Temp+5
 	ldx	#0
--	cpx	temp+4
+-	cpx	DP_Temp+4
 	bne	+
 	inx								; skip the selected sprite
 	inx
@@ -820,7 +820,7 @@ RingMenuCloseAnimation:
 TestLoop:
 	wai
 
-	ldx	temp+4
+	ldx	DP_Temp+4
 
 	lda	DP_Joy1Press+1 ; up
 	and	#%00001000
@@ -971,7 +971,7 @@ SRC_RingItemToKeep:							; DP_SubMenuNext RSH 1	| RingItemX (each * 5 bytes of 
 
 	ldx	#0
 
-__ReadItemFromInventory:
+@ReadItemFromInventory:
 	lda	ARRAY_GameDataInventory, x
 	xba
 	inx
@@ -979,8 +979,8 @@ __ReadItemFromInventory:
 	bne	+
 	inx
 	cpx	#512
-	beq	__ReadItemFromInventoryDone
-	bra	__ReadItemFromInventory
+	beq	@ReadItemFromInventoryDone
+	bra	@ReadItemFromInventory
 
 +	sta	VAR_GameDataItemQty
 	xba
@@ -1002,10 +1002,10 @@ __ReadItemFromInventory:
 	sta	DP_TextStringBank
 	inx
 	cpx	#512
-	beq	__ReadItemFromInventoryDone
+	beq	@ReadItemFromInventoryDone
 	phx
 
-__RenderItem:
+@RenderItem:
 	lda	#16
 	sta	DP_HiResPrintLen
 	jsr	PrintHiResFixedLenFWF
@@ -1020,9 +1020,9 @@ __RenderItem:
 	Accu8
 
 	plx
-	bra	__ReadItemFromInventory
+	bra	@ReadItemFromInventory
 
-__ReadItemFromInventoryDone:
+@ReadItemFromInventoryDone:
 
 /*	SetTextPos	2, 16
 

@@ -14,36 +14,36 @@
 
 CheckSRAM:
 	lda	#ADDR_SRAM_Bank						; set start address to SRAM data
-	sta	temp+7
+	sta	DP_Temp+7
 
 	Accu16
 
 	lda	#(ADDR_SRAM_Slot1 & $FFFF)
-	sta	temp+5
+	sta	DP_Temp+5
 	lda	#$01FE							; assume ADDR_SRAM_ChksumCmpl = $FFFF and ADDR_SRAM_Chksum = $0000, so add these right now
-	sta	temp+3
+	sta	DP_Temp+3
 
 	ldy	#0
--	lda	[temp+5], y
+-	lda	[DP_Temp+5], y
 	and	#$00FF
 	clc
-	adc	temp+3
-	sta	temp+3
+	adc	DP_Temp+3
+	sta	DP_Temp+3
 	iny
 	cpy	#<ADDR_SRAM_ChksumCmpl					; location of SRAM checksum complement & checksum reached?
 	bne	-
 
 	ldy	#<ADDR_SRAM_Slot1Data					; skip both
--	lda	[temp+5], y
+-	lda	[DP_Temp+5], y
 	and	#$00FF
 	clc
-	adc	temp+3
-	sta	temp+3
+	adc	DP_Temp+3
+	sta	DP_Temp+3
 	iny
 	cpy	#$2000							; end of SRAM data reached?
 	bne	-
 
-	lda	temp+3
+	lda	DP_Temp+3
 	cmp	ADDR_SRAM_Chksum
 	bne	@ClearSRAM
 
@@ -90,35 +90,35 @@ WriteDataToSRAM:							; this routine expects the 24-bit source data address in 
 
 FixSRAMChecksum:
 	lda	#ADDR_SRAM_Bank						; set start address to SRAM data
-	sta	temp+7
+	sta	DP_Temp+7
 
 	Accu16
 
 	lda	#(ADDR_SRAM_Slot1 & $FFFF)
-	sta	temp+5
+	sta	DP_Temp+5
 	lda	#$01FE							; assume ADDR_SRAM_ChksumCmpl = $FFFF and ADDR_SRAM_Chksum = $0000, so add these right now
-	sta	temp+3
+	sta	DP_Temp+3
 	ldy	#0
--	lda	[temp+5], y
+-	lda	[DP_Temp+5], y
 	and	#$00FF
 	clc
-	adc	temp+3
-	sta	temp+3
+	adc	DP_Temp+3
+	sta	DP_Temp+3
 	iny
 	cpy	#<ADDR_SRAM_ChksumCmpl					; location of SRAM checksum complement & checksum reached?
 	bne	-
 
 	ldy	#<ADDR_SRAM_Slot1Data					; skip both
--	lda	[temp+5], y
+-	lda	[DP_Temp+5], y
 	and	#$00FF
 	clc
-	adc	temp+3
-	sta	temp+3
+	adc	DP_Temp+3
+	sta	DP_Temp+3
 	iny
 	cpy	#$2000							; end of SRAM data reached?
 	bne	-
 
-	lda	temp+3							; write new checksum
+	lda	DP_Temp+3							; write new checksum
 	sta	ADDR_SRAM_Chksum
 	eor	#$FFFF							; and complement
 	sta	ADDR_SRAM_ChksumCmpl

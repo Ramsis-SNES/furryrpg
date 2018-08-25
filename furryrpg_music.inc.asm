@@ -18,8 +18,8 @@ LoadTrackGSS:
 	Accu16
 
 	lda.w	#SCMD_LOAD
-	sta	gss_command
-	stz	gss_param
+	sta	DP_GSS_command
+	stz	DP_GSS_param
 	jsl	spc_command_asm
 
 	Accu16
@@ -40,8 +40,8 @@ LoadTrackGSS:
 	Accu16
 
 	lda.w	#SCMD_LOAD
-	sta	gss_command
-	stz	gss_param
+	sta	DP_GSS_command
+	stz	DP_GSS_param
 	jsl	spc_command_asm
 
 	Accu16
@@ -62,8 +62,8 @@ LoadTrackGSS:
 	Accu16
 
 	lda.w	#SCMD_LOAD
-	sta	gss_command
-	stz	gss_param
+	sta	DP_GSS_command
+	stz	DP_GSS_param
 	jsl	spc_command_asm
 
 	Accu16
@@ -86,8 +86,8 @@ LoadTrackGSS:
 	Accu16
 
 	lda.w	#SCMD_INITIALIZE					; this is important, or else the song won't play correctly
-	sta	gss_command
-	stz	gss_param
+	sta	DP_GSS_command
+	stz	DP_GSS_param
 	jsl	spc_command_asm
 
 	lda.l	REG_RDNMI						; clear NMI flag
@@ -104,9 +104,9 @@ PlayTrackGSS:
 	Accu16
 
 	lda	#SCMD_STEREO						; default output is mono, so issue stereo command ...
-	sta	gss_command
+	sta	DP_GSS_command
 	lda	#1							; ... with 1 as parameter
-	sta	gss_param
+	sta	DP_GSS_param
 	jsl	spc_command_asm
 
 	Accu16
@@ -120,8 +120,8 @@ PlayTrackGSS:
 	Accu16
 
 	lda.w	#SCMD_MUSIC_PLAY
-	sta	gss_command
-	stz	gss_param
+	sta	DP_GSS_command
+	stz	DP_GSS_param
 	jsl	spc_command_asm
 
 	Accu8
@@ -361,8 +361,8 @@ BootSPC700:
 	Accu16
 
 	lda.w	#SCMD_INITIALIZE
-	sta	gss_command
-	stz	gss_param
+	sta	DP_GSS_command
+	stz	DP_GSS_param
 	jsl	spc_command_asm
 
 	lda.l	VAR_Shadow_NMITIMEN					; reenable interrupts

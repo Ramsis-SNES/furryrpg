@@ -105,9 +105,9 @@
 	COP		DummyCOP
 	BRK		DummyBRK
 	ABORT		EmptyHandler
-	NMI		DP_VblankJump
+	NMI		ONE_JumpVblank
 	UNUSED		$0000
-	IRQ		DP_IRQJump
+	IRQ		TWO_JumpIRQ
 .ENDNATIVEVECTOR
 
 

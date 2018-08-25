@@ -30,15 +30,15 @@ LoadEvent:								; expects valid event no. in 16-bit Accu
 ; -------------------------- process event script
 ProcessEventLoop:
 	ldx	DP_EventWaitFrames					; check if we need to enter main loop (i.e., for screen elements to catch up, read joypads etc.)
-	bne	__ProcessEventSubLoop
-	jmp	__ProcessEventContinue
+	bne	@ProcessEventSubLoop
+	jmp	@ProcessEventContinue
 
-__ProcessEventSubLoop:
+@ProcessEventSubLoop:
 	WaitFrames	1
 
 	lda	DP_EventControl						; check if we need to monitor joypad 1
 	and	#%00000001
-	beq	__PESL_Joy1Done
+	beq	@Joy1Done
 
 	Accu16								; yes, check buttons
 
@@ -52,11 +52,11 @@ __ProcessEventSubLoop:
 
 	Accu8
 
-	bra	__ProcessEventContinue
+	bra	@ProcessEventContinue
 
 +	Accu8
 
-__PESL_Joy1Done:
+@Joy1Done:
 
 	lda	DP_TextBoxStatus					; check if text box is open
 	and	#%00000010
@@ -64,81 +64,81 @@ __PESL_Joy1Done:
 
 	jsr	MainTextBoxLoop						; yes, go to subroutine
 
-+	lda	DP_Char1ScreenPosYX+1					; check if hero should be moved vertically
++	lda	DP_Hero1ScreenPosYX+1					; check if hero should be moved vertically
 	sec
-	sbc	VAR_Char1TargetScrPosYX+1
-	beq	__PESL_MoveHeroNextCheck
-	bcc	__PESL_MoveHeroDown
+	sbc	VAR_Hero1TargetScrPosYX+1
+	beq	@MoveHeroNextCheck
+	bcc	@MoveHeroDown
 
-__PESL_MoveHeroUp:
+@MoveHeroUp:
 	Accu16
 
-	lda	DP_Char1ScreenPosYX
-	ldx	DP_Char1WalkingSpd
+	lda	DP_Hero1ScreenPosYX
+	ldx	DP_Hero1WalkingSpd
 -	sec
 	sbc	#$0100							; Y -= 1
-	dex								; as many times as DP_Char1WalkingSpd
+	dex								; as many times as DP_Hero1WalkingSpd
 	bne	-
-	sta	DP_Char1ScreenPosYX
-	lda	#TBL_Char1_up
-	bra	__PESL_MoveHeroDone
+	sta	DP_Hero1ScreenPosYX
+	lda	#TBL_Hero1_up
+	bra	@MoveHeroDone
 
-__PESL_MoveHeroDown:
+@MoveHeroDown:
 	Accu16
 
-	lda	DP_Char1WalkingSpd					; area not scrollable, move hero sprite instead
+	lda	DP_Hero1WalkingSpd					; area not scrollable, move hero sprite instead
 	xba								; shift to high byte for Y value
 	clc
-	adc	DP_Char1ScreenPosYX					; Y += DP_Char1WalkingSpd
-	sta	DP_Char1ScreenPosYX
-	lda	#TBL_Char1_down
-	bra	__PESL_MoveHeroDone
+	adc	DP_Hero1ScreenPosYX					; Y += DP_Hero1WalkingSpd
+	sta	DP_Hero1ScreenPosYX
+	lda	#TBL_Hero1_down
+	bra	@MoveHeroDone
 
 .ACCU 8
 
-__PESL_MoveHeroNextCheck:
-	lda	DP_Char1ScreenPosYX					; check if hero should be moved horizontally
+@MoveHeroNextCheck:
+	lda	DP_Hero1ScreenPosYX					; check if hero should be moved horizontally
 	sec
-	sbc	VAR_Char1TargetScrPosYX
-	beq	__PESL_MoveHeroDone2
-	bcc	__PESL_MoveHeroRight
+	sbc	VAR_Hero1TargetScrPosYX
+	beq	@MoveHeroDone2
+	bcc	@MoveHeroRight
 
-__PESL_MoveHeroLeft:
+@MoveHeroLeft:
 	Accu16
 
-	lda	DP_Char1ScreenPosYX
+	lda	DP_Hero1ScreenPosYX
 	sec
-	sbc	DP_Char1WalkingSpd					; X -= DP_Char1WalkingSpd
-	sta	DP_Char1ScreenPosYX
-	lda	#TBL_Char1_left
-	bra	__PESL_MoveHeroDone
+	sbc	DP_Hero1WalkingSpd					; X -= DP_Hero1WalkingSpd
+	sta	DP_Hero1ScreenPosYX
+	lda	#TBL_Hero1_left
+	bra	@MoveHeroDone
 
-__PESL_MoveHeroRight:
+@MoveHeroRight:
 	Accu16
 
-	lda	DP_Char1ScreenPosYX
+	lda	DP_Hero1ScreenPosYX
 	clc
-	adc	DP_Char1WalkingSpd					; X += DP_Char1WalkingSpd
-	sta	DP_Char1ScreenPosYX
-	lda	#TBL_Char1_right
+	adc	DP_Hero1WalkingSpd					; X += DP_Hero1WalkingSpd
+	sta	DP_Hero1ScreenPosYX
+	lda	#TBL_Hero1_right
 
-__PESL_MoveHeroDone:
+@MoveHeroDone:
 	Accu8
 
-	sta	DP_Char1SpriteStatus
+	sta	DP_Hero1SpriteStatus
 	bra	+
 
-__PESL_MoveHeroDone2:
+@MoveHeroDone2:
 	lda	#$80							; make character idle
-	tsb	DP_Char1SpriteStatus
+	tsb	DP_Hero1SpriteStatus
 
 +	ldx	DP_EventWaitFrames
 	dex
 	stx	DP_EventWaitFrames
-	beq	__ProcessEventContinue
-	jmp	__ProcessEventSubLoop
+	beq	@ProcessEventContinue
+	jmp	@ProcessEventSubLoop
 
-__ProcessEventContinue:
+@ProcessEventContinue:
 	ldy	DP_EventCodePointer
 	lda	[DP_EventCodeAddress], y				; load next code byte
 	cmp	#EC_END
@@ -152,13 +152,13 @@ __ProcessEventContinue:
 	and	#$00FF							; remove garbage in B
 	asl	a							; use code byte ...
 	tax								; ... as an index ...
-	jmp	(ProcessEventCode, x)					; ... into our WIP collection of event processing routines
+	jmp	(PTR_ProcessEventCode, x)					; ... into our WIP collection of event processing routines
 
 
 
 ; ********************* Event processing routines **********************
 
-ProcessEventCode:
+PTR_ProcessEventCode:
 	.DW Process_EC_DIALOG
 	.DW Process_EC_DISABLE_HDMA_CH
 	.DW Process_EC_DMA_ROM2CGRAM
@@ -414,16 +414,16 @@ Process_EC_GSS_TRACK_PLAY:
 	Accu16
 
 	lda	#SCMD_STEREO						; default output is mono, so issue stereo command ...
-	sta	gss_command
+	sta	DP_GSS_command
 	lda	#1							; ... with 1 as parameter
-	sta	gss_param
+	sta	DP_GSS_param
 	jsl	spc_command_asm
 
 	Accu16
 
 	lda.w	#SCMD_MUSIC_PLAY
-	sta	gss_command
-	stz	gss_param
+	sta	DP_GSS_command
+	stz	DP_GSS_param
 	jsl	spc_command_asm
 
 	Accu8
@@ -476,10 +476,10 @@ Process_EC_JSL:
 	iny
 	sty	DP_EventCodePointer
 	phk								; push current program bank onto stack
-	pea	__ReturnAdressJSL-1					; push return address minus 1 (RTL adds 1) onto stack
+	pea	@ReturnAdressJSL-1					; push return address minus 1 (RTL adds 1) onto stack
 	jml	[DP_DataAddress]
 
-__ReturnAdressJSL:
+@ReturnAdressJSL:
 
 	jmp	ProcessEventLoop
 
@@ -494,10 +494,10 @@ Process_EC_JSR:
 
 	Accu8								; assume 8-bit Accu in subroutine
 
-	pea	__ReturnAdressJSR-1					; push return address minus 1 (RTS adds 1) onto stack
+	pea	@ReturnAdressJSR-1					; push return address minus 1 (RTS adds 1) onto stack
 	jmp	(DP_DataAddress)					; jump to subroutine
 
-__ReturnAdressJSR:
+@ReturnAdressJSR:
 
 	jmp	ProcessEventLoop
 
@@ -575,14 +575,14 @@ Process_EC_MOVE_ALLY:
 
 Process_EC_MOVE_HERO:
 	lda	[DP_EventCodeAddress], y
-	sta	VAR_Char1TargetScrPosYX					; target screen position
+	sta	VAR_Hero1TargetScrPosYX					; target screen position
 	iny
 	iny
 
 	Accu8
 
 	lda	[DP_EventCodeAddress], y
-	sta	DP_Char1WalkingSpd					; speed
+	sta	DP_Hero1WalkingSpd					; speed
 	iny
 	sty	DP_EventCodePointer
 	jmp	ProcessEventLoop

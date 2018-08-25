@@ -153,157 +153,157 @@ LoadWorldMap:
 
 ; -------------------------- write horizon-blurring sprites to sprite buffer
 	lda	#0
-	sta	ARRAY_SpriteBuf1+128
+	sta	ARRAY_ShadowOAM_Lo+128
 	lda	#35
-	sta	ARRAY_SpriteBuf1+129
+	sta	ARRAY_ShadowOAM_Lo+129
 	lda	#0
-	sta	ARRAY_SpriteBuf1+130
+	sta	ARRAY_ShadowOAM_Lo+130
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1+131
+	sta	ARRAY_ShadowOAM_Lo+131
 
 	lda	#16
-	sta	ARRAY_SpriteBuf1+132
+	sta	ARRAY_ShadowOAM_Lo+132
 	lda	#34
-	sta	ARRAY_SpriteBuf1+133
+	sta	ARRAY_ShadowOAM_Lo+133
 	lda	#0
-	sta	ARRAY_SpriteBuf1+134
+	sta	ARRAY_ShadowOAM_Lo+134
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1+135
+	sta	ARRAY_ShadowOAM_Lo+135
 
 	lda	#32
-	sta	ARRAY_SpriteBuf1+136
+	sta	ARRAY_ShadowOAM_Lo+136
 	lda	#33
-	sta	ARRAY_SpriteBuf1+137
+	sta	ARRAY_ShadowOAM_Lo+137
 	lda	#0
-	sta	ARRAY_SpriteBuf1+138
+	sta	ARRAY_ShadowOAM_Lo+138
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1+139
+	sta	ARRAY_ShadowOAM_Lo+139
 
 	lda	#40
-	sta	ARRAY_SpriteBuf1+140
+	sta	ARRAY_ShadowOAM_Lo+140
 	lda	#33
-	sta	ARRAY_SpriteBuf1+141
+	sta	ARRAY_ShadowOAM_Lo+141
 	lda	#0
-	sta	ARRAY_SpriteBuf1+142
+	sta	ARRAY_ShadowOAM_Lo+142
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1+143
+	sta	ARRAY_ShadowOAM_Lo+143
 
 	lda	#56
-	sta	ARRAY_SpriteBuf1+144
+	sta	ARRAY_ShadowOAM_Lo+144
 	lda	#32
-	sta	ARRAY_SpriteBuf1+145
+	sta	ARRAY_ShadowOAM_Lo+145
 	lda	#0
-	sta	ARRAY_SpriteBuf1+146
+	sta	ARRAY_ShadowOAM_Lo+146
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1+147
+	sta	ARRAY_ShadowOAM_Lo+147
 
 	lda	#72
-	sta	ARRAY_SpriteBuf1+148
+	sta	ARRAY_ShadowOAM_Lo+148
 	lda	#32
-	sta	ARRAY_SpriteBuf1+149
+	sta	ARRAY_ShadowOAM_Lo+149
 	lda	#0
-	sta	ARRAY_SpriteBuf1+150
+	sta	ARRAY_ShadowOAM_Lo+150
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1+151
+	sta	ARRAY_ShadowOAM_Lo+151
 
 	lda	#88
-	sta	ARRAY_SpriteBuf1+152
+	sta	ARRAY_ShadowOAM_Lo+152
 	lda	#32
-	sta	ARRAY_SpriteBuf1+153
+	sta	ARRAY_ShadowOAM_Lo+153
 	lda	#0
-	sta	ARRAY_SpriteBuf1+154
+	sta	ARRAY_ShadowOAM_Lo+154
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1+155
+	sta	ARRAY_ShadowOAM_Lo+155
 
 	lda	#104
-	sta	ARRAY_SpriteBuf1+156
+	sta	ARRAY_ShadowOAM_Lo+156
 	lda	#31
-	sta	ARRAY_SpriteBuf1+157
+	sta	ARRAY_ShadowOAM_Lo+157
 	lda	#0
-	sta	ARRAY_SpriteBuf1+158
+	sta	ARRAY_ShadowOAM_Lo+158
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1+159
+	sta	ARRAY_ShadowOAM_Lo+159
 
 	lda	#120
-	sta	ARRAY_SpriteBuf1+160
+	sta	ARRAY_ShadowOAM_Lo+160
 	lda	#31
-	sta	ARRAY_SpriteBuf1+161
+	sta	ARRAY_ShadowOAM_Lo+161
 	lda	#0
-	sta	ARRAY_SpriteBuf1+162
+	sta	ARRAY_ShadowOAM_Lo+162
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1+163
+	sta	ARRAY_ShadowOAM_Lo+163
 
 	lda	#136
-	sta	ARRAY_SpriteBuf1+164
+	sta	ARRAY_ShadowOAM_Lo+164
 	lda	#31
-	sta	ARRAY_SpriteBuf1+165
+	sta	ARRAY_ShadowOAM_Lo+165
 	lda	#0
-	sta	ARRAY_SpriteBuf1+166
+	sta	ARRAY_ShadowOAM_Lo+166
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1+167
+	sta	ARRAY_ShadowOAM_Lo+167
 
 	lda	#152
-	sta	ARRAY_SpriteBuf1+168
+	sta	ARRAY_ShadowOAM_Lo+168
 	lda	#32
-	sta	ARRAY_SpriteBuf1+169
+	sta	ARRAY_ShadowOAM_Lo+169
 	lda	#0
-	sta	ARRAY_SpriteBuf1+170
+	sta	ARRAY_ShadowOAM_Lo+170
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1+171
+	sta	ARRAY_ShadowOAM_Lo+171
 
 	lda	#168
-	sta	ARRAY_SpriteBuf1+172
+	sta	ARRAY_ShadowOAM_Lo+172
 	lda	#32
-	sta	ARRAY_SpriteBuf1+173
+	sta	ARRAY_ShadowOAM_Lo+173
 	lda	#0
-	sta	ARRAY_SpriteBuf1+174
+	sta	ARRAY_ShadowOAM_Lo+174
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1+175
+	sta	ARRAY_ShadowOAM_Lo+175
 
 	lda	#184
-	sta	ARRAY_SpriteBuf1+176
+	sta	ARRAY_ShadowOAM_Lo+176
 	lda	#32
-	sta	ARRAY_SpriteBuf1+177
+	sta	ARRAY_ShadowOAM_Lo+177
 	lda	#0
-	sta	ARRAY_SpriteBuf1+178
+	sta	ARRAY_ShadowOAM_Lo+178
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1+179
+	sta	ARRAY_ShadowOAM_Lo+179
 
 	lda	#200
-	sta	ARRAY_SpriteBuf1+180
+	sta	ARRAY_ShadowOAM_Lo+180
 	lda	#33
-	sta	ARRAY_SpriteBuf1+181
+	sta	ARRAY_ShadowOAM_Lo+181
 	lda	#0
-	sta	ARRAY_SpriteBuf1+182
+	sta	ARRAY_ShadowOAM_Lo+182
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1+183
+	sta	ARRAY_ShadowOAM_Lo+183
 
 	lda	#208
-	sta	ARRAY_SpriteBuf1+184
+	sta	ARRAY_ShadowOAM_Lo+184
 	lda	#33
-	sta	ARRAY_SpriteBuf1+185
+	sta	ARRAY_ShadowOAM_Lo+185
 	lda	#0
-	sta	ARRAY_SpriteBuf1+186
+	sta	ARRAY_ShadowOAM_Lo+186
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1+187
+	sta	ARRAY_ShadowOAM_Lo+187
 
 	lda	#224
-	sta	ARRAY_SpriteBuf1+188
+	sta	ARRAY_ShadowOAM_Lo+188
 	lda	#34
-	sta	ARRAY_SpriteBuf1+189
+	sta	ARRAY_ShadowOAM_Lo+189
 	lda	#0
-	sta	ARRAY_SpriteBuf1+190
+	sta	ARRAY_ShadowOAM_Lo+190
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1+191
+	sta	ARRAY_ShadowOAM_Lo+191
 
 	lda	#240
-	sta	ARRAY_SpriteBuf1+192
+	sta	ARRAY_ShadowOAM_Lo+192
 	lda	#35
-	sta	ARRAY_SpriteBuf1+193
+	sta	ARRAY_ShadowOAM_Lo+193
 	lda	#0
-	sta	ARRAY_SpriteBuf1+194
+	sta	ARRAY_ShadowOAM_Lo+194
 	lda	#%10111000						; highest priority (3), palette no. 4, flip vertically
-	sta	ARRAY_SpriteBuf1+195
+	sta	ARRAY_ShadowOAM_Lo+195
 
 
 

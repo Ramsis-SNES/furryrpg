@@ -23,17 +23,17 @@
 .DEFINE MENU_SPRITES		"gfx/menu-sprites.pic"
 .DEFINE MENU_SPRITES_PAL	"gfx/menu-sprites.pal"
 
-.DEFINE PORTRAIT_CHAR1		"gfx/portrait_kimahri.pic"
-.DEFINE PORTRAIT_CHAR1_PAL	"gfx/portrait_kimahri.pal"
-.DEFINE PORTRAIT_CHAR2		"gfx/portrait_zakari.pic"
-.DEFINE PORTRAIT_CHAR2_PAL	"gfx/portrait_zakari.pal"
-.DEFINE PORTRAIT_CHAR3		"gfx/portrait_gengen.pic"
-.DEFINE PORTRAIT_CHAR3_PAL	"gfx/portrait_gengen.pal"
-.DEFINE PORTRAIT_CHAR4		"gfx/portrait_linkwolf.pic"
-.DEFINE PORTRAIT_CHAR4_PAL	"gfx/portrait_linkwolf.pal"
+.DEFINE PORTRAIT_HERO1		"gfx/portrait_kimahri.pic"
+.DEFINE PORTRAIT_HERO1_PAL	"gfx/portrait_kimahri.pal"
+.DEFINE PORTRAIT_HERO2		"gfx/portrait_zakari.pic"
+.DEFINE PORTRAIT_HERO2_PAL	"gfx/portrait_zakari.pal"
+.DEFINE PORTRAIT_HERO3		"gfx/portrait_gengen.pic"
+.DEFINE PORTRAIT_HERO3_PAL	"gfx/portrait_gengen.pal"
+.DEFINE PORTRAIT_HERO4		"gfx/portrait_linkwolf.pic"
+.DEFINE PORTRAIT_HERO4_PAL	"gfx/portrait_linkwolf.pal"
 
-.DEFINE SPRITESHEET_CHAR1	"gfx/Gengen2.pic"
-.DEFINE SPRITESHEET_CHAR1_PAL	"gfx/Gengen2.pal"
+.DEFINE SPRITESHEET_HERO1	"gfx/Gengen2.pic"
+.DEFINE SPRITESHEET_HERO1_PAL	"gfx/Gengen2.pal"
 
 
 
@@ -69,20 +69,20 @@ SRC_Palettes_Items:							; 4-color palette for item name gfx
 SRC_Palettes_HUD:							; 16-color palette for HUD content
 .INCBIN FONT_HUD_PAL READ 32
 
-SRC_Palette_Portrait_Char1:
-.INCBIN PORTRAIT_CHAR1_PAL						; 32 bytes
+SRC_Palette_Portrait_Hero1:
+.INCBIN PORTRAIT_HERO1_PAL						; 32 bytes
 
-SRC_Palette_Portrait_Char2:
-.INCBIN PORTRAIT_CHAR2_PAL						; 32 bytes
+SRC_Palette_Portrait_Hero2:
+.INCBIN PORTRAIT_HERO2_PAL						; 32 bytes
 
-SRC_Palette_Portrait_Char3:
-.INCBIN PORTRAIT_CHAR3_PAL						; 32 bytes
+SRC_Palette_Portrait_Hero3:
+.INCBIN PORTRAIT_HERO3_PAL						; 32 bytes
 
-SRC_Palette_Portrait_Char4:
-.INCBIN PORTRAIT_CHAR4_PAL						; 32 bytes
+SRC_Palette_Portrait_Hero4:
+.INCBIN PORTRAIT_HERO4_PAL						; 32 bytes
 
-SRC_Palette_Spritesheet_Char1:
-.INCBIN SPRITESHEET_CHAR1_PAL						; 32 bytes
+SRC_Palette_Spritesheet_Hero1:
+.INCBIN SPRITESHEET_HERO1_PAL						; 32 bytes
 
 SRC_Palette_Sprites_InGameMenu:
 .INCBIN MENU_SPRITES_PAL						; 32 bytes
@@ -101,17 +101,17 @@ GFX_Font8x8:
 
 ; ************************ Character portraits *************************
 
-GFX_Portrait_Char1:
-.INCBIN PORTRAIT_CHAR1 READ 1920
+GFX_Portrait_Hero1:
+.INCBIN PORTRAIT_HERO1 READ 1920
 
-GFX_Portrait_Char2:
-.INCBIN PORTRAIT_CHAR2 READ 1920
+GFX_Portrait_Hero2:
+.INCBIN PORTRAIT_HERO2 READ 1920
 
-GFX_Portrait_Char3:
-.INCBIN PORTRAIT_CHAR3 READ 1920
+GFX_Portrait_Hero3:
+.INCBIN PORTRAIT_HERO3 READ 1920
 
-GFX_Portrait_Char4:
-.INCBIN PORTRAIT_CHAR4 READ 1920
+GFX_Portrait_Hero4:
+.INCBIN PORTRAIT_HERO4 READ 1920
 
 
 
@@ -120,8 +120,8 @@ GFX_Portrait_Char4:
 GFX_Sprites_HUDfont:
 .INCBIN FONT_HUD							; 4096 bytes
 
-GFX_Spritesheet_Char1:
-.INCBIN SPRITESHEET_CHAR1
+GFX_Spritesheet_Hero1:
+.INCBIN SPRITESHEET_HERO1
 
 GFX_Sprites_InGameMenu:
 .INCBIN MENU_SPRITES
@@ -263,17 +263,17 @@ SRC_TileMapBG1_Area003:
 
 SRC_CharPortaitGFXTable:
 	.DW 0								; dummy bytes (needed for correct table index)
-	.DW GFX_Portrait_Char1
-	.DW GFX_Portrait_Char2
-	.DW GFX_Portrait_Char3
-	.DW GFX_Portrait_Char4
+	.DW GFX_Portrait_Hero1
+	.DW GFX_Portrait_Hero2
+	.DW GFX_Portrait_Hero3
+	.DW GFX_Portrait_Hero4
 
 SRC_CharPortaitPaletteTable:
 	.DW 0								; ditto
-	.DW SRC_Palette_Portrait_Char1
-	.DW SRC_Palette_Portrait_Char2
-	.DW SRC_Palette_Portrait_Char3
-	.DW SRC_Palette_Portrait_Char4
+	.DW SRC_Palette_Portrait_Hero1
+	.DW SRC_Palette_Portrait_Hero2
+	.DW SRC_Palette_Portrait_Hero3
+	.DW SRC_Palette_Portrait_Hero4
 
 
 

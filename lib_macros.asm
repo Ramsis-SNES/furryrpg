@@ -256,11 +256,11 @@ __DrawLowerBorder\@:
 	asl	a
 	tax
 	lda.l	SRC_IRQJumpTable, x					; holds a 4-byte instruction like jml SomeIRQRoutine
-	sta	DP_IRQJump						; IRQ vector points here
+	sta	TWO_JumpIRQ						; IRQ vector points here
 	inx
 	inx
 	lda.l	SRC_IRQJumpTable, x
-	sta	DP_IRQJump+2
+	sta	TWO_JumpIRQ+2
 
 	Accu8
 .ENDM
@@ -282,11 +282,11 @@ __DrawLowerBorder\@:
 	asl	a
 	tax
 	lda.l	SRC_VblankJumpTable, x					; holds a 4-byte instruction like jml SomeVblankRoutine
-	sta	DP_VblankJump						; NMI vector points here
+	sta	ONE_JumpVblank						; NMI vector points here
 	inx
 	inx
 	lda.l	SRC_VblankJumpTable, x
-	sta	DP_VblankJump+2
+	sta	ONE_JumpVblank+2
 
 	Accu8
 .ENDM
