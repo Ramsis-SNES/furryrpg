@@ -470,6 +470,12 @@ LoadAreaData:
 	lda	#%00011111						; make sure BG1/2/3 lo/hi tilemaps get updated
 	tsb	DP_DMA_Updates
 	tsb	DP_DMA_Updates+1
+	jsr	UpdateAreaSprites					; put characters on initial positions
+
+	ldx	#ARRAY_SpriteDataArea & $FFFF				; set WRAM address for area sprite data array
+	stx	REG_WMADDL
+	stz	REG_WMADDH
+	jsr	ConvertSpriteDataToBuffer
 
 	WaitFrames	4						; give some time for screen refresh
 
@@ -1143,42 +1149,54 @@ MainAreaLoop:
 
 
 
-; -------------------------- animate characters
-	lda	DP_Char1SpriteStatus
-	bpl	@Char1IsWalking						; bit 7 set = idle
-	stz	DP_Char1FrameCounter					; char is idle, reset frame counter
-	lda	#TBL_Char1_frame00
-	bra	@Char1WalkingDone
 
-@Char1IsWalking:
-	lda	DP_Char1FrameCounter					; 0-9: frame 1, 10-19: frame 0, 20-29: frame 2, 30-39: frame 0
+
+; -------------------------- misc. tasks, end loop
+	jsr	UpdateAreaSprites
+
+	ldx	#ARRAY_SpriteDataArea & $FFFF				; set WRAM address for area sprite data array
+	stx	REG_WMADDL
+	stz	REG_WMADDH
+	jsr	ConvertSpriteDataToBuffer
+
+	jmp	MainAreaLoop
+
+
+
+UpdateAreaSprites:
+	lda	DP_Hero1SpriteStatus
+	bpl	@Hero1IsWalking						; bit 7 set = idle
+	stz	DP_Hero1FrameCounter					; char is idle, reset frame counter
+	lda	#TBL_Hero1_frame00
+	bra	@Hero1WalkingDone
+
+@Hero1IsWalking:
+	lda	DP_Hero1FrameCounter					; 0-9: frame 1, 10-19: frame 0, 20-29: frame 2, 30-39: frame 0
 	cmp	#40
 	bcc	+
-	stz	DP_Char1FrameCounter					; reset frame counter
-	bra	@Char1Frame1
+	stz	DP_Hero1FrameCounter					; reset frame counter
+	bra	@Hero1Frame1
 
 +	cmp	#30
-	bcs	@Char1Frame0
+	bcs	@Hero1Frame0
 	cmp	#20
-	bcs	@Char1Frame2
+	bcs	@Hero1Frame2
 	cmp	#10
-	bcc	@Char1Frame1
+	bcc	@Hero1Frame1
 
-@Char1Frame0:
-	lda	#TBL_Char1_frame00
+@Hero1Frame0:
+	lda	#TBL_Hero1_frame00
 	bra	+
 
-@Char1Frame2:
-	lda	#TBL_Char1_frame02
+@Hero1Frame2:
+	lda	#TBL_Hero1_frame02
 	bra	+
 
-@Char1Frame1:
-	lda	#TBL_Char1_frame01
-;	bra	+
+@Hero1Frame1:
+	lda	#TBL_Hero1_frame01
++	inc	DP_Hero1FrameCounter					; increment animation frame counter
 
-+	inc	DP_Char1FrameCounter					; increment animation frame counter
-
-@Char1WalkingDone:
+@Hero1WalkingDone:
 	asl	a							; frame no. × 2 for correct tile no. in spritesheet
 
 	Accu16
@@ -1205,14 +1223,7 @@ MainAreaLoop:
 
 	Accu8
 
-
-
-; -------------------------- misc. tasks, end loop
-	ldx	#ARRAY_SpriteDataArea & $FFFF				; set WRAM address for area sprite data array
-	stx	REG_WMADDL
-	stz	REG_WMADDH
-	jsr	ConvertSpriteDataToBuffer
-	jmp	MainAreaLoop
+	rts
 
 
 

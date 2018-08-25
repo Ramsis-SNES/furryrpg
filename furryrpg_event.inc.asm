@@ -126,6 +126,13 @@ ProcessEventLoop:
 	Accu8
 
 	sta	DP_Hero1SpriteStatus
+	jsr	UpdateAreaSprites
+
+	ldx	#ARRAY_SpriteDataArea & $FFFF				; set WRAM address for area sprite data array
+	stx	REG_WMADDL
+	stz	REG_WMADDH
+	jsr	ConvertSpriteDataToBuffer
+
 	bra	+
 
 @MoveHeroDone2:
