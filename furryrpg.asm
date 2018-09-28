@@ -20,7 +20,7 @@
 ; ************************** Basic ROM layout **************************
 
 .DEFINE CurrentBank	0
-.DEFINE StartOffset	$F000						; start code offset in bank $00, this must be >= $8000 because of how ROM Mode 21 ("HiROM") is mapped
+.DEFINE StartOffset	$FFA0						; start code offset in bank $40, this must be >= $8000 because of how ROM Mode 21/25 ("Ex/HiROM") is mapped
 
 
 
@@ -70,14 +70,14 @@
 .ROMBANKSIZE		$10000						; ROM banks are 64 KiB in size
 .ROMBANKS		96						; 96 ROM banks = 48 Mbit
 
-.SNESHEADER								; this auto-calculates ROM checksum & complement, too (although invalid for ExHiROM)
+.SNESHEADER								; this auto-calculates ROM checksum & complement, too
 	ID		"SNES"
 	NAME		"FURRY RPG!           "
 ;			 123456789012345678901				; max. 21 characters
-	HIROM								; aka Mode 21 // this is corrected below
+	EXHIROM								; aka Mode 25
 	FASTROM
 	CARTRIDGETYPE	$55						; ROM, RTC + battery-backed SRAM
-	ROMSIZE		$0D						; 1 SHL n = 2 MiB (reported as a power of 2)
+	ROMSIZE		$0D						; 1 SHL n = 8 MiB (reported as a power of 2, even though actual ROM size is 6 MiB for now)
 	SRAMSIZE	$03						; 8 KiB for now
 	COUNTRY		$01						; USA
 	LICENSEECODE	$33						; $33 = "pointer" to new licensee code
@@ -86,16 +86,15 @@
 
 
 
-.BANK CurrentBank SLOT 0
-.ORG StartOffset + $FB0
+.ORG StartOffset
+
+	.DB "BOOTCODEINBANK40"
+
+
+
+.ORG StartOffset + $10
 
 	.DB "00"							; new licensee code (unlicensed)
-
-
-
-.ORG StartOffset + $FD5
-
-	.DB $35								; ExHiROM header correction
 
 
 
@@ -120,55 +119,6 @@
 	RESET		Startup
 	IRQBRK		EmptyHandler
 .ENDEMUVECTOR
-
-
-
-; -------------------------- empty vectors
-.BANK CurrentBank SLOT 0
-.ORG StartOffset
-
-.SECTION "Dummy/empty vectors" FORCE
-
-EmptyHandler:
-	rti
-
-DummyBRK:
-	jml	ErrorHandlerBRK
-
-DummyCOP:
-	jml	ErrorHandlerCOP
-
-.ENDS
-
-
-
-.SECTION "Disclaimer" SEMIFREE
-
-STR_DisclaimerWallofText:						; max. 20 lines, 56 chars per line
-;	     12345678901234567890123456789012345678901234567890123456
-	.DB "12345678901234567890123456789012345678901234567890123456", "        "
-	.DB "12345678901234567890123456789012345678901234567890123456", "        "
-	.DB "12345678901234567890123456789012345678901234567890123456", "        "
-	.DB "12345678901234567890123456789012345678901234567890123456", "        "
-	.DB "12345678901234567890123456789012345678901234567890123456", "        "
-	.DB "12345678901234567890123456789012345678901234567890123456", "        "
-	.DB "12345678901234567890123456789012345678901234567890123456", "        "
-	.DB "12345678901234567890123456789012345678901234567890123456", "        "
-	.DB "12345678901234567890123456789012345678901234567890123456", "        "
-	.DB "12345678901234567890123456789012345678901234567890123456", "        "
-	.DB "12345678901234567890123456789012345678901234567890123456", "        "
-	.DB "12345678901234567890123456789012345678901234567890123456", "        "
-	.DB "12345678901234567890123456789012345678901234567890123456", "        "
-	.DB "12345678901234567890123456789012345678901234567890123456", "        "
-	.DB "12345678901234567890123456789012345678901234567890123456", "        "
-	.DB "12345678901234567890123456789012345678901234567890123456", "        "
-	.DB "12345678901234567890123456789012345678901234567890123456", "        "
-	.DB "12345678901234567890123456789012345678901234567890123456", "        "
-	.DB "12345678901234567890123456789012345678901234567890123456", "        "
-	.DB "12345678901234567890123456789012345678901234567890123456", "        "
-	.DB 0
-
-.ENDS
 
 
 
@@ -204,7 +154,7 @@ STR_SoftwareBuild:
 	.DB "Build #"
 
 STR_SoftwareBuildNo:
-	.DB "00310"
+	.DB "00315"
 	.DB 0
 
 STR_SoftwareBuildTimestamp:
@@ -223,7 +173,41 @@ CONST_Zeroes:
 CONST_FFs:
 	.DW $FFFF
 
+.ENDS
 
+
+
+.SECTION "Disclaimer" FORCE
+
+STR_DisclaimerWallofText:						; max. 20 lines, 56 chars per line
+;	     12345678901234567890123456789012345678901234567890123456
+	.DB "12345678901234567890123456789012345678901234567890123456", "        "
+	.DB "12345678901234567890123456789012345678901234567890123456", "        "
+	.DB "12345678901234567890123456789012345678901234567890123456", "        "
+	.DB "12345678901234567890123456789012345678901234567890123456", "        "
+	.DB "12345678901234567890123456789012345678901234567890123456", "        "
+	.DB "12345678901234567890123456789012345678901234567890123456", "        "
+	.DB "12345678901234567890123456789012345678901234567890123456", "        "
+	.DB "12345678901234567890123456789012345678901234567890123456", "        "
+	.DB "12345678901234567890123456789012345678901234567890123456", "        "
+	.DB "12345678901234567890123456789012345678901234567890123456", "        "
+	.DB "12345678901234567890123456789012345678901234567890123456", "        "
+	.DB "12345678901234567890123456789012345678901234567890123456", "        "
+	.DB "12345678901234567890123456789012345678901234567890123456", "        "
+	.DB "12345678901234567890123456789012345678901234567890123456", "        "
+	.DB "12345678901234567890123456789012345678901234567890123456", "        "
+	.DB "12345678901234567890123456789012345678901234567890123456", "        "
+	.DB "12345678901234567890123456789012345678901234567890123456", "        "
+	.DB "12345678901234567890123456789012345678901234567890123456", "        "
+	.DB "12345678901234567890123456789012345678901234567890123456", "        "
+	.DB "12345678901234567890123456789012345678901234567890123456", "        "
+	.DB 0
+
+.ENDS
+
+
+
+.SECTION "NMI/IRQ jump tables" FORCE
 
 SRC_VblankJumpTable:
 	jml	Vblank_Area
@@ -283,21 +267,6 @@ SRC_IRQJumpTable:
 
 
 
-.BANK CurrentBank SLOT 0
-.ORG StartOffset + $FA0
-
-.SECTION "Startup" FORCE
-
-Startup:
-	sei								; disable interrupts
-	clc
-	xce								; switch to 65816 native mode
-	jml	Boot
-
-.ENDS
-
-
-
 ; ****************************** NEW BANK ******************************
 
 .REDEFINE CurrentBank	CurrentBank+1
@@ -309,6 +278,7 @@ Startup:
 
 .INCLUDE "data/gfx.inc.asm"						; sprites, fonts, palettes
 .INCLUDE "data/tbl_fontwidth.inc.asm"					; font width table for sprite VWF
+;.INCLUDE "data/tbl_areaobjects.inc.asm"					; area object tables
 .INCLUDE "data/tbl_areaproperties.inc.asm"				; area property tables & pointers
 
 .ENDS
@@ -856,54 +826,30 @@ SRC_track_09_Notes:
 .BANK CurrentBank SLOT 0
 .ORG StartOffset
 
-.SECTION "ExHiROM Dummy/empty vectors" FORCE				; copied from bank $C0
+.SECTION "ExHiROM boot code & dummy vectors" FORCE
 
-;EmptyHandler:
+Startup:
+	sei								; disable interrupts
+	clc
+	xce								; switch to 65816 native mode
+	jml	Boot
+
+EmptyHandler:
 	rti
 
-;DummyBRK:
+DummyBRK:
 	jml	ErrorHandlerBRK
 
-;DummyCOP:
+DummyCOP:
 	jml	ErrorHandlerCOP
 
 .ENDS
 
 
 
-.ORG StartOffset + $FA0
+.ORG StartOffset + $10
 
-.SECTION "ExHiROM Startup 2" FORCE					; copied from bank $C0
-
-;Startup:
-	sei								; disable interrupts
-	clc
-	xce								; switch to 65816 native mode
-	jml	Boot
-
-.ENDS
-
-
-
-.ORG StartOffset + $FB0
-
-.SECTION "ExHiROM ID" FORCE						; copied from bank $C0
-
-	.DB "00SNES"
-
-.ENDS
-
-
-
-.ORG StartOffset + $FC0
-
-.SECTION "ExHiROM header/vectors" FORCE					; copied from bank $C0 (with dummy checksum)
-
-	.DB "FURRY RPG!           ", $35, $55, $0D, $03, $01, $33, $00, $FE, $FE, $01, $01
-	.DB $FF, $FF, $FF, $FF, $05, $F0, $01, $F0, $00, $F0, $00, $00, $00, $00, $04, $00
-	.DB $FF, $FF, $FF, $FF, $00, $F0, $00, $00, $00, $F0, $00, $F0, $A0, $FF, $00, $F0
-
-.ENDS
+	.DB "00"							; new licensee code (unlicensed)
 
 
 

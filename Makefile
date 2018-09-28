@@ -9,7 +9,7 @@
 
 
 
-# This requires Python2 (I use v2.7.12), and the WLA DX assembler (v9.7b or newer).
+# This requires Python2 (I use v2.7.12), and the WLA DX assembler (v9.8a or newer).
 # Graphics conversion (not supported yet) will require the Foxen snes-tile-tool.py
 # (freely available from https://github.com/fo-fo/snes-tile-tool). ;-)
 
@@ -20,7 +20,7 @@ LDFLAGS=-r -s
 
 target=furryrpg
 
-chsumscript=fix_chsum_exhirom_48mbit
+#chsumscript=fix_chsum_exhirom_48mbit
 pyscript_gfx=snes-tile-tool.py
 pyscript_m7=calc_mode7_scaling_tables.py
 
@@ -37,8 +37,8 @@ all: bindata $(msu) $(sfc)
 
 $(sfc): $(obj)
 	$(LD) $(LDFLAGS) $(lnk) $(sfc)
-	cd tools && \
-	./$(chsumscript) ../$(sfc)
+#	cd tools && \
+#	./$(chsumscript) ../$(sfc)
 
 $(msu):
 	touch $(msu)
