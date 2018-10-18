@@ -163,7 +163,6 @@ MainTextBoxLoop:							; this routine needs to be called once per frame
 @TextBoxNotFrozen:
 	and	#%01000000						; more text pending?
 	beq	@PrintDialogTextDone
-
 	jsr	ProcessNextText
 
 @PrintDialogTextDone:

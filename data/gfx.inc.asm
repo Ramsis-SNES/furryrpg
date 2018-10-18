@@ -60,12 +60,6 @@ SRC_Palettes_Text:
 	.DW $0000							; unused color
 	.DW $03FF							; font (yellow)
 
-SRC_Palettes_Items:							; 4-color palette for item name gfx
-	.DW $0000
-	.DW $2108
-	.DW $4210
-	.DW $7FFF
-
 SRC_Palettes_HUD:							; 16-color palette for HUD content
 .INCBIN FONT_HUD_PAL READ 32
 

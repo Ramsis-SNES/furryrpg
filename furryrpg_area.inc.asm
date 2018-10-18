@@ -449,7 +449,6 @@ LoadAreaData:
 	sta	VAR_ShadowTM
 
 	SetNMI	TBL_NMI_Area
-
 	Accu16
 
 	lda	#228							; dot number for interrupt (256 = too late, 204 = too early)
@@ -459,7 +458,6 @@ LoadAreaData:
 	sta	DP_TextBoxVIRQ
 
 	Accu8
-
 	SetIRQ	TBL_VIRQ_Area
 
 	lda	REG_RDNMI						; clear NMI flag
