@@ -625,6 +625,7 @@ PTR_ProcessTextCC:
 	.DW Process_CC_Indent
 	.DW Process_CC_NewLine
 	.DW Process_CC_Selection
+	.DW Process_CC_ToggleBold
 
 Process_CC_Portrait:
 	iny								; increment string pointer to portrait no.
@@ -635,9 +636,10 @@ Process_CC_Portrait:
 	Accu16
 
 	inc	DP_TextStringCounter					; increment to next ASCII string character
-	jmp	__ProcessTextJumpOut
 
-.ACCU 8
+	Accu8
+
+	jmp	__ProcessTextJumpOut
 
 Process_CC_BoxBG:
 	lsr	a							; revert jump index back to original control code (no. of background color gradient)
@@ -679,28 +681,47 @@ Process_CC_NewLine:
 	lda	DP_TextTileDataCounter					; check what line we've been on
 	cmp	#46*8							; line 1?
 	bne	+
+
+	Accu8
+
 	jmp	__ProcessTextJumpOut					; do nothing if carriage return requested after exactly 23 (16×8) tiles
+
+.ACCU 16
 
 +	bcs	+
 	lda	#46*8							; go to line 2
 	sta	DP_TextTileDataCounter
+
+	Accu8
+
 	jmp	__ProcessTextJumpOut
 
 .ACCU 16
 
 +	cmp	#92*8							; line 2?
 	bne	+
+
+	Accu8
+
 	jmp	__ProcessTextJumpOut					; do nothing if carriage return requested after exactly 46 (16×8) tiles
+
+.ACCU 16
 
 +	bcs	+
 	lda	#92*8							; go to line 3
 	sta	DP_TextTileDataCounter
+
+	Accu8
+
 	jmp	__ProcessTextJumpOut
 
 .ACCU 16
 
 +	lda	#138*8							; otherwise, go to line 4
 	sta	DP_TextTileDataCounter
+
+	Accu8
+
 	jmp	__ProcessTextJumpOut
 
 Process_CC_Selection:
@@ -739,7 +760,13 @@ Process_CC_Selection:
 
 	lda	#%00001000						; else, line 4
 ++	tsb	DP_TextBoxSelection
-	jmp	__ProcessTextLoop
+	jmp	__ProcessTextJumpOut
+
+Process_CC_ToggleBold:
+	lda	DP_TextEffect
+	eor	#%10000000						; toggle "bold text" bit
+	sta	DP_TextEffect
+	jmp	__ProcessTextJumpOut
 
 
 
@@ -749,12 +776,14 @@ __ProcessTextNormal:
 
 	and	#$00FF							; remove garbage in high byte
 	sta	DP_TextASCIIChar					; save ASCII char no.
-
-	Accu8
-
+	bit	DP_TextEffect-1						; put MSB of DP_TextEffect into MSB of accumulator
+	bmi	+							; MSB set --> use routine for bold font
 	jsr	ProcessVWFTiles
 
-	Accu16
+	bra	++
++	jsr	ProcessVWFTilesBold
+
+++	Accu16
 
 	lda	DP_VWF_BufferIndex					; check if 2 buffer tiles full
 	lsr	a							; buffer index / 16 = tile no.
@@ -775,7 +804,7 @@ __ProcessTextNormal:
 __ProcessTextIncTileCounter:
 	Accu16
 
-	lda	DP_TextTileDataCounter					; increment VRAM tile counter by 2 tiles
+	lda	DP_TextTileDataCounter					; increment VRAM tile counter by 2 (8×8) tiles
 	clc
 	adc	#16							; not 32 because of VRAM word addressing
 	sta	DP_TextTileDataCounter
@@ -802,14 +831,10 @@ __ProcessTextDone:
 
 	lda	#%01000000						; clear "more text pending" flag
 	trb	DP_TextBoxStatus
-
-	Accu16
-
-	stz	DP_TextTileDataCounter
+	stz	DP_TextTileDataCounter					; clear tile data counter
+	stz	DP_TextTileDataCounter+1
 
 __ProcessTextJumpOut:
-	Accu8
-
 	rts
 
 
@@ -843,11 +868,12 @@ ClearTextBox:
 
 	lda	#%10000000						; text box is empty now, so clear the "clear text box" flag
 	trb	DP_TextBoxStatus
+	stz	DP_TextEffect						; clear all text effect bits
 	rts
 
 
 
-LoadTextBoxBG:
+LoadTextBoxBG:								; routine is called during Vblank only
 	lda	DP_TextBoxBG
 	and	#%01111111						; mask off request bit
 	bne	+
@@ -1279,9 +1305,9 @@ MakeMode5FontBG2:							; Expects VRAM address set to BG2 tile base
 
 
 
-ProcessVWFTiles:
-	Accu16
+.ACCU 16
 
+ProcessVWFTiles:
 	lda	DP_TextASCIIChar					; ASCII char no. --> font tile no.
 	asl	a							; value * 16 as 1 font tile = 16 bytes
 	asl	a
@@ -1298,7 +1324,7 @@ ProcessVWFTiles:
 @VWFTilesLoop:
 	lda.l	GFX_FontMode5, x
 	xba								; move to high byte
-	lda	#$00
+	lda	#$00							; clear low byte
 	jsr	VWFShiftBits						; shift tile data if necessary
 
 	ora	ARRAY_VWF_TileBuffer+16, y				; store upper 8 bit
@@ -1340,9 +1366,180 @@ ProcessVWFTiles:
 
 
 
+.ACCU 16
+
+ProcessVWFTilesBold:
+	lda	DP_TextASCIIChar					; ASCII char no. --> font tile no.
+	asl	a							; value * 32 as 1 font tile = 16 bytes, and each character uses 2 tiles
+	asl	a
+	asl	a
+	asl	a
+	asl	a
+	tax
+
+	Accu8
+
+	lda	#16							; loop through 16 bytes per tile
+	sta	DP_VWF_Loop
+	ldy	DP_VWF_BufferIndex
+
+@VWFTilesLoop1:
+	lda.l	GFX_FontMode5Bold, x
+	xba								; move to high byte
+	lda	#$00							; clear low byte
+	jsr	VWFShiftBits						; shift tile data if necessary
+
+	ora	ARRAY_VWF_TileBuffer+16, y				; store upper 8 bit
+	sta	ARRAY_VWF_TileBuffer+16, y
+	xba
+	ora	ARRAY_VWF_TileBuffer, y					; store lower 8 bit
+	sta	ARRAY_VWF_TileBuffer, y
+	inx
+	iny
+	dec	DP_VWF_Loop
+	bne	@VWFTilesLoop1
+
+	Accu16
+
+	lda	DP_TextASCIIChar					; get correct ASCII char no. font width table index
+	asl	a							; the table consists of 2 entries per character, so double the value
+	tax
+
+	Accu8
+
+	lda.l	SRC_FWT_DialogBold, x					; ASCII char graphics (right half) --> font width table index
+	clc
+	adc	DP_VWF_BitsUsed
+	cmp	#8
+	bcs	+
+	sta	DP_VWF_BitsUsed
+
+	Accu16
+
+	tya
+	sec
+	sbc	#16
+	sta	DP_VWF_BufferIndex
+
+	Accu8
+
+	bra	@VWFTilesDone1
+
++	sec
+	sbc	#8
+	sta	DP_VWF_BitsUsed
+	sty	DP_VWF_BufferIndex
+
+@VWFTilesDone1:
+	Accu16
+
+	lda	DP_TextASCIIChar					; check if there is a right half of character graphics
+	asl	a							; 2 entries per character, so make up for that
+	inc	a							; move table index to the right of current char
+	tax
+
+	Accu8
+
+	lda.l	SRC_FWT_DialogBold, x
+	bne	+
+	jmp	@VWFTilesDone2						; if entry is zero, jump out
+
++	Accu16
+
+	lda	DP_VWF_BufferIndex					; we need to do a second half, check if 2 buffer tiles full first
+	lsr	a							; buffer index / 16 = tile no.
+	lsr	a
+	lsr	a
+	lsr	a
+	cmp	#2
+	bcc	+
+
+	Accu8
+
+	lda	#$01							; set "VWF buffer full" bit
+	tsb	DP_TextBoxStatus
+
+	WaitFrames	1
+	Accu16
+
+	lda	DP_TextTileDataCounter					; increment VRAM tile counter by 2 (8×8) tiles
+	clc
+	adc	#16							; not 32 because of VRAM word addressing
+	sta	DP_TextTileDataCounter
+
++	Accu16								; finally, process right half of char graphics
+
+	lda	DP_TextASCIIChar					; ASCII char no. --> font tile no.
+	asl	a							; value * 32 as 1 font tile = 16 bytes, and each character uses 2 tiles
+	asl	a
+	asl	a
+	asl	a
+	asl	a
+	clc								; add 16 bytes (one 8×8 tile) for right half of char graphics
+	adc	#16
+	tax
+
+	Accu8
+
+	lda	#16							; loop through 16 bytes per tile
+	sta	DP_VWF_Loop
+	ldy	DP_VWF_BufferIndex
+
+@VWFTilesLoop2:
+	lda.l	GFX_FontMode5Bold, x
+	xba								; move to high byte
+	lda	#$00							; clear low byte
+	jsr	VWFShiftBits						; shift tile data if necessary
+
+	ora	ARRAY_VWF_TileBuffer+16, y				; store upper 8 bit
+	sta	ARRAY_VWF_TileBuffer+16, y
+	xba
+	ora	ARRAY_VWF_TileBuffer, y					; store lower 8 bit
+	sta	ARRAY_VWF_TileBuffer, y
+	inx
+	iny
+	dec	DP_VWF_Loop
+	bne	@VWFTilesLoop2
+
+	Accu16
+
+	lda	DP_TextASCIIChar					; get correct ASCII char no. font width table index
+	asl	a							; the table consists of 2 entries per character, so double the value
+	inc	a							; move table index to right half of current char
+	tax
+
+	Accu8
+
+	lda.l	SRC_FWT_DialogBold, x					; ASCII char graphics (right half) --> font width table index
+	clc
+	adc	DP_VWF_BitsUsed
+	cmp	#8
+	bcs	+
+	sta	DP_VWF_BitsUsed
+
+	Accu16
+
+	tya
+	sec
+	sbc	#16
+	sta	DP_VWF_BufferIndex
+
+	Accu8
+
+	bra	@VWFTilesDone2
+
++	sec
+	sbc	#8
+	sta	DP_VWF_BitsUsed
+	sty	DP_VWF_BufferIndex
+
+@VWFTilesDone2:
+	rts
+
+
+
 VWFShiftBits:
 	phx
-	phy
 
 	Accu16
 
@@ -1385,7 +1582,6 @@ VWFShiftBits:
 @VWFShiftBitsDone:
 	Accu8
 
-	ply
 	plx
 	rts
 

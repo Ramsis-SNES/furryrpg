@@ -666,7 +666,8 @@
 .DEFINE CC_Indent		7
 .DEFINE CC_NewLine		8
 .DEFINE CC_Selection		9
-.DEFINE NO_CC			10					; this has to be greater than the last control code
+.DEFINE CC_ToggleBold		10
+.DEFINE NO_CC			11					; this has to be greater than the last control code
 .DEFINE CC_End			255					; $FF = string terminator
 
 
@@ -846,6 +847,7 @@
 	DP_TextBoxStrBank	db					; 8-bit bank no. of string
 	DP_TextBoxVIRQ		dw					; scanline no. of text box start (for scrolling animation)
 	DP_TextCursor		dw
+	DP_TextEffect		db					; brrrrrrr [b = toggle bold font, r = reserved]
 	DP_TextLanguage		db					; holds language constant
 	DP_TextPointerNo	dw
 	DP_TextStringPtr	dw					; 16-bit string pointer (or zeroes) // see caveat @ DP_TextBoxStrPtr

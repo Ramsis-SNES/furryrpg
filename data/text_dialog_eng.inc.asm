@@ -36,7 +36,7 @@ STR_DialogEng0000:
 	.DB CC_Portrait, 3, CC_BoxBlue
 	.DB "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG.", CC_NewLine
 	.DB "the quick brown fox jumps over the lazy dog.", CC_NewLine
-	.DB "0123456789 ", Auml, Ouml, Uuml, auml, ouml, uuml, szlig, CC_NewLine
+	.DB "0123456789 ", Auml, Ouml, Uuml, auml, ouml, uuml, szlig, CC_ToggleBold, " Bold text", CC_ToggleBold, CC_NewLine
 	.DB "!\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~", SYM_heart, SYM_mult, CC_End
 
 STR_DialogEng0001:

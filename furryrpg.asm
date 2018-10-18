@@ -154,7 +154,7 @@ STR_SoftwareBuild:
 	.DB "Build #"
 
 STR_SoftwareBuildNo:
-	.DB "00315"
+	.DB "00317"
 	.DB 0
 
 STR_SoftwareBuildTimestamp:
@@ -279,7 +279,24 @@ SRC_IRQJumpTable:
 .SECTION "CharacterData 1"
 
 .INCLUDE "data/gfx.inc.asm"						; sprites, fonts, palettes
-.INCLUDE "data/tbl_fontwidth.inc.asm"					; font width table for sprite VWF
+
+.ENDS
+
+
+
+; ****************************** NEW BANK ******************************
+
+.REDEFINE CurrentBank	CurrentBank+1
+
+.BANK CurrentBank SLOT 0
+.ORG 0
+
+.SECTION "CharacterData 2"
+
+GFX_FontMode5Bold:
+.INCBIN "gfx/font_mode5_vwf_fat.pic"					; 8 KiB
+
+.INCLUDE "data/tbl_fontwidth.inc.asm"					; font width tables
 
 .ENDS
 

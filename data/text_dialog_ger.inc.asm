@@ -36,7 +36,7 @@ STR_DialogGer0000:
 	.DB CC_Portrait, 3, CC_BoxBlue
 	.DB "J", Ouml, "RG B", Auml, "CKT QUASI ZWEI HAXENF", Uuml, "SSE VOM WILDPONY.", CC_NewLine
 	.DB "j", ouml, "rg b", auml, "ckt quasi zwei haxenf", uuml, szlig, "e vom wildpony.", CC_NewLine
-	.DB "0123456789 ", Auml, Ouml, Uuml, auml, ouml, uuml, szlig, CC_NewLine
+	.DB "0123456789 ", Auml, Ouml, Uuml, auml, ouml, uuml, szlig, CC_ToggleBold, " Fetter Text", CC_ToggleBold, CC_NewLine
 	.DB "!\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~", SYM_heart, SYM_mult, CC_End
 
 STR_DialogGer0001:
@@ -385,7 +385,7 @@ STR_DialogGer0054:
 STR_DialogGer0055:
 	.DB CC_Portrait, 2, CC_BoxAlert
 	.DB "LILY:", CC_NewLine
-	.DB CC_Indent, "Was BITTESCH", Ouml, "N macht ihr zwei da!?", CC_End
+	.DB CC_Indent, "Was MACHT ihr zwei denn da!?", CC_End
 
 STR_DialogGer0056:
 	.DB CC_Portrait, 2, CC_BoxBlue
