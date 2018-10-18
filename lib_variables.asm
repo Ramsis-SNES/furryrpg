@@ -1013,6 +1013,7 @@
 	ARRAY_HDMA_FX_2Bytes		dsb 448
 	ARRAY_HDMA_BG_Scroll		dsb 16
 	ARRAY_HDMA_WorMapVScroll	dsb 448
+	ARRAY_ObjectList		dsb 128				; keeps track of currently active sprites, 1 byte per sprite: hcirrrra [a = object is active, c = object can collide with other objects, h = object can collide with hero(es), i = object is hero sprite, r = reserved]
 	ARRAY_RandomNumbers		dsb 130				; for random numbers
 	ARRAY_ShadowOAM_Lo		dsb 512
 	ARRAY_ShadowOAM_Hi		dsb 32
@@ -1032,7 +1033,7 @@
 	VAR_Time_Month			db
 	VAR_Time_Year			db
 	VAR_Time_Century		db
-.ENDE									; $EFF bytes + $200 = $10FF bytes used (initial stack pointer is set to $1FFF)
+.ENDE									; $F7F bytes + $200 = $117F bytes used (initial stack pointer is set to $1FFF)
 
 
 

@@ -251,6 +251,7 @@ SRC_IRQJumpTable:
 
 .INCLUDE "data/text_areanames_all.inc.asm"				; area names
 .INCLUDE "data/tbl_areametamaps.inc.asm"				; area meta maps
+.INCLUDE "data/tbl_areaobjects.inc.asm"					; area object tables
 .INCLUDE "scripts/event.inc.asm"					; event control scripting code
 
 .ENDS
@@ -278,7 +279,6 @@ SRC_IRQJumpTable:
 
 .INCLUDE "data/gfx.inc.asm"						; sprites, fonts, palettes
 .INCLUDE "data/tbl_fontwidth.inc.asm"					; font width table for sprite VWF
-;.INCLUDE "data/tbl_areaobjects.inc.asm"					; area object tables
 .INCLUDE "data/tbl_areaproperties.inc.asm"				; area property tables & pointers
 
 .ENDS

@@ -1149,6 +1149,13 @@ MainAreaLoop:
 
 
 
+; -------------------------- determine active objects (sprites) // set static values for now
+	lda	#%01100001						; set "object is active," "object is hero," and "can collide with other objects" flags
+	ldx	#69							; 69th sprite = first hero sprite
+	sta	ARRAY_ObjectList, x
+	inx								; 70th sprite = second hero sprite
+	sta	ARRAY_ObjectList, x
+
 
 
 ; -------------------------- misc. tasks, end loop
