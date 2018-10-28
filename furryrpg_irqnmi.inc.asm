@@ -476,7 +476,7 @@ Vblank_WorldMap:
 	lda	#$01							; $01BF = 447 (i.e., 448 bytes are transferred)
 	xba
 	lda	#$BF
-	mvn	$00, $7E
+	mvn	$7E, $00
 
 
 
