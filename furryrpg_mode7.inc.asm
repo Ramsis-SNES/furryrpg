@@ -224,12 +224,7 @@ TestMode7:
 
 
 ; -------------------------- load HUD font
-	jsr	SpriteDataInit						; purge sprite data buffer
-
-	ldx	#ARRAY_SpriteDataArea & $FFFF				; set WRAM address for area sprite data array
-	stx	REG_WMADDL
-	stz	REG_WMADDH
-	jsr	ConvertSpriteDataToBuffer
+	ResetSprites
 
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	REG_VMAIN

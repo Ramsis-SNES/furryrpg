@@ -245,7 +245,25 @@ __DrawLowerBorder\@:
 
 
 
-; Freeze macro by ManuLöwe
+; ResetSprites macro by Ramsis
+;
+; Usage: ResetSprites
+; Effect: Initializes sprite data, and stores it in the standard buffer
+;
+; Expects: A 8 bit, X/Y 16 bit
+
+.MACRO ResetSprites
+	jsr	SpriteDataInit						; purge sprite data buffer
+
+	ldx	#ARRAY_SpriteDataArea & $FFFF				; set WRAM address for area sprite data array
+	stx	REG_WMADDL
+	stz	REG_WMADDH
+	jsr	ConvertSpriteDataToBuffer
+.ENDM
+
+
+
+; Freeze macro by Ramsis
 ;
 ; Usage: Freeze
 ; Effect: CPU enters trap loop (useful e.g. for debugging)

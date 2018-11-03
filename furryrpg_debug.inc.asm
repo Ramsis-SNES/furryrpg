@@ -15,8 +15,8 @@
 DebugMenu:
 	lda	#$80							; enter forced blank
 	sta	VAR_ShadowINIDISP
-	jsr	SpriteDataInit						; purge sprite data buffer
 
+	ResetSprites
 	Accu16
 
 	stz	ARRAY_HDMA_BG_Scroll+1					; reset BG scroll values
