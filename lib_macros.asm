@@ -52,7 +52,7 @@
 .ACCU 8
 .INDEX 16
 
-; Macro bsr by ManuLöwe
+; Macro bsr by Ramsis
 ;
 ; Usage: bsr <subroutine>
 ; Effect: Branch-relative to subroutine (useful for relocatable code).
@@ -67,7 +67,7 @@ __ReturnAdress\@:
 
 
 
-; Macro sev by ManuLöwe
+; Macro sev by Ramsis
 ;
 ; Usage: sev
 ; Effect: Set the overflow flag (just because we can).
@@ -81,7 +81,7 @@ __ReturnAdress\@:
 ; -------------------------- frequently-used "code snippet" macros
 .ACCU 8
 
-; Macro DisableIRQs by ManuLöwe
+; Macro DisableIRQs by Ramsis
 ;
 ; Usage: DisableIRQs
 ; Effect: Disables NMI & IRQ.
@@ -96,7 +96,6 @@ __ReturnAdress\@:
 
 
 
-; DMA macro by ManuLöwe
 ; -------------------------- error check macros
 .MACRO CheckErrorSPC700a
 	pha								; preserve 8-bit Accu
@@ -145,6 +144,7 @@ __ReturnAdress\@:
 
 
 
+; DMA macro by Ramsis
 ;
 ; Usage: DMA_CH0 mode[8bit], A_bus_bank[8bit], A_bus_src[16bit], B_bus_register[8bit], length[16bit]
 ; Effect: Transfers data via DMA channel 0.
@@ -168,7 +168,7 @@ __ReturnAdress\@:
 
 
 
-; Macro DrawFrame by ManuLöwe
+; Macro DrawFrame by Ramsis
 ;
 ; Usage: DrawFrame <x start>, <y start>, <width>, <height>
 ; Effect: Draws a frame using the BG3 text buffer.
@@ -278,7 +278,7 @@ __DrawLowerBorder\@:
 
 
 
-; Set Data Bank macro by ManuLöwe
+; Set Data Bank macro by Ramsis
 ;
 ; Usage: SetDBR $XX
 ; Effect: Sets the Data Bank register to $XX.
@@ -293,7 +293,7 @@ __DrawLowerBorder\@:
 
 
 
-; Set Direct Page macro by ManuLöwe
+; Set Direct Page macro by Ramsis
 ;
 ; Usage: SetDPag $XXXX
 ; Effect: Sets the Direct Page register to $XXXX.
@@ -307,7 +307,7 @@ __DrawLowerBorder\@:
 
 
 
-; Macro SetIRQ by ManuLöwe
+; Macro SetIRQ by Ramsis
 ;
 ; Usage: SetIRQ <Name of IRQ routine>
 ; Effect: Writes the desired jumping instruction to the RAM location the IRQ vector points to. Caveat: IRQ has to be disabled before the macro is called!
@@ -333,7 +333,7 @@ __DrawLowerBorder\@:
 
 
 
-; Macro SetNMI by ManuLöwe
+; Macro SetNMI by Ramsis
 ;
 ; Usage: SetNMI <Name of Vblank routine>
 ; Effect: Writes the desired jumping instruction to the RAM location the NMI vector points to. Caveat: NMI has to be disabled before the macro is called!
@@ -359,7 +359,7 @@ __DrawLowerBorder\@:
 
 
 
-; Macro WaitFrames by ManuLöwe
+; Macro WaitFrames by Ramsis
 ;
 ; Usage: WaitFrames <number of frames>
 ; Effect: Waits for the given amount of Vblanks to pass. Works even when NMI is disabled.
@@ -384,7 +384,7 @@ __DrawLowerBorder\@:
 
 
 
-; Macro WaitUserInput by ManuLöwe
+; Macro WaitUserInput by Ramsis
 ;
 ; Usage: WaitUserInput
 ; Effect: Waits for the user to press any button (d-pad is ignored).
@@ -405,7 +405,7 @@ __DrawLowerBorder\@:
 
 
 
-; PrintString modified by ManuLöwe: PrintString y, x, "String"
+; PrintString modified by Ramsis: PrintString y, x, "String"
 
 .MACRO PrintString
 	stz	DP_TextStringPtr
@@ -464,7 +464,7 @@ __DrawLowerBorder\@:
 
 
 
-; Macro PrintSpriteText by ManuLöwe
+; Macro PrintSpriteText by Ramsis
 ;
 ; Usage: PrintSpriteText <y-pos>, <x-pos>, "Lorem ipsum ...", <font color>
 ; Effect: Prints a sprite-based 8×8 VWF text string (max length: 32 characters). Pos values work as with SetTextPos. Valid font colors are palette numbers 3 (white), 4 (red), 5 (green), 6 (blue), or 7 (yellow).
