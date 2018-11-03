@@ -653,9 +653,24 @@ GetInput:
 
 @joy2:
 	bit	DP_Joy2							; A = joy state, if any of the bottom 4 bits are on... either nothing is plugged
-	beq	@done							; into the joy port, or it is not a joypad
+	beq	@GetInputComplete					; into the joy port, or it is not a joypad
 	stx	DP_Joy2							; if it is not a valid joypad put $0001 into the 2 joy state variables
 	stz	DP_Joy2Press
+
+@GetInputComplete:
+	lda	DP_Joy1							; check for R+L+Start+Sel --> reset game
+	and	#%0011000000110000
+	cmp	#%0011000000110000
+	bne	@done
+	lda	#SoftReset & $FFFF					; load address of label "SoftReset"							; turn off the screen
+	sta	11, s							; overwrite original location from where NMI was called (1, s = PHP in this subroutine, 3, s = return address of this subroutine, 9, s = Accu pushed at beginning of Vblank, 10, s = status register pushed when NMI fired)
+
+	Accu8
+
+	lda	#:SoftReset						; overwrite bank byte as well, so after RTI, the program continues at SoftReset
+	sta	13, s
+	lda	#$80							; turn off the screen
+	sta	REG_INIDISP
 
 @done:
 	plp

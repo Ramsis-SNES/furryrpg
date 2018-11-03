@@ -9,8 +9,35 @@
 
 
 
-.ACCU 8
-.INDEX 16
+SoftReset:								; FIXME, move SoftReset entry point to actual game booting routine
+	Accu8
+	Index16
+	DisableIRQs
+
+	lda	#$00							; turn off DMA & HDMA
+	sta.l	REG_HDMAEN
+	sta.l	REG_MDMAEN
+
+.IFNDEF NOMUSIC
+	jsl	sound_stop_all						; stop all SPC700 sounds
+
+	stz	MSU_CONTROL						; stop MSU1 track in case it's playing
+.ENDIF
+
+	AccuIndex16
+
+	lda	#$1FFF							; set stack pointer to $1FFF
+	tcs
+
+	SetDPag	$0000							; set Direct Page = $0000
+	Accu8
+	SetDBR	$00							; set Data Bank = $00
+
+	jsr	SpriteInit
+
+; TODO (depending on code flow): Add sprite data init, clear tile map buffers and/or tile maps
+
+
 
 DebugMenu:
 	lda	#$80							; enter forced blank
