@@ -236,11 +236,10 @@ Boot:
 
 ; -------------------------- intro / title screen
 ShowAlphaIntro:
-	lda	#$80							; enter forced blank
-	sta	REG_INIDISP
-
 	DisableIRQs
 
+	lda	#$80							; enter forced blank
+	sta	REG_INIDISP
 	jsl	music_stop						; stop music in case it's playing
 
 	ldx	#(ARRAY_BG1TileMap1 & $FFFF)				; clear BG1/2 tile map buffers
