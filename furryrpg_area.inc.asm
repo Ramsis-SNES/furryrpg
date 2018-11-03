@@ -9,6 +9,9 @@
 
 
 
+.ACCU 8
+.INDEX 16
+
 LoadArea:
 	jsr	LoadAreaData
 	jmp	ShowArea

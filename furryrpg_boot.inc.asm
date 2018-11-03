@@ -142,10 +142,13 @@ Boot:
 
 
 
-; -------------------------- clear all directly accessible RAM areas (with parameters/addresses set/reset above)
 	Accu16
 	SetDPag	$0000							; set Direct Page = $0000
 	Accu8
+
+
+
+; -------------------------- clear all directly accessible RAM areas (with parameters/addresses set/reset above)
 	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, <REG_VMDATAL, 0	; VRAM (length $0000 = 65536 bytes)
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, <REG_CGDATA, 512	; CGRAM (512 bytes)
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, <REG_OAMDATA, 544	; OAM (low+high OAM tables = 512+32 bytes)
@@ -438,29 +441,29 @@ CheckHardware:
 ; -------------------------- MSU1 (byuu, ikari)
 	lda	MSU_ID							; check for "S-MSU1"
 	cmp	#'S'
-	bne	__NoMSU1
+	bne	@NoMSU1
 	lda	MSU_ID+1
 	cmp	#'-'
-	bne	__NoMSU1
+	bne	@NoMSU1
 	lda	MSU_ID+2
 	cmp	#'M'
-	bne	__NoMSU1
+	bne	@NoMSU1
 	lda	MSU_ID+3
 	cmp	#'S'
-	bne	__NoMSU1
+	bne	@NoMSU1
 	lda	MSU_ID+4
 	cmp	#'U'
-	bne	__NoMSU1
+	bne	@NoMSU1
 	lda	MSU_ID+5
 	cmp	#'1'
-	beq	__MSU1Found
+	beq	@MSU1Found
 
-__NoMSU1:
+@NoMSU1:
 	lda	#%00000001
 	trb	DP_GameConfig						; clear "MSU1 present" flag
 	bra	+
 
-__MSU1Found:
+@MSU1Found:
 	lda	#%00000001
 	tsb	DP_GameConfig						; set "MSU1 present" flag
 +
@@ -471,12 +474,12 @@ __MSU1Found:
 	lda	SRTC_READ
 	and	#$0F							; from Fullsnes: If ([002800h] AND 0F)=0Fh then read <Timestamp(13 digits)>
 	cmp	#$0F
-	beq	__SRTCfound
+	beq	@SRTCfound
 	lda	#%00000010
 	trb	DP_GameConfig						; clear "S-RTC present" flag
 	bra	+
 
-__SRTCfound:
+@SRTCfound:
 	lda	#%00000010
 	tsb	DP_GameConfig						; set "S-RTC present" flag
 /*	lda	#$0E							; from Fullsnes: Send <0Eh,04h,0Dh,0Eh,00h,Timestamp(12 digits),0Dh> to [002801h]

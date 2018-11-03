@@ -1114,11 +1114,8 @@ ErrorHandlerBRK:
 .ENDIF
 
 	Accu16
-
 	SetDPag	$0000
-
 	Accu8
-
 	SetDBR	$00
 
 	stz	REG_HDMAEN						; disable HDMA
@@ -1265,11 +1262,8 @@ ErrorHandlerCOP:
 .ENDIF
 
 	Accu16
-
 	SetDPag	$0000
-
 	Accu8
-
 	SetDBR	$00
 
 	stz	REG_HDMAEN						; disable HDMA

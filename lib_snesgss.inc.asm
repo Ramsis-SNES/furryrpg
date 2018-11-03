@@ -38,23 +38,14 @@ spc_load_data:
 
 	AccuIndex16
 
-;	.ifndef DISABLE_SOUND
 	stz	VAR_TimeoutCounter					; reset timeout counter
 	lda.w	#0
 	tay
-
-	Accu8
-
-;	sta.l	REG_NMITIMEN						;disable NMI,interrupts has to be disabled to prevent possible lockup in the IPL transfer routine
-;	sei								;disable IRQ
-
-	Accu16
-
-	lda	DP_SPC_DataSize ;7,s					;size
+	lda	DP_SPC_DataSize						;size
 	tax
-	lda	DP_SPC_DataOffset ;9,s					;src
+	lda	DP_SPC_DataOffset					;src
 	sta	DP_SNESlib_ptr
-	lda	DP_SPC_DataBank ;11,s					;srch
+	lda	DP_SPC_DataBank						;srch
 	sta	DP_SNESlib_ptr+2
 	lda.w	#$bbaa							;IPL ready signature
 
@@ -64,8 +55,8 @@ _wait1:
 	cmp.l	REG_APUIO0
 	bne	_wait1
 
-	lda	DP_SPC_DataAddress ;5,s					;adr
 	stz	VAR_TimeoutCounter					; reset timeout counter
+	lda	DP_SPC_DataAddress					;adr
 	sta.l	REG_APUIO2
 	lda.w	#$01cc							;IPL load and ready signature
 	sta.l	REG_APUIO0
@@ -82,22 +73,20 @@ _wait2:
 	stz	VAR_TimeoutCounter+1
 	phb
 	lda	#0
-
 	pha
 	plb
 
 _load1:
-
 	lda	[DP_SNESlib_ptr],y
-	sta.w	REG_APUIO1
+	sta.l	REG_APUIO1
 	tya
-	sta.w	REG_APUIO0
+	sta.l	REG_APUIO0
 	iny
 	
 _load2:
 	CheckErrorSPC700a
 
-	cmp.w	REG_APUIO0
+	cmp.l	REG_APUIO0
 	bne	_load2
 
 	stz	VAR_TimeoutCounter					; reset timeout counter
@@ -110,7 +99,6 @@ _load2:
 	iny
 	
 _load3:
-
 	plb
 
 	Accu16
@@ -125,23 +113,6 @@ _load3:
 	tya								;stop transfer
 	sta.l	REG_APUIO0
 
-;	Accu16
-
-;	ldx	#$80
-;	lda.w	__tccs_snes_pad_count
-;	cmp.w	#2
-;	bcc	_load4
-
-;	ldx	#$81
-	
-;_load4:
-
-;	Accu8
-
-;	txa
-;	sta.l	REG_NMITIMEN						;enable NMI
-;	cli								;enable IRQ
-
 	Accu16
 
 _load5:
@@ -151,8 +122,6 @@ _load5:
 	ora.l	REG_APUIO2
 	bne	_load5
 
-;	.endif
-
 	stz	VAR_TimeoutCounter					; reset timeout counter
 	plp
 	rtl
@@ -160,15 +129,8 @@ _load5:
 
 	
 spc_command_asm:
-
-;	.ifndef DISABLE_SOUND
-
 	Accu8
 -	CheckErrorSPC700a
-
-;	lda	#$00
-;	sta.l	REG_NMITIMEN						; disable NMI // LAST ADD 198
-;	sei								; disable IRQ // LAST ADD 198
 
 	lda.l	REG_APUIO0
 	bne	-
@@ -191,17 +153,10 @@ spc_command_asm:
 	lda.l	REG_APUIO0
 	beq	-
 
-+
-
-	Accu8								; LAST ADD 200
-
-;	lda	#$81
-;	sta.l	REG_NMITIMEN						; reenable NMI // LAST ADD 198
-;	cli								; reenable IRQ // LAST ADD 198
 	stz	VAR_TimeoutCounter					; reset timeout counter
 	stz	VAR_TimeoutCounter+1
 
-;	.endif
++	Accu8								; LAST ADD 200
 
 	rtl
 
