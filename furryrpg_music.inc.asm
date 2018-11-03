@@ -342,37 +342,6 @@ STR_Track12:
 
 
 
-; -------------------------- boot SPC700 with sound driver only, don't load music yet
-BootSPC700:
-	DisableIRQs
-
-	Accu16
-
-	lda	#:SRC_spc700_driver
-	sta	DP_SPC_DataBank
-	lda	#SRC_spc700_driver+2
-	sta	DP_SPC_DataOffset
-	lda.l	SRC_spc700_driver
-	sta	DP_SPC_DataSize
-	lda	#$0200
-	sta	DP_SPC_DataAddress
-	jsl	spc_load_data
-
-	Accu16
-
-	lda.w	#SCMD_INITIALIZE
-	sta	DP_GSS_command
-	stz	DP_GSS_param
-	jsl	spc_command_asm
-
-	lda.l	VAR_Shadow_NMITIMEN					; reenable interrupts
-	sta.l	REG_NMITIMEN
-	cli
-
-	rtl
-
-
-
 ; ***************************** MSU1 stuff *****************************
 
 .ACCU 8

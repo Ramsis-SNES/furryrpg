@@ -9,6 +9,30 @@
 
 
 
+BootSPC700:
+	Accu16
+
+	lda	#:SRC_spc700_driver
+	sta	DP_SPC_DataBank
+	lda	#SRC_spc700_driver+2
+	sta	DP_SPC_DataOffset
+	lda.l	SRC_spc700_driver
+	sta	DP_SPC_DataSize
+	lda	#$0200
+	sta	DP_SPC_DataAddress
+	jsl	spc_load_data
+
+	Accu16
+
+	lda.w	#SCMD_INITIALIZE
+	sta	DP_GSS_command
+	stz	DP_GSS_param
+	jsl	spc_command_asm
+
+	rtl
+
+
+
 spc_load_data:
 	php
 
