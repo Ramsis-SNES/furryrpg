@@ -250,6 +250,7 @@ SRC_IRQJumpTable:
 .SECTION "data" SEMIFREE						; CHANGEME, move data/scripting files to other banks (requires acknowledgement of bank byte in area properties)
 
 .INCLUDE "data/text_areanames_all.inc.asm"				; area names
+.INCLUDE "data/text_errorcodes.inc.asm"					; error code names
 .INCLUDE "data/tbl_areametamaps.inc.asm"				; area meta maps
 .INCLUDE "data/tbl_areaobjects.inc.asm"					; area object tables
 .INCLUDE "data/tbl_areaproperties.inc.asm"				; area property tables & pointers

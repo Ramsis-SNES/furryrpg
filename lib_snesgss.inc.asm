@@ -15,6 +15,7 @@ spc_load_data:
 	AccuIndex16
 
 ;	.ifndef DISABLE_SOUND
+	stz	VAR_TimeoutCounter					; reset timeout counter
 	lda.w	#0
 	tay
 
@@ -34,11 +35,13 @@ spc_load_data:
 	lda.w	#$bbaa							;IPL ready signature
 
 _wait1:
+	CheckErrorSPC700ab
 
 	cmp.l	REG_APUIO0
 	bne	_wait1
 
 	lda	DP_SPC_DataAddress ;5,s					;adr
+	stz	VAR_TimeoutCounter					; reset timeout counter
 	sta.l	REG_APUIO2
 	lda.w	#$01cc							;IPL load and ready signature
 	sta.l	REG_APUIO0
@@ -46,10 +49,13 @@ _wait1:
 	Accu8
 
 _wait2:
+	CheckErrorSPC700a
 
 	cmp.l	REG_APUIO0
 	bne	_wait2
 
+	stz	VAR_TimeoutCounter					; reset timeout counter
+	stz	VAR_TimeoutCounter+1
 	phb
 	lda	#0
 
@@ -65,9 +71,13 @@ _load1:
 	iny
 	
 _load2:
+	CheckErrorSPC700a
 
 	cmp.w	REG_APUIO0
 	bne	_load2
+
+	stz	VAR_TimeoutCounter					; reset timeout counter
+	stz	VAR_TimeoutCounter+1
 	dex
 	bne	_load1
 
@@ -111,6 +121,7 @@ _load3:
 	Accu16
 
 _load5:
+	CheckErrorSPC700ab
 
 	lda.l	REG_APUIO0						;wait until SPC700 clears all communication ports, confirming that code has started
 	ora.l	REG_APUIO2
@@ -118,6 +129,7 @@ _load5:
 
 ;	.endif
 
+	stz	VAR_TimeoutCounter					; reset timeout counter
 	plp
 	rtl
 
@@ -128,13 +140,17 @@ spc_command_asm:
 ;	.ifndef DISABLE_SOUND
 
 	Accu8
+-	CheckErrorSPC700a
 
 ;	lda	#$00
 ;	sta.l	REG_NMITIMEN						; disable NMI // LAST ADD 198
 ;	sei								; disable IRQ // LAST ADD 198
 
--	lda.l	REG_APUIO0
+	lda.l	REG_APUIO0
 	bne	-
+
+	stz	VAR_TimeoutCounter					; reset timeout counter
+	stz	VAR_TimeoutCounter+1
 
 	Accu16
 
@@ -146,8 +162,9 @@ spc_command_asm:
 	beq	+
 
 	Accu8
+-	CheckErrorSPC700a
 
--	lda.l	REG_APUIO0
+	lda.l	REG_APUIO0
 	beq	-
 
 +
@@ -157,6 +174,8 @@ spc_command_asm:
 ;	lda	#$81
 ;	sta.l	REG_NMITIMEN						; reenable NMI // LAST ADD 198
 ;	cli								; reenable IRQ // LAST ADD 198
+	stz	VAR_TimeoutCounter					; reset timeout counter
+	stz	VAR_TimeoutCounter+1
 
 ;	.endif
 

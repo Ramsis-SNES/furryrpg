@@ -932,6 +932,154 @@ UpdateGameTime:
 
 ; ************************** Software Errors ***************************
 
+ErrorHandler:
+	AccuIndex16
+
+	pha								; preserve registers
+	phx
+	phy
+	php
+
+	Accu8
+
+	lda	#$80							; enter forced blank
+	sta.l	REG_INIDISP
+
+	DisableIRQs
+	Accu16
+	SetDPag	$0000
+	Accu8
+	SetDBR	$00
+
+	stz	REG_HDMAEN						; disable HDMA
+
+
+
+; -------------------------- clear BG3 tilemap buffer
+	ldx	#(ARRAY_BG3TileMap & $FFFF)
+	stx	REG_WMADDL
+	stz	REG_WMADDH
+
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 2048
+
+
+
+; -------------------------- 8x8 font --> VRAM
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
+	ldx	#ADDR_VRAM_BG3_Tiles
+	stx	REG_VMADDL
+
+	DMA_CH0 $01, :GFX_Font8x8, GFX_Font8x8, $18, 2048
+
+	ldx	#0
+	lda	#$20							; priority bit
+-	sta	ARRAY_BG3TileMapHi, x					; set priority bit for BG3 tiles
+	inx
+	cpx	#1024
+	bne	-
+
+
+
+; -------------------------- font palette --> CGRAM
+	stz	REG_CGADD						; reset CGRAM address
+	lda	#$1F							; set mainscreen bg color: pink
+	sta	REG_CGDATA
+	lda	#$7C
+	sta	REG_CGDATA
+	ldx	#2							; skip original bg color
+-	lda.l	SRC_Palettes_Text, x					; copy remaining 3 colors
+	sta	REG_CGDATA
+	inx
+	cpx	#8
+	bne	-
+
+
+
+; -------------------------- register updates
+	lda	#$01							; set BG mode 1
+	sta	REG_BGMODE
+	lda	#$48							; BG3 tile map VRAM offset: $4800, Tile Map size: 32×32 tiles
+	sta	REG_BG3SC
+	lda	#$04							; BG3 character data VRAM offset: $4000 (ignore BG4 bits)
+	sta	REG_BG34NBA
+	lda	#%00000100						; turn on BG3 only
+	sta	REG_TM							; on the mainscreen
+	sta	REG_TS							; and on the subscreen
+
+	PrintString	3, 2, "An error occurred!"
+	PrintString	5, 2, "Error code: "
+	PrintHexNum	5, 14, DP_ErrorCode
+	PrintString	6, 2, "Error type:"
+
+	lda	DP_ErrorCode
+
+	Accu16
+
+	and	#$00FF							; remove garbage in high byte
+	asl	a
+	tax
+	lda.l	SRC_ErrorCodesPtrTable, x				; load track name pointer
+	sta	DP_DataAddress
+
+	Accu8
+
+	lda	#:SRC_TrackPointerTable
+	sta	DP_DataBank
+
+	PrintString	7, 2, "%s"					; print error code name
+	PrintString	9, 2, "Status register: $"
+
+	lda	7, s
+	sta	DP_Temp
+
+	PrintHexNum	DP_Temp
+	PrintString	10, 2, "Accuml.: $"
+
+	lda	6, s
+	sta	DP_Temp
+
+	PrintHexNum	DP_Temp
+
+	lda	5, s
+	sta	DP_Temp
+
+	PrintHexNum	DP_Temp
+	PrintString	11, 2, "X index: $"
+
+	lda	4, s
+	sta	DP_Temp
+
+	PrintHexNum	DP_Temp
+
+	lda	3, s
+	sta	DP_Temp
+
+	PrintHexNum	DP_Temp
+	PrintString	12, 2, "Y index: $"
+
+	lda	2, s
+	sta	DP_Temp
+
+	PrintHexNum	DP_Temp
+
+	lda	1, s
+	sta	DP_Temp
+
+	PrintHexNum	DP_Temp
+	SetNMI	TBL_NMI_Error
+
+	lda	REG_RDNMI						; clear NMI flag
+	cli								; reenable interrupts
+	lda	#$81
+	sta	REG_NMITIMEN
+	lda	#$0F							; turn on screen
+	sta	REG_INIDISP
+
+	Freeze								; enter trap loop instead of RTI
+
+
+
 ErrorHandlerBRK:
 	AccuIndex16
 

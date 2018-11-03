@@ -18,6 +18,7 @@
 ; ARRAY_	= non-Direct Page array
 ; CC_		= text box control code byte
 ; EC_		= event control code byte
+; ERR_		= error code byte
 ; CMD_		= constant, as .DEFINEd (used as macro/subroutine command)
 ; CONST_	= arbitrary constant, stored in ROM
 ; DP_		= Direct Page variable
@@ -288,6 +289,14 @@
 
 
 
+; **************************** Error codes *****************************
+
+.ENUM 0
+	ERR_SPC700				db
+.ENDE
+
+
+
 ; ************************ Event control codes *************************
 
 .ENUM $00								; argument(s) (8/16 bit) / effect(s)
@@ -404,7 +413,7 @@
 .DEFINE PARAM_CollMarginTop	1					; the top margin value differs from the other two in that it acts as a protection against getting trapped when moving along upper edges horizontally
 
 .DEFINE PARAM_DebugMenu1stLine	78					; Y position of cursor sprite on first debug menu line
-
+.DEFINE PARAM_ErrWaitSPC700	3000					; max. no. of wait loops when communicating with the SPC700 until an error is triggered (the exact value doesn't really matter, but it sholud be reasonably high enough)
 .DEFINE PARAM_HUD_Xpos		24					; X position (in px) of HUD text box start
 .DEFINE PARAM_HUD_Yhidden	240					; Y position of hidden HUD text box
 .DEFINE PARAM_HUD_Yvisible	20					; Y position of visible HUD text box
@@ -768,6 +777,7 @@
 	DP_DataBank		db
 	DP_DMA_Updates		dw					; rrrcbbaarrr32211 [123 = BG no. that needs to have its tile map(s) updated on next Vblank (low bytes), abc = same thing for high bytes, r = reserved. The lower bit of each BG represents the first half of a 64×32/32×64 tile map, the higher one represents the second half.]
 	DP_EffectSpeed		dw
+	DP_ErrorCode		db
 	DP_EmptySpriteNo	db					; holds no. of empty sprite in current spritesheet (usually 0), this is acknowledged in the sprite initialization routine
 	DP_EventCodeAddress	dsb 2
 	DP_EventCodeBank	db
@@ -859,7 +869,7 @@
 	DP_VWF_Loop		db
 	DP_WorldMapBG1VScroll	dw
 	DP_WorldMapBG1HScroll	dw
-.ENDE									; 187 of 256 bytes used
+.ENDE									; 188 of 256 bytes used
 
 
 
@@ -1035,7 +1045,8 @@
 	VAR_Time_Month			db
 	VAR_Time_Year			db
 	VAR_Time_Century		db
-.ENDE									; $F7F bytes + $200 = $117F bytes used (initial stack pointer is set to $1FFF)
+	VAR_TimeoutCounter		dw
+.ENDE									; $F81 bytes + $200 = $1181 bytes used (initial stack pointer is set to $1FFF)
 
 
 

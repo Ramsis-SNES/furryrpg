@@ -97,6 +97,54 @@ __ReturnAdress\@:
 
 
 ; DMA macro by ManuLöwe
+; -------------------------- error check macros
+.MACRO CheckErrorSPC700a
+	pha								; preserve 8-bit Accu
+
+	Accu16
+
+	lda	VAR_TimeoutCounter
+	inc	a
+	sta	VAR_TimeoutCounter
+	cmp	#PARAM_ErrWaitSPC700
+	bcc	@Continue\@
+
+	Accu8
+
+	lda	#ERR_SPC700
+	jml	ErrorHandler
+
+@Continue\@:
+	Accu8
+
+	pla								; restore  8-bit Accu
+.ENDM
+
+
+
+.ACCU 16
+
+.MACRO CheckErrorSPC700ab
+	pha								; preserve 16-bit Accu
+	lda	VAR_TimeoutCounter
+	inc	a
+	sta	VAR_TimeoutCounter
+	cmp	#PARAM_ErrWaitSPC700
+	bcc	@Continue\@
+
+	Accu8
+
+	lda	#ERR_SPC700
+	jml	ErrorHandler
+
+.ACCU 16
+
+@Continue\@:
+	pla								; restore  16-bit Accu
+.ENDM
+
+
+
 ;
 ; Usage: DMA_CH0 mode[8bit], A_bus_bank[8bit], A_bus_src[16bit], B_bus_register[8bit], length[16bit]
 ; Effect: Transfers data via DMA channel 0.
