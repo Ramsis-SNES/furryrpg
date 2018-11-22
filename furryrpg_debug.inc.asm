@@ -157,10 +157,11 @@ DebugMenu:
 	PrintString	14, 3, "Mode1 world map"
 	PrintString	15, 3, "Mode7 world map"
 	PrintString	16, 3, "Random number (0-255):"
-	PrintString	17, 3, "Show sprite gallery"
-	PrintString	18, 3, "SNESGSS music test:"
-;	PrintString	19, 3, ""
+	PrintString	17, 3, "Set real-time clock"
+	PrintString	18, 3, "Show sprite gallery"
+	PrintString	19, 3, "SNESGSS music test:"
 ;	PrintString	20, 3, ""
+;	PrintString	21, 3, ""
 
 	stz	DP_SpriteTextMon					; reset sprite text filling level so it won't draw more than 1 cursor ;-)
 
@@ -195,7 +196,7 @@ DebugMenuLoop:
 	SetTextPos	12, 16
 	PrintHexNum	DP_AreaCurrent
 
-	PrintString	19, 4, "%s"					; print current SNESGSS song title
+	PrintString	20, 4, "%s"					; print current SNESGSS song title
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMA_Updates
@@ -271,8 +272,11 @@ DebugMenuLoop:
 	sta	VAR_Time_Year
 	lda	SRTC_READ						; century
 	and	#$0F
+	clc								; add 10 so it is stored as 19/20 (13h/14h)
+	adc	#10
 	sta	VAR_Time_Century
-;	lda	SRTC_READ						; weekday
+	lda	SRTC_READ						; weekday
+;	and	#$0F
 ;	sta	somewhere
 
 	PrintString	25, 16, "Time:"
@@ -298,7 +302,7 @@ DebugMenuLoop:
 	sbc	#8
 	cmp	#PARAM_DebugMenu1stLine
 	bcs	+
-	lda	#PARAM_DebugMenu1stLine + 8 * 8				; underflow, put cursor on last line // no. of last menu item (8) * line height (8)
+	lda	#PARAM_DebugMenu1stLine + 9 * 8				; underflow, put cursor on last line // no. of last menu item (9) * line height (8)
 +	sta	ARRAY_SpriteDataArea.Text+2
 
 @DpadUpDone:
@@ -312,7 +316,7 @@ DebugMenuLoop:
 	lda	ARRAY_SpriteDataArea.Text+2
 	clc
 	adc	#8
-	cmp	#PARAM_DebugMenu1stLine + 9 * 8				; no. of menu items (9) * line height (8)
+	cmp	#PARAM_DebugMenu1stLine + 10 * 8			; no. of menu items (10) * line height (8)
 	bcc	+
 	lda	#PARAM_DebugMenu1stLine					; overflow, put cursor on first line
 +	sta	ARRAY_SpriteDataArea.Text+2
@@ -343,7 +347,7 @@ __	sta	DP_AreaCurrent
 	bra	@DpadLeftDone
 
 +	lda	ARRAY_SpriteDataArea.Text+2				; ... or on music test
-	cmp	#PARAM_DebugMenu1stLine + 8 * 8
+	cmp	#PARAM_DebugMenu1stLine + 9 * 8
 	bne	@DpadLeftDone
 	lda	DP_NextTrack						; go to previous track
 	dec	a
@@ -377,7 +381,7 @@ __	sta	DP_AreaCurrent
 	bra	@DpadRightDone
 
 +	lda	ARRAY_SpriteDataArea.Text+2				; ... or on music test
-	cmp	#PARAM_DebugMenu1stLine + 8 * 8
+	cmp	#PARAM_DebugMenu1stLine + 9 * 8
 	bne	@DpadRightDone
 	lda	DP_NextTrack						; go to next track
 	inc	a
@@ -417,6 +421,7 @@ __	sta	DP_AreaCurrent
 	.DW LoadWorldMap
 	.DW TestMode7
 	.DW @@PrintRandomNumber
+	.DW SetRTC
 	.DW ShowSpriteGallery
 	.DW @@GotoPlayTrack						; sound test works even .IFDEF NOMUSIC ;-)
 
@@ -483,7 +488,339 @@ __	sta	DP_AreaCurrent
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 	jsr	ConvertSpriteDataToBuffer
+
 	jmp	DebugMenuLoop
+
+
+
+SetRTC:
+	lda	#$80							; enter forced blank
+	sta	REG_INIDISP
+
+	DisableIRQs
+
+	ldx	#(ARRAY_BG3TileMap & $FFFF)
+	stx	REG_WMADDL
+	stz	REG_WMADDH
+
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, <REG_WMDATA, 2048	; clear BG3 tile map
+
+	lda	#%00010000						; make sure BG3 low tile map bytes are updated
+	tsb	DP_DMA_Updates
+
+	ResetSprites
+
+	lda	REG_RDNMI						; clear NMI flag
+	lda	#$81							; reenable NMI
+	sta	REG_NMITIMEN
+	cli
+	wai
+
+	Accu16								; wait for no button presses
+
+-	lda	DP_Joy1
+	bne	-
+
+-	lda	DP_Joy1New
+	bne	-
+
+-	lda	DP_Joy1Press
+	bne	-
+
+	Accu8
+
+	lda	#$0F							; turn screen back on
+	sta	REG_INIDISP
+	lda	DP_GameConfig						; check if S-RTC is present at all
+	and	#%00000010
+	bne	@RTCpresent
+
+	PrintString	2, 2, "No real-time clock hardware\n  found!"
+
+	lda	#%00010000						; make sure BG3 low tile map bytes are updated
+	tsb	DP_DMA_Updates
+
+	WaitUserInput
+
+	jmp	DebugMenu
+
+@RTCpresent:
+	PrintString	2, 2, "Adjust a value by holding\n  the appropriate button and\n  pressing up/down (d-pad)."
+	PrintString	8, 2, "YYYY-MM-DD hh:mm:ss"
+	PrintString	11, 2, "A button: seconds"
+	PrintString	12, 2, "B button: minutes"
+	PrintString	13, 2, "Y button: hours"
+	PrintString	14, 2, "X button: day"
+	PrintString	15, 2, "R button: month"
+	PrintString	16, 2, "L button: year"
+	PrintString	18, 2, "Select button: Toggle century"
+	PrintString	19, 2, "Start button: Save & exit"
+
+
+@SetRTCLoop:
+	wai
+
+	SetTextPos	7, 2
+	PrintNum	VAR_Time_Century				; variable contains value in decimal
+	PrintHexNum	VAR_Time_Year
+	PrintString	7, 6, "-"
+
+	lda	VAR_Time_Month
+	cmp	#10
+	bcs	+
+
+	PrintString	7, 7, "0"					; put a leading zero for months Jan thru Sept
++	PrintNum	VAR_Time_Month
+	PrintString	7, 9, "-"
+	PrintHexNum	VAR_Time_Day
+	SetTextPos	7, 13
+	PrintHexNum	VAR_Time_Hour
+	PrintString	7, 15, ":"
+	PrintHexNum	VAR_Time_Minute
+	PrintString	7, 18, ":"
+	PrintHexNum	VAR_Time_Second
+
+	lda	#%00010000						; make sure BG3 low tile map bytes are updated
+	tsb	DP_DMA_Updates
+	stz	DP_Temp							; reset increment/decrement variables
+	stz	DP_Temp+1
+
+
+
+; -------------------------- check for D-pad up --> increment value
+	lda	DP_Joy1New+1
+	and	#%00001000
+	beq	@DpadUpDone
+	lda	#$01							; value += 1
+	sta	DP_Temp
+	sta	DP_Temp+1
+
+@DpadUpDone:
+
+
+
+; -------------------------- check for D-pad down --> decrement value
+	lda	DP_Joy1New+1
+	and	#%00000100
+	beq	@DpadDownDone
+	lda	#$99							; value += $99 in decimal mode
+	sta	DP_Temp
+	lda	#$FF
+	sta	DP_Temp+1
+
+@DpadDownDone:
+
+
+
+; -------------------------- check for A button --> adjust second
+	lda	DP_Joy1
+	bpl	@AButtonDone
+	sed								; enable decimal mode
+	lda	VAR_Time_Second
+	clc								; add inc/dec value
+	adc	DP_Temp
+	cmp	#$99
+	bne	+
+	lda	#$59							; keep value within range (0-59 in this case)
+	bra	++
++	cmp	#$60
+	bne	++
+	lda	#$00
+++	sta	VAR_Time_Second
+	cld								; disable decimal mode
+
+@AButtonDone:
+
+
+
+; -------------------------- check for B button --> adjust minute
+	lda	DP_Joy1+1
+	bpl	@BButtonDone
+	sed
+	lda	VAR_Time_Minute
+	clc
+	adc	DP_Temp
+	cmp	#$99
+	bne	+
+	lda	#$59
+	bra	++
++	cmp	#$60
+	bne	++
+	lda	#$00
+++	sta	VAR_Time_Minute
+	cld
+
+@BButtonDone:
+
+
+
+; -------------------------- check for Y button --> adjust hour
+	bit	DP_Joy1+1
+	bvc	@YButtonDone
+	sed
+	lda	VAR_Time_Hour
+	clc
+	adc	DP_Temp
+	cmp	#$99
+	bne	+
+	lda	#$23							; hour range: 0-23
+	bra	++
++	cmp	#$24
+	bne	++
+	lda	#$00
+++	sta	VAR_Time_Hour
+	cld
+
+@YButtonDone:
+
+
+
+; -------------------------- check for X button --> adjust day
+	bit	DP_Joy1
+	bvc	@XButtonDone
+	sed
+	lda	VAR_Time_Day
+	clc
+	adc	DP_Temp
+	bne	+
+	lda	#$31							; day range: 1-31
+	bra	++
++	cmp	#$32
+	bne	++
+	lda	#$01
+++	sta	VAR_Time_Day
+	cld
+
+@XButtonDone:
+
+
+
+; -------------------------- check for R button --> adjust month
+	lda	DP_Joy1
+	and	#%00010000
+	beq	@RButtonDone
+	lda	VAR_Time_Month
+	clc								; not using decimal mode for the month value
+	adc	DP_Temp+1
+	bne	+
+	lda	#12							; month range: 1-12
+	bra	++
++	cmp	#13
+	bne	++
+	lda	#1
+++	sta	VAR_Time_Month
+
+@RButtonDone:
+
+
+
+; -------------------------- check for L button --> adjust year
+	lda	DP_Joy1
+	and	#%00100000
+	beq	@LButtonDone
+	sed
+	lda	VAR_Time_Year
+	clc
+	adc	DP_Temp							; year range: 0-99
+	sta	VAR_Time_Year
+	cld
+
+@LButtonDone:
+
+
+
+; -------------------------- check for Select button --> toggle century
+	lda	DP_Joy1New+1
+	and	#%00100000
+	beq	@SelButtonDone
+	lda	VAR_Time_Century
+	cmp	#20
+	beq	+
+	lda	#20
+	bra	++
++	lda	#19
+++	sta	VAR_Time_Century
+
+@SelButtonDone:
+
+
+
+; -------------------------- check for Start
+	lda	DP_Joy1+1
+	and	#%00010000
+	bne	@WriteClockRegs
+	jmp	@StartButtonDone
+
+@WriteClockRegs:
+	lda	#$0E							; from Fullsnes: Send <0Eh,04h,0Dh,0Eh,00h,Timestamp(12 digits),0Dh> to [002801h]
+	sta	SRTC_WRITE
+	lda	#$04
+	sta	SRTC_WRITE
+	lda	#$0D
+	sta	SRTC_WRITE
+	lda	#$0E
+	sta	SRTC_WRITE
+	stz	SRTC_WRITE
+	lda	VAR_Time_Second
+	and	#$0F
+	sta	SRTC_WRITE						; seconds (lower 4 bits)
+	lda	VAR_Time_Second
+	lsr	a
+	lsr	a
+	lsr	a
+	lsr	a
+	stz	SRTC_WRITE						; seconds (upper 4 bits)
+	lda	VAR_Time_Minute
+	and	#$0F
+	sta	SRTC_WRITE						; minutes.lo
+	lda	VAR_Time_Minute
+	lsr	a
+	lsr	a
+	lsr	a
+	lsr	a
+	sta	SRTC_WRITE						; minutes.hi
+	lda	VAR_Time_Hour
+	and	#$0F
+	sta	SRTC_WRITE						; hours.lo
+	lda	VAR_Time_Hour
+	lsr	a
+	lsr	a
+	lsr	a
+	lsr	a
+	sta	SRTC_WRITE						; hours.hi
+	lda	VAR_Time_Day
+	and	#$0F
+	sta	SRTC_WRITE						; day.lo
+	lda	VAR_Time_Day
+	lsr	a
+	lsr	a
+	lsr	a
+	lsr	a
+	sta	SRTC_WRITE						; day.hi
+	lda	#11 ;VAR_Time_Month
+	sta	SRTC_WRITE						; month
+	lda	VAR_Time_Year
+	and	#$0F
+	sta	SRTC_WRITE						; year.lo
+	lda	VAR_Time_Year
+	lsr	a
+	lsr	a
+	lsr	a
+	lsr	a
+	sta	SRTC_WRITE						; year.hi
+	lda	VAR_Time_Century
+	sec								; subtract 10 for correct format (9h/Ah)
+	sbc	#10
+	sta	SRTC_WRITE						; century
+;	lda	something
+;	sta	SRTC_WRITE						; weekday
+	lda	#$0D
+	sta	SRTC_WRITE
+	jmp	DebugMenu
+
+@StartButtonDone:
+
+	jmp	@SetRTCLoop
 
 
 

@@ -482,42 +482,6 @@ CheckHardware:
 @SRTCfound:
 	lda	#%00000010
 	tsb	DP_GameConfig						; set "S-RTC present" flag
-/*	lda	#$0E							; from Fullsnes: Send <0Eh,04h,0Dh,0Eh,00h,Timestamp(12 digits),0Dh> to [002801h]
-	sta	SRTC_WRITE
-	lda	#$04
-	sta	SRTC_WRITE
-	lda	#$0D
-	sta	SRTC_WRITE
-	lda	#$0E
-	sta	SRTC_WRITE
-	stz	SRTC_WRITE
-	stz	SRTC_WRITE						; seconds (lower 4 bits)
-	stz	SRTC_WRITE						; seconds (upper 4 bits)
-	lda	#$05
-	sta	SRTC_WRITE						; minutes.lo
-	lda	#$02
-	sta	SRTC_WRITE						; minutes.hi
-	lda	#$06
-	sta	SRTC_WRITE						; hours.lo
-	lda	#$01
-	sta	SRTC_WRITE						; hours.hi
-	lda	#$07
-	sta	SRTC_WRITE						; day.lo
-	lda	#$01
-	sta	SRTC_WRITE						; day.hi
-	lda	#$07
-	sta	SRTC_WRITE						; month
-	lda	#$08
-	sta	SRTC_WRITE						; year.lo
-	lda	#$01
-	sta	SRTC_WRITE						; year.hi
-	lda	#$0A
-	sta	SRTC_WRITE						; century
-;	lda	something
-;	sta	SRTC_WRITE						; weekday
-	lda	#$0D
-	sta	SRTC_WRITE
-*/
 +
 
 
