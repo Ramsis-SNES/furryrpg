@@ -154,7 +154,7 @@ STR_SoftwareBuild:
 	.DB "Build #"
 
 STR_SoftwareBuildNo:
-	.DB "00327"
+	.DB "00328"
 	.DB 0
 
 STR_SoftwareBuildTimestamp:

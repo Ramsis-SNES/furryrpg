@@ -797,7 +797,7 @@ SetRTC:
 	lsr	a
 	lsr	a
 	sta	SRTC_WRITE						; day.hi
-	lda	#11 ;VAR_Time_Month
+	lda	VAR_Time_Month
 	sta	SRTC_WRITE						; month
 	lda	VAR_Time_Year
 	and	#$0F
