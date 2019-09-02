@@ -739,40 +739,41 @@ MainAreaLoop:
 
 
 
-; -------------------------- check for B button = make HUD disappear/run
-	lda	DP_Joy1Press+1
-	and	#%10000000
-	bne	+
+; -------------------------- check for A button
+	bit	DP_Joy1New
+	bpl	@AButtonDone
+	jsr	AreaJoyButtonA
+
+@AButtonDone:
+
+
+
+; -------------------------- check for B button
+	bit	DP_Joy1Press+1
+	bmi	+
 	lda	#1							; B not pressed, set slow walking speed
 	bra	@BButtonDone
 
-+	lda	DP_HUD_Status						; check whether HUD is already being displayed
-	and	#%00000001
-	beq	+
-	lda	DP_HUD_Status
-	ora	#%01000000						; yes, set "HUD should disappear" bit
-	and	#%01111111						; clear "HUD should appear" bit in case it's set
-	sta	DP_HUD_Status
-+	lda	#2							; B pressed, set fast walking speed
++	jsr	AreaJoyButtonB
 
 @BButtonDone:
 	sta	DP_Hero1WalkingSpd
 
 
 
-; -------------------------- check for Y button = show HUD
-	lda	DP_Joy1New+1
-	and	#%01000000
-	beq	@YButtonDone
-	lda	DP_HUD_Status						; check whether HUD is already being displayed
-	and	#%00000001
-	bne	@YButtonDone
-	lda	DP_HUD_Status
-	ora	#%10000000						; no, set "HUD should appear" bit
-	and	#%10111111						; clear "HUD should disappear" bit in case it's set
-	sta	DP_HUD_Status
-	lda	#1							; simulate idle player so HUD won't disappear and reappear when there is no input within the next 5-7 seconds
-	sta	DP_PlayerIdleCounter
+; -------------------------- check for X button
+	bit	DP_Joy1New
+	bvc	@XButtonDone
+	jsr	AreaJoyButtonX
+
+@XButtonDone:
+
+
+
+; -------------------------- check for Y button
+	bit	DP_Joy1New+1
+	bvc	@YButtonDone
+	jsr	AreaJoyButtonY
 
 @YButtonDone:
 
@@ -795,44 +796,7 @@ MainAreaLoop:
 	and	#%00001000
 	beq	@DpadUpDone
 
-	lda	#TBL_Hero1_up
-	sta	DP_Hero1SpriteStatus
-	jsr	MakeCollIndexUp
-
-	ldy	DP_AreaMetaMapIndex
-	lda	[DP_AreaMetaMapAddr], y					; check for BG collision using meta map entries
-	bmi	@DpadUpDone
-	ldy	DP_AreaMetaMapIndex2
-	lda	[DP_AreaMetaMapAddr], y
-	bmi	@DpadUpDone
-
-	Accu16
-
-	lda	DP_Hero1MapPosY
-	sec
-	sbc	DP_Hero1WalkingSpd
-	sta	DP_Hero1MapPosY
-	lda	DP_AreaProperties					; check if area may be scrolled vertically
-	and	#%0000000000001000
-	bne	+
-	lda	DP_Hero1ScreenPosYX					; area not scrollable, move hero sprite instead
-	ldx	DP_Hero1WalkingSpd
--	sec
-	sbc	#$0100							; Y -= 1
-	dex								; as many times as DP_Hero1WalkingSpd
-	bne	-
-	sta	DP_Hero1ScreenPosYX
-	bra	++
-
-+	lda	DP_Hero1WalkingSpd
-	eor	#$FFFF							; make negative
-	inc	a
-	clc
-	adc	ARRAY_HDMA_BG_Scroll+3					; scroll area
-	and	#$3FFF
-	sta	ARRAY_HDMA_BG_Scroll+3
-
-++	Accu8
+	jsr	AreaJoyDpadUp
 
 @DpadUpDone:
 
@@ -843,40 +807,7 @@ MainAreaLoop:
 	and	#%00000100
 	beq	@DpadDownDone
 
-	lda	#TBL_Hero1_down
-	sta	DP_Hero1SpriteStatus
-	jsr	MakeCollIndexDown
-
-	ldy	DP_AreaMetaMapIndex
-	lda	[DP_AreaMetaMapAddr], y					; check for BG collision using meta map entries
-	bmi	@DpadDownDone
-	ldy	DP_AreaMetaMapIndex2
-	lda	[DP_AreaMetaMapAddr], y
-	bmi	@DpadDownDone
-
-	Accu16
-
-	lda	DP_Hero1MapPosY
-	clc
-	adc	DP_Hero1WalkingSpd
-	sta	DP_Hero1MapPosY
-	lda	DP_AreaProperties					; check if area may be scrolled vertically
-	and	#%0000000000001000
-	bne	+
-	lda	DP_Hero1WalkingSpd					; area not scrollable, move hero sprite instead
-	xba								; shift to high byte for Y value
-	clc
-	adc	DP_Hero1ScreenPosYX					; Y += DP_Hero1WalkingSpd
-	sta	DP_Hero1ScreenPosYX
-	bra	++
-
-+	lda	DP_Hero1WalkingSpd
-	clc
-	adc	ARRAY_HDMA_BG_Scroll+3					; scroll area
-	and	#$3FFF
-	sta	ARRAY_HDMA_BG_Scroll+3
-
-++	Accu8
+	jsr	AreaJoyDpadDown
 
 @DpadDownDone:
 
@@ -887,39 +818,7 @@ MainAreaLoop:
 	and	#%00000010
 	beq	@DpadLeftDone
 
-	lda	#TBL_Hero1_left
-	sta	DP_Hero1SpriteStatus
-	jsr	MakeCollIndexLeft
-
-	ldy	DP_AreaMetaMapIndex
-	lda	[DP_AreaMetaMapAddr], y					; check for BG collision using meta map entries
-	bmi	@DpadLeftDone
-	ldy	DP_AreaMetaMapIndex2
-	lda	[DP_AreaMetaMapAddr], y
-	bmi	@DpadLeftDone
-
-	Accu16
-
-	lda	DP_Hero1MapPosX
-	sec
-	sbc	DP_Hero1WalkingSpd
-	sta	DP_Hero1MapPosX
-	lda	DP_AreaProperties					; check if area may be scrolled horizontally
-	and	#%0000000000000100
-	bne	+
-	lda	DP_Hero1ScreenPosYX					; area not scrollable, move hero sprite instead
-	sec
-	sbc	DP_Hero1WalkingSpd					; X -= DP_Hero1WalkingSpd
-	sta	DP_Hero1ScreenPosYX
-	bra	++
-
-+	lda	ARRAY_HDMA_BG_Scroll+1					; scroll area
-	sec
-	sbc	DP_Hero1WalkingSpd
-	and	#$3FFF
-	sta	ARRAY_HDMA_BG_Scroll+1
-
-++	Accu8
+	jsr	AreaJoyDpadLeft
 
 @DpadLeftDone:
 
@@ -930,65 +829,9 @@ MainAreaLoop:
 	and	#%00000001
 	beq	@DpadRightDone
 
-	lda	#TBL_Hero1_right
-	sta	DP_Hero1SpriteStatus
-	jsr	MakeCollIndexRight
-
-	ldy	DP_AreaMetaMapIndex
-	lda	[DP_AreaMetaMapAddr], y					; check for BG collision using meta map entries
-	bmi	@DpadRightDone
-	ldy	DP_AreaMetaMapIndex2
-	lda	[DP_AreaMetaMapAddr], y
-	bmi	@DpadRightDone
-
-	Accu16
-
-	lda	DP_Hero1MapPosX
-	clc
-	adc	DP_Hero1WalkingSpd
-	sta	DP_Hero1MapPosX
-	lda	DP_AreaProperties					; check if area may be scrolled horizontally
-	and	#%0000000000000100
-	bne	+
-	lda	DP_Hero1ScreenPosYX					; area not scrollable, move hero sprite instead
-	clc
-	adc	DP_Hero1WalkingSpd					; X += DP_Hero1WalkingSpd
-	sta	DP_Hero1ScreenPosYX
-	bra	++
-
-+	lda	ARRAY_HDMA_BG_Scroll+1					; scroll area
-	clc
-	adc	DP_Hero1WalkingSpd
-	and	#$3FFF
-	sta	ARRAY_HDMA_BG_Scroll+1
-
-++	Accu8
+	jsr	AreaJoyDpadRight
 
 @DpadRightDone:
-
-
-
-; -------------------------- check for A button = open text box
-	lda	DP_Joy1New
-	and	#%10000000
-	beq	@AButtonDone
-
-	lda	#$80							; make character idle
-	tsb	DP_Hero1SpriteStatus
-	jsr	OpenTextBox
-
-@AButtonDone:
-
-
-
-; -------------------------- check for X button
-	lda	DP_Joy1New
-	and	#%01000000
-	beq	@XButtonDone
-
-	jmp	InGameMenu
-
-@XButtonDone:
 
 @SkipDpadABXY:
 
@@ -999,32 +842,7 @@ MainAreaLoop:
 	and	#%00010000
 	beq	@StartButtonDone
 
-	lda	#CMD_EffectSpeed3
-	sta	DP_EffectSpeed
-	jsr	EffectHSplitOut2
-
-	lda	#%10000000						; set "clear text box" bit
-	sta	DP_TextBoxStatus
-	lda	VAR_Shadow_NMITIMEN
-	and	#%11001111						; clear IRQ enable bits
-	sta	REG_NMITIMEN
-;	lda	#TBL_Hero1_down|$80					; make char face the player (for menu later) // adjust when debug menu is removed
-;	sta	DP_Hero1SpriteStatus
-	jsr	ClearHUD
-
-	WaitFrames	1
-
-.IFNDEF NOMUSIC
-	jsl	music_stop						; stop music
-
-	lda	DP_GameConfig
-	and	#%00000001						; check for "MSU1 present" flag
-	beq	+
-	stz	MSU_CONTROL						; stop ambient soundtrack
-+
-.ENDIF
-
-	jmp	DebugMenu
+	jsr	AreaJoyButtonStart
 
 @StartButtonDone:
 
@@ -1168,6 +986,275 @@ MainAreaLoop:
 	jsr	ConvertSpriteDataToBuffer
 
 	jmp	MainAreaLoop
+
+
+
+; ************************ Handle player input *************************
+
+
+
+; -------------------------- A button pressed = do lots of important stuff ;-)
+AreaJoyButtonA:
+	lda	#$80							; make character idle
+	tsb	DP_Hero1SpriteStatus
+
+	; ### TODO: CHECK FOR CHARACTER INTERACTION, TREASURE, POINTS OF INTEREST ETC.
+
+.IFDEF DEBUG
+	jsr	OpenTextBox
+.ENDIF
+
+	rts
+
+
+; -------------------------- B button pressed = make HUD disappear/set fast walking speed
+AreaJoyButtonB:
+	lda	DP_HUD_Status						; check whether HUD is already being displayed
+	and	#%00000001
+	beq	+
+	lda	DP_HUD_Status
+	ora	#%01000000						; yes, set "HUD should disappear" bit
+	and	#%01111111						; clear "HUD should appear" bit in case it's set
+	sta	DP_HUD_Status
++	lda	#2							; set fast walking speed
+	rts
+
+
+
+; -------------------------- X button pressed = transition to in-game menu
+AreaJoyButtonX:
+	; ### TODO: preserve area data
+
+	jmp	InGameMenu
+
+	rts
+
+
+
+; -------------------------- Y button pressed = show HUD
+AreaJoyButtonY:
+	lda	DP_HUD_Status						; check whether HUD is already being displayed
+	and	#%00000001
+	bne	+
+	lda	DP_HUD_Status
+	ora	#%10000000						; no, set "HUD should appear" bit
+	and	#%10111111						; clear "HUD should disappear" bit in case it's set
+	sta	DP_HUD_Status
+	lda	#1							; simulate idle player so HUD won't disappear and reappear when there is no input within the next 5-7 seconds
+	sta	DP_PlayerIdleCounter
++	rts
+
+
+
+AreaJoyButtonL:
+	rts
+
+
+
+AreaJoyButtonR:
+	rts
+
+
+
+AreaJoyDpadUp:
+	lda	#TBL_Hero1_up
+	sta	DP_Hero1SpriteStatus
+	jsr	MakeCollIndexUp
+
+	ldy	DP_AreaMetaMapIndex
+	lda	[DP_AreaMetaMapAddr], y					; check for BG collision using meta map entries
+	bmi	+++
+	ldy	DP_AreaMetaMapIndex2
+	lda	[DP_AreaMetaMapAddr], y
+	bmi	+++
+
+	Accu16
+
+	lda	DP_Hero1MapPosY
+	sec
+	sbc	DP_Hero1WalkingSpd
+	sta	DP_Hero1MapPosY
+	lda	DP_AreaProperties					; check if area may be scrolled vertically
+	and	#%0000000000001000
+	bne	+
+	lda	DP_Hero1ScreenPosYX					; area not scrollable, move hero sprite instead
+	ldx	DP_Hero1WalkingSpd
+-	sec
+	sbc	#$0100							; Y -= 1
+	dex								; as many times as DP_Hero1WalkingSpd
+	bne	-
+	sta	DP_Hero1ScreenPosYX
+	bra	++
+
++	lda	DP_Hero1WalkingSpd
+	eor	#$FFFF							; make negative
+	inc	a
+	clc
+	adc	ARRAY_HDMA_BG_Scroll+3					; scroll area
+	and	#$3FFF
+	sta	ARRAY_HDMA_BG_Scroll+3
+
+++	Accu8
+
++++	rts
+
+
+
+AreaJoyDpadDown:
+	lda	#TBL_Hero1_down
+	sta	DP_Hero1SpriteStatus
+	jsr	MakeCollIndexDown
+
+	ldy	DP_AreaMetaMapIndex
+	lda	[DP_AreaMetaMapAddr], y					; check for BG collision using meta map entries
+	bmi	+++
+	ldy	DP_AreaMetaMapIndex2
+	lda	[DP_AreaMetaMapAddr], y
+	bmi	+++
+
+	Accu16
+
+	lda	DP_Hero1MapPosY
+	clc
+	adc	DP_Hero1WalkingSpd
+	sta	DP_Hero1MapPosY
+	lda	DP_AreaProperties					; check if area may be scrolled vertically
+	and	#%0000000000001000
+	bne	+
+	lda	DP_Hero1WalkingSpd					; area not scrollable, move hero sprite instead
+	xba								; shift to high byte for Y value
+	clc
+	adc	DP_Hero1ScreenPosYX					; Y += DP_Hero1WalkingSpd
+	sta	DP_Hero1ScreenPosYX
+	bra	++
+
++	lda	DP_Hero1WalkingSpd
+	clc
+	adc	ARRAY_HDMA_BG_Scroll+3					; scroll area
+	and	#$3FFF
+	sta	ARRAY_HDMA_BG_Scroll+3
+
+++	Accu8
+
++++	rts
+
+
+
+AreaJoyDpadLeft:
+	lda	#TBL_Hero1_left
+	sta	DP_Hero1SpriteStatus
+	jsr	MakeCollIndexLeft
+
+	ldy	DP_AreaMetaMapIndex
+	lda	[DP_AreaMetaMapAddr], y					; check for BG collision using meta map entries
+	bmi	+++
+	ldy	DP_AreaMetaMapIndex2
+	lda	[DP_AreaMetaMapAddr], y
+	bmi	+++
+
+	Accu16
+
+	lda	DP_Hero1MapPosX
+	sec
+	sbc	DP_Hero1WalkingSpd
+	sta	DP_Hero1MapPosX
+	lda	DP_AreaProperties					; check if area may be scrolled horizontally
+	and	#%0000000000000100
+	bne	+
+	lda	DP_Hero1ScreenPosYX					; area not scrollable, move hero sprite instead
+	sec
+	sbc	DP_Hero1WalkingSpd					; X -= DP_Hero1WalkingSpd
+	sta	DP_Hero1ScreenPosYX
+	bra	++
+
++	lda	ARRAY_HDMA_BG_Scroll+1					; scroll area
+	sec
+	sbc	DP_Hero1WalkingSpd
+	and	#$3FFF
+	sta	ARRAY_HDMA_BG_Scroll+1
+
+++	Accu8
+
++++	rts
+
+
+
+AreaJoyDpadRight:
+	lda	#TBL_Hero1_right
+	sta	DP_Hero1SpriteStatus
+	jsr	MakeCollIndexRight
+
+	ldy	DP_AreaMetaMapIndex
+	lda	[DP_AreaMetaMapAddr], y					; check for BG collision using meta map entries
+	bmi	+++
+	ldy	DP_AreaMetaMapIndex2
+	lda	[DP_AreaMetaMapAddr], y
+	bmi	+++
+
+	Accu16
+
+	lda	DP_Hero1MapPosX
+	clc
+	adc	DP_Hero1WalkingSpd
+	sta	DP_Hero1MapPosX
+	lda	DP_AreaProperties					; check if area may be scrolled horizontally
+	and	#%0000000000000100
+	bne	+
+	lda	DP_Hero1ScreenPosYX					; area not scrollable, move hero sprite instead
+	clc
+	adc	DP_Hero1WalkingSpd					; X += DP_Hero1WalkingSpd
+	sta	DP_Hero1ScreenPosYX
+	bra	++
+
++	lda	ARRAY_HDMA_BG_Scroll+1					; scroll area
+	clc
+	adc	DP_Hero1WalkingSpd
+	and	#$3FFF
+	sta	ARRAY_HDMA_BG_Scroll+1
+
+++	Accu8
+
++++	rts
+
+
+
+AreaJoyButtonStart:
+
+.IFNDEF DEBUG
+	; ### TODO: Implement Pause function
+	rts
+.ELSE
+	pla								; clean up stack from jsr AreaJoyButtonStart
+	pla
+	lda	#CMD_EffectSpeed3
+	sta	DP_EffectSpeed
+	jsr	EffectHSplitOut2
+
+	lda	#%10000000						; set "clear text box" bit
+	sta	DP_TextBoxStatus
+	lda	VAR_Shadow_NMITIMEN
+	and	#%11001111						; clear IRQ enable bits
+	sta	REG_NMITIMEN
+;	lda	#TBL_Hero1_down|$80					; make char face the player (for menu later) // adjust when debug menu is removed
+;	sta	DP_Hero1SpriteStatus
+	jsr	ClearHUD
+
+	WaitFrames	1
+
+.IFNDEF NOMUSIC
+	jsl	music_stop						; stop music
+
+	lda	DP_GameConfig
+	and	#%00000001						; check for "MSU1 present" flag
+	beq	+
+	stz	MSU_CONTROL						; stop ambient soundtrack
++
+.ENDIF
+
+	jmp	DebugMenu
+.ENDIF
+
+
 
 
 
