@@ -71,7 +71,8 @@
 .ROMBANKS		96						; 96 ROM banks = 48 Mbit
 
 .SNESHEADER								; this auto-calculates ROM checksum & complement, too
-	ID		"SNES"
+;	ID		"A00E"						; should be AxxE, where xx can be [0-9A-Z]. Last letter is then interpreted by bsnes as the country code (E = USA)
+	ID		"SNS!"						; if there are any characters other than [0-9A-Z] in the ID, then bsnes resorts to the country byte at $(40)FFD9 instead
 	NAME		"FURRY RPG!           "
 ;			 123456789012345678901				; max. 21 characters
 	EXHIROM								; aka Mode 25
@@ -80,7 +81,7 @@
 	ROMSIZE		$0D						; 1 SHL n = 8 MiB (reported as a power of 2, even though actual ROM size is 6 MiB for now)
 	SRAMSIZE	$03						; 8 KiB for now
 	COUNTRY		$01						; USA
-	LICENSEECODE	$33						; $33 = "pointer" to new licensee code
+	LICENSEECODE	$33						; $33 = indicator for newer/extended cartridge header
 	VERSION		$00
 .ENDSNES
 
