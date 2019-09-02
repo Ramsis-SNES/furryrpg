@@ -192,10 +192,8 @@ DebugMenuLoop:
 
 	SetTextPos	12, 14
 	PrintHexNum	DP_AreaCurrent+1				; print no. of area to load
-
 	SetTextPos	12, 16
 	PrintHexNum	DP_AreaCurrent
-
 	PrintString	20, 4, "%s"					; print current SNESGSS song title
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
@@ -847,7 +845,6 @@ ShowSpriteGallery:
 	sta	REG_CGADD
 
 	DMA_CH0 $02, :SRC_Palettes_Sprites_Gallery, SRC_Palettes_Sprites_Gallery, <REG_CGDATA, 160
-
 	Accu16
 
 
@@ -926,7 +923,6 @@ ShowSpriteGallery:
 ;	sta	DP_Shadow_TSTM						; copy to shadow variable
 
 	Accu8
-
 	PrintString	1, 3, "Sprites contributed by\n   Tantalus:"
 	PrintString	9, 3, "Dorothy   Wolf1   Wolf3"
 	PrintString	10, 10, "Fox    Wolf2"

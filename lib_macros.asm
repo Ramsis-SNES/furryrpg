@@ -437,14 +437,14 @@ __DrawLowerBorder\@:
 
 .MACRO PrintNum
 	lda	\1
-	jsr	PrintInt8_noload
+	jsr	PrintInt8
 .ENDM
 
 
 
 .MACRO PrintHexNum
 	lda	\1
-	jsr	PrintHex8_noload
+	jsr	PrintHex8
 .ENDM
 
 

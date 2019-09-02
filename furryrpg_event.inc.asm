@@ -242,23 +242,22 @@ Process_EC_DMA_ROM2CGRAM:						; CGRAM target address (8), ROM source address (1
 	Accu16
 
 	lda	#(REG_CGDATA & $FF) << 8 | $02				; B bus register (high byte), DMA mode (low byte)
- 	sta.l	$004300
-
+ 	sta.l	REG_DMAP0
 	lda	[DP_EventCodeAddress], y				; read data source address
-	sta.l	$004302
+	sta.l	REG_A1T0L
 	iny
 	iny
 
 	Accu8
 
 	lda	[DP_EventCodeAddress], y				; read data source bank
-	sta.l	$004304
+	sta.l	REG_A1B0
 	iny
 
 	Accu16
 
 	lda	[DP_EventCodeAddress], y				; read data length
-	sta.l	$004305
+	sta.l	REG_DAS0L
 
 	Accu8
 
@@ -284,22 +283,22 @@ Process_EC_DMA_ROM2VRAM:						; VRAM target address (16), ROM source address (16
 	iny
 	iny
 	lda	#(REG_VMDATAL & $FF) << 8 | $01				; B bus register (high byte), DMA mode (low byte)
- 	sta.l	$004300
+ 	sta.l	REG_DMAP0
 	lda	[DP_EventCodeAddress], y				; read data source address
-	sta.l	$004302
+	sta.l	REG_A1T0L
 	iny
 	iny
 
 	Accu8
 
 	lda	[DP_EventCodeAddress], y				; read data source bank
-	sta.l	$004304
+	sta.l	REG_A1B0
 	iny
 
 	Accu16
 
 	lda	[DP_EventCodeAddress], y				; read data length
-	sta.l	$004305
+	sta.l	REG_DAS0L
 
 	Accu8
 
@@ -328,22 +327,22 @@ Process_EC_DMA_ROM2WRAM:						; WRAM target address (16), WRAM target bank (8), 
 	Accu16
 
 	lda	#(REG_WMDATA & $FF) << 8				; B bus register (high byte), DMA mode (low byte, 0 in this case)
- 	sta.l	$004300
+ 	sta.l	REG_DMAP0
 	lda	[DP_EventCodeAddress], y				; read data source address
-	sta.l	$004302
+	sta.l	REG_A1T0L
 	iny
 	iny
 
 	Accu8
 
 	lda	[DP_EventCodeAddress], y				; read data source bank
-	sta.l	$004304
+	sta.l	REG_A1B0
 	iny
 
 	Accu16
 
 	lda	[DP_EventCodeAddress], y				; read data length
-	sta.l	$004305
+	sta.l	REG_DAS0L
 
 	Accu8
 

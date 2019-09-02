@@ -796,7 +796,7 @@ __ProcessTextNormal:
 
 	and	#$00FF							; remove garbage in high byte
 	sta	DP_TextASCIIChar					; save ASCII char no.
-	bit	DP_TextEffect-1						; put MSB of DP_TextEffect into MSB of accumulator
+	bit	DP_TextEffect-1						; put MSB of DP_TextEffect (an 8-bit variable) into MSB of (currently 16-bit) accumulator
 	bmi	+							; MSB set --> use routine for bold font
 	jsr	ProcessVWFTiles
 
@@ -1687,7 +1687,6 @@ TextBoxAnimationOpen:							; opening animation (scroll text box content in vert
 
 @OpenTextBoxAniLoop:
 	WaitFrames	1
-
 	Accu16
 
 	lda	DP_TextBoxVIRQ						; final value (scanline 176) reached?
@@ -1731,16 +1730,12 @@ TextBoxAnimationOpen:							; opening animation (scroll text box content in vert
 .INDEX 16
 
 ;PrintF -- Print a formatted, NUL-terminated string to Stdout
-;In:   X -- points to format string
-;      Y -- points to parameter buffer
-;Out: none
-;Modifies: none
 ;Notes:
 ;     Supported Format characters:
-;       %s -- sub-string (reads 16-bit pointer from Y data)
-;       %d -- 16-bit Integer (reads 16-bit data from Y data)
-;       %b -- 8-bit Integer (reads 8-bit data from Y data)
-;       %x -- 8-bit hex Integer (reads 8-bit data from Y data)
+;       %s -- sub-string (reads NUL-terminated data from [DP_DataAddress])
+;       %d -- 16-bit Integer (reads 16-bit data from [DP_DataAddress])
+;       %b -- 8-bit Integer (reads 8-bit data from [DP_DataAddress])
+;       %x -- 8-bit hex Integer (reads 8-bit data from [DP_DataAddress])
 ;       %% -- normal %
 ;       \n -- Newline
 ;       \t -- Tab
@@ -1750,9 +1745,7 @@ TextBoxAnimationOpen:							; opening animation (scroll text box content in vert
 PrintF:
 	ply								; pull return address from stack, which is actually the start of our string (minus one)
 	iny								; make y = start of string
-
-PrintFStart:
-	PHP
+	php
 
 	Accu8
 	Index16
@@ -1761,9 +1754,9 @@ PrintFLoop:
 	lda	[DP_TextStringPtr], y					; read next format string character
 	beq	PrintFDone						; check for NUL terminator
 	iny								; increment input pointer
-	CMP	#'%'
+	cmp	#'%'
 	beq	PrintFFormat						; handle format character
-	CMP	#'\'
+	cmp	#'\'
 	beq	PrintFControl						; handle control character
 
 NormalPrint:
@@ -1772,9 +1765,9 @@ NormalPrint:
 	bra	PrintFLoop
 
 PrintFDone:
-	PLP
+	plp
 	phy								; push return address (-1) onto stack
-	RTS
+	rts
 
 
 
@@ -1782,30 +1775,32 @@ PrintFControl:
 	lda	[DP_TextStringPtr], y					; read control character
 	beq	PrintFDone						; check for NUL terminator
 	iny								; increment input pointer
-_cn:	CMP	#'n'
-	bne	_ct
+
+@cn:	cmp	#'n'
+	bne	@ct
 
 	AccuIndex16
 
 	lda	DP_TextCursor						; get current position
-	CLC
+	clc
 	adc	#$0020							; move to the next line
-	AND	#$FFE0
+	and	#$FFE0
 	sta	DP_TextCursor						; save new position
 
 	Accu8
 
 	bra	PrintFLoop
 
-_ct:	CMP	#'t'
-	bne	_defaultC
+@ct:
+	cmp	#'t'
+	bne	@defaultC
 
 	AccuIndex16
 
 	lda	DP_TextCursor						; get current position
-	CLC
+	clc
 ;	adc	#$0008							; move to the next tab
-;	AND	#$FFF8
+;	and	#$FFF8
 	adc	#$0004							; smaller tab size (4 tiles = 8 hi-res characters)
 	and	#$fffc
 ;	adc	#$0002							; use this instead for even smaller tabs
@@ -1816,47 +1811,64 @@ _ct:	CMP	#'t'
 
 	bra	PrintFLoop
 
-_defaultC:
+@defaultC:
 	lda	#'\'							; normal backslash
 	bra	NormalPrint
+
+
 
 PrintFFormat:
 	lda	[DP_TextStringPtr], y					; read format character
 	beq	PrintFDone						; check for NUL terminator
 	iny								; increment input pointer
-_sf:	CMP	#'s'
-	bne	_df
 	phy								; preserve current format string pointer
 
+@sf:
+	cmp	#'s'
+	bne	@df
 	ldy	#0
 -	lda	[DP_DataAddress], y					; read sub string character
-	beq	__PrintSubstringDone					; check for NUL terminator
+	beq	@sfDone							; check for NUL terminator
 	iny								; increment input pointer
 	jsr	FillTextBuffer						; write sub string character to text buffer
 
 	bra	-
 
-__PrintSubstringDone:
-	ply
+@sfDone:
+	ply								; restore original string pointer
 	bra	PrintFLoop
-_df:	CMP	#'d'
-	bne	_bf
+
+@df:
+	cmp	#'d'
+	bne	@bf
 	jsr	PrintInt16						; print 16-bit integer
 
+	ply								; restore original string pointer
 	bra	PrintFLoop
-_bf:	CMP	#'b'
-	bne	_xf
+
+@bf:
+	cmp	#'b'
+	bne	@xf
+	ldy	#0
+	lda	[DP_DataAddress], y					; read byte to print
 	jsr	PrintInt8						; print 8-bit integer
 
+	ply								; restore original string pointer
 	bra	PrintFLoop
-_xf:	CMP	#'x'
-	bne	_defaultF
+
+@xf:
+	cmp	#'x'
+	bne	@defaultF
+	ldy	#0
+	lda	[DP_DataAddress], y					; read hex byte to print
 	jsr	PrintHex8						; print 8-bit hex integer
 
-	bra	PrintFLoop
-_defaultF:
+	ply								; restore original string pointer
+	jmp	PrintFLoop
+
+@defaultF:
 	lda	#'%'
-	bra	NormalPrint
+	jmp	NormalPrint
 
 
 
@@ -1977,7 +1989,7 @@ FillHiResTextBuffer:							; expectations: A = 8 bit, X/Y = 16 bit
 
 ; *********************** Sprite-based printing ************************
 
-; A very basic sprite-based font renderer by ManuLöwe.
+; A very basic sprite-based VWF renderer by ManuLöwe.
 ; Caveat #1: Max. length of message(s) is 32 characters at a time.
 ; Caveat #2: No support for control characters.
 
@@ -2042,25 +2054,21 @@ PrintSpriteText:
 
 ; ******************** Number processing functions *********************
 
-;PrintInt16 -- Read a 16-bit value pointed to by Y and print it to stdout
-;In:  Y -- Points to integer in current data bank
-;Out: Y=Y+2
-;Modifies: P
-;Notes: Uses Print to output ASCII to stdout
+;PrintInt16 -- Read a 16-bit value in DP_DataAddress and print it to the screen
 
 PrintInt16:								; assumes 8b mem, 16b index
 	lda	#$00
-	PHA								; push $00
-	lda	$0000,Y
-	sta	$4204							; DIVC.l
-	lda	$0001,Y
-	sta	$4205							; DIVC.h  ... DIVC = [Y]
-	INY
-	INY
+	pha								; push $00
+	ldy	#0
+	lda	[DP_DataAddress], y					; read low byte
+	sta	REG_WRDIVL						; DIVC.l
+	iny
+	lda	[DP_DataAddress], y					; read high byte
+	sta	REG_WRDIVH						; DIVC.h  ... DIVC = [Y]
 
 DivLoop:
 	lda	#$0A	
-	sta	$4206							; DIVB = 10 --- division starts here (need to wait 16 cycles)
+	sta	REG_WRDIVB						; DIVB = 10 --- division starts here (need to wait 16 cycles)
 	NOP								; 2 cycles
 	NOP								; 2 cycles
 	NOP								; 2 cycles
@@ -2068,18 +2076,18 @@ DivLoop:
 	PLA								; 4 cycles
 	lda	#'0'							; 2 cycles
 	CLC								; 2 cycles
-	adc	$4216							; A = '0' + DIVC % DIVB
+	adc	REG_RDMPYL						; A = '0' + DIVC % DIVB
 	PHA								; push character
-	lda	$4214							; Result.l -> DIVC.l
-	sta	$4204
+	lda	REG_RDDIVL						; Result.l -> DIVC.l
+	sta	REG_WRDIVL
 	beq	_Low_0
-	lda	$4215							; Result.h -> DIVC.h
-	sta	$4205
+	lda	REG_RDDIVH						; Result.h -> DIVC.h
+	sta	REG_WRDIVH
 	BRA	DivLoop
 
 _Low_0:
-	lda	$4215							; Result.h -> DIVC.h
-	sta	$4205
+	lda	REG_RDDIVH						; Result.h -> DIVC.h
+	sta	REG_WRDIVH
 	beq	IntPrintLoop						; if ((Result.l==$00) and (Result.h==$00)) then we're done, so print
 	BRA	DivLoop
 
@@ -2095,47 +2103,25 @@ _EndOfInt:
 
 
 
-;PrintInt8 -- Read an 8-bit value pointed to by Y and print it to stdout
-;In:  Y -- Points to integer in current data bank
-;Out: Y=Y+1
-;Modifies: P
-;Notes: Uses Print to output ASCII to stdout
+;PrintHex8 -- Read an 8-bit value from Accu and print it in decimal on the screen
 
 PrintInt8:								; assumes 8b mem, 16b index
-	lda	$0000,Y
-	INY
-
-PrintInt8_noload:
-	sta	$4204
+	sta	REG_WRDIVL
 	lda	#$00
-	sta	$4205
+	sta	REG_WRDIVH
 	PHA
 	BRA	DivLoop
 
-;PrintInt16_noload:							; assumes 8b mem, 16b index
-;	lda	#$00
-;	PHA								; push $00
-;	stx	$4204							; DIVC = X
-;	jsr	DivLoop
 
 
-
-;PrintHex8 -- Read an 8-bit value pointed to by Y and print it in hex to stdout
-;In:  Y -- Points to integer in current data bank
-;Out: Y=Y+1
-;Modifies: P
-;Notes: Uses Print to output ASCII to stdout
+;PrintHex8 -- Read an 8-bit value from Accu and print it in hex on the screen
 
 PrintHex8:								; assumes 8b mem, 16b index
-	lda	$0000,Y
-	iny
-
-PrintHex8_noload:
 	pha
-	lsr	A
-	lsr	A
-	lsr	A
-	lsr	A
+	lsr	a
+	lsr	a
+	lsr	a
+	lsr	a
 	jsr	PrintHexNibble
 
 	pla

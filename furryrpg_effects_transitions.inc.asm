@@ -31,10 +31,10 @@ ScreenEffects:
 
 EffectFadeFromBlack:
 	lda	DP_EffectSpeed
-	bmi	__FadeDelayFromBlack					; if speed value is negative, insert delay instead
+	bmi	@FadeDelayFromBlack					; if speed value is negative, insert delay instead
 	lda	#$00							; initial screen brightness
 
-__FadeSpeedFromBlackLoop:
+@FadeSpeedFromBlackLoop:
 	sta	VAR_ShadowINIDISP
 	ldx	DP_EffectSpeed						; use speed value to skip brightness values
 -	inc	a
@@ -53,22 +53,22 @@ __FadeSpeedFromBlackLoop:
 
 	xba
 	cmp	#$0F
-	bne	__FadeSpeedFromBlackLoop
+	bne	@FadeSpeedFromBlackLoop
 
-	bra	__FadeFromBlackDone
+	bra	@FadeFromBlackDone
 
-__FadeDelayFromBlack:
+@FadeDelayFromBlack:
 	eor	#$FF							; make speed value positive and use as delay value
 	inc	a
 	sta	DP_EffectSpeed
 	lda	#$00							; initial screen brightness
 
-__FadeDelayFromBlackLoop1:
+@FadeDelayFromBlackLoop1:
 	sta	VAR_ShadowINIDISP
 	xba								; save current screen brightness in B
 	ldx	DP_EffectSpeed						; use delay value to insert frames
 
-__FadeDelayFromBlackLoop2:
+@FadeDelayFromBlackLoop2:
 -	lda	REG_HVBJOY
 	bpl	-
 
@@ -76,24 +76,24 @@ __FadeDelayFromBlackLoop2:
 	bmi	-
 
 	dex
-	bne	__FadeDelayFromBlackLoop2
+	bne	@FadeDelayFromBlackLoop2
 
 	xba								; increment screen brightness ...
 	inc	a
 	cmp	#$10							; ... until it's reached max value ($0F)
-	bne	__FadeDelayFromBlackLoop1
+	bne	@FadeDelayFromBlackLoop1
 
-__FadeFromBlackDone:
+@FadeFromBlackDone:
 	rts
 
 
 
 EffectFadeToBlack:
 	lda	DP_EffectSpeed
-	bmi	__FadeDelayToBlack					; if speed value is negative, insert delay instead
+	bmi	@FadeDelayToBlack					; if speed value is negative, insert delay instead
 	lda	#$0F							; initial screen brightness
 
-__FadeSpeedToBlackLoop:
+@FadeSpeedToBlackLoop:
 	sta	VAR_ShadowINIDISP
 	ldx	DP_EffectSpeed						; use speed value to skip brightness values
 -	dec	a
@@ -110,22 +110,22 @@ __FadeSpeedToBlackLoop:
 	bmi	-
 
 	xba
-	bne	__FadeSpeedToBlackLoop
+	bne	@FadeSpeedToBlackLoop
 
-	bra	__FadeToBlackDone
+	bra	@FadeToBlackDone
 
-__FadeDelayToBlack:
+@FadeDelayToBlack:
 	eor	#$FF							; make speed value positive and use as delay value
 	inc	a
 	sta	DP_EffectSpeed
 	lda	#$0F							; initial screen brightness
 
-__FadeDelayToBlackLoop1:
+@FadeDelayToBlackLoop1:
 	sta	VAR_ShadowINIDISP
 	xba								; save current screen brightness in B
 	ldx	DP_EffectSpeed						; use delay value to insert frames
 
-__FadeDelayToBlackLoop2:
+@FadeDelayToBlackLoop2:
 -	lda	REG_HVBJOY
 	bpl	-
 
@@ -133,14 +133,14 @@ __FadeDelayToBlackLoop2:
 	bmi	-
 
 	dex
-	bne	__FadeDelayToBlackLoop2
+	bne	@FadeDelayToBlackLoop2
 
 	xba								; decrement screen brightness ...
 	dec	a
 	cmp	#$FF							; ... until it's reached zero
-	bne	__FadeDelayToBlackLoop1
+	bne	@FadeDelayToBlackLoop1
 
-__FadeToBlackDone:
+@FadeToBlackDone:
 	rts
 
 
@@ -154,7 +154,7 @@ EffectHSplitIn:								; FIXME (occasional gfx glitches on real SNES)
 ; -------------------------- channel 1: main effects channel
 	lda	#$40							; transfer mode (1 byte --> $2100), indirect table mode
 	sta	REG_DMAP1
-	stz	REG_BBAD1							; PPU reg. $2100
+	stz	REG_BBAD1						; PPU reg. $2100
 	ldx	#SRC_HDMA_FX_1Byte
 	stx	REG_A1T1L
 	lda	#:SRC_HDMA_FX_1Byte
@@ -187,7 +187,7 @@ EffectHSplitIn:								; FIXME (occasional gfx glitches on real SNES)
 	lda	DP_EffectSpeed
 	sta	DP_Temp+6
 
-__HSplitInMainLoop:
+@HSplitInMainLoop:
 	dec	DP_Temp+6						; only wait for a new frame every Nth iteration (where N = value in DP_EffectSpeed)
 	bne	+
 
@@ -199,7 +199,7 @@ __HSplitInMainLoop:
 +	ldx	#112							; start in the middle of the table
 	ldy	#0
 
-__HSplitInSubLoop1:							; loop 1: go towards end of table
+@HSplitInSubLoop1:							; loop 1: go towards end of table
 	lda	ARRAY_HDMA_FX_1Byte, x
 	cmp	#$0F							; don't increment value if it's already reached #$0F
 	bcs	+
@@ -208,12 +208,12 @@ __HSplitInSubLoop1:							; loop 1: go towards end of table
 +	inx
 	iny
 	cpy	DP_Temp+4						; max. no. of scanlines done?
-	bne	__HSplitInSubLoop1
+	bne	@HSplitInSubLoop1
 
 	ldx	#112
 	ldy	#0
 
-__HSplitInSubLoop2:							; loop 2: go towards start of table
+@HSplitInSubLoop2:							; loop 2: go towards start of table
 	dex
 	lda	ARRAY_HDMA_FX_1Byte, x
 	cmp	#$0F
@@ -222,7 +222,7 @@ __HSplitInSubLoop2:							; loop 2: go towards start of table
 	sta	ARRAY_HDMA_FX_1Byte, x
 +	iny
 	cpy	DP_Temp+4
-	bne	__HSplitInSubLoop2
+	bne	@HSplitInSubLoop2
 
 	lda	DP_Temp+4						; 112 scanlines in each direction done?
 	cmp	#112
@@ -232,7 +232,7 @@ __HSplitInSubLoop2:							; loop 2: go towards start of table
 
 +	lda	ARRAY_HDMA_FX_1Byte					; yes, repeat a few more times until first byte of table is #$0F
 	cmp	#$0F
-	bne	__HSplitInMainLoop
+	bne	@HSplitInMainLoop
 
 	lda	#$0F
 	sta	VAR_ShadowINIDISP
@@ -287,7 +287,7 @@ EffectHSplitOut:							; split out from the middle of the screen // FIXME (occas
 	lda	DP_EffectSpeed
 	sta	DP_Temp+6
 
-__HSplitOutMainLoop:
+@HSplitOutMainLoop:
 	dec	DP_Temp+6
 	bne	+
 
@@ -299,7 +299,7 @@ __HSplitOutMainLoop:
 +	ldx	#112							; start in the middle of the table
 	ldy	#0
 
-__HSplitOutSubLoop1:							; loop 1: go towards end of table
+@HSplitOutSubLoop1:							; loop 1: go towards end of table
 	lda	ARRAY_HDMA_FX_1Byte, x
 	beq	+							; don't decrement value if it's already reached #$00
 	dec	a
@@ -307,12 +307,12 @@ __HSplitOutSubLoop1:							; loop 1: go towards end of table
 +	inx
 	iny
 	cpy	DP_Temp+4						; max. no. of scanlines done?
-	bne	__HSplitOutSubLoop1
+	bne	@HSplitOutSubLoop1
 
 	ldx	#112
 	ldy	#0
 
-__HSplitOutSubLoop2:							; loop 2: go towards start of table
+@HSplitOutSubLoop2:							; loop 2: go towards start of table
 	dex
 	lda	ARRAY_HDMA_FX_1Byte, x
 	beq	+
@@ -320,7 +320,7 @@ __HSplitOutSubLoop2:							; loop 2: go towards start of table
 	sta	ARRAY_HDMA_FX_1Byte, x
 +	iny
 	cpy	DP_Temp+4
-	bne	__HSplitOutSubLoop2
+	bne	@HSplitOutSubLoop2
 
 	lda	DP_Temp+4						; 112 scanlines in each direction done?
 	cmp	#112
@@ -329,7 +329,7 @@ __HSplitOutSubLoop2:							; loop 2: go towards start of table
 	inc	DP_Temp+4
 
 +	lda	ARRAY_HDMA_FX_1Byte					; yes, repeat a few more times until first byte of table is #$00
-	bne	__HSplitOutMainLoop
+	bne	@HSplitOutMainLoop
 
 	lda	#$80
 	sta	VAR_ShadowINIDISP
@@ -351,7 +351,7 @@ EffectHSplitOut2:							; split out towards the middle of the screen // FIXME (o
 ; -------------------------- channel 1: main effects channel
 	lda	#$40							; transfer mode (1 byte --> $2100), indirect table mode
 	sta	REG_DMAP1
-	stz	REG_BBAD1							; PPU reg. $2100
+	stz	REG_BBAD1						; PPU reg. $2100
 	ldx	#SRC_HDMA_FX_1Byte
 	stx	REG_A1T1L
 	lda	#:SRC_HDMA_FX_1Byte
@@ -385,7 +385,7 @@ EffectHSplitOut2:							; split out towards the middle of the screen // FIXME (o
 	lda	DP_EffectSpeed
 	sta	DP_Temp+6
 
-__HSplitOut2MainLoop:
+@HSplitOut2MainLoop:
 	dec	DP_Temp+6
 	bne	+
 
@@ -397,7 +397,7 @@ __HSplitOut2MainLoop:
 +	ldx	#224							; loop 1: go from end towards middle of table
 	ldy	#0
 
-__HSplitOut2SubLoop1:
+@HSplitOut2SubLoop1:
 	dex
 	lda	ARRAY_HDMA_FX_1Byte, x
 	beq	+							; don't decrement value if it's already reached #$00
@@ -405,12 +405,12 @@ __HSplitOut2SubLoop1:
 	sta	ARRAY_HDMA_FX_1Byte, x
 +	iny
 	cpy	DP_Temp+4						; max. no. of scanlines done?
-	bne	__HSplitOut2SubLoop1
+	bne	@HSplitOut2SubLoop1
 
 	ldx	#0							; loop 2: go from beginning towards middle of table
 	ldy	#0
 
-__HSplitOut2SubLoop2:
+@HSplitOut2SubLoop2:
 	lda	ARRAY_HDMA_FX_1Byte, x
 	beq	+
 	dec	a
@@ -418,7 +418,7 @@ __HSplitOut2SubLoop2:
 +	inx
 	iny
 	cpy	DP_Temp+4
-	bne	__HSplitOut2SubLoop2
+	bne	@HSplitOut2SubLoop2
 
 	lda	DP_Temp+4						; 112 scanlines in each direction done?
 	cmp	#112
@@ -427,7 +427,7 @@ __HSplitOut2SubLoop2:
 	inc	DP_Temp+4
 
 +	lda	ARRAY_HDMA_FX_1Byte+112					; yes, repeat a few more times until the byte in the middle of the table is #$00
-	bne	__HSplitOut2MainLoop
+	bne	@HSplitOut2MainLoop
 
 	lda	#$80
 	sta	VAR_ShadowINIDISP
@@ -505,7 +505,7 @@ EffectShutterIn:
 	lda	#$80
 	sta	DP_Temp+5
 
-__ShutterInLoop1:
+@ShutterInLoop1:
 	WaitFrames	1
 
 	ldx	DP_Temp							; load current upper vertical boundary
@@ -537,21 +537,21 @@ __ShutterInLoop1:
 	inc	DP_Temp+5
 	lda	DP_Temp+2						; repeat until all 224 scanlines are done
 	cmp	#$C2
-	bne	__ShutterInLoop1
+	bne	@ShutterInLoop1
 
 	lda	DP_Temp+3
 	cmp	#$01
-	bne	__ShutterInLoop1
+	bne	@ShutterInLoop1
 
 	lda	#%00000010						; deactivate HDMA channel 1
 	trb	DP_HDMA_Channels
 
-__ShutterInLoop2:
+@ShutterInLoop2:
 	WaitFrames	1
 
 	lda	DP_Temp+4						; as the SNES screen is 256×224 px, we still need to adjust the window width (16 px missing on either side) to its final value
 	cmp	#$FF
-	beq	__ShutterInDone
+	beq	@ShutterInDone
 	sta	REG_WH0
 	lda	DP_Temp+5
 	sta	REG_WH1
@@ -559,15 +559,14 @@ __ShutterInLoop2:
 	dec	DP_Temp+4
 	inc	DP_Temp+5
 	inc	DP_Temp+5
-	bra	__ShutterInLoop2
+	bra	@ShutterInLoop2
 
-__ShutterInDone:
+@ShutterInDone:
 	stz	REG_W12SEL						; clear used registers
 	stz	REG_W34SEL
 	stz	REG_WOBJSEL
 	stz	REG_TMW
 	stz	REG_TSW
-
 	jsr	SwitchFromPrevVblank
 
 	rts
@@ -634,7 +633,7 @@ EffectShutterOut:
 
 
 
-__ShutterOutLoop1:
+@ShutterOutLoop1:
 	WaitFrames	1
 
 	lda	DP_Temp+4						; as the SNES screen is 256×224 px, we need to adjust the window width first (16 px missing on either side)
@@ -647,12 +646,12 @@ __ShutterOutLoop1:
 	inc	DP_Temp+4
 	dec	DP_Temp+5
 	dec	DP_Temp+5
-	bra	__ShutterOutLoop1
+	bra	@ShutterOutLoop1
 
 +	lda	#%00000010						; activate HDMA channel 1
 	tsb	DP_HDMA_Channels
 
-__ShutterOutLoop2:
+@ShutterOutLoop2:
 	WaitFrames	1
 
 	ldx	#0
@@ -702,7 +701,7 @@ __ShutterOutLoop2:
 	dec	DP_Temp+5
 	lda	DP_Temp							; repeat until window collapses
 	cmp	#226
-	bne	__ShutterOutLoop2
+	bne	@ShutterOutLoop2
 
 	lda	#$80							; turn screen off
 	sta	REG_INIDISP
@@ -713,7 +712,6 @@ __ShutterOutLoop2:
 	stz	REG_WOBJSEL
 	stz	REG_TMW
 	stz	REG_TSW
-
 	jsr	SwitchFromPrevVblank
 
 	rts
@@ -780,7 +778,7 @@ EffectDiamondIn:
 	ldx	#226							; initial value for lower vertical boundary (ditto)
 	stx	DP_Temp+2
 
-__DiamondInLoop1:
+@DiamondInLoop1:
 	WaitFrames	1
 
 	ldx	DP_Temp
@@ -801,12 +799,12 @@ __DiamondInLoop1:
 	Accu8
 
 	lda	DP_Temp+1
-	bne	__DiamondInLoop1
+	bne	@DiamondInLoop1
 
 	lda	DP_Temp
-	bne	__DiamondInLoop1
+	bne	@DiamondInLoop1
 
-__DiamondInLoop2:							; up to this point, we created a diamond-shaped window, so repeat manipulating HDMA values for all scanlines until the whole screen is visible
+@DiamondInLoop2:							; up to this point, we created a diamond-shaped window, so repeat manipulating HDMA values for all scanlines until the whole screen is visible
 	WaitFrames	1
 
 	ldx	#0
@@ -823,7 +821,7 @@ __DiamondInLoop2:							; up to this point, we created a diamond-shaped window, 
 	bne	-
 
 	lda	ARRAY_HDMA_FX_2Bytes
-	bne	__DiamondInLoop2
+	bne	@DiamondInLoop2
 
 	lda	#%00000010						; deactivate HDMA channel 1
 	trb	DP_HDMA_Channels
@@ -832,7 +830,6 @@ __DiamondInLoop2:							; up to this point, we created a diamond-shaped window, 
 	stz	REG_WOBJSEL
 	stz	REG_TMW
 	stz	REG_TSW
-
 	jsr	SwitchFromPrevVblank
 
 	rts
@@ -898,7 +895,7 @@ EffectDiamondOut:
 
 
 
-__DiamondOutLoop1:
+@DiamondOutLoop1:
 	WaitFrames	1
 
 	ldx	#0
@@ -940,9 +937,9 @@ __DiamondOutLoop1:
 
 	lda	DP_Temp							; repeat until diamond-shaped window has appeared
 	cmp	#226
-	bne	__DiamondOutLoop1
+	bne	@DiamondOutLoop1
 
-__DiamondOutLoop2:							; repeat the process for all scanlines until the whole screen is black
+@DiamondOutLoop2:							; repeat the process for all scanlines until the whole screen is black
 	WaitFrames	1
 
 	ldx	#0
@@ -961,7 +958,7 @@ __DiamondOutLoop2:							; repeat the process for all scanlines until the whole 
 
 	lda	ARRAY_HDMA_FX_2Bytes+$E0
 	cmp	#$7F
-	bne	__DiamondOutLoop2
+	bne	@DiamondOutLoop2
 
 	lda	#$80							; turn screen off
 	sta	REG_INIDISP
@@ -972,7 +969,6 @@ __DiamondOutLoop2:							; repeat the process for all scanlines until the whole 
 	stz	REG_WOBJSEL
 	stz	REG_TMW
 	stz	REG_TSW
-
 	jsr	SwitchFromPrevVblank
 
 	rts
@@ -983,7 +979,6 @@ __DiamondOutLoop2:							; repeat the process for all scanlines until the whole 
 
 SwitchToMinimalVblank:
 	DisableIRQs
-
 	Accu16
 
 	lda	ONE_JumpVblank						; preserve original Vblank JMP address
@@ -992,7 +987,6 @@ SwitchToMinimalVblank:
 	sta	ARRAY_Temp+2
 
 	Accu8
-
 	SetNMI	TBL_NMI_Minimal
 
 	lda	REG_RDNMI						; clear NMI flag
@@ -1005,7 +999,6 @@ SwitchToMinimalVblank:
 
 SwitchFromPrevVblank:
 	DisableIRQs
-
 	Accu16
 
 	lda	ARRAY_Temp						; restore original Vblank JMP address
