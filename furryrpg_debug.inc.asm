@@ -166,8 +166,13 @@ DebugMenu:
 	stz	DP_SpriteTextMon					; reset sprite text filling level so it won't draw more than 1 cursor ;-)
 
 	PrintSpriteText	10, 2, ">", 0					; put cursor on first line
+	Accu16
 
-	wai
+-	wai
+	lda	DP_Joy1Press						; wait until no button is pressed so it won't load unwanded stuff e.g. upon returning to the debug menu from another section with Start
+	bne	-
+
+	Accu8
 
 	lda	#$0F							; turn on the screen
 	sta	VAR_ShadowINIDISP
@@ -492,18 +497,17 @@ __	sta	DP_AreaCurrent
 
 
 SetRTC:
-	lda	#$80							; enter forced blank
-	sta	REG_INIDISP
-
 	DisableIRQs
 
+	lda	#$80							; enter forced blank, register shadow variable still contains "screen on" + brightness setting
+	sta	REG_INIDISP
 	ldx	#(ARRAY_BG3TileMap & $FFFF)
 	stx	REG_WMADDL
 	stz	REG_WMADDH
 
 	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, <REG_WMDATA, 2048	; clear BG3 tile map
 
-	lda	#%00010000						; make sure BG3 low tile map bytes are updated
+	lda	#%00010000						; make sure BG3 low tile map bytes are updated once NMI is reenabled
 	tsb	DP_DMA_Updates
 
 	ResetSprites
@@ -516,19 +520,19 @@ SetRTC:
 
 	Accu16								; wait for no button presses
 
--	lda	DP_Joy1
-	bne	-
+;-	lda	DP_Joy1
+;	bne	-
 
--	lda	DP_Joy1New
-	bne	-
+;-	lda	DP_Joy1New
+;	bne	-
 
 -	lda	DP_Joy1Press
 	bne	-
 
 	Accu8
 
-	lda	#$0F							; turn screen back on
-	sta	REG_INIDISP
+;	lda	#$0F							; turn screen back on // never mind, this is done via register shadow variable
+;	sta	REG_INIDISP
 	lda	DP_GameConfig						; check if S-RTC is present at all
 	and	#%00000010
 	bne	@RTCpresent
@@ -823,11 +827,10 @@ SetRTC:
 
 
 ShowSpriteGallery:
-	lda	#$80							; enter forced blank
-	sta	REG_INIDISP
-
 	DisableIRQs
 
+	lda	#$80							; enter forced blank, register shadow variable still contains "screen on" + brightness setting
+	sta	REG_INIDISP
 	ldx	#(ARRAY_BG3TileMap & $FFFF)
 	stx	REG_WMADDL
 	stz	REG_WMADDH
@@ -933,8 +936,17 @@ ShowSpriteGallery:
 	lda	#$81							; reenable NMI
 	sta	REG_NMITIMEN
 	cli
-	lda	#$0F							; turn screen back on
-	sta	REG_INIDISP
+
+	Accu16
+
+-	wai
+	lda	DP_Joy1Press						; wait until no button is pressed so it won't load unwanded stuff e.g. upon returning to the debug menu from another section with Start
+	bne	-
+
+	Accu8
+
+;	lda	#$0F							; turn screen back on // never mind, this is done via register shadow variable
+;	sta	REG_INIDISP
 
 	WaitUserInput
 
