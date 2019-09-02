@@ -48,20 +48,17 @@ Event00000:
 		.DW $00FF, $007F
 	.DB EC_GSS_TRACK_PLAY
 .ENDIF
-	.DB EC_DMA_ROM2CGRAM						; CGRAM target address (8), ROM source address (16), ROM source bank (8), size (16)
+	.DB EC_DMA_ROM2CGRAM						; CGRAM target address (8), ROM source address (24), size (16)
 		.DB $00
-		.DW SRC_RamsisPal
-		.DB :SRC_RamsisPal
+		.DL SRC_RamsisPal
 		.DW 512
-	.DB EC_DMA_ROM2VRAM						; VRAM target address (16), ROM source address (16), ROM source bank (8), size (16)
+	.DB EC_DMA_ROM2VRAM						; VRAM target address (16), ROM source address (24), size (16)
 		.DW $0000
-		.DW GFX_RamsisPic
-		.DB :GFX_RamsisPic
+		.DL GFX_RamsisPic
 		.DW _sizeof_GFX_RamsisPic
-	.DB EC_DMA_ROM2VRAM						; VRAM target address (16), ROM source address (16), ROM source bank (8), size (16)
+	.DB EC_DMA_ROM2VRAM						; VRAM target address (16), ROM source address (24), size (16)
 		.DW $5000
-		.DW SRC_RamsisMap
-		.DB :SRC_RamsisMap
+		.DL SRC_RamsisMap
 		.DW _sizeof_SRC_RamsisMap
 	.DB EC_SCR_EFFECT_TRANSITION
 		.DW EffectNoFadeFromBlack
@@ -76,20 +73,17 @@ Event00000:
 		.DB $80
 	.DB EC_WAIT_FRAMES						; wait for reg update
 		.DW 1
-	.DB EC_DMA_ROM2CGRAM						; CGRAM target address (8), ROM source address (16), ROM source bank (8), size (16)
+	.DB EC_DMA_ROM2CGRAM						; CGRAM target address (8), ROM source address (24), size (16)
 		.DB $00
-		.DW SRC_RamsisPresentsPal
-		.DB :SRC_RamsisPresentsPal
+		.DL SRC_RamsisPresentsPal
 		.DW 512
-	.DB EC_DMA_ROM2VRAM						; VRAM target address (16), ROM source address (16), ROM source bank (8), size (16)
+	.DB EC_DMA_ROM2VRAM						; VRAM target address (16), ROM source address (24), size (16)
 		.DW $0000
-		.DW GFX_RamsisPresentsPic
-		.DB :GFX_RamsisPresentsPic
+		.DL GFX_RamsisPresentsPic
 		.DW _sizeof_GFX_RamsisPresentsPic
-	.DB EC_DMA_ROM2VRAM						; VRAM target address (16), ROM source address (16), ROM source bank (8), size (16)
+	.DB EC_DMA_ROM2VRAM						; VRAM target address (16), ROM source address (24), size (16)
 		.DW $5000
-		.DW SRC_RamsisPresentsMap
-		.DB :SRC_RamsisPresentsMap
+		.DL SRC_RamsisPresentsMap
 		.DW _sizeof_SRC_RamsisPresentsMap
 	.DB EC_SCR_EFFECT_TRANSITION
 		.DW EffectNoFadeFromBlack
@@ -104,20 +98,17 @@ Event00000:
 		.DB $80
 	.DB EC_WAIT_FRAMES						; wait for reg update
 		.DW 1
-	.DB EC_DMA_ROM2CGRAM						; CGRAM target address (8), ROM source address (16), ROM source bank (8), size (16)
+	.DB EC_DMA_ROM2CGRAM						; CGRAM target address (8), ROM source address (24), size (16)
 		.DB $00
-		.DW SRC_StartPal
-		.DB :SRC_StartPal
+		.DL SRC_StartPal
 		.DW 512
-	.DB EC_DMA_ROM2VRAM						; VRAM target address (16), ROM source address (16), ROM source bank (8), size (16)
+	.DB EC_DMA_ROM2VRAM						; VRAM target address (16), ROM source address (24), size (16)
 		.DW $0000
-		.DW GFX_StartPic
-		.DB :GFX_StartPic
+		.DL GFX_StartPic
 		.DW _sizeof_GFX_StartPic
-	.DB EC_DMA_ROM2VRAM						; VRAM target address (16), ROM source address (16), ROM source bank (8), size (16)
+	.DB EC_DMA_ROM2VRAM						; VRAM target address (16), ROM source address (24), size (16)
 		.DW $5000
-		.DW SRC_StartMap
-		.DB :SRC_StartMap
+		.DL SRC_StartMap
 		.DW _sizeof_SRC_StartMap
 	.DB EC_SCR_EFFECT_TRANSITION
 		.DW EffectNoFadeFromBlack
@@ -132,20 +123,17 @@ Event00000:
 		.DB $80
 	.DB EC_WAIT_FRAMES						; wait for reg update
 		.DW 1
-	.DB EC_DMA_ROM2CGRAM						; CGRAM target address (8), ROM source address (16), ROM source bank (8), size (16)
+	.DB EC_DMA_ROM2CGRAM						; CGRAM target address (8), ROM source address (24), size (16)
 		.DB $00
-		.DW SRC_SoundEnginesPal
-		.DB :SRC_SoundEnginesPal
+		.DL SRC_SoundEnginesPal
 		.DW 512
-	.DB EC_DMA_ROM2VRAM						; VRAM target address (16), ROM source address (16), ROM source bank (8), size (16)
+	.DB EC_DMA_ROM2VRAM						; VRAM target address (16), ROM source address (24), size (16)
 		.DW $0000
-		.DW GFX_SoundEnginesPic
-		.DB :GFX_SoundEnginesPic
+		.DL GFX_SoundEnginesPic
 		.DW _sizeof_GFX_SoundEnginesPic
-	.DB EC_DMA_ROM2VRAM						; VRAM target address (16), ROM source address (16), ROM source bank (8), size (16)
+	.DB EC_DMA_ROM2VRAM						; VRAM target address (16), ROM source address (24), size (16)
 		.DW $5000
-		.DW SRC_SoundEnginesMap
-		.DB :SRC_SoundEnginesMap
+		.DL SRC_SoundEnginesMap
 		.DW _sizeof_SRC_SoundEnginesMap
 	.DB EC_SCR_EFFECT_TRANSITION
 		.DW EffectNoFadeFromBlack
