@@ -772,6 +772,7 @@
 	DP_AutoJoy2		dw
 ;	DP_BRR_stream_src	dsb 4					; SNESGSS
 ;	DP_BRR_stream_list	dsb 4					; SNESGSS
+	DP_Chapter		db					; holds no. of current game chapter
 	DP_Hero1FrameCounter	db
 	DP_Hero1MapPosX		dw					; in px
 	DP_Hero1MapPosY		dw					; in px
