@@ -721,7 +721,7 @@
 
 
 ; -------------------------- effect delay values
-.ENUM $FF DESC								; negative numbers
+.ENUM $100 DESC								; negative numbers
 	CMD_EffectDelay1	db
 	CMD_EffectDelay2	db
 	CMD_EffectDelay3	db
