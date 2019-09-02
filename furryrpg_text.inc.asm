@@ -585,14 +585,16 @@ __ProcessTextLoop2:
 	tay								; transfer string position to Y index
 	inc	a							; increment to next ASCII string character
 	sta	DP_TextStringCounter					; (N.B.: inc a, sta dp is 1 cycle faster than inc dp)
+	cmp	#4							; make text box appear on screen only after portrait and BG color data of a string have been processed (this doesn't affect the text box if it's already open) // self-reminder: NOT cmp #3 because of preceding inc a
+	bne	+
 
 	Accu8
 
-	cmp	#4							; make text box appear on screen only after portrait and BG color data of a string have been processed (this doesn't affect the text box if it's already open) // self-reminder: NOT cmp #3 because of preceding inc a
-	bne	+
-	jsr	TextBoxAnimationOpen
+	jsr	TextBoxAnimationOpen					; // FIXME, too clumsy/hacky
 
-+	lda	[DP_TextBoxStrPtr], y					; read ASCII string character
++	Accu8
+
+	lda	[DP_TextBoxStrPtr], y					; read ASCII string character
 	cmp	#CC_End							; end of string reached?
 	bne	+
 	jmp	__ProcessTextDone					; yes, done
