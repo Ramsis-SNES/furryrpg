@@ -515,14 +515,16 @@ GFX_IoTmappic_END:
 .BANK CurrentBank SLOT 0
 .ORG 0
 
-.SECTION ".roDataSoundDriver" SEMIFREE
+.SECTION "GSS sound driver" SEMIFREE
 
 SRC_spc700_driver:
 .INCBIN SPC700_Drv
 
 .ENDS
 
-.SECTION ".roDataSoundCode12" SEMIFREE
+
+
+.SECTION "GSS music tracks 10-12" SEMIFREE
 
 SRC_track_10_pointers:
 .INCBIN Track10_SMP SKIP 10 READ 6					; 2 + 8
@@ -550,21 +552,13 @@ SRC_track_12_Notes:
 .BANK CurrentBank SLOT 0
 .ORG 0
 
-.SECTION ".roDataSoundCode02" SEMIFREE
+.SECTION "GSS music track 00" SEMIFREE
 
 SRC_track_00_pointers:
 .INCBIN Track00_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_00_samples:
 .INCBIN Track00_SMP SKIP 2342						; 2 + 2340
-
-SRC_track_00_samples_END:
-
-.ENDS
-
-
-
-.SECTION ".roDataMusic02" SEMIFREE
 
 SRC_track_00_Notes:
 .INCBIN Track00_Notes
@@ -580,21 +574,13 @@ SRC_track_00_Notes:
 .BANK CurrentBank SLOT 0
 .ORG 0
 
-.SECTION ".roDataSoundCode03" SEMIFREE
+.SECTION "GSS music track 01" SEMIFREE
 
 SRC_track_01_pointers:
 .INCBIN Track01_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_01_samples:
 .INCBIN Track01_SMP SKIP 2342						; 2 + 2340
-
-SRC_track_01_samples_END:
-
-.ENDS
-
-
-
-.SECTION ".roDataMusic03" SEMIFREE
 
 SRC_track_01_Notes:
 .INCBIN Track01_Notes
@@ -603,21 +589,13 @@ SRC_track_01_Notes:
 
 
 
-.SECTION ".roDataSoundCode05" SEMIFREE
+.SECTION "GSS music track 03" SEMIFREE
 
 SRC_track_03_pointers:
 .INCBIN Track03_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_03_samples:
 .INCBIN Track03_SMP SKIP 2342						; 2 + 2340
-
-SRC_track_03_samples_END:
-
-.ENDS
-
-
-
-.SECTION ".roDataMusic05" SEMIFREE
 
 SRC_track_03_Notes:
 .INCBIN Track03_Notes
@@ -633,21 +611,13 @@ SRC_track_03_Notes:
 .BANK CurrentBank SLOT 0
 .ORG 0
 
-.SECTION ".roDataSoundCode04" SEMIFREE
+.SECTION "GSS music track 02" SEMIFREE
 
 SRC_track_02_pointers:
 .INCBIN Track02_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_02_samples:
 .INCBIN Track02_SMP SKIP 2342						; 2 + 2340
-
-SRC_track_02_samples_END:
-
-.ENDS
-
-
-
-.SECTION ".roDataMusic04" SEMIFREE
 
 SRC_track_02_Notes:
 .INCBIN Track02_Notes
@@ -663,21 +633,13 @@ SRC_track_02_Notes:
 .BANK CurrentBank SLOT 0
 .ORG 0
 
-.SECTION ".roDataSoundCode06" SEMIFREE
+.SECTION "GSS music track 04" SEMIFREE
 
 SRC_track_04_pointers:
 .INCBIN Track04_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_04_samples:
 .INCBIN Track04_SMP SKIP 2342						; 2 + 2340
-
-SRC_track_04_samples_END:
-
-.ENDS
-
-
-
-.SECTION ".roDataMusic06" SEMIFREE
 
 SRC_track_04_Notes:
 .INCBIN Track04_Notes
@@ -693,21 +655,13 @@ SRC_track_04_Notes:
 .BANK CurrentBank SLOT 0
 .ORG 0
 
-.SECTION ".roDataSoundCode07" SEMIFREE
+.SECTION "GSS music track 05" SEMIFREE
 
 SRC_track_05_pointers:
 .INCBIN Track05_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_05_samples:
 .INCBIN Track05_SMP SKIP 2342						; 2 + 2340
-
-SRC_track_05_samples_END:
-
-.ENDS
-
-
-
-.SECTION ".roDataMusic07" SEMIFREE
 
 SRC_track_05_Notes:
 .INCBIN Track05_Notes
@@ -723,21 +677,13 @@ SRC_track_05_Notes:
 .BANK CurrentBank SLOT 0
 .ORG 0
 
-.SECTION ".roDataSoundCode08" SEMIFREE
+.SECTION "GSS music track 06" SEMIFREE
 
 SRC_track_06_pointers:
 .INCBIN Track06_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_06_samples:
 .INCBIN Track06_SMP SKIP 2342						; 2 + 2340
-
-SRC_track_06_samples_END:
-
-.ENDS
-
-
-
-.SECTION ".roDataMusic08" SEMIFREE
 
 SRC_track_06_Notes:
 .INCBIN Track06_Notes
@@ -753,21 +699,13 @@ SRC_track_06_Notes:
 .BANK CurrentBank SLOT 0
 .ORG 0
 
-.SECTION ".roDataSoundCode09" SEMIFREE
+.SECTION "GSS music track 07" SEMIFREE
 
 SRC_track_07_pointers:
 .INCBIN Track07_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_07_samples:
 .INCBIN Track07_SMP SKIP 2342						; 2 + 2340
-
-SRC_track_07_samples_END:
-
-.ENDS
-
-
-
-.SECTION ".roDataMusic09" SEMIFREE
 
 SRC_track_07_Notes:
 .INCBIN Track07_Notes
@@ -783,21 +721,13 @@ SRC_track_07_Notes:
 .BANK CurrentBank SLOT 0
 .ORG 0
 
-.SECTION ".roDataSoundCode10" SEMIFREE
+.SECTION "GSS music track 08" SEMIFREE
 
 SRC_track_08_pointers:
 .INCBIN Track08_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_08_samples:
 .INCBIN Track08_SMP SKIP 2342						; 2 + 2340
-
-SRC_track_08_samples_END:
-
-.ENDS
-
-
-
-.SECTION ".roDataMusic10" SEMIFREE
 
 SRC_track_08_Notes:
 .INCBIN Track08_Notes
@@ -813,21 +743,13 @@ SRC_track_08_Notes:
 .BANK CurrentBank SLOT 0
 .ORG 0
 
-.SECTION ".roDataSoundCode11" SEMIFREE
+.SECTION "GSS music track 09" SEMIFREE
 
 SRC_track_09_pointers:
 .INCBIN Track09_SMP SKIP 10 READ 6					; 2 + 8
 
 SRC_track_09_samples:
 .INCBIN Track09_SMP SKIP 2342						; 2 + 2340
-
-SRC_track_09_samples_END:
-
-.ENDS
-
-
-
-.SECTION ".roDataMusic11" SEMIFREE
 
 SRC_track_09_Notes:
 .INCBIN Track09_Notes
