@@ -218,6 +218,11 @@ SRC_DiagPointerGer:
 	.DW STR_DialogGer0201
 	.DW STR_DialogGer0202
 	.DW STR_DialogGer0203
+	.DW STR_DialogGer0204
+	.DW STR_DialogGer0205
+	.DW STR_DialogGer0206
+	.DW STR_DialogGer0207
+;	.DW STR_DialogGer0208
 
 SRC_DiagPointerGer_END:
 

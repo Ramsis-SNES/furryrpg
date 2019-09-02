@@ -645,6 +645,11 @@
 	DialogStringNo0201	db
 	DialogStringNo0202	db
 	DialogStringNo0203	db
+	DialogStringNo0204	db
+	DialogStringNo0205	db
+	DialogStringNo0206	db
+	DialogStringNo0207	db
+	DialogStringNo0208	db
 .ENDE
 
 
@@ -673,10 +678,11 @@
 .DEFINE CC_BoxAlert		5
 .DEFINE CC_ClearTextBox		6
 .DEFINE CC_Indent		7
-.DEFINE CC_NewLine		8
-.DEFINE CC_Selection		9
-.DEFINE CC_ToggleBold		10
-.DEFINE NO_CC			11					; this has to be greater than the last control code
+.DEFINE CC_Jump			8
+.DEFINE CC_NewLine		9
+.DEFINE CC_Selection		10
+.DEFINE CC_ToggleBold		11
+.DEFINE NO_CC			12					; this has to be greater than the last control code
 .DEFINE CC_End			255					; $FF = string terminator
 
 

@@ -623,6 +623,7 @@ PTR_ProcessTextCC:
 	.DW Process_CC_BoxBG
 	.DW Process_CC_ClearTextBox
 	.DW Process_CC_Indent
+	.DW Process_CC_Jump
 	.DW Process_CC_NewLine
 	.DW Process_CC_Selection
 	.DW Process_CC_ToggleBold
@@ -669,6 +670,23 @@ Process_CC_ClearTextBox:
 
 Process_CC_Indent:
 	jmp	__ProcessTextIncTileCounter
+
+Process_CC_Jump:
+	iny								; increment string pointer to new text pointer (16 bits)
+	lda	[DP_TextBoxStrPtr], y					; read low byte
+	xba								; store in Accu B temporarily
+	iny
+	lda	[DP_TextBoxStrPtr], y					; read high byte
+	xba								; new 16-bit pointer is now in Accu, restore correct byte order
+
+	Accu16
+
+	sta	DP_TextBoxStrPtr					; store as new text string pointer
+	stz	DP_TextStringCounter					; reset string counter
+
+	Accu8
+
+	jmp	__ProcessTextJumpOut
 
 Process_CC_NewLine:
 	lda	#$01							; set "VWF buffer full" bit

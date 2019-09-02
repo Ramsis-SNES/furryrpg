@@ -218,6 +218,11 @@ SRC_DiagPointerEng:
 	.DW STR_DialogEng0201
 	.DW STR_DialogEng0202
 	.DW STR_DialogEng0203
+	.DW STR_DialogEng0204
+	.DW STR_DialogEng0205
+	.DW STR_DialogEng0206
+	.DW STR_DialogEng0207
+;	.DW STR_DialogEng0208
 
 SRC_DiagPointerEng_END:
 
