@@ -723,7 +723,7 @@ Process_EC_SCR_EFFECT_TRANSITION:
 	sta	DP_EffectSpeed
 	iny
 	sty	DP_EventCodePointer
-	jsr	(SRC_EffectPointer, x)
+	jsr	(SRC_EffectPointers, x)
 
 	jmp	ProcessEventLoop
 

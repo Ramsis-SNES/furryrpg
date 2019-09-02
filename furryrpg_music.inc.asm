@@ -9,86 +9,136 @@
 
 
 
+; ************************** SNESGSS routines **************************
+
 .ACCU 8
 .INDEX 16
 
-LoadTrackGSS:
-	DisableIRQs
+BootSPC700:								; this routine uploads only the SNESGSS sound driver to the SPC700, and initializes it (IRQ/NMI is still disabled)
 
+
+
+; -------------------------- upload driver
 	Accu16
 
-	lda.w	#SCMD_LOAD
+	lda	#:SRC_spc700_driver					; set bank byte of driver code
+	sta	DP_SPC_DataBank
+	lda	#SRC_spc700_driver+2					; set offset of driver code (skipping first two bytes = size of driver code)
+	sta	DP_SPC_DataOffset
+	lda.l	SRC_spc700_driver					; data length = size of driver code (first two bytes of SRC_spc700_driver, should be $0924)
+	sta	DP_SPC_DataSize
+	lda	#$0200							; store driver to SPC700 memory address $0200 (3 track-specific 16-bit pointers at $0208-$020D are overwritten with correct data whenever an actual track is uploaded)
+	sta	DP_SPC_DataAddress
+	jsl	spc_load_data						; upload driver
+
+
+
+; -------------------------- initialize sound driver for the first time
+	Accu16
+
+	lda.w	#SCMD_INITIALIZE					; send initialize command
+	sta	DP_GSS_command
+	stz	DP_GSS_param
+	jsl	spc_command_asm
+
+	rtl
+
+
+
+LoadTrackGSS:								; this routine uploads GSS music data (song no. in DP_NextTrack) to the SPC700
+	DisableIRQs
+
+
+
+; -------------------------- upload pointers
+	Accu16
+
+	lda.w	#SCMD_LOAD						; send data load command
 	sta	DP_GSS_command
 	stz	DP_GSS_param
 	jsl	spc_command_asm
 
 	Accu16
 
-	lda	DP_NextTrack
+	lda	DP_NextTrack						; get pointers for requested song
 	asl	a
 	tax
-	lda.l	SRC_TrackPtrBankTable, x				; read bank byte of pointers
+	lda.l	SRC_TrackPtrBankTable, x				; set bank byte of pointers
 	sta	DP_SPC_DataBank
-	lda.l	SRC_TrackPtrOffsetTable, x				; read offset of pointers
+	lda.l	SRC_TrackPtrOffsetTable, x				; set offset of pointers
 	sta	DP_SPC_DataOffset
 	lda	#6							; data length = 3 16-bit pointers to ADSR table, SFX, and music
 	sta	DP_SPC_DataSize
-	lda	#$0208							; store pointers to SPC700 memory address $208
+	lda	#$0208							; store pointers to SPC700 memory address $0208
 	sta	DP_SPC_DataAddress
-	jsl	spc_load_data
+	jsl	spc_load_data						; upload pointers
 
+
+
+; -------------------------- upload samples
 	Accu16
 
-	lda.w	#SCMD_LOAD
+	lda.w	#SCMD_LOAD						; send data load command
 	sta	DP_GSS_command
 	stz	DP_GSS_param
 	jsl	spc_command_asm
 
 	Accu16
 
-	lda	DP_NextTrack
+	lda	DP_NextTrack						; get samples for requested song
 	asl	a
 	tax
-	lda.l	SRC_TrackSmpBankTable, x				; read bank byte of sample pack
+	lda.l	SRC_TrackSmpBankTable, x				; set bank byte of sample pack
 	sta	DP_SPC_DataBank
-	lda.l	SRC_TrackSmpOffsetTable, x				; read offset of sample pack
+	lda.l	SRC_TrackSmpOffsetTable, x				; set offset of sample pack
 	sta	DP_SPC_DataOffset
-	lda.l	SRC_TrackSmpLengthTable, x				; data length
+	lda.l	SRC_TrackSmpSizeTable, x				; data length = size of sample pack
 	sta	DP_SPC_DataSize
-	lda	#$0B24							; store samples to SPC700 memory address $B24 ($200 + $924, where $924 = size of sound driver)
+	lda	#$0B24							; store samples to SPC700 memory address $0B24 ($0200 + $924, where $924 = size of sound driver)
 	sta	DP_SPC_DataAddress
-	jsl	spc_load_data
+	jsl	spc_load_data						; upload samples
 
+
+
+; -------------------------- upload notes
 	Accu16
 
-	lda.w	#SCMD_LOAD
+	lda.w	#SCMD_LOAD						; send data load command
 	sta	DP_GSS_command
 	stz	DP_GSS_param
 	jsl	spc_command_asm
 
 	Accu16
 
-	lda	DP_NextTrack
+	lda	DP_NextTrack						; get music notes for requested song
 	asl	a
 	tax
-	lda.l	SRC_TrackNotBankTable, x				; read bank byte of Notes data
+	lda.l	SRC_TrackNotesBankTable, x				; set bank byte of notes data
 	sta	DP_SPC_DataBank
-	lda.l	SRC_TrackNotOffsetTable, x				; read offset of Notes data (excluding 2 bytes at the beginning, denoting file size)
+	lda.l	SRC_TrackNotesOffsetTable, x				; set offset of notes data (excluding 2 bytes at the beginning, denoting file size)
 	sta	DP_SPC_DataOffset
-	lda.l	SRC_TrackNotSizeTable, x				; read file size
+	lda.l	SRC_TrackNotesSizeTable, x				; data length = size of notes data
 	sta	DP_SPC_DataSize
-	lda.l	SRC_TrackSmpLengthTable, x				; store samples to SPC700 memory address $B24 + size of sample pack
+	lda.l	SRC_TrackSmpSizeTable, x				; store notes to SPC700 memory address ($0B24 + size of sample pack)
 	clc
 	adc	#$0B24
 	sta	DP_SPC_DataAddress
-	jsl	spc_load_data
+	jsl	spc_load_data						; upload notes
 
+
+
+; -------------------------- initialize sound driver again (this is important, or else the song won't play correctly)
 	Accu16
 
-	lda.w	#SCMD_INITIALIZE					; this is important, or else the song won't play correctly
+	lda.w	#SCMD_INITIALIZE					; send initialize command
 	sta	DP_GSS_command
 	stz	DP_GSS_param
 	jsl	spc_command_asm
+
+
+
+; -------------------------- re-enable IRQ/NMI
+.ACCU 8
 
 	lda.l	REG_RDNMI						; clear NMI flag
 	lda.l	VAR_Shadow_NMITIMEN					; reenable interrupts
@@ -98,9 +148,12 @@ LoadTrackGSS:
 
 
 
-PlayTrackGSS:
+PlayTrackGSS:								; this routine enables stereo, sets the volume and sends the play command to the GSS sound driver
 	DisableIRQs							; reminder: this was moved here from the original SNESGSS routines as of build #00203
 
+
+
+; -------------------------- set stereo
 	Accu16
 
 	lda	#SCMD_STEREO						; default output is mono, so issue stereo command ...
@@ -109,6 +162,9 @@ PlayTrackGSS:
 	sta	DP_GSS_param
 	jsl	spc_command_asm
 
+
+
+; -------------------------- set volume, fade speed
 	Accu16
 
 	lda	#$00FF
@@ -117,6 +173,9 @@ PlayTrackGSS:
 	sta	DP_SPC_VolCurrent
 	jsl	spc_global_volume
 
+
+
+; -------------------------- send play command
 	Accu16
 
 	lda.w	#SCMD_MUSIC_PLAY
@@ -124,7 +183,10 @@ PlayTrackGSS:
 	stz	DP_GSS_param
 	jsl	spc_command_asm
 
-	Accu8
+
+
+; -------------------------- re-enable IRQ/NMI
+.ACCU 8
 
 	lda.l	REG_RDNMI						; clear NMI flag
 	lda.l	VAR_Shadow_NMITIMEN					; reenable interrupts
@@ -134,7 +196,7 @@ PlayTrackGSS:
 
 
 
-PlayTrackNow:
+PlayTrackNow:								; this routine stops any music, loads a new track, and plays it instantly
 	DisableIRQs
 
 	jsl	music_stop
@@ -144,6 +206,8 @@ PlayTrackNow:
 	rts
 
 
+
+; **************************** SNESGSS data ****************************
 
 SRC_TrackPtrBankTable:
 	.DW :SRC_track_00_pointers
@@ -213,7 +277,7 @@ SRC_TrackSmpOffsetTable:
 
 
 
-SRC_TrackSmpLengthTable:
+SRC_TrackSmpSizeTable:
 	.DW _sizeof_SRC_track_00_samples
 	.DW _sizeof_SRC_track_01_samples
 	.DW _sizeof_SRC_track_02_samples
@@ -230,7 +294,7 @@ SRC_TrackSmpLengthTable:
 
 
 
-SRC_TrackNotBankTable:
+SRC_TrackNotesBankTable:
 	.DW :SRC_track_00_Notes
 	.DW :SRC_track_01_Notes
 	.DW :SRC_track_02_Notes
@@ -247,7 +311,7 @@ SRC_TrackNotBankTable:
 
 
 
-SRC_TrackNotOffsetTable:
+SRC_TrackNotesOffsetTable:
 	.DW SRC_track_00_Notes+2
 	.DW SRC_track_01_Notes+2
 	.DW SRC_track_02_Notes+2
@@ -264,7 +328,7 @@ SRC_TrackNotOffsetTable:
 
 
 
-SRC_TrackNotSizeTable:
+SRC_TrackNotesSizeTable:
 	.INCBIN Track00_Notes READ 2
 	.INCBIN Track01_Notes READ 2
 	.INCBIN Track02_Notes READ 2
@@ -281,7 +345,7 @@ SRC_TrackNotSizeTable:
 
 
 
-SRC_TrackPointerTable:
+SRC_TrackNamePointers:
 	.DW STR_Track00
 	.DW STR_Track01
 	.DW STR_Track02

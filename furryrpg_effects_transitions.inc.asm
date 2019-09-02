@@ -12,7 +12,7 @@
 .ACCU 8
 .INDEX 16
 
-SRC_EffectPointer:
+SRC_EffectPointers:
 	.DW EffectFadeFromBlack
 	.DW EffectFadeToBlack
 	.DW EffectHSplitIn

@@ -182,12 +182,12 @@ DebugMenuLoop:
 	lda	DP_NextTrack
 	asl	a
 	tax
-	lda.l	SRC_TrackPointerTable, x				; load track name pointer
+	lda.l	SRC_TrackNamePointers, x				; load track name pointer
 	sta	DP_DataAddress
 
 	Accu8
 
-	lda	#:SRC_TrackPointerTable
+	lda	#:SRC_TrackNamePointers
 	sta	DP_DataBank
 
 	SetTextPos	12, 14
@@ -385,9 +385,9 @@ __	sta	DP_AreaCurrent
 	bne	@DpadRightDone
 	lda	DP_NextTrack						; go to next track
 	inc	a
-	cmp	#_sizeof_SRC_TrackPointerTable/2
+	cmp	#_sizeof_SRC_TrackNamePointers/2
 	bcc	+
-	lda	#_sizeof_SRC_TrackPointerTable/2-1
+	lda	#_sizeof_SRC_TrackNamePointers/2-1
 +	sta	DP_NextTrack
 
 @DpadRightDone:

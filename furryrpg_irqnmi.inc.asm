@@ -1034,12 +1034,12 @@ ErrorHandler:
 	and	#$00FF							; remove garbage in high byte
 	asl	a
 	tax
-	lda.l	SRC_ErrorCodesPtrTable, x				; load track name pointer
+	lda.l	SRC_ErrorCodePointers, x				; load pointer to error code name
 	sta	DP_DataAddress
 
 	Accu8
 
-	lda	#:SRC_TrackPointerTable
+	lda	#:SRC_ErrorCodePointers
 	sta	DP_DataBank
 
 	PrintString	7, 2, "%s"					; print error code name
