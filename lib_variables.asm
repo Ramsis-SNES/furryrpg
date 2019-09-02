@@ -834,9 +834,10 @@
 	DP_NextEvent		dw					; holds no. of event to load
 	DP_PlayerIdleCounter	dw					; holds frame count since last button press
 	DP_RegisterBuffer	dw					; holds register to be written to next by event handler
-	DP_RingMenuAngle	dw
+	DP_RingMenuAngle	db
 	DP_RingMenuAngleOffset	dw
 	DP_RingMenuRadius	db
+	DP_RingMenuStatus	db					; eirrrrrr 	[e = rotate ring menu left, i = rotate ring menu right, r = reserved]
 	DP_SNESlib_ptr		dsb 4					; SNESGSS
 ;	DP_SNESlib_rand1	dsb 2					; SNESGSS
 ;	DP_SNESlib_rand2	dsb 2					; SNESGSS

@@ -420,7 +420,6 @@ InGameMenu:
 
 	lda	#$80							; set angle for 1st item on ring menu ($80 = 12:00 o'clock)
 	sta	DP_RingMenuAngle
-	stz	DP_RingMenuAngle+1
 	lda	#PARAM_RingMenuRadiusMin
 	sta	DP_RingMenuRadius
 
@@ -463,79 +462,94 @@ InGameMenu:
 
 	DrawFrame	7, 1, 17, 2
 
-	stz	DP_LoopCounter
+	jsr	UpdateMenuHeadline					; make sure initial headline (with frame) appears on the screen
+
+	stz	DP_LoopCounter						; reset loop counter
 
 
 
 RingMenuLoop:
+	bit	DP_RingMenuStatus
+	bmi	@RotateRingMenuLeft					; MSB set --> rotate ring menu counter-clockwise
+	bvs	@RotateRingMenuRight					; bit 6 set --> rotate ring menu clockwise
+	bra	@RotateRingMenuDone
+
+@RotateRingMenuLeft:
+	lda	DP_RingMenuAngle					; check if lower nibble is zero
+	and	#$0F
+	bne	+							; no, do/continue rotation
+	lda	DP_RingMenuAngle					; check if upper nibble is even
+	and	#$10
+	bne	+							; no, do/continue rotation
+	lda	#%10000000						; lower nibble zero and upper nibble even --> target angle ($00, $20 ... $E0) reached, clear status MSB (i.e., stop rotation)
+	trb	DP_RingMenuStatus
+	jsr	UpdateMenuHeadline					; make sure headline gets updated based on target angle
+
+	bra	@RotateRingMenuDone
+
++	inc	DP_RingMenuAngle					; inc angle --> rotate counter-clockwise
+	inc	DP_RingMenuAngle
+	bra	@RotateRingMenuDone
+
+@RotateRingMenuRight:
+	lda	DP_RingMenuAngle
+	and	#$0F
+	bne	+
+	lda	DP_RingMenuAngle
+	and	#$10
+	bne	+
+	lda	#%01000000						; lower nibble zero and upper nibble even --> target angle ($00, $20 ... $E0) reached, clear status bit 6 (i.e., stop rotation)
+	trb	DP_RingMenuStatus
+	jsr	UpdateMenuHeadline					; make sure headline gets updated based on target angle
+
+	bra	@RotateRingMenuDone
+
++	dec	DP_RingMenuAngle					; dec angle --> rotate clockwise
+	dec	DP_RingMenuAngle
+
+@RotateRingMenuDone:
+	jsr	PutRingMenuItems					; put ring menu items based on current angle
+
 	wai
+	inc	DP_LoopCounter						; increment loop counter (used for blinking cursor sprite)
 
 
 
 ; -------------------------- check for dpad left
-	lda	DP_Joy1Press+1
+	lda	DP_Joy1+1
 	and	#%00000010
 	beq	@DpadLeftDone
-
-	ldy	#$0020							; change angle 32 times
--	wai
-	dec	DP_RingMenuAngle					; dec angle --> rotate clockwise
+	dec	DP_RingMenuAngle					; initiate clockwise rotation, this is required so that angle checks under @RotateRingMenuRight will work properly
 	dec	DP_RingMenuAngle
 	jsr	PutRingMenuItems
 
-	dey
-	dey
-	bne	-
+	wai								; make sure initial rotation makes it onto the screen
+	inc	DP_LoopCounter						; increment loop counter to make up for the additional frame
+	lda	DP_RingMenuStatus					; set appropriate rotation bit in status variable
+	and	#%00111111						; clear left/right rotation bits
+	ora	#%01000000						; set bit 6 (rotate ring menu right/clockwise)
+	sta	DP_RingMenuStatus
 
 @DpadLeftDone:
 
 
 
 ; -------------------------- check for dpad right
-	lda	DP_Joy1Press+1
+	lda	DP_Joy1+1
 	and	#%00000001
 	beq	@DpadRightDone
-
-	ldy	#$0020
--	wai
-	inc	DP_RingMenuAngle					; inc angle --> rotate counter-clockwise
+	inc	DP_RingMenuAngle					; initiate counter-clockwise rotation, this is required so that angle checks under @RotateRingMenuLeft will work properly
 	inc	DP_RingMenuAngle
 	jsr	PutRingMenuItems
 
-	dey
-	dey
-	bne	-
+	wai								; make sure initial rotation makes it onto the screen
+	inc	DP_LoopCounter						; increment loop counter to make up for the additional frame
+	lda	DP_RingMenuStatus					; set appropriate rotation bit in status variable
+	and	#%00111111						; clear left/right rotation bits
+	ora	#%10000000						; set MSB (rotate ring menu left/counter-clockwise)
+	sta	DP_RingMenuStatus
 
 @DpadRightDone:
-
-
-
-; -------------------------- update headline based on angle
-	SetTextPos	2, 8
-
-	lda	DP_RingMenuAngle					; angle $00, $20 ... $C0, $E0
-	lsr	a							; shift into lower nibble
-	lsr	a
-	lsr	a
-	lsr	a
-
-	Accu16
-
-	and	#$00FF							; remove garbage in B
-	tax
-	lda.l	PTR_RingMenuHeadEng, x					; x = pointer no.
-	sta	DP_TextStringPtr
-
-	Accu8
-
-	lda	#:PTR_RingMenuHeadEng					; assume English
-	clc
-	adc	DP_TextLanguage						; add language constant for correct bank/language
-	sta	DP_TextStringBank
-	jsr	SimplePrintF
-
-	lda	#%00010000						; make sure BG3 lo tile map gets updated
-	tsb	DP_DMA_Updates
 
 
 
@@ -543,7 +557,13 @@ RingMenuLoop:
 	lda	DP_Joy1New
 	bpl	@AButtonDone
 	lda	DP_RingMenuAngle					; make selection based on ring menu angle
-	lsr	a							; shift into lower nibble
+	and	#$0F							; check for proper target angle ($00, $20 ... $E0) to prevent errors, lower nibble must be zero
+	bne	@AButtonDone						; still rotating, jump out
+	lda	DP_RingMenuAngle					; upper nibble must be even
+	and	#$10
+	bne	@AButtonDone						; still rotating, jump out
+	lda	DP_RingMenuAngle					; target angle is valid, shift into lower nibble
+	lsr	a
 	lsr	a
 	lsr	a
 	lsr	a
@@ -561,8 +581,8 @@ RingMenuLoop:
 @PTR_MainMenuSelection:
 	.DW GotoSettings
 	.DW GotoQuitGame
-	.DW Goto???1
-	.DW Goto???2
+	.DW GotoSecret1
+	.DW GotoSecret2
 	.DW GotoInventory
 	.DW GotoTalent
 	.DW GotoParty
@@ -570,7 +590,6 @@ RingMenuLoop:
 
 @AButtonDone:
 
-	inc	DP_LoopCounter
 	lda	DP_LoopCounter
 	cmp	#30
 	bcc	@CursorBlinkingDone
@@ -706,15 +725,45 @@ CalcRingItemPos:
 
 
 
+UpdateMenuHeadline:
+	SetTextPos	2, 8
+
+	lda	DP_RingMenuAngle					; update headline based on angle ($00, $20 ... $C0, $E0)
+	lsr	a							; shift into lower nibble
+	lsr	a
+	lsr	a
+	lsr	a
+
+	Accu16
+
+	and	#$00FF							; remove garbage in B
+	tax
+	lda.l	PTR_RingMenuHeadEng, x					; x = pointer no.
+	sta	DP_TextStringPtr
+
+	Accu8
+
+	lda	#:PTR_RingMenuHeadEng					; assume English
+	clc
+	adc	DP_TextLanguage						; add language constant for correct bank/language
+	sta	DP_TextStringBank
+	jsr	SimplePrintF
+
+	lda	#%00010000						; make sure BG3 lo tile map gets updated
+	tsb	DP_DMA_Updates
+	rts
+
+
+
 ; ************************ Sub menu: Inventory *************************
 
 GotoQuitGame:
 ;	jsr	RingMenuCloseAnimation
 
-Goto???1:
+GotoSecret1:
 ;	jsr	RingMenuCloseAnimation
 
-Goto???2:
+GotoSecret2:
 ;	jsr	RingMenuCloseAnimation
 
 GotoTalent:
