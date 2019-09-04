@@ -11,7 +11,7 @@
 
 ; *************************** Pointer table ****************************
 
-SRC_DiagPointerEng:
+PTR_DialogEng:
 	.DW STR_DiagTestEng
 
 	.DW STR_DialogEng0000
@@ -224,7 +224,7 @@ SRC_DiagPointerEng:
 	.DW STR_DialogEng0207
 ;	.DW STR_DialogEng0208
 
-SRC_DiagPointerEng_END:
+PTR_DialogEng_END:
 
 
 

@@ -187,12 +187,12 @@ DebugMenuLoop:
 	lda	DP_NextTrack
 	asl	a
 	tax
-	lda.l	SRC_TrackNamePointers, x				; load track name pointer
+	lda.l	PTR_TrackName, x					; load track name pointer
 	sta	DP_DataAddress
 
 	Accu8
 
-	lda	#:SRC_TrackNamePointers
+	lda	#:PTR_TrackName
 	sta	DP_DataBank
 
 	SetTextPos	12, 14
@@ -342,7 +342,7 @@ DebugMenuLoop:
 	dec	a
 	cmp	#$FFFF
 	bne	_f
-	lda	#_sizeof_SRC_PointerAreaProperty/2-1			; underflow, load no. of last existing area
+	lda	#_sizeof_PTR_AreaProperty/2-1				; underflow, load no. of last existing area
 __	sta	DP_AreaCurrent
 
 	Accu8
@@ -374,7 +374,7 @@ __	sta	DP_AreaCurrent
 
 	lda	DP_AreaCurrent
 	inc	a
-	cmp	#_sizeof_SRC_PointerAreaProperty/2
+	cmp	#_sizeof_PTR_AreaProperty/2
 	bcc	_f
 	lda	#$0000							; overflow, load no. of first area
 __	sta	DP_AreaCurrent
@@ -388,9 +388,9 @@ __	sta	DP_AreaCurrent
 	bne	@DpadRightDone
 	lda	DP_NextTrack						; go to next track
 	inc	a
-	cmp	#_sizeof_SRC_TrackNamePointers/2
+	cmp	#_sizeof_PTR_TrackName/2
 	bcc	+
-	lda	#_sizeof_SRC_TrackNamePointers/2-1
+	lda	#_sizeof_PTR_TrackName/2-1
 +	sta	DP_NextTrack
 
 @DpadRightDone:

@@ -11,7 +11,7 @@
 
 ; *************************** Text pointers ****************************
 
-SRC_ErrorCodePointers:
+PTR_ErrorCode:
 	.DW STR_ErrorCode000
 
 

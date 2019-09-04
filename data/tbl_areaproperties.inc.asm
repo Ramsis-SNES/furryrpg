@@ -11,7 +11,7 @@
 
 ; *************************** Pointer table ****************************
 
-SRC_PointerAreaProperty:
+PTR_AreaProperty:
 	.DW SRC_AreaProperty000-SRC_AreaProperties			; subtract start offset to allow zero-based calculations
 	.DW SRC_AreaProperty001-SRC_AreaProperties
 	.DW SRC_AreaProperty002-SRC_AreaProperties

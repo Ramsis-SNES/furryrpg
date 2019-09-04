@@ -100,7 +100,7 @@ OpenTextBox:
 	stz	ARRAY_HDMA_BG_Scroll+10
 
 @ProcessNextDialog:
-	lda	#:SRC_DiagPointerEng
+	lda	#:PTR_DialogEng
 	clc								; add language constant to get the correct text bank
 	adc	DP_TextLanguage
 	sta	DP_TextBoxStrBank
@@ -112,7 +112,7 @@ OpenTextBox:
 	lda	DP_TextPointerNo
 	asl	a
 	tax
-	lda.l	SRC_DiagPointerEng, x					; DP_TextLanguage is 0 --> English
+	lda.l	PTR_DialogEng, x					; DP_TextLanguage is 0 --> English
 	bra	++
 
 +	;cmp	#TBL_Lang_Ger						; German language selected?
@@ -123,7 +123,7 @@ OpenTextBox:
 	lda	DP_TextPointerNo
 	asl	a
 	tax
-	lda.l	SRC_DiagPointerGer, x					; DP_TextLanguage is 1 --> German
+	lda.l	PTR_DialogGer, x					; DP_TextLanguage is 1 --> German
 ++	sta	DP_TextBoxStrPtr
 	stz	DP_TextStringCounter					; reset string counter
 
@@ -307,9 +307,9 @@ MainTextBoxLoop:							; this routine needs to be called once per frame
 	lda	DP_TextPointerNo					; increment text pointer
 	clc
 	adc	#1
-	cmp	#_sizeof_SRC_DiagPointerEng/2
+	cmp	#_sizeof_PTR_DialogEng/2
 	bcc	+
-	lda	#_sizeof_SRC_DiagPointerEng/2-1
+	lda	#_sizeof_PTR_DialogEng/2-1
 +	sta	DP_TextPointerNo
 
 	Accu8
@@ -364,9 +364,9 @@ MainTextBoxLoop:							; this routine needs to be called once per frame
 	Accu16
 
 	lda	DP_TextPointerNo					; increment text pointer
-	cmp	#_sizeof_SRC_DiagPointerEng/2-50
+	cmp	#_sizeof_PTR_DialogEng/2-50
 	bcc	+
-	lda	#_sizeof_SRC_DiagPointerEng/2-1
+	lda	#_sizeof_PTR_DialogEng/2-1
 	bra	++
 +;	clc								; never mind, carry is already clear
 	adc	#50
@@ -899,9 +899,9 @@ LoadTextBoxBG:								; routine is called during Vblank only
 	bne	+
 	ldx	#(ARRAY_HDMA_BackgrTextBox & $FFFF)			; set WRAM address to text box HDMA background
 	stx	REG_WMADDL
-	stz	REG_WMADDH
+	stz	REG_WMADDH						; array is in bank $7E
 
-	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, $80, 192		; DP_TextBoxBG is zero, so make background black
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, <REG_WMDATA, 192	; DP_TextBoxBG is zero, so make background black
 
 	bra	@LoadTextBoxBGDone
 
@@ -940,8 +940,8 @@ LoadTextBoxBG:								; routine is called during Vblank only
 	Accu8
 
 	stz	REG_WMADDH						; array is in bank $7E
- 	stz	REG_DMAP0						; DMA mode
-	lda	#$80							; B bus register ($2180)
+ 	stz	REG_DMAP0						; DMA mode $00
+	lda	#<REG_WMDATA						; B bus register ($2180)
 	sta	REG_BBAD0
 	lda	#:SRC_HDMA_TextBoxGradientBlue				; data bank
 	sta	REG_A1B0

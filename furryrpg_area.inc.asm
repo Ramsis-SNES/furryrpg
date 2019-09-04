@@ -55,7 +55,7 @@ LoadAreaData:
 	lda	DP_AreaCurrent
 	asl	a
 	tax
-	lda.l	SRC_PointerAreaProperty, x				; set data offset for selected area
+	lda.l	PTR_AreaProperty, x					; set data offset for selected area
 	tax
 	lda.l	SRC_AreaProperties, x					; read area properties (16 bits of data)
 	sta	DP_AreaProperties

@@ -858,12 +858,12 @@ UpdateCharPortrait:
 	lda	#ADDR_CGRAM_Portrait					; set CGRAM address for character portrait
 	sta	REG_CGADD
 
-	lda	DP_TextBoxCharPortrait
-	and	#$7F							; check for portrait no., 0 = no portrait
+	lda	DP_TextBoxCharPortrait					; check for portrait no., 0 = no portrait
+	and	#$7F							; mask off "change portrait" bit
 	bne	+
 
-	DMA_CH0 $09, :CONST_FFs, CONST_FFs, $18, 1920			; no portrait wanted, so put masking tiles over portrait
-	DMA_CH0 $0A, :CONST_Zeroes, CONST_Zeroes, $22, 32		; and zero out palette
+	DMA_CH0 $09, :CONST_FFs, CONST_FFs, <REG_VMDATAL, 1920		; no portrait wanted, so put masking tiles over portrait
+	DMA_CH0 $0A, :CONST_Zeroes, CONST_Zeroes, <REG_CGDATA, 32	; and zero out palette
 
 	bra	@PortraitUpdateDone
 
@@ -871,34 +871,34 @@ UpdateCharPortrait:
 
 	and	#$00FF							; remove garbage in high byte
 	asl	a
-	tax								; make portrait no. = index in GFX offset table
-	lda.l	SRC_CharPortaitGFXTable, x
-	sta	$4302							; data offset
+	tax								; make portrait no. = index in GFX pointer table
+	lda.l	PTR_CharPortraitGFX, x
+	sta	REG_A1T0L						; data offset
 	ldy	#$1801							; low byte: DMA mode, high byte: B bus register ($2118/VMDATA)
- 	sty	$4300
+ 	sty	REG_DMAP0
 
 	Accu8
 
 	lda	#:GFX_Portrait_Hero1					; data bank (all portraits need to be in the same bank)
-	sta	$4304
+	sta	REG_A1B0
 	ldy	#1920							; data length
-	sty	$4305
+	sty	REG_DAS0L
 	lda	#%00000001						; initiate DMA transfer (channel 0)
 	sta	REG_MDMAEN
 
 	Accu16
 
-	lda.l	SRC_CharPortaitPaletteTable, x				; index is still in X, use that for correct palette
-	sta	$4302							; data offset
+	lda.l	PTR_CharPortraitPalette, x				; index is still in X, use that for correct palette
+	sta	REG_A1T0L						; data offset
 	ldx	#$2202							; low byte: DMA mode, high byte: B bus register ($2122/CGDATA)
- 	stx	$4300
+ 	stx	REG_DMAP0
 
 	Accu8
 
 	lda	#:SRC_Palette_Portrait_Hero1				; data bank (all portrait palettes need to be in the same bank)
-	sta	$4304
+	sta	REG_A1B0
 	ldx	#32							; data length (16 colors)
-	stx	$4305
+	stx	REG_DAS0L
 	lda	#%00000001						; initiate DMA transfer (channel 0)
 	sta	REG_MDMAEN
 
@@ -1034,12 +1034,12 @@ ErrorHandler:
 	and	#$00FF							; remove garbage in high byte
 	asl	a
 	tax
-	lda.l	SRC_ErrorCodePointers, x				; load pointer to error code name
+	lda.l	PTR_ErrorCode, x					; load pointer to error code name
 	sta	DP_DataAddress
 
 	Accu8
 
-	lda	#:SRC_ErrorCodePointers
+	lda	#:PTR_ErrorCode
 	sta	DP_DataBank
 
 	PrintString	7, 2, "%s"					; print error code name

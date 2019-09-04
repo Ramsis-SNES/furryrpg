@@ -63,9 +63,9 @@ LoadTrackGSS:								; this routine uploads GSS music data (song no. in DP_NextT
 	lda	DP_NextTrack						; get pointers for requested song
 	asl	a
 	tax
-	lda.l	SRC_TrackPtrBankTable, x				; set bank byte of pointers
+	lda.l	PTR_TrackPointerBank, x					; set bank byte of pointers
 	sta	DP_SPC_DataBank
-	lda.l	SRC_TrackPtrOffsetTable, x				; set offset of pointers
+	lda.l	PTR_TrackPointerOffset, x				; set offset of pointers
 	sta	DP_SPC_DataOffset
 	lda	#6							; data length = 3 16-bit pointers to ADSR table, SFX, and music
 	sta	DP_SPC_DataSize
@@ -88,11 +88,11 @@ LoadTrackGSS:								; this routine uploads GSS music data (song no. in DP_NextT
 	lda	DP_NextTrack						; get samples for requested song
 	asl	a
 	tax
-	lda.l	SRC_TrackSmpBankTable, x				; set bank byte of sample pack
+	lda.l	PTR_TrackSamplesBank, x					; set bank byte of sample pack
 	sta	DP_SPC_DataBank
-	lda.l	SRC_TrackSmpOffsetTable, x				; set offset of sample pack
+	lda.l	PTR_TrackSamplesOffset, x				; set offset of sample pack
 	sta	DP_SPC_DataOffset
-	lda.l	SRC_TrackSmpSizeTable, x				; data length = size of sample pack
+	lda.l	SRC_TrackSamplesSize, x					; data length = size of sample pack
 	sta	DP_SPC_DataSize
 	lda	#$0B24							; store samples to SPC700 memory address $0B24 ($0200 + $924, where $924 = size of sound driver)
 	sta	DP_SPC_DataAddress
@@ -113,13 +113,13 @@ LoadTrackGSS:								; this routine uploads GSS music data (song no. in DP_NextT
 	lda	DP_NextTrack						; get music notes for requested song
 	asl	a
 	tax
-	lda.l	SRC_TrackNotesBankTable, x				; set bank byte of notes data
+	lda.l	PTR_TrackNotesBank, x					; set bank byte of notes data
 	sta	DP_SPC_DataBank
-	lda.l	SRC_TrackNotesOffsetTable, x				; set offset of notes data (excluding 2 bytes at the beginning, denoting file size)
+	lda.l	PTR_TrackNotesOffset, x					; set offset of notes data (excluding 2 bytes at the beginning, denoting file size)
 	sta	DP_SPC_DataOffset
-	lda.l	SRC_TrackNotesSizeTable, x				; data length = size of notes data
+	lda.l	SRC_TrackNotesSize, x					; data length = size of notes data
 	sta	DP_SPC_DataSize
-	lda.l	SRC_TrackSmpSizeTable, x				; store notes to SPC700 memory address ($0B24 + size of sample pack)
+	lda.l	SRC_TrackSamplesSize, x					; store notes to SPC700 memory address ($0B24 + size of sample pack)
 	clc
 	adc	#$0B24
 	sta	DP_SPC_DataAddress
@@ -209,7 +209,7 @@ PlayTrackNow:								; this routine stops any music, loads a new track, and play
 
 ; **************************** SNESGSS data ****************************
 
-SRC_TrackPtrBankTable:
+PTR_TrackPointerBank:
 	.DW :SRC_track_00_pointers
 	.DW :SRC_track_01_pointers
 	.DW :SRC_track_02_pointers
@@ -226,7 +226,7 @@ SRC_TrackPtrBankTable:
 
 
 
-SRC_TrackPtrOffsetTable:
+PTR_TrackPointerOffset:
 	.DW SRC_track_00_pointers
 	.DW SRC_track_01_pointers
 	.DW SRC_track_02_pointers
@@ -243,7 +243,7 @@ SRC_TrackPtrOffsetTable:
 
 
 
-SRC_TrackSmpBankTable:
+PTR_TrackSamplesBank:
 	.DW :SRC_track_00_samples
 	.DW :SRC_track_01_samples
 	.DW :SRC_track_02_samples
@@ -260,7 +260,7 @@ SRC_TrackSmpBankTable:
 
 
 
-SRC_TrackSmpOffsetTable:
+PTR_TrackSamplesOffset:
 	.DW SRC_track_00_samples
 	.DW SRC_track_01_samples
 	.DW SRC_track_02_samples
@@ -277,7 +277,7 @@ SRC_TrackSmpOffsetTable:
 
 
 
-SRC_TrackSmpSizeTable:
+SRC_TrackSamplesSize:
 	.DW _sizeof_SRC_track_00_samples
 	.DW _sizeof_SRC_track_01_samples
 	.DW _sizeof_SRC_track_02_samples
@@ -294,7 +294,7 @@ SRC_TrackSmpSizeTable:
 
 
 
-SRC_TrackNotesBankTable:
+PTR_TrackNotesBank:
 	.DW :SRC_track_00_Notes
 	.DW :SRC_track_01_Notes
 	.DW :SRC_track_02_Notes
@@ -311,7 +311,7 @@ SRC_TrackNotesBankTable:
 
 
 
-SRC_TrackNotesOffsetTable:
+PTR_TrackNotesOffset:
 	.DW SRC_track_00_Notes+2
 	.DW SRC_track_01_Notes+2
 	.DW SRC_track_02_Notes+2
@@ -328,7 +328,7 @@ SRC_TrackNotesOffsetTable:
 
 
 
-SRC_TrackNotesSizeTable:
+SRC_TrackNotesSize:
 	.INCBIN Track00_Notes READ 2
 	.INCBIN Track01_Notes READ 2
 	.INCBIN Track02_Notes READ 2
@@ -345,7 +345,7 @@ SRC_TrackNotesSizeTable:
 
 
 
-SRC_TrackNamePointers:
+PTR_TrackName:
 	.DW STR_Track00
 	.DW STR_Track01
 	.DW STR_Track02

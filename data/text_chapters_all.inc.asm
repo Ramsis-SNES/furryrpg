@@ -21,13 +21,7 @@
 
 ; *************************** Text pointers ****************************
 
-SRC_ChapterNames:
-	.DW SRC_ChapterNamesPtrEng
-	.DW SRC_ChapterNamesPtrGer
-
-
-
-SRC_ChapterNamesPtrEng:
+PTR_ChapterNameEng:
 	.DW STR_ChapterNameEng000
 	.DW STR_ChapterNameEng001
 	.DW STR_ChapterNameEng002
@@ -35,7 +29,7 @@ SRC_ChapterNamesPtrEng:
 
 
 
-SRC_ChapterNamesPtrGer:
+PTR_ChapterNameGer:
 	.DW STR_ChapterNameGer000
 	.DW STR_ChapterNameGer001
 	.DW STR_ChapterNameGer002
