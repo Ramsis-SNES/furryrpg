@@ -742,6 +742,16 @@ SRC_HDMA_Mode7Sky72:
 
 
 
+PTR_TextBoxGradient:
+	.DW 0								; dummy pointer for black background
+	.DW SRC_HDMA_TextBoxGradientBlue
+	.DW SRC_HDMA_TextBoxGradientRed
+	.DW SRC_HDMA_TextBoxGradientPink
+	.DW SRC_HDMA_TextBoxGradientEvil
+	.DW SRC_HDMA_TextBoxGradientAlert
+
+
+
 SRC_HDMA_TextBoxGradientBlue:
 	.DW $0000,$0000							; 3 scanlines black (to suppress color in frame corners)
 	.DW $0000,$0000

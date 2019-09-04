@@ -616,8 +616,8 @@ __ProcessTextLoop2:
 
 	jmp	(PTR_ProcessTextCC, x)
 
-PTR_ProcessTextCC:
-	.DW Process_CC_Portrait
+PTR_ProcessTextCC:							; self-reminder: order of table entries has to match CC_* .DEFINEs in variable definitions
+	.DW Process_CC_BoxBG
 	.DW Process_CC_BoxBG
 	.DW Process_CC_BoxBG
 	.DW Process_CC_BoxBG
@@ -627,22 +627,9 @@ PTR_ProcessTextCC:
 	.DW Process_CC_Indent
 	.DW Process_CC_Jump
 	.DW Process_CC_NewLine
+	.DW Process_CC_Portrait
 	.DW Process_CC_Selection
 	.DW Process_CC_ToggleBold
-
-Process_CC_Portrait:
-	iny								; increment string pointer to portrait no.
-	lda	[DP_TextBoxStrPtr], y					; read portrait no. (0-127)
-	ora	#$80							; set "change portrait" bit
-	sta	DP_TextBoxCharPortrait					; save to "change portrait" request variable
-
-	Accu16
-
-	inc	DP_TextStringCounter					; increment to next ASCII string character
-
-	Accu8
-
-	jmp	__ProcessTextJumpOut
 
 Process_CC_BoxBG:
 	lsr	a							; revert jump index back to original control code (no. of background color gradient)
@@ -739,6 +726,20 @@ Process_CC_NewLine:
 
 +	lda	#138*8							; otherwise, go to line 4
 	sta	DP_TextTileDataCounter
+
+	Accu8
+
+	jmp	__ProcessTextJumpOut
+
+Process_CC_Portrait:
+	iny								; increment string pointer to portrait no.
+	lda	[DP_TextBoxStrPtr], y					; read portrait no. (0-127)
+	ora	#$80							; set "change portrait" bit
+	sta	DP_TextBoxCharPortrait					; save to "change portrait" request variable
+
+	Accu16
+
+	inc	DP_TextStringCounter					; increment to next ASCII string character
 
 	Accu8
 
@@ -905,20 +906,17 @@ LoadTextBoxBG:								; routine is called during Vblank only
 
 	bra	@LoadTextBoxBGDone
 
-+	dec	a							; make up for number difference (blue = $01)
-	sta	REG_WRMPYA
-	lda	#192							; multiply requested color table with 192 to get correct data offset for upcoming DMA
-	sta	REG_WRMPYB
++	Accu16								; DP_TextBoxBG is not zero, calculate DMA data length and destination address for the text box "scrolling" animations to look correctly (obviously not needed with solid black background)
 
-	Accu16								; 3 cycles
-
+	and	#$00FF							; remove garbage in high byte
+	asl	a							; use as index into offset pointer table
+	tax
+	lda.l	PTR_TextBoxGradient, x					; read and set source data offset for upcoming DMA
+	sta	REG_A1T0L
 	lda	#224							; calculate DMA data length based on current IRQ scanline (e.g. when text box has fully "scrolled in": 224 - 176 = 48; 48 * 4 = 192)
 	sec
 	sbc	DP_TextBoxVIRQ
-	asl	a
-	asl	a
-	tax								; save length in X
-	bne	+							; only continue if length isn't zero, otherwise we'd end up with a destructive transfer of 65536 bytes ;-)
+	bne	+							; if zero at this point, jump out (otherwise we'd end up with a disastrous transfer of 65536 bytes)
 
 	Accu8
 
@@ -926,10 +924,9 @@ LoadTextBoxBG:								; routine is called during Vblank only
 
 .ACCU 16
 
-+	lda	REG_RDMPYL
-	clc
-	adc	#(SRC_HDMA_TextBoxGradientBlue & $FFFF)
-	sta	REG_A1T0L							; data offset
++	asl	a							; scanline difference (i.e., text box height) not zero, continue calculation
+	asl	a
+	sta	REG_DAS0L						; set calculated data length
 	lda	DP_TextBoxVIRQ						; calculate WRAM address based on DP_TextBoxVIRQ (e.g. 176 * 4 - 704 = 0)
 	asl	a
 	asl	a
@@ -945,7 +942,6 @@ LoadTextBoxBG:								; routine is called during Vblank only
 	sta	REG_BBAD0
 	lda	#:SRC_HDMA_TextBoxGradientBlue				; data bank
 	sta	REG_A1B0
-	stx	REG_DAS0L						; data length
 	lda	#%00000001						; initiate DMA transfer (channel 0)
 	sta	REG_MDMAEN
 
