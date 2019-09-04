@@ -1625,7 +1625,6 @@ TextBoxAnimationClose:							; closing animation (scroll text box content out ve
 
 @CloseTextBoxAniLoop:
 	WaitFrames	1
-
 	Accu16
 
 	lda	ARRAY_HDMA_BG_Scroll+13					; subtract speed value to vertical BG scroll data, i.e. scroll BG down
@@ -1661,7 +1660,6 @@ TextBoxAnimationClose:							; closing animation (scroll text box content out ve
 	trb	DP_HDMA_Channels
 
 	WaitFrames	1
-
 ;	Accu16
 
 ;	lda	ARRAY_HDMA_BG_Scroll+1					; restore scrolling parameters // possibly needed on areas with vertical scrolling
@@ -2128,14 +2126,14 @@ PrintHex8:								; assumes 8b mem, 16b index
 
 PrintHexNibble:								; assumes 8b mem, 16b index
 	cmp	#$0A
-	bcs	_nletter
+	bcs	@nletter
 	clc
 	adc	#'0'
 	jsr	FillTextBuffer						; write it to the text buffer
 
 	rts
 
-_nletter: 	
+@nletter:
 	clc
 	adc	#'A'-10		
 	jsr	FillTextBuffer						; write it to the text buffer
@@ -2164,14 +2162,14 @@ PrintSpriteHex8:
 
 PrintSpriteHexNibble:							; assumes 8b mem, 16b index
 	cmp	#$0A
-	bcs	_nletter2
+	bcs	@nletter
 	clc
 	adc	#'0'
 	jsr	FillSpriteTextBuf					; write it to the text buffer
 
 	rts
 
-_nletter2: 	
+@nletter:
 	clc
 	adc	#'A'-10		
 	jsr	FillSpriteTextBuf					; write it to the text buffer
