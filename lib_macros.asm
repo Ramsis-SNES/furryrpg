@@ -58,10 +58,10 @@
 ; Effect: Branch-relative to subroutine (useful for relocatable code).
 
 .MACRO bsr
-	per	__ReturnAdress\@ - 1					; push relative return address minus 1 (RTS adds 1) onto stack
+	per	@ReturnAdress\@ - 1					; push relative return address minus 1 (RTS adds 1) onto stack
 	brl	\1							; branch-relative to subroutine
 
-__ReturnAdress\@:
+@ReturnAdress\@:
 
 .ENDM
 
