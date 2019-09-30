@@ -456,11 +456,13 @@ LoadAreaData:
 
 	lda	#228							; dot number for interrupt (256 = too late, 204 = too early)
 	sta	REG_HTIMEL
-	lda	#224							; scanline number for interrupt (none for now)
+	lda	#224							; scanline number for interrupt (last one for now)
 	sta	REG_VTIMEL
-	sta	DP_TextBoxVIRQ
 
 	Accu8
+
+	sta	DP_TextBoxVIRQ						; save scanline no.
+
 	SetIRQ	TBL_VIRQ_Area
 
 	lda	REG_RDNMI						; clear NMI flag
@@ -728,10 +730,9 @@ MainAreaLoop:
 
 
 ; -------------------------- text box
-	lda	DP_TextBoxStatus					; check if text box is open
-	and	#%00000010
-	beq	@NoTextBox
-	jsr	MainTextBoxLoop						; yes, go to subroutine
+	bit	DP_TextBoxStatus					; check if text box is active (MSB set)
+	bpl	@NoTextBox
+	jsr	ProcDialogTextBox					; yes, go to subroutine
 
 	jmp	@SkipDpadABXY						; and skip subsequent button checks
 
@@ -739,47 +740,7 @@ MainAreaLoop:
 
 
 
-; -------------------------- check for A button
-	bit	DP_Joy1New
-	bpl	@AButtonDone
-	jsr	AreaJoyButtonA
-
-@AButtonDone:
-
-
-
-; -------------------------- check for B button
-	bit	DP_Joy1Press+1
-	bmi	+
-	lda	#1							; B not pressed, set slow walking speed
-	bra	@BButtonDone
-
-+	jsr	AreaJoyButtonB
-
-@BButtonDone:
-	sta	DP_Hero1WalkingSpd
-
-
-
-; -------------------------- check for X button
-	bit	DP_Joy1New
-	bvc	@XButtonDone
-	jsr	AreaJoyButtonX
-
-@XButtonDone:
-
-
-
-; -------------------------- check for Y button
-	bit	DP_Joy1New+1
-	bvc	@YButtonDone
-	jsr	AreaJoyButtonY
-
-@YButtonDone:
-
-
-
-; -------------------------- check for dpad released
+; -------------------------- check for dpad released // all dpad checks need to be made before other button checks as e.g. A needs to override flags in DP_Hero1SpriteStatus)
 	lda	DP_Joy1New+1
 	and	#%00001111
 	bne	@DpadNewDone
@@ -832,6 +793,46 @@ MainAreaLoop:
 	jsr	AreaJoyDpadRight
 
 @DpadRightDone:
+
+
+
+; -------------------------- check for A button
+	bit	DP_Joy1New
+	bpl	@AButtonDone
+	jsr	AreaJoyButtonA
+
+@AButtonDone:
+
+
+
+; -------------------------- check for B button
+	bit	DP_Joy1Press+1
+	bmi	+
+	lda	#1							; B not pressed, set slow walking speed
+	bra	@BButtonDone
+
++	jsr	AreaJoyButtonB
+
+@BButtonDone:
+	sta	DP_Hero1WalkingSpd
+
+
+
+; -------------------------- check for X button
+	bit	DP_Joy1New
+	bvc	@XButtonDone
+	jsr	AreaJoyButtonX
+
+@XButtonDone:
+
+
+
+; -------------------------- check for Y button
+	bit	DP_Joy1New+1
+	bvc	@YButtonDone
+	jsr	AreaJoyButtonY
+
+@YButtonDone:
 
 @SkipDpadABXY:
 
@@ -1001,7 +1002,7 @@ AreaJoyButtonA:
 	; ### TODO: CHECK FOR CHARACTER INTERACTION, TREASURE, POINTS OF INTEREST ETC.
 
 .IFDEF DEBUG
-	jsr	OpenTextBox
+	jsr	InitDialogTextBox
 .ENDIF
 
 	rts
@@ -1013,8 +1014,8 @@ AreaJoyButtonB:
 	and	#%00000001
 	beq	+
 	lda	DP_HUD_Status
-	ora	#%01000000						; yes, set "HUD should disappear" bit
-	and	#%01111111						; clear "HUD should appear" bit in case it's set
+	and	#%01111111						; yes, clear "HUD should appear" bit in case it's set
+	ora	#%01000000						; set "HUD should disappear" bit
 	sta	DP_HUD_Status
 +	lda	#2							; set fast walking speed
 	rts
@@ -1230,11 +1231,9 @@ AreaJoyButtonStart:
 	sta	DP_EffectSpeed
 	jsr	EffectHSplitOut2
 
-	lda	#%10000000						; set "clear text box" bit
-	sta	DP_TextBoxStatus
-	lda	VAR_Shadow_NMITIMEN
-	and	#%11001111						; clear IRQ enable bits
-	sta	REG_NMITIMEN
+	stz	DP_TextBoxStatus					; reset text box status
+	lda	#%00110000						; clear IRQ enable bits
+	trb	VAR_Shadow_NMITIMEN
 ;	lda	#TBL_Hero1_down|$80					; make char face the player (for menu later) // adjust when debug menu is removed
 ;	sta	DP_Hero1SpriteStatus
 	jsr	ClearHUD
@@ -1331,7 +1330,7 @@ PutAreaNameIntoHUD:							; HUD "text box" position (DP_Temp, DP_Temp+1) and DP_
 
 	Accu16
 
-	lda	DP_TextLanguage						; check for selected language
+	lda	DP_GameLanguage						; check for selected language
 	and	#$00FF							; mask off garbage bits
 	asl	a
 	tax

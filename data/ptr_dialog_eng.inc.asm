@@ -12,8 +12,6 @@
 ; *************************** Pointer table ****************************
 
 PTR_DialogEng:
-	.DW STR_DiagTestEng
-
 	.DW STR_DialogEng0000
 	.DW STR_DialogEng0001
 	.DW STR_DialogEng0002

@@ -132,10 +132,10 @@ DebugMenu:
 	sta	VAR_ShadowBG34NBA
 	lda	#$01							; set BG Mode 1
 	sta	VAR_ShadowBGMODE
-	stz	REG_CGADD						; reset CGRAM address
-	stz	REG_CGDATA						; $1C00 = dark blue as background color
-	lda	#$1C
-	sta	REG_CGDATA
+;	stz	REG_CGADD						; reset CGRAM address
+;	stz	REG_CGDATA						; $1C00 = dark blue as background color
+;	lda	#$1C
+;	sta	REG_CGDATA
 
 
 
@@ -152,14 +152,15 @@ DebugMenu:
 	PrintString	7, 3, "DEBUG MENU:"
 	PrintString	10, 3, "Alpha intro"
 	PrintString	11, 3, "Clear SRAM"
-	PrintString	12, 3, "Load area: XXXX"
-	PrintString	13, 3, "In-game menu"
-	PrintString	14, 3, "Mode1 world map"
-	PrintString	15, 3, "Mode7 world map"
-	PrintString	16, 3, "Random number (0-255):"
-	PrintString	17, 3, "Set real-time clock"
-	PrintString	18, 3, "Show sprite gallery"
-	PrintString	19, 3, "SNESGSS music test:"
+	PrintString	12, 3, "Dialog test"
+	PrintString	13, 3, "Load area: XXXX"
+	PrintString	14, 3, "In-game menu"
+	PrintString	15, 3, "Mode1 world map"
+	PrintString	16, 3, "Mode7 world map"
+	PrintString	17, 3, "Random number (0-255):"
+	PrintString	18, 3, "Set real-time clock"
+	PrintString	19, 3, "Show sprite gallery"
+	PrintString	20, 3, "SNESGSS music test:"
 ;	PrintString	20, 3, ""
 ;	PrintString	21, 3, ""
 
@@ -195,11 +196,11 @@ DebugMenuLoop:
 	lda	#:PTR_TrackName
 	sta	DP_DataBank
 
-	SetTextPos	12, 14
+	SetTextPos	13, 14
 	PrintHexNum	DP_AreaCurrent+1				; print no. of area to load
-	SetTextPos	12, 16
+	SetTextPos	13, 16
 	PrintHexNum	DP_AreaCurrent
-	PrintString	20, 4, "%s"					; print current SNESGSS song title
+	PrintString	21, 4, "%s"					; print current SNESGSS song title
 
 	lda	#%00010000						; make sure BG3 low tile map bytes are updated
 	tsb	DP_DMA_Updates
@@ -305,7 +306,7 @@ DebugMenuLoop:
 	sbc	#8
 	cmp	#PARAM_DebugMenu1stLine
 	bcs	+
-	lda	#PARAM_DebugMenu1stLine + 9 * 8				; underflow, put cursor on last line // no. of last menu item (9) * line height (8)
+	lda	#PARAM_DebugMenu1stLine + 10 * 8				; underflow, put cursor on last line // no. of last menu item (10) * line height (8)
 +	sta	ARRAY_SpriteDataArea.Text+2
 
 @DpadUpDone:
@@ -319,7 +320,7 @@ DebugMenuLoop:
 	lda	ARRAY_SpriteDataArea.Text+2
 	clc
 	adc	#8
-	cmp	#PARAM_DebugMenu1stLine + 10 * 8			; no. of menu items (10) * line height (8)
+	cmp	#PARAM_DebugMenu1stLine + 11 * 8			; no. of menu items (11) * line height (8)
 	bcc	+
 	lda	#PARAM_DebugMenu1stLine					; overflow, put cursor on first line
 +	sta	ARRAY_SpriteDataArea.Text+2
@@ -333,7 +334,7 @@ DebugMenuLoop:
 	and	#%00000010
 	beq	@DpadLeftDone
 	lda	ARRAY_SpriteDataArea.Text+2				; only do anything if cursor is on area loader ...
-	cmp	#PARAM_DebugMenu1stLine + 16
+	cmp	#PARAM_DebugMenu1stLine + 24
 	bne	+
 
 	Accu16
@@ -350,7 +351,7 @@ __	sta	DP_AreaCurrent
 	bra	@DpadLeftDone
 
 +	lda	ARRAY_SpriteDataArea.Text+2				; ... or on music test
-	cmp	#PARAM_DebugMenu1stLine + 9 * 8
+	cmp	#PARAM_DebugMenu1stLine + 10 * 8
 	bne	@DpadLeftDone
 	lda	DP_NextTrack						; go to previous track
 	dec	a
@@ -367,7 +368,7 @@ __	sta	DP_AreaCurrent
 	and	#%00000001
 	beq	@DpadRightDone
 	lda	ARRAY_SpriteDataArea.Text+2				; only do anything if cursor is on area loader ...
-	cmp	#PARAM_DebugMenu1stLine + 16
+	cmp	#PARAM_DebugMenu1stLine + 24
 	bne	+
 
 	Accu16
@@ -384,7 +385,7 @@ __	sta	DP_AreaCurrent
 	bra	@DpadRightDone
 
 +	lda	ARRAY_SpriteDataArea.Text+2				; ... or on music test
-	cmp	#PARAM_DebugMenu1stLine + 9 * 8
+	cmp	#PARAM_DebugMenu1stLine + 10 * 8
 	bne	@DpadRightDone
 	lda	DP_NextTrack						; go to next track
 	inc	a
@@ -419,6 +420,7 @@ __	sta	DP_AreaCurrent
 @@PTR_DebugMenuEntry:
 	.DW @@GotoShowAlphaIntro
 	.DW @@GotoClearSRAM
+	.DW DialogTest
 	.DW LoadArea
 	.DW InGameMenu
 	.DW LoadWorldMap
@@ -447,7 +449,7 @@ __	sta	DP_AreaCurrent
 @@PrintRandomNumber:
 	jsr	CreateRandomNr
 
-	SetTextPos	16, 26
+	SetTextPos	17, 26
 	PrintNum	ARRAY_RandomNumbers
 
 	stz	DP_TextStringPtr

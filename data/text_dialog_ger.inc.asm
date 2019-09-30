@@ -25,13 +25,6 @@
 
 ; ******************************* Dialog *******************************
 
-STR_DiagTestGer:
-	.DB CC_Portrait, 3, CC_BoxBlue
-	.DB "DIALOG-TEST", CC_NewLine
-	.DB "Steuerkreuz r/l (+Y): n", auml, "chster/vorheriger String", CC_NewLine
-	.DB "R/L: +/-50 Strings", CC_NewLine
-	.DB "B: Textbox schlie", szlig, "en/Auswahl abbrechen", CC_End
-
 STR_DialogGer0000:
 	.DB CC_Portrait, 3, CC_BoxBlue
 	.DB "J", Ouml, "RG B", Auml, "CKT QUASI ZWEI HAXENF", Uuml, "SSE VOM WILDPONY.", CC_NewLine

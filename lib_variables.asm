@@ -425,7 +425,7 @@
 .DEFINE PARAM_RingMenuRadiusMax	60
 
 .DEFINE PARAM_TextBox		$02C0					; tilemap entry for start of whole text box area
-.DEFINE PARAM_TextBoxAnimSpd	4					; scrolling speed for text box animation (must be a divisor of 48)
+.DEFINE PARAM_TextBoxAnimSpd	3					; scrolling speed for text box animation (must be a divisor of 48) // self-remainder: number must match the number of initial black scanlines in SRC_HDMA_TextBoxGradient*, or else TextBoxAnimationClose will leave behind non-black scanlines
 .DEFINE PARAM_TextBoxColMath1st	57					; start of first line in a text box selection
 ;.DEFINE PARAM_TextBoxInside	$02E0					; tilemap entry for inside of text box
 .DEFINE PARAM_TextBoxLine1	$02E7					; tilemap entry for start of line 1 in text box
@@ -440,7 +440,6 @@
 
 ; -------------------------- dialog string numbers
 .ENUM 0
-	DialogStringTest	db
 	DialogStringNo0000	db
 	DialogStringNo0001	db
 	DialogStringNo0002	db
@@ -783,6 +782,13 @@
 ;	DP_CurrentScanline	dw					; holds no. of current scanline (for CPU load meter)
 	DP_DataAddress		dsb 2					; holds a 24-bit data address e.g. for string pointers, data transfers to SRAM, etc.
 	DP_DataBank		db
+	DP_DiagASCIIChar	dw					; holds current dialog ASCII character no.
+	DP_DiagStringPos	dw					; holds current dialog string position (= index to current character)
+	DP_DiagStringPtr	dw					; 16-bit pointer to (usually: beginning of) dialog string // caveat: dialog string addresses need to be separate from other (FWF/sprite) string addresses as the engine can process both types of strings at the same time (e.g. text box + HUD)
+	DP_DiagStringBank	db					; 8-bit bank no. of dialog string
+;	DP_DiagSubstring	db					; r
+	DP_DiagTextEffect	db					; brrrrrrr [b = toggle bold font, r = reserved]
+	DP_DiagTileDataCounter	dw					; holds current VRAM tile data address
 	DP_DMA_Updates		dw					; rrrcbbaarrr32211 [123 = BG no. that needs to have its tile map(s) updated on next Vblank (low bytes), abc = same thing for high bytes, r = reserved. The lower bit of each BG represents the first half of a 64×32/32×64 tile map, the higher one represents the second half.]
 	DP_EffectSpeed		dw
 	DP_ErrorCode		db
@@ -795,6 +801,7 @@
 	DP_EventMonitorJoy1	dw					; joypad bits to be monitored by event handler
 	DP_EventWaitFrames	dw
 	DP_GameConfig		db					; rrrrrucm [c = RTC present, m = MSU1 present, u = Ultra16 present, r = reserved]
+	DP_GameLanguage		db					; holds global game language constant (used to determine both text and gfx banks/addresses according to language chosen by player)
 	DP_GameMode		db					; arrrrrrr [a = auto-mode, r = reserved]
 	DP_GameTimeSeconds	db					; 1 game time second = 1 frame (??)
 	DP_GameTimeMinutes	db
@@ -855,30 +862,23 @@
 	DP_SpriteTextPalette	db					; holds palette to use when printing sprite-based text
 	DP_SubMenuNext		db					; holds no. of sub menu selected
 	DP_Temp			dsb 8
-	DP_TextASCIIChar	dw					; holds current ASCII character no.
 	DP_TextBoxBG		db					; bnnnnnnn [b = change text box background, n = no. of color table (0-127)
 	DP_TextBoxCharPortrait	db					; pnnnnnnn [p = change character portrait, n = no. of portrait (0-127)
 	DP_TextBoxSelection	db					; dcba4321 [1-4 = text box contains selection on line no. 1-4, a-d = selection made by player (1-4)
 	DP_TextBoxSelMax	db					; for HDMA selection bar
 	DP_TextBoxSelMin	db					; ditto
-	DP_TextBoxStatus	db					; cmfrrrot [c = clear text box, f = freeze text box until player presses A, m = there is more text to process, o = text box is open, r = reserved, t = VWF buffer full, transfer to VRAM]
-	DP_TextBoxStrPtr	dw					; 16-bit string pointer (or zeroes) // caveat: text box string addresses need to be separate from other (FWF) string addresses as the engine can process both types of strings at the same time (e.g. text box + HUD)
-	DP_TextBoxStrBank	db					; 8-bit bank no. of string
-	DP_TextBoxVIRQ		dw					; scanline no. of text box start (for scrolling animation)
+	DP_TextBoxStatus	db					; awrrrkcb [a = text box active, b = VWF buffer full, c = clear text box, k = kill text box, r = reserved, w = wait for player input]
+	DP_TextBoxVIRQ		db					; scanline no. of text box start (for scrolling animation)
 	DP_TextCursor		dw
-	DP_TextEffect		db					; brrrrrrr [b = toggle bold font, r = reserved]
-	DP_TextLanguage		db					; holds language constant
 	DP_TextPointerNo	dw
-	DP_TextStringPtr	dw					; 16-bit string pointer (or zeroes) // see caveat @ DP_TextBoxStrPtr
-	DP_TextStringBank	db					; 8-bit bank no. of string
-	DP_TextStringCounter	dw					; holds current ASCII string position
-	DP_TextTileDataCounter	dw					; holds current VRAM tile data address
+	DP_TextStringPtr	dw					; 16-bit FWF/sprite string pointer (or zeroes) // see caveat @ DP_DiagStringPtr
+	DP_TextStringBank	db					; 8-bit bank no. of FWF/sprite string
 	DP_VWF_BitsUsed		dw
 	DP_VWF_BufferIndex	dw
 	DP_VWF_Loop		db
 	DP_WorldMapBG1VScroll	dw
 	DP_WorldMapBG1HScroll	dw
-.ENDE									; 188 of 256 bytes used
+.ENDE									; 187 of 256 bytes used
 
 
 

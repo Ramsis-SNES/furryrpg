@@ -12,8 +12,6 @@
 ; *************************** Pointer table ****************************
 
 PTR_DialogGer:
-	.DW STR_DiagTestGer
-
 	.DW STR_DialogGer0000
 	.DW STR_DialogGer0001
 	.DW STR_DialogGer0002

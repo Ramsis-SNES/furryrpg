@@ -58,11 +58,9 @@ ProcessEventLoop:
 
 @Joy1Done:
 
-	lda	DP_TextBoxStatus					; check if text box is open
-	and	#%00000010
-	beq	+
-
-	jsr	MainTextBoxLoop						; yes, go to subroutine
+	bit	DP_TextBoxStatus					; check if text box is active (MSB set)
+	bpl	+
+	jsr	ProcDialogTextBox					; yes, go to subroutine
 
 +	lda	DP_Hero1ScreenPosYX+1					; check if hero should be moved vertically
 	sec
@@ -215,7 +213,7 @@ Process_EC_DIALOG:
 
 	Accu8
 
-	jsr	OpenTextBox
+	jsr	InitDialogTextBox
 
 	jmp	ProcessEventLoop
 

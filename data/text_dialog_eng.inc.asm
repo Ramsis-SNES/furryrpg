@@ -25,13 +25,6 @@
 
 ; ******************************* Dialog *******************************
 
-STR_DiagTestEng:
-	.DB CC_Portrait, 3, CC_BoxBlue
-	.DB "DIALOG TEST", CC_NewLine
-	.DB "Dpad r/l: next/previous string (hold Y for speed)", CC_NewLine
-	.DB "R/L: +/-50 strings", CC_NewLine
-	.DB "B: close text box/escape selections", CC_End
-
 STR_DialogEng0000:
 	.DB CC_Portrait, 3, CC_BoxBlue
 	.DB "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG.", CC_NewLine
@@ -254,8 +247,8 @@ STR_DialogEng0033:
 STR_DialogEng0034:
 	.DB CC_Portrait, 2, CC_BoxBlue
 	.DB "LILY:", CC_NewLine
-	.DB CC_Indent, "That's exactly what I told my neighbors.", CC_NewLine
-	.DB CC_Indent, "But they're scared to death by now, too.", CC_ClearTextBox
+	.DB CC_Indent, "That's exactly what I told my neighbors, too.", CC_NewLine
+	.DB CC_Indent, "But they're scared to death by now.", CC_ClearTextBox
 ; --------------------------------------------------------------------------------
 	.DB CC_Indent, "Even Tusker, sensible though as he is, rather", CC_NewLine
 	.DB CC_Indent, "chooses to believe in the supernatural. There's", CC_NewLine

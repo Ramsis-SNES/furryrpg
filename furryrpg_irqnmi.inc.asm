@@ -33,15 +33,19 @@ Vblank_Area:
 	bpl	+
 	jsr	LoadTextBoxBG						; bit 7 set --> load new background color table
 
-+	lda	DP_TextBoxStatus					; check text box status
-	bpl	+
-	jsr	ClearTextBox						; bit 7 set --> wipe text
-
++	bit	DP_TextBoxStatus					; check text box status
+	bvs	@WaitOrDontClearTB					; bit 6 set --> wait for player input before e.g. clearing text box
+	lda	DP_TextBoxStatus
+	and	#%00000010
+	beq	@WaitOrDontClearTB
+	jsr	ClearTextBox						; bit 1 set and "wait" flag clear --> wipe text
 	jmp	@SkipRefreshes						; ... and skip BG refreshes (to avoid glitches due to premature end of Vblank)
 
-+	bit	#%00000001						; VWF buffer full?
+@WaitOrDontClearTB:
+	lda	DP_TextBoxStatus
+	and	#%00000001						; VWF buffer full?
 	beq	@TextBoxDone
-	jsr	VWFTileBufferFull
+	jsr	FlushVWFTileBuffer
 
 @TextBoxDone:
 
@@ -850,6 +854,192 @@ RefreshBGs:								; refresh BGs according to DP_DMA_Updates
 
 
 
+UpdateGameTime:
+	sed								; decimal mode on
+
+	clc
+	lda	DP_GameTimeSeconds
+	adc	#$01
+	sta	DP_GameTimeSeconds
+	cmp	#$60							; check if 60 frames = game time seconds have elapsed
+	bcc	@UpdateMinutes
+
+	stz	DP_GameTimeSeconds					; carry bit set, reset seconds
+
+@UpdateMinutes:
+	lda	DP_GameTimeMinutes					; increment minutes via carry bit
+	adc	#$00
+	sta	DP_GameTimeMinutes
+	cmp	#$60							; check if 60 seconds have elapsed
+	bcc	@UpdateHours
+
+	stz	DP_GameTimeMinutes					; carry bit set, reset minutes
+
+@UpdateHours:
+	lda	DP_GameTimeHours					; increment hours via carry bit
+	adc	#$00
+	sta	DP_GameTimeHours
+	cmp	#$24							; check if 24 hours have elapsed
+	bcc	@TimeUpdateDone
+
+	stz	DP_GameTimeHours					; carry bit set, reset hours
+
+@TimeUpdateDone:
+	cld								; decimal mode off
+	rts
+
+
+
+; ************************ Text box subroutines ************************
+
+ClearTextBox:
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
+	ldx	#ADDR_VRAM_TextBoxL1					; set VRAM address to beginning of line 1
+	stx	REG_VMADDL
+
+	DMA_CH0 $09, :CONST_Zeroes, CONST_Zeroes, $18, 184*16		; 184 tiles
+
+
+
+; -------------------------- clear VWF buffer
+	Accu16
+
+	lda	#0
+	ldy	#0
+-	sta	ARRAY_VWF_TileBuffer, y					; erase buffer
+	iny
+	iny
+	cpy	#64							; 4 tiles, 16 bytes per tile
+	bne	-
+
+	stz	DP_DiagTileDataCounter					; reset tile data counter
+	stz	DP_VWF_BitsUsed						; reset used bits counter
+	stz	DP_VWF_BufferIndex					; reset VWF buffer index
+
+	Accu8
+
+	lda	#%00000010						; text box is empty now, so clear the "clear text box" flag
+	trb	DP_TextBoxStatus
+	stz	DP_DiagTextEffect					; clear all text effect bits
+	rts
+
+
+
+FlushVWFTileBuffer:
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	REG_VMAIN
+
+	Accu16
+
+	lda	DP_DiagTileDataCounter
+	clc								; add VRAM address for BG2 font tiles (+ 32 empty tiles),
+	adc	#ADDR_VRAM_TextBoxL1					; this is done here once so we can proceed with zero-based counter math
+	sta	REG_VMADDL						; store as new VRAM address
+
+	ldy	#0							; transfer VWF tile buffer to VRAM
+-	lda	ARRAY_VWF_TileBuffer, y					; copy font tiles
+	sta	REG_VMDATAL
+	iny
+	iny
+	cpy	#32							; 2 tiles, 16 bytes per tile
+	bne	-
+
+	ldy	#0
+-	lda	ARRAY_VWF_TileBuffer2, y				; next, copy font tiles from upper buffer to lower buffer
+	sta	ARRAY_VWF_TileBuffer, y
+	iny
+	iny
+	cpy	#32							; 2 tiles
+	bne	-
+
+	lda	#0
+-	sta	ARRAY_VWF_TileBuffer, y					; lastly, clear upper buffer (sic, as Y index wasn't reset to zero)
+	iny
+	iny
+	cpy	#64
+	bne	-
+
+	stz	DP_VWF_BufferIndex					; reset buffer index
+
+	Accu8
+
+	lda	#$01							; done, clear "VWF buffer full" bit
+	trb	DP_TextBoxStatus
+	rts
+
+
+
+LoadTextBoxBG:
+	lda	DP_TextBoxBG
+	and	#%01111111						; mask off request bit
+	bne	+
+	ldx	#(ARRAY_HDMA_BackgrTextBox & $FFFF)			; set WRAM address to text box HDMA background
+	stx	REG_WMADDL
+	stz	REG_WMADDH						; array is in bank $7E
+
+	DMA_CH0 $08, :CONST_Zeroes, CONST_Zeroes, <REG_WMDATA, 192	; DP_TextBoxBG is zero, so make background black
+
+	bra	@LoadTextBoxBGDone
+
++	Accu16								; DP_TextBoxBG is not zero, calculate DMA parameters for the text box "scrolling" animations to look correctly (obviously not needed with solid black background)
+
+	and	#$00FF							; remove garbage in high byte
+	asl	a							; use as index into offset pointer table
+	tax
+	lda.l	PTR_TextBoxGradient, x					; read and set source data offset for upcoming DMA
+	sta	REG_A1T0L
+
+
+
+; -------------------------- ; calculate DMA data length based on current IRQ scanline (e.g. when text box has fully "scrolled in": 224 - 176 = 48; 48 * 4 = 192)
+	lda	DP_TextBoxVIRQ						; perform 16-bit subtraction 224-DP_TextBoxVIRQ (which is an 8-bit variable) by doing -DP_TextBoxVIRQ+224 instead
+	and	#$00FF							; remove garbage in high byte
+	eor	#$FFFF							; make number negative (two's complement)
+	inc	a
+	clc								; add 224
+	adc	#224
+	bne	+							; if zero at this point, jump out (otherwise we'd end up with a disastrous transfer of 65536 bytes)
+
+	Accu8
+
+	bra	@LoadTextBoxBGDone
+
+.ACCU 16
+
++	asl	a							; scanline difference (i.e., text box height) not zero, continue calculation
+	asl	a
+	sta	REG_DAS0L						; set calculated data length
+
+
+
+; -------------------------- ; next, calculate WRAM address based on value of DP_TextBoxVIRQ (e.g. 176 * 4 - 704 = 0)
+	lda	DP_TextBoxVIRQ
+	and	#$00FF							; remove garbage in high byte once again
+	asl	a
+	asl	a
+	clc
+	adc	#(ARRAY_HDMA_BackgrPlayfield & $FFFF)			; use playfield background as a base to save the subtraction of 704
+	sta	REG_WMADDL
+
+	Accu8
+
+	stz	REG_WMADDH						; array is in bank $7E
+ 	stz	REG_DMAP0						; DMA mode $00
+	lda	#<REG_WMDATA						; B bus register ($2180)
+	sta	REG_BBAD0
+	lda	#:SRC_HDMA_TextBoxGradientBlue				; source data bank
+	sta	REG_A1B0
+	lda	#%00000001						; initiate DMA transfer (channel 0)
+	sta	REG_MDMAEN
+
+@LoadTextBoxBGDone:
+	lda	#$80							; new table loaded, clear request bit
+	trb	DP_TextBoxBG
+	rts
+
+
+
 UpdateCharPortrait:
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	REG_VMAIN
@@ -905,42 +1095,6 @@ UpdateCharPortrait:
 @PortraitUpdateDone:
 	lda	#%10000000						; portrait updated, clear request flag
 	trb	DP_TextBoxCharPortrait
-	rts
-
-
-
-UpdateGameTime:
-	sed								; decimal mode on
-
-	clc
-	lda	DP_GameTimeSeconds
-	adc	#$01
-	sta	DP_GameTimeSeconds
-	cmp	#$60							; check if 60 frames = game time seconds have elapsed
-	bcc	@UpdateMinutes
-
-	stz	DP_GameTimeSeconds					; carry bit set, reset seconds
-
-@UpdateMinutes:
-	lda	DP_GameTimeMinutes					; increment minutes via carry bit
-	adc	#$00
-	sta	DP_GameTimeMinutes
-	cmp	#$60							; check if 60 seconds have elapsed
-	bcc	@UpdateHours
-
-	stz	DP_GameTimeMinutes					; carry bit set, reset minutes
-
-@UpdateHours:
-	lda	DP_GameTimeHours					; increment hours via carry bit
-	adc	#$00
-	sta	DP_GameTimeHours
-	cmp	#$24							; check if 24 hours have elapsed
-	bcc	@TimeUpdateDone
-
-	stz	DP_GameTimeHours					; carry bit set, reset hours
-
-@TimeUpdateDone:
-	cld								; decimal mode off
 	rts
 
 

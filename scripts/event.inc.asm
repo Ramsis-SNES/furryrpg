@@ -188,7 +188,7 @@ Event00001:
 	.DB EC_WAIT_FRAMES
 		.DW 180
 	.DB EC_SIMULATE_INPUT_JOY1
-		.DW %1000000000000000					; B button
+		.DW %0000000010000000					; A button
 	.DB EC_SIMULATE_INPUT_JOY1
 		.DW 0							; clear input
 	.DB EC_WAIT_FRAMES
@@ -214,7 +214,7 @@ Event00001:
 	.DB EC_WAIT_FRAMES
 		.DW 130
 	.DB EC_SIMULATE_INPUT_JOY1
-		.DW %1000000000000000					; B button (to clear the text box after event has finished)
+		.DW %0000000010000000					; A button (to clear the text box after event has finished)
 	.DB EC_SIMULATE_INPUT_JOY1
 		.DW 0							; clear input
 	.DB EC_WAIT_FRAMES

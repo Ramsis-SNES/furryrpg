@@ -745,7 +745,7 @@ UpdateMenuHeadline:
 
 	lda	#:PTR_RingMenuHeadEng					; assume English
 	clc
-	adc	DP_TextLanguage						; add language constant for correct bank/language
+	adc	DP_GameLanguage						; add language constant for correct bank/language
 	sta	DP_TextStringBank
 	jsr	SimplePrintF
 
