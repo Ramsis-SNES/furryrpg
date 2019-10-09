@@ -45,6 +45,9 @@ BootSPC700:								; this routine uploads only the SNESGSS sound driver to the S
 
 
 
+.ACCU 8
+.INDEX 16
+
 LoadTrackGSS:								; this routine uploads GSS music data (song no. in DP_NextTrack) to the SPC700
 	DisableIRQs
 

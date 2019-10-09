@@ -49,9 +49,6 @@
 
 
 ; -------------------------- pseudo-opcode macros
-.ACCU 8
-.INDEX 16
-
 ; Macro bsr by Ramsis
 ;
 ; Usage: bsr <subroutine>
@@ -78,25 +75,7 @@
 
 
 
-; -------------------------- frequently-used "code snippet" macros
-.ACCU 8
-
-; Macro DisableIRQs by Ramsis
-;
-; Usage: DisableIRQs
-; Effect: Disables NMI & IRQ.
-;
-; Expects: A 8 bit
-
-.MACRO DisableIRQs
-	sei
-	lda.b	#$00							; reminder: stz doesn't support 24-bit addressing
-	sta.l	REG_NMITIMEN
-.ENDM
-
-
-
-; -------------------------- error check macros
+; -------------------------- general/random macros
 .MACRO CheckErrorSPC700a
 	pha								; preserve 8-bit Accu
 
@@ -121,8 +100,6 @@
 
 
 
-.ACCU 16
-
 .MACRO CheckErrorSPC700ab
 	pha								; preserve 16-bit Accu
 	lda	VAR_TimeoutCounter
@@ -136,10 +113,23 @@
 	lda	#ERR_SPC700
 	jml	ErrorHandler
 
-.ACCU 16
-
 @Continue\@:
 	pla								; restore  16-bit Accu
+.ENDM
+
+
+
+; Macro DisableIRQs by Ramsis
+;
+; Usage: DisableIRQs
+; Effect: Disables NMI & IRQ.
+;
+; Expects: A 8 bit
+
+.MACRO DisableIRQs
+	sei
+	lda	#$00							; reminder: stz doesn't support 24-bit addressing
+	sta.l	REG_NMITIMEN
 .ENDM
 
 
@@ -245,6 +235,36 @@ __DrawLowerBorder\@:
 
 
 
+; Freeze macro by Ramsis
+;
+; Usage: Freeze
+; Effect: CPU enters trap loop (useful e.g. for debugging)
+;
+; Expects: nothing
+
+.MACRO Freeze
+
+@Freeze\@:
+	bra	@Freeze\@
+.ENDM
+
+
+
+.MACRO JoyInit								; based on a subroutine by Neviksti. Expects A = 8 bit and XY = 16 bit
+	lda	#$C0							; have the automatic read of the SNES read the first pair of JoyPads
+	sta	REG_WRIO
+	ldx	#$0000
+	stx	DP_Joy1Press
+	stx	DP_Joy2Press
+	lda	REG_RDNMI						; clear NMI flag
+	lda	#$81
+	sta	REG_NMITIMEN						; enable JoyPad Read and NMI
+	cli								; enable interrupts
+	wai								; wait for NMI to fill the variables with real JoyPad data
+.ENDM
+
+
+
 ; ResetSprites macro by Ramsis
 ;
 ; Usage: ResetSprites
@@ -263,21 +283,6 @@ __DrawLowerBorder\@:
 
 
 
-; Freeze macro by Ramsis
-;
-; Usage: Freeze
-; Effect: CPU enters trap loop (useful e.g. for debugging)
-;
-; Expects: nothing
-
-.MACRO Freeze
-
-@Freeze\@:
-	bra	@Freeze\@
-.ENDM
-
-
-
 ; Set Data Bank macro by Ramsis
 ;
 ; Usage: SetDBR $XX
@@ -286,7 +291,7 @@ __DrawLowerBorder\@:
 ; Expects: A 8 bit
 
 .MACRO SetDBR
-	lda.b	#\1
+	lda	#\1
 	pha
 	plb
 .ENDM
@@ -301,7 +306,7 @@ __DrawLowerBorder\@:
 ; Expects: A 16 bit
 
 .MACRO SetDPag
-	lda.w	#\1
+	lda	#\1
 	tcd
 .ENDM
 
@@ -405,9 +410,87 @@ __DrawLowerBorder\@:
 
 
 
-; PrintString modified by Ramsis: PrintString y, x, "String"
+; -------------------------- dialogue/text box macros
+.MACRO HexNibbleToTempString						; expects 8-bit Accu
+	cmp	#$0A
+	bcs	@nletter\@
+	clc
+	adc	#'0'
+	sta	ARRAY_TempString, x					; write current nibble to temp string array
+	bra	@HexNibbleDone\@
 
-.MACRO PrintString
+@nletter\@:
+	clc
+	adc	#'A'-10		
+	sta	ARRAY_TempString, x
+
+@HexNibbleDone\@:
+
+.ENDM
+
+
+
+.MACRO IncDiagTileDataCounter						; expects 16-bit Accu
+	lda	DP_DiagTileDataCounter					; increment VRAM tile counter by 2 (8×8) tiles
+	clc
+	adc	#16							; not 32 because of VRAM word addressing
+	sta	DP_DiagTileDataCounter
+.ENDM
+
+
+
+; -------------------------- text string macros
+.MACRO PrintHexNum
+	lda	\1
+	jsr	PrintHex8
+.ENDM
+
+
+
+.MACRO PrintNum
+	lda	\1
+	jsr	PrintInt8
+.ENDM
+
+
+
+.MACRO PrintSpriteHexNum
+	lda	\1
+	jsr	PrintSpriteHex8
+.ENDM
+
+
+
+; Macro PrintSpriteText by Ramsis
+;
+; Usage: PrintSpriteText <y-pos>, <x-pos>, "Lorem ipsum ...", <font color>
+; Effect: Prints a sprite-based 8×8 VWF text string (max length: 32 characters). Pos values work as with SetTextPos. Valid font colors are palette numbers 3 (white), 4 (red), 5 (green), 6 (blue), or 7 (yellow).
+;
+; Expects: A 8 bit, X/Y 16 bit
+
+.MACRO PrintSpriteText
+	ldx	#(8*\1-2)<<8 + 8*\2
+	stx	DP_TextCursor
+	lda	#\4
+	sta	DP_SpriteTextPalette
+	ldx	#@STR_SpriteText_Start\@
+	stx	DP_TextStringPtr
+	lda	#:@STR_SpriteText_Start\@
+	sta	DP_TextStringBank
+	jsr	PrintSpriteText
+
+	bra	@STR_SpriteText_End\@
+
+@STR_SpriteText_Start\@:
+	.DB \3, 0
+
+@STR_SpriteText_End\@:
+
+.ENDM
+
+
+
+.MACRO PrintString							; modified by Ramsis: PrintString y, x, "String"
 	stz	DP_TextStringPtr
 	stz	DP_TextStringPtr+1
 	lda	#:@StringOffset\@
@@ -427,77 +510,5 @@ __DrawLowerBorder\@:
 	stx	DP_TextCursor
 	stz	DP_HiResPrintMon					; reset BG monitor value
 .ENDM
-
-
-
-;here's a macro for printing a number (a byte)
-;
-; ex:  PrintNum $2103 	;print value of reg $2103
-;      PrintNum #9	;print 9
-
-.MACRO PrintNum
-	lda	\1
-	jsr	PrintInt8
-.ENDM
-
-
-
-.MACRO PrintHexNum
-	lda	\1
-	jsr	PrintHex8
-.ENDM
-
-
-
-.MACRO JoyInit								; based on a subroutine by Neviksti. Expects A = 8 bit and XY = 16 bit
-	lda	#$C0							; have the automatic read of the SNES read the first pair of JoyPads
-	sta	REG_WRIO
-	ldx	#$0000
-	stx	DP_Joy1Press
-	stx	DP_Joy2Press
-	lda	REG_RDNMI						; clear NMI flag
-	lda	#$81
-	sta	REG_NMITIMEN						; enable JoyPad Read and NMI
-	cli								; enable interrupts
-	wai								; wait for NMI to fill the variables with real JoyPad data
-.ENDM
-
-
-
-; Macro PrintSpriteText by Ramsis
-;
-; Usage: PrintSpriteText <y-pos>, <x-pos>, "Lorem ipsum ...", <font color>
-; Effect: Prints a sprite-based 8×8 VWF text string (max length: 32 characters). Pos values work as with SetTextPos. Valid font colors are palette numbers 3 (white), 4 (red), 5 (green), 6 (blue), or 7 (yellow).
-;
-; Expects: A 8 bit, X/Y 16 bit
-
-.MACRO PrintSpriteText
-	ldx	#((8*\1)-2)<<8 + 8*\2
-	stx	DP_TextCursor
-	lda	#\4
-	sta	DP_SpriteTextPalette
-	ldx	#@STR_SpriteText_Start\@
-	stx	DP_TextStringPtr
-	lda.b	#:@STR_SpriteText_Start\@
-	sta.b	DP_TextStringBank
-	jsr	PrintSpriteText
-
-	bra	@STR_SpriteText_End\@
-
-@STR_SpriteText_Start\@:
-	.DB \3, 0
-
-@STR_SpriteText_End\@:
-
-.ENDM
-
-
-
-.MACRO PrintSpriteHexNum
-	lda	\1
-	jsr	PrintSpriteHex8
-.ENDM
-
-
 
 ; ******************************** EOF *********************************
