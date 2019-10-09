@@ -483,7 +483,7 @@ InitDialogTextBox:
 	asl	a
 	tax
 	lda.l	PTR_DialogGer, x					; DP_GameLanguage is 1 --> German
-++	sta	DP_DiagStringPtr
+++	sta	DP_DiagStringAddress
 	stz	DP_DiagStringPos					; reset string position/index
 
 	Accu8
@@ -686,14 +686,9 @@ ProcessNextText:
 
 	Accu8
 
-;	lda	DP_DiagSubstring					; check for sub-string
-;	beq	+
-
-;+
-
-	lda	[DP_DiagStringPtr], y					; read current byte of string
+	lda	[DP_DiagStringAddress], y				; read current byte of string
 	cmp	#CC_End							; end of string reached?
-	beq	@Finished						; yes, stop processing string
+	beq	@EndOfString						; yes, stop processing string
 	cmp	#NO_CC							; control code or not?
 	bcs	@NormalText
 
@@ -733,20 +728,33 @@ ProcessNextText:
 
 	WaitFrames	1
 
-@IncTileCounter:
 	Accu16
-
-	lda	DP_DiagTileDataCounter					; increment VRAM tile counter by 2 (8×8) tiles
-	clc
-	adc	#16							; not 32 because of VRAM word addressing
-	sta	DP_DiagTileDataCounter
-
+	IncDiagTileDataCounter						; increment tile data counter to next 16×8 tile
 	Accu8
 
 	bra	@JumpOut
 
-@Finished:								; this string finished, flush buffer and reset status parameters
+@EndOfString:								; CC_End encountered
+	bit	DP_DiagTextEffect					; check sub-string flag
+	bvc	@StringFinished
+	lda	VAR_DiagStringBank					; sub-string finished, restore current string bank
+	sta	DP_DiagStringBank
+
 	Accu16
+
+	lda	VAR_DiagStringAddress					; restore string address and offset/pointer
+	sta	DP_DiagStringAddress
+	lda	VAR_DiagStringPos
+	sta	DP_DiagStringPos
+
+	Accu8
+
+	lda	#%01000000						; clear sub-string flag
+	trb	DP_DiagTextEffect
+	bra	@JumpOut
+
+@StringFinished:							; string completely finished
+	Accu16								; flush buffer and reset status parameters
 
 	lda	DP_VWF_BitsUsed						; check if bit counter <> 0
 	bne	+
@@ -784,6 +792,10 @@ PTR_ProcessDiagCC:							; self-reminder: order of table entries has to match CC
 	.DW Process_CC_NewLine
 	.DW Process_CC_Portrait
 	.DW Process_CC_Selection
+	.DW Process_CC_SubHex
+	.DW Process_CC_SubInt8
+	.DW Process_CC_SubInt16
+	.DW Process_CC_SubString
 	.DW Process_CC_ToggleBold
 
 Process_CC_BoxBG:
@@ -815,19 +827,23 @@ Process_CC_ClearTextBox:
 	rts
 
 Process_CC_Indent:
-	jmp	ProcessNextText@IncTileCounter
+	Accu16
+	IncDiagTileDataCounter						; skip one 16×8 tile
+	Accu8
+
+	rts
 
 Process_CC_Jump:
-	iny								; increment string pointer to new text pointer (16 bits)
-	lda	[DP_DiagStringPtr], y					; read low byte
+	iny								; increment string pointer to new string address (16 bits)
+	lda	[DP_DiagStringAddress], y				; read low byte
 	xba								; store in Accu B temporarily
 	iny
-	lda	[DP_DiagStringPtr], y					; read high byte
-	xba								; new 16-bit pointer is now in Accu, restore correct byte order
+	lda	[DP_DiagStringAddress], y				; read high byte
+	xba								; new 16-bit address is now in Accu, restore correct byte order
 
 	Accu16
 
-	sta	DP_DiagStringPtr					; store as new text string pointer
+	sta	DP_DiagStringAddress					; store as new text string pointer
 	stz	DP_DiagStringPos					; reset string position/index
 
 	Accu8
@@ -839,58 +855,27 @@ Process_CC_NewLine:
 	tsb	DP_TextBoxStatus
 
 	WaitFrames	1
-	Accu16
 
-	stz	DP_VWF_BitsUsed						; reset VWF bit counter
-	lda	DP_DiagTileDataCounter					; check what line we've been on
-	cmp	#46*8							; line 1?
-	bne	+
+	Accu16
+	IncDiagTileDataCounter						; increment tile data counter before checking for current text box line, this ensures that very short strings (using less than a full 16×8 tile) on lines 2 or 3 won't get simply overwritten by succeeding dialogue
+
+	lda	#46*8							; check what line we've been on: line 1?
+	cmp	DP_DiagTileDataCounter					; (line 2 starts at 46*8)
+	bcs	+
+	lda	#92*8							; line 2?
+	cmp	DP_DiagTileDataCounter					; (line 3 starts at 92*8)
+	bcs	+
+	lda	#138*8							; otherwise, go to line 4
++	sta	DP_DiagTileDataCounter
+	stz	DP_VWF_BitsUsed						; lastly, reset VWF bit counter
 
 	Accu8
 
 	rts								; do nothing if carriage return requested after exactly 23 (16×8) tiles
 
-.ACCU 16
-
-+	bcs	+
-	lda	#46*8							; go to line 2
-	sta	DP_DiagTileDataCounter
-
-	Accu8
-
-	rts
-
-.ACCU 16
-
-+	cmp	#92*8							; line 2?
-	bne	+
-
-	Accu8
-
-	rts								; do nothing if carriage return requested after exactly 46 (16×8) tiles
-
-.ACCU 16
-
-+	bcs	+
-	lda	#92*8							; go to line 3
-	sta	DP_DiagTileDataCounter
-
-	Accu8
-
-	rts
-
-.ACCU 16
-
-+	lda	#138*8							; otherwise, go to line 4
-	sta	DP_DiagTileDataCounter
-
-	Accu8
-
-	rts
-
 Process_CC_Portrait:
 	iny								; increment string pointer to portrait no.
-	lda	[DP_DiagStringPtr], y					; read portrait no. (0-127)
+	lda	[DP_DiagStringAddress], y				; read portrait no. (0-127)
 	ora	#$80							; set "change portrait" bit
 	sta	DP_TextBoxCharPortrait					; save to "change portrait" request variable
 
@@ -908,36 +893,213 @@ Process_CC_Selection:
 	lda	DP_DiagTileDataCounter					; selection required, check what line we've been on
 	cmp	#46*8							; line 1?
 	bcs	+
-
-	Accu8
-
-	lda	#%00000001
+	lda	#%0000000000000001
 	bra	++
-
-.ACCU 16
 
 +	cmp	#92*8							; line 2?
 	bcs	+
-
-	Accu8
-
-	lda	#%00000010
+	lda	#%0000000000000010
 	bra	++
-
-.ACCU 16
 
 +	cmp	#138*8							; line 3?
 	bcs	+
+	lda	#%0000000000000100
+	bra	++
+
++	lda	#%0000000000001000					; else, line 4
+
+++	Accu8
+
+	tsb	DP_TextBoxSelection
+	rts
+
+Process_CC_SubHex:
+	iny								; increment string pointer to address of byte to print in hex
+	lda	[DP_DiagStringAddress], y				; read address (low byte)
+	sta	DP_DataAddress
+	iny
+	lda	[DP_DiagStringAddress], y				; high byte
+	sta	DP_DataAddress+1
+	iny
+	lda	[DP_DiagStringAddress], y				; bank
+	sta	DP_DataBank
+	iny								; advance string pointer to byte after address
+	sty	VAR_DiagStringPos					; save current string pointer
+
+
+
+; -------------------------- process actual hex byte, i.e. make it into a WRAM sub-string
+	lda	[DP_DataAddress]					; load byte to print in hex
+	pha
+	lsr	a							; do upper nibble first
+	lsr	a
+	lsr	a
+	lsr	a
+	ldx	#0
+
+	HexNibbleToTempString
+
+	inx
+	pla
+	and	#$0F							; do lower nibble
+
+	HexNibbleToTempString
+
+	inx
+	lda	#CC_End							; add sub-string terminator
+	sta	ARRAY_TempString, x
+
+	Accu16
+
+	stz	DP_DiagStringPos					; reset string offset so it starts reading the sub-string from the beginning
+	lda	DP_DiagStringAddress					; save current string address
+	sta	VAR_DiagStringAddress
+	lda	#ARRAY_TempString					; load address of temp string array
+	sta	DP_DiagStringAddress
 
 	Accu8
 
-	lda	#%00000100
-	bra	++
+	lda	DP_DiagStringBank					; save current string bank
+	sta	VAR_DiagStringBank
+	lda	#$7E							; set lower WRAM bank
+	sta	DP_DiagStringBank
+	lda	#%01000000						; set sub-string flag
+	tsb	DP_DiagTextEffect
+	rts
 
-+	Accu8
+Process_CC_SubInt8:
+	iny								; increment string pointer to address of byte to print in hex
+	lda	[DP_DiagStringAddress], y				; read address (low byte)
+	sta	DP_DataAddress
+	iny
+	lda	[DP_DiagStringAddress], y				; high byte
+	sta	DP_DataAddress+1
+	iny
+	lda	[DP_DiagStringAddress], y				; bank
+	sta	DP_DataBank
+	iny								; advance string pointer to byte after address
+	sty	VAR_DiagStringPos					; save current string pointer
 
-	lda	#%00001000						; else, line 4
-++	tsb	DP_TextBoxSelection
+
+
+; -------------------------- process actual byte, i.e. make dec number(s) into a WRAM sub-string
+	lda	[DP_DataAddress]					; read byte
+	sta	REG_WRDIVL
+	lda	#$00
+	sta	REG_WRDIVH
+	PHA
+	ldx	#0
+	BRA	Process_CC_SubInt16@DivLoop
+
+Process_CC_SubInt16:
+	iny								; increment string pointer to starting address of bytes to print as 16-bit integer
+	lda	[DP_DiagStringAddress], y				; read address (low byte)
+	sta	DP_DataAddress
+	iny
+	lda	[DP_DiagStringAddress], y				; high byte
+	sta	DP_DataAddress+1
+	iny
+	lda	[DP_DiagStringAddress], y				; bank
+	sta	DP_DataBank
+	iny								; advance string pointer to byte after address
+	sty	VAR_DiagStringPos					; save current string pointer
+
+
+
+; -------------------------- process actual bytes, i.e. make dec number(s) into a WRAM sub-string
+	lda	#$00
+	pha								; push $00
+	ldy	#0
+	lda	[DP_DataAddress], y					; read low byte
+	sta	REG_WRDIVL						; DIVC.l
+	iny
+	lda	[DP_DataAddress], y					; read high byte
+	sta	REG_WRDIVH						; DIVC.h  ... DIVC = [Y]
+	ldx	#0
+
+@DivLoop:
+	lda	#$0A	
+	sta	REG_WRDIVB						; DIVB = 10 --- division starts here (need to wait 16 cycles)
+	NOP								; 2 cycles
+	NOP								; 2 cycles
+	NOP								; 2 cycles
+	PHA								; 3 cycles
+	PLA								; 4 cycles
+	lda	#'0'							; 2 cycles
+	CLC								; 2 cycles
+	adc	REG_RDMPYL						; A = '0' + DIVC % DIVB
+	PHA								; push character
+	lda	REG_RDDIVL						; Result.l -> DIVC.l
+	sta	REG_WRDIVL
+	beq	@Low_0
+	lda	REG_RDDIVH						; Result.h -> DIVC.h
+	sta	REG_WRDIVH
+	BRA	@DivLoop
+
+@Low_0:
+	lda	REG_RDDIVH						; Result.h -> DIVC.h
+	sta	REG_WRDIVH
+	beq	@IntPrintLoop						; if ((Result.l==$00) and (Result.h==$00)) then we're done, so print
+	BRA	@DivLoop
+
+@IntPrintLoop:								; until we get to the end of the string...
+	PLA								; keep pulling characters and printing them
+	beq	@EndOfInt
+	sta	ARRAY_TempString, x
+	inx
+	BRA	@IntPrintLoop
+
+@EndOfInt:
+	lda	#CC_End							; add sub-string terminator
+	sta	ARRAY_TempString, x
+
+	Accu16
+
+	stz	DP_DiagStringPos					; reset string offset so it starts reading the sub-string from the beginning
+	lda	DP_DiagStringAddress					; save current string address
+	sta	VAR_DiagStringAddress
+	lda	#ARRAY_TempString					; load address of temp string array
+	sta	DP_DiagStringAddress
+
+	Accu8
+
+	lda	DP_DiagStringBank					; save current string bank
+	sta	VAR_DiagStringBank
+	lda	#$7E							; set lower WRAM bank
+	sta	DP_DiagStringBank
+	lda	#%01000000						; set sub-string flag
+	tsb	DP_DiagTextEffect
+	rts
+
+Process_CC_SubString:
+	iny								; increment string pointer to sub-string address
+	lda	[DP_DiagStringAddress], y				; read sub-string address (low byte)
+	sta	VAR_DiagSubStrAddress
+	iny
+	lda	[DP_DiagStringAddress], y				; high byte
+	sta	VAR_DiagSubStrAddress+1
+	iny
+	lda	[DP_DiagStringAddress], y				; bank
+	sta	VAR_DiagSubStrBank
+	iny								; advance string pointer to byte after sub-string address
+	sty	VAR_DiagStringPos					; save current string pointer
+
+	Accu16
+
+	stz	DP_DiagStringPos					; reset string offset so it starts reading the sub-string from the beginning
+	lda	DP_DiagStringAddress					; save current string address
+	sta	VAR_DiagStringAddress
+	lda	VAR_DiagSubStrAddress					; load sub-string address
+	sta	DP_DiagStringAddress
+
+	Accu8
+
+	lda	DP_DiagStringBank					; save current string bank
+	sta	VAR_DiagStringBank
+	lda	VAR_DiagSubStrBank					; load sub-string bank
+	sta	DP_DiagStringBank
+	lda	#%01000000						; set sub-string flag
+	tsb	DP_DiagTextEffect
 	rts
 
 Process_CC_ToggleBold:
@@ -1472,12 +1634,9 @@ ProcessVWFTilesBold:
 	tsb	DP_TextBoxStatus
 
 	WaitFrames	1
-	Accu16
 
-	lda	DP_DiagTileDataCounter					; increment VRAM tile counter by 2 (8×8) tiles
-	clc
-	adc	#16							; not 32 because of VRAM word addressing
-	sta	DP_DiagTileDataCounter
+	Accu16
+	IncDiagTileDataCounter
 
 +	Accu16								; finally, process right half of char graphics
 

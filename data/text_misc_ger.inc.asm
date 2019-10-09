@@ -9,17 +9,10 @@
 
 
 
-; ****************************** Defines *******************************
+; ******************************* Notes ********************************
 
-;.DEFINE Auml		$80						; Ä
-;.DEFINE Ouml		$81						; Ö
-;.DEFINE Uuml		$82						; Ü
-;.DEFINE auml		$83						; ä
-;.DEFINE ouml		$84						; ö
-;.DEFINE uuml		$85						; ü
-;.DEFINE szlig		$86						; ß
-;.DEFINE SYM_heart	$87, $88					; heart symbol
-;.DEFINE SYM_mult	$89						; multiplication sign
+; For a list of available special character aliases, see
+; lib_variables.asm.
 
 
 

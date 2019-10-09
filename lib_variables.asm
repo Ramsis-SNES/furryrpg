@@ -23,6 +23,7 @@
 ; CONST_	= arbitrary constant, stored in ROM
 ; DP_		= Direct Page variable
 ; GFX_		= graphics data, stored in ROM
+; HUD_		= HUD control code or special character
 ; MSU_		= MSU1 hardware register
 ; PARAM_	= constant for assembly, as .DEFINEd
 ; PTR_		= 16-bit pointer, stored in ROM
@@ -668,22 +669,50 @@
 
 
 
+; -------------------------- HUD special character codes
+.DEFINE HUD_auml	$1C						; ä
+.DEFINE HUD_ouml	$1D						; ö
+.DEFINE HUD_uuml	$1E						; ü
+.DEFINE HUD_szlig	$1F						; ß
+
+
+
 ; -------------------------- text box control codes (order has to match the PTR_ProcessTextCC jump table)
-.DEFINE CC_BoxBlack		0
-.DEFINE CC_BoxBlue		1
-.DEFINE CC_BoxRed		2
-.DEFINE CC_BoxPink		3
-.DEFINE CC_BoxEvil		4
-.DEFINE CC_BoxAlert		5
-.DEFINE CC_ClearTextBox		6
-.DEFINE CC_Indent		7
-.DEFINE CC_Jump			8
-.DEFINE CC_NewLine		9
-.DEFINE CC_Portrait		10
-.DEFINE CC_Selection		11
-.DEFINE CC_ToggleBold		12
-.DEFINE NO_CC			13					; this has to be greater than the last control code
-.DEFINE CC_End			255					; $FF = string terminator
+.ENUM $00								; argument(s), if applicable
+	CC_BoxBlack		db
+	CC_BoxBlue		db
+	CC_BoxRed		db
+	CC_BoxPink		db
+	CC_BoxEvil		db
+	CC_BoxAlert		db
+	CC_ClearTextBox		db
+	CC_Indent		db
+	CC_Jump			db					; 16-bit address of next string
+	CC_NewLine		db
+	CC_Portrait		db					; no. of portrait (8-bit)
+	CC_Selection		db
+	CC_SubHex		db					; 24-bit address of byte to print in hex
+	CC_SubInt8		db					; 24-bit address of byte to print in decimal
+	CC_SubInt16		db					; 24-bit start address of bytes to print in decimal
+	CC_SubString		db					; 24-bit address of sub-string to print
+	CC_ToggleBold		db
+	NO_CC			db					; this must be has to be greater than the last control code
+.ENDE
+
+.DEFINE CC_End			$FF					; $FF = string terminator
+
+
+
+; -------------------------- text box (dialog) special character codes
+.DEFINE	Auml		$80						; Ä
+.DEFINE	Ouml		$81						; Ö
+.DEFINE	Uuml		$82						; Ü
+.DEFINE	auml		$83						; ä
+.DEFINE	ouml		$84						; ö
+.DEFINE	uuml		$85						; ü
+.DEFINE	szlig		$86						; ß
+.DEFINE	SYM_heart	$87, $88					; heart symbol
+.DEFINE SYM_mult	$89						; multiplication sign
 
 
 
@@ -783,11 +812,10 @@
 	DP_DataAddress		dsb 2					; holds a 24-bit data address e.g. for string pointers, data transfers to SRAM, etc.
 	DP_DataBank		db
 	DP_DiagASCIIChar	dw					; holds current dialog ASCII character no.
-	DP_DiagStringPos	dw					; holds current dialog string position (= index to current character)
-	DP_DiagStringPtr	dw					; 16-bit pointer to (usually: beginning of) dialog string // caveat: dialog string addresses need to be separate from other (FWF/sprite) string addresses as the engine can process both types of strings at the same time (e.g. text box + HUD)
+	DP_DiagStringAddress	dw					; 16-bit address of dialog string // caveat: dialog string addresses need to be separate from other (FWF/sprite) string addresses as the engine can process both types of strings at the same time (e.g. text box + HUD)
 	DP_DiagStringBank	db					; 8-bit bank no. of dialog string
-;	DP_DiagSubstring	db					; r
-	DP_DiagTextEffect	db					; brrrrrrr [b = toggle bold font, r = reserved]
+	DP_DiagStringPos	dw					; holds current dialog string position (= index to current character)
+	DP_DiagTextEffect	db					; bsrrrrrr [b = toggle bold font, s = sub-string active, r = reserved]
 	DP_DiagTileDataCounter	dw					; holds current VRAM tile data address
 	DP_DMA_Updates		dw					; rrrcbbaarrr32211 [123 = BG no. that needs to have its tile map(s) updated on next Vblank (low bytes), abc = same thing for high bytes, r = reserved. The lower bit of each BG represents the first half of a 64×32/32×64 tile map, the higher one represents the second half.]
 	DP_EffectSpeed		dw
@@ -1043,6 +1071,11 @@
 	ARRAY_VWF_TileBuffer		dsb 32
 	ARRAY_VWF_TileBuffer2		dsb 32
 
+	VAR_DiagStringAddress		dw				; backup for DP variable of the same name (while processing sub-strings etc.)
+	VAR_DiagStringBank		db				; ditto
+	VAR_DiagStringPos		dw				; ditto
+	VAR_DiagSubStrAddress		dw				; holds sub-string address
+	VAR_DiagSubStrBank		db				; holds sub-string bank
 	VAR_GameDataItemQty		db
 	VAR_Hero1TargetScrPosYX		dw				; high byte = Y position, low byte = X position (in px)
 	VAR_Shadow_NMITIMEN		db				; shadow copy of REG_NMITIMEN
@@ -1055,7 +1088,7 @@
 	VAR_Time_Year			db
 	VAR_Time_Century		db
 	VAR_TimeoutCounter		dw
-.ENDE									; $F81 bytes + $200 = $1181 bytes used (initial stack pointer is set to $1FFF)
+.ENDE									; $F89 bytes + $200 = $1189 bytes used (initial stack pointer is set to $1FFF)
 
 
 

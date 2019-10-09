@@ -9,17 +9,28 @@
 
 
 
-; ****************************** Defines *******************************
+; ******************************* Notes ********************************
 
-;.DEFINE Auml		$80						; Ä
-;.DEFINE Ouml		$81						; Ö
-;.DEFINE Uuml		$82						; Ü
-;.DEFINE auml		$83						; ä
-;.DEFINE ouml		$84						; ö
-;.DEFINE uuml		$85						; ü
-;.DEFINE szlig		$86						; ß
-;.DEFINE SYM_heart	$87, $88					; heart symbol
-;.DEFINE SYM_mult	$89						; multiplication sign
+; For a list of available special character aliases and text box control
+; codes, see lib_variables.asm.
+;
+; Example for printing a number:
+;	.DB "This is a hex number:", CC_NewLine
+;	.DB CC_SubHex
+;	.DL <label of hex no.>
+;	.DB CC_End
+;
+; Example for including a sub-string:
+;	.DB "This is a sub-string:", CC_NewLine
+;	.DB CC_SubString
+;	.DL <sub-string label>
+;	.DB CC_End
+;
+; Just as regular strings, sub-strings must be terminated with CC_End.
+; Sub-strings may contain sub-strings and/or numbers themselves, but
+; then the rest of the master string will be disregarded as the sub-
+; string flag gets cleared as soon as the sub-string's CC_End is
+; encountered.
 
 
 
