@@ -761,7 +761,7 @@ SRC_track_09_Notes:
 
 ; ****************************** Bank $40 ******************************
 
-.BASE $40
+.BASE $00
 
 .REDEFINE CurrentBank	$40
 
