@@ -1,7 +1,7 @@
 ;==========================================================================================
 ;
 ;   "FURRY RPG" (WORKING TITLE)
-;   (c) 201X by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
+;   (c) 2023 by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
 ;
 ;	*** GLOBAL MACROS ***
 ;
@@ -11,55 +11,69 @@
 
 ; ******************************* Macros *******************************
 
-; -------------------------- A/X/Y register control
+; A/X/Y register control
+
 .MACRO Accu8
-	sep	#$20
+	sep	#kA8
 .ENDM
 
 
 
 .MACRO Accu16
-	rep	#$20
+	rep	#kA8
 .ENDM
 
 
 
 .MACRO AccuIndex8
-	sep	#$30
+	sep	#kAX8
 .ENDM
 
 
 
 .MACRO AccuIndex16
-	rep	#$30
+	rep	#kAX8
 .ENDM
 
 
 
 .MACRO Index8
-	sep	#$10
+	sep	#kX8
 .ENDM
 
 
 
 .MACRO Index16
-	rep	#$10
+	rep	#kX8
 .ENDM
 
 
 
-; -------------------------- pseudo-opcode macros
+; Pseudo-opcode macros
+
 ; Macro bsr by Ramsis
 ;
 ; Usage: bsr <subroutine>
 ; Effect: Branch-relative to subroutine (useful for relocatable code).
 
-.MACRO bsr
-	per	@ReturnAdress\@ - 1					; push relative return address minus 1 (RTS adds 1) onto stack
+.MACRO bsr ISOLATED
+	per	ReturnAdress\@-1					; push relative return address minus 1 (RTS adds 1) onto stack
 	brl	\1							; branch-relative to subroutine
 
-@ReturnAdress\@:
+ReturnAdress\@:
 
+.ENDM
+
+
+
+.MACRO dea
+	dec	a
+.ENDM
+
+
+
+.MACRO ina
+	inc	a
 .ENDM
 
 
@@ -75,49 +89,73 @@
 
 
 
-; -------------------------- general/random macros
-.MACRO CheckErrorSPC700a
+; SNESGSS/SPC700-related macros
+
+.MACRO SNESGSS_Command							; \1 = kGSS_* (16 bit), \2 = parameter(s) (16 bit)
+	Accu16
+
+	lda	#\1							; load command
+	sta	<DP2.GSS_command
+	lda	#\2							; load parameter
+	sta	<DP2.GSS_param
+
+	Accu8
+
+	jsl	spc_command_asm						; send command
+.ENDM
+
+
+
+.MACRO SPC700_WaitA ISOLATED
+	.ACCU 8
+
 	pha								; preserve 8-bit Accu
 
 	Accu16
 
-	lda	VAR_TimeoutCounter
+	lda	LO8.TimeoutCounter
 	inc	a
-	sta	VAR_TimeoutCounter
-	cmp	#PARAM_ErrWaitSPC700
-	bcc	@Continue\@
+	sta	LO8.TimeoutCounter
+	cmp	#kWaitSPC700
+	bcc	+
 
 	Accu8
 
-	lda	#ERR_SPC700
+	lda	#kErrorSPC700
+	sta	<DP2.ErrorCode
 	jml	ErrorHandler
 
-@Continue\@:
-	Accu8
++	Accu8
 
 	pla								; restore  8-bit Accu
 .ENDM
 
 
 
-.MACRO CheckErrorSPC700ab
+.MACRO SPC700_WaitAB ISOLATED
+	.ACCU 16
+
 	pha								; preserve 16-bit Accu
-	lda	VAR_TimeoutCounter
+	lda	LO8.TimeoutCounter
 	inc	a
-	sta	VAR_TimeoutCounter
-	cmp	#PARAM_ErrWaitSPC700
-	bcc	@Continue\@
+	sta	LO8.TimeoutCounter
+	cmp	#kWaitSPC700
+	bcc	+
 
 	Accu8
 
-	lda	#ERR_SPC700
+	lda	#kErrorSPC700
+	sta	<DP2.ErrorCode
 	jml	ErrorHandler
 
-@Continue\@:
-	pla								; restore  16-bit Accu
+	.ACCU 16
+
++	pla								; restore 16-bit Accu
 .ENDM
 
 
+
+; General/random macros
 
 ; Macro DisableIRQs by Ramsis
 ;
@@ -128,32 +166,33 @@
 
 .MACRO DisableIRQs
 	sei
-	lda	#$00							; reminder: stz doesn't support 24-bit addressing
-	sta.l	REG_NMITIMEN
+	lda	#$00
+	sta.l	NMITIMEN						; use 24-bit addressing just in case
+	; FIXME add mirror var here?
 .ENDM
 
 
 
 ; DMA macro by Ramsis
 ;
-; Usage: DMA_CH0 mode[8bit], A_bus_bank[8bit], A_bus_src[16bit], B_bus_register[8bit], length[16bit]
+; Usage: DMA_CH0 mode [8bit], A_bus_src [24bit], B_bus_register [8bit], length [16bit]
 ; Effect: Transfers data via DMA channel 0.
 ;
 ; Expects: A 8 bit, X/Y 16 bit
 
 .MACRO DMA_CH0
-	lda	#\1							; DMA mode (8 bit)
- 	sta	REG_DMAP0
-	lda	#\4							; B bus register (8 bit)
-	sta	REG_BBAD0
-	ldx	#(\3 & $FFFF)						; get low word of data offset (16 bit)
-	stx	REG_A1T0L
-	lda	#\2							; data bank (8 bit)
-	sta	REG_A1B0
-	ldx	#\5							; data length (16 bit)
-	stx	REG_DAS0L
+	lda	#\1							; DMA mode
+ 	sta	DMAP0
+	lda	#lobyte(\3)						; B bus register
+	sta	BBAD0
+	ldx	#loword(\2)						; source data address
+	stx	A1T0L
+	lda	#bankbyte(\2)						; source data bank
+	sta	A1B0
+	ldx	#\4							; transfer length
+	stx	DAS0L
 	lda	#%00000001						; initiate DMA transfer (channel 0)
-	sta	REG_MDMAEN
+	sta	MDMAEN
 .ENDM
 
 
@@ -165,30 +204,30 @@
 ;
 ; Expects: A 8 bit, X/Y 16 bit
 
-.MACRO DrawFrame
+.MACRO DrawFrame ISOLATED
 
-; -------------------------- draw upper border
+; Draw upper border
 	ldx	#32*\2 + \1
 	lda	#$10							; upper left corner
-	sta	ARRAY_BG3TileMap, x
+	sta	RAM.BG3Tilemap, x
 	lda	#$11							; horizontal line
 
-__DrawUpperBorder\@:
+DrawUpperBorder\@:
 	inx
-	sta	ARRAY_BG3TileMap, x
+	sta	RAM.BG3Tilemap, x
 	cpx	#32*\2 + \1 + \3
-	bne	__DrawUpperBorder\@
+	bne	DrawUpperBorder\@
 
 	lda	#$12							; upper right corner
-	sta	ARRAY_BG3TileMap, x
-	bra	__GoToNextLine\@
+	sta	RAM.BG3Tilemap, x
+	bra	GoToNextLine\@
 
 
 
-; -------------------------- draw left & right border
-__DrawLRBorder\@:
+; Draw left & right border
+DrawLRBorder\@:
 	lda	#$13							; left vertical line
-	sta	ARRAY_BG3TileMap, x
+	sta	RAM.BG3Tilemap, x
 
 	Accu16
 
@@ -200,9 +239,9 @@ __DrawLRBorder\@:
 	Accu8
 
 	lda	#$14							; right vertical line
-	sta	ARRAY_BG3TileMap, x
+	sta	RAM.BG3Tilemap, x
 
-__GoToNextLine\@:
+GoToNextLine\@:
 	Accu16
 
 	txa
@@ -213,54 +252,24 @@ __GoToNextLine\@:
 	Accu8
 
 	cpx	#32*(\2+\4) + \1
-	bne	__DrawLRBorder\@
+	bne	DrawLRBorder\@
 
 
 
-; -------------------------- draw lower border
+; Draw lower border
 	lda	#$15							; lower left corner
-	sta	ARRAY_BG3TileMap, x
+	sta	RAM.BG3Tilemap, x
 	inx
 	lda	#$16							; horizontal line
 
-__DrawLowerBorder\@:
-	sta	ARRAY_BG3TileMap, x
+DrawLowerBorder\@:
+	sta	RAM.BG3Tilemap, x
 	inx
 	cpx	#32*(\2+\4) + \1 + \3
-	bne	__DrawLowerBorder\@
+	bne	DrawLowerBorder\@
 
 	lda	#$17							; lower right corner
-	sta	ARRAY_BG3TileMap, x
-.ENDM
-
-
-
-; Freeze macro by Ramsis
-;
-; Usage: Freeze
-; Effect: CPU enters trap loop (useful e.g. for debugging)
-;
-; Expects: nothing
-
-.MACRO Freeze
-
-@Freeze\@:
-	bra	@Freeze\@
-.ENDM
-
-
-
-.MACRO JoyInit								; based on a subroutine by Neviksti. Expects A = 8 bit and XY = 16 bit
-	lda	#$C0							; have the automatic read of the SNES read the first pair of JoyPads
-	sta	REG_WRIO
-	ldx	#$0000
-	stx	DP_Joy1Press
-	stx	DP_Joy2Press
-	lda	REG_RDNMI						; clear NMI flag
-	lda	#$81
-	sta	REG_NMITIMEN						; enable JoyPad Read and NMI
-	cli								; enable interrupts
-	wai								; wait for NMI to fill the variables with real JoyPad data
+	sta	RAM.BG3Tilemap, x
 .ENDM
 
 
@@ -275,9 +284,9 @@ __DrawLowerBorder\@:
 .MACRO ResetSprites
 	jsr	SpriteDataInit						; purge sprite data buffer
 
-	ldx	#ARRAY_SpriteDataArea & $FFFF				; set WRAM address for area sprite data array
-	stx	REG_WMADDL
-	stz	REG_WMADDH
+	ldx	#loword(RAM.SpriteDataArea)				; set WRAM address for area sprite data array
+	stx	WMADDL
+	stz	WMADDH
 	jsr	ConvertSpriteDataToBuffer
 .ENDM
 
@@ -300,12 +309,12 @@ __DrawLowerBorder\@:
 
 ; Set Direct Page macro by Ramsis
 ;
-; Usage: SetDPag $XXXX
+; Usage: SetDP $XXXX
 ; Effect: Sets the Direct Page register to $XXXX.
 ;
 ; Expects: A 16 bit
 
-.MACRO SetDPag
+.MACRO SetDP
 	lda	#\1
 	tcd
 .ENDM
@@ -315,23 +324,20 @@ __DrawLowerBorder\@:
 ; Macro SetIRQ by Ramsis
 ;
 ; Usage: SetIRQ <Name of IRQ routine>
-; Effect: Writes the desired jumping instruction to the RAM location the IRQ vector points to. Caveat: IRQ has to be disabled before the macro is called!
+; Effect: Writes the desired jumping instruction to the RAM location the IRQ vector points to. Caveat: IRQ has to be disabled when macro is called!
 ;
 ; Expects: A 8 bit, X/Y 16 bit
 
 .MACRO SetIRQ
 	Accu16
 
-	lda	#\1
-	asl	a							; value × 4 (the table consists of 4-byte entries)
-	asl	a
-	tax
+	ldx	#\1
 	lda.l	SRC_IRQJumpTable, x					; holds a 4-byte instruction like jml SomeIRQRoutine
-	sta	TWO_JumpIRQ						; IRQ vector points here
+	sta.w	P00.JmpIRQ						; IRQ vector points here // caveat: .w or .l operand hints needed as JmpVblank is not in any Direct Page any more (otherwise, it looks to WLA DX like a DP address)
 	inx
 	inx
 	lda.l	SRC_IRQJumpTable, x
-	sta	TWO_JumpIRQ+2
+	sta.w	P00.JmpIRQ+2
 
 	Accu8
 .ENDM
@@ -341,23 +347,20 @@ __DrawLowerBorder\@:
 ; Macro SetNMI by Ramsis
 ;
 ; Usage: SetNMI <Name of Vblank routine>
-; Effect: Writes the desired jumping instruction to the RAM location the NMI vector points to. Caveat: NMI has to be disabled before the macro is called!
+; Effect: Writes the desired jumping instruction to the RAM location the NMI vector points to. Caveat: NMI has to be disabled when macro is called!
 ;
 ; Expects: A 8 bit, X/Y 16 bit
 
 .MACRO SetNMI
 	Accu16
 
-	lda	#\1
-	asl	a							; value × 4 (the table consists of 4-byte entries)
-	asl	a
-	tax
+	ldx	#\1
 	lda.l	SRC_VblankJumpTable, x					; holds a 4-byte instruction like jml SomeVblankRoutine
-	sta	ONE_JumpVblank						; NMI vector points here
+	sta.w	P00.JmpVblank						; NMI vector points here  // cf. SetIRQ for operand hints
 	inx
 	inx
 	lda.l	SRC_VblankJumpTable, x
-	sta	ONE_JumpVblank+2
+	sta.w	P00.JmpVblank+2
 
 	Accu8
 .ENDM
@@ -369,22 +372,20 @@ __DrawLowerBorder\@:
 ; Usage: WaitFrames <number of frames>
 ; Effect: Waits for the given amount of Vblanks to pass. Works even when NMI is disabled.
 ;
-; Expects: A 8 bit, X/Y 16 bit
+; Expects: X/Y 16 bit
 
-.MACRO WaitFrames
+.MACRO WaitFrames ISOLATED
 	ldx	#\1
 
-@FrameDelay\@:
+NextFrame\@:
+-	bit	HVBJOY							; wait for Vblank
+	bpl	-
 
-@WaitForVblankStart\@:
-	lda	REG_HVBJOY
-	bpl	@WaitForVblankStart\@
+-	bit	HVBJOY							; wait for end of Vblank
+	bmi	-
 
-@WaitForVblankEnd\@:
-	lda	REG_HVBJOY
-	bmi	@WaitForVblankEnd\@
 	dex
-	bne	@FrameDelay\@
+	bne	NextFrame\@
 .ENDM
 
 
@@ -396,50 +397,104 @@ __DrawLowerBorder\@:
 ;
 ; Expects: A 8 bit, X/Y 16 bit
 
-.MACRO WaitUserInput
+.MACRO WaitUserInput ISOLATED
 	Accu16
 
-@CheckJoypad\@:
-	wai
-	lda	DP_Joy1New
+-	wai
+	lda	<DP2.Joy1New
 	and	#$F0F0							; B, Y, Select, Start (no d-pad), A, X, L, R
-	beq	@CheckJoypad\@
+	beq	-
 
 	Accu8
 .ENDM
 
 
 
-; -------------------------- dialogue/text box macros
-.MACRO HexNibbleToTempString						; expects 8-bit Accu
+; Dialogue/text box macros
+
+.MACRO FlushVWFTileBuffer2						; expects 16-bit Accu
+	.ACCU 16
+
+	ldy	#0
+-	lda	LO8.VWF_TileBuffer2, y					; copy font tiles from upper buffer to lower buffer
+	sta	LO8.VWF_TileBuffer, y
+	iny
+	iny
+	cpy	#32							; 2 tiles
+	bne	-
+
+	lda	#0
+-	sta	LO8.VWF_TileBuffer, y					; clear upper buffer (sic, as Y index wasn't reset to zero)
+	iny
+	iny
+	cpy	#64
+	bne	-
+
+	stz	<DP2.VWF_BufferIndex					; reset buffer index
+.ENDM
+
+
+
+.MACRO HexNibbleToTempString ISOLATED					; expects 8-bit Accu
+	.ACCU 8
+
 	cmp	#$0A
-	bcs	@nletter\@
+	bcs	nletter\@
 	clc
 	adc	#'0'
-	sta	ARRAY_TempString, x					; write current nibble to temp string array
-	bra	@HexNibbleDone\@
+	sta	LO8.TempString, x					; write current nibble to temp string array
+	bra	HexNibbleDone\@
 
-@nletter\@:
+nletter\@:
 	clc
 	adc	#'A'-10		
-	sta	ARRAY_TempString, x
+	sta	LO8.TempString, x
 
-@HexNibbleDone\@:
+HexNibbleDone\@:
 
 .ENDM
 
 
 
 .MACRO IncDiagTileDataCounter						; expects 16-bit Accu
-	lda	DP_DiagTileDataCounter					; increment VRAM tile counter by 2 (8×8) tiles
+	.ACCU 16
+
+	lda	<DP2.DiagTileDataCounter				; increment VRAM tile counter by 2 (8×8) tiles
 	clc
 	adc	#16							; not 32 because of VRAM word addressing
-	sta	DP_DiagTileDataCounter
+	sta	<DP2.DiagTileDataCounter
 .ENDM
 
 
 
-; -------------------------- text string macros
+; Text string macros
+
+.MACRO PrintBinary ISOLATED
+	.ACCU 8
+
+	ldx	#8							; 8 bits to print
+
+PrintBinLoop\@:
+	phx								; preserve bit counter
+	asl	\1							; put highest bit into carry
+	bcs	+
+
+	lda	#0							; carry was clear --> print "0"
+	jsr	PrintInt8
+
+	bra	++ ;BitDone\@:
+
++	lda	#1							; carry was set --> print "1"
+	jsr	PrintInt8
+
+;BitDone\@:
+++	plx								; restore bit counter
+	dex
+	bne	PrintBinLoop\@
+.ENDM
+
+
+
 .MACRO PrintHexNum
 	lda	\1
 	jsr	PrintHex8
@@ -468,47 +523,51 @@ __DrawLowerBorder\@:
 ;
 ; Expects: A 8 bit, X/Y 16 bit
 
-.MACRO PrintSpriteText
-	ldx	#(8*\1-2)<<8 + 8*\2
-	stx	DP_TextCursor
+.MACRO PrintSpriteText ISOLATED
+	ldx	#((8*\1-2)<<8) + 8*\2
+	stx	<DP2.TextCursor
 	lda	#\4
-	sta	DP_SpriteTextPalette
-	ldx	#@STR_SpriteText_Start\@
-	stx	DP_TextStringPtr
-	lda	#:@STR_SpriteText_Start\@
-	sta	DP_TextStringBank
+	sta	<DP2.SpriteTextPalette
+	ldx	#STR_SpriteText_Start\@
+	stx	<DP2.TextStringPtr
+	lda	#:STR_SpriteText_Start\@
+	sta	<DP2.TextStringBank
 	jsr	PrintSpriteText
 
-	bra	@STR_SpriteText_End\@
+	bra	STR_SpriteText_End\@
 
-@STR_SpriteText_Start\@:
-	.DB \3, 0
+STR_SpriteText_Start\@:
+	.STRINGMAP HUD, \3
+	.DB 0
 
-@STR_SpriteText_End\@:
+STR_SpriteText_End\@:
 
 .ENDM
 
 
 
-.MACRO PrintString							; modified by Ramsis: PrintString y, x, "String"
-	stz	DP_TextStringPtr
-	stz	DP_TextStringPtr+1
-	lda	#:@StringOffset\@
-	sta	DP_TextStringBank
+.MACRO PrintString ISOLATED						; modified by Ramsis: PrintString y, x, kTextBuffer*, "String"
 	ldx	#32*\1 + \2
-	stx	DP_TextCursor
-	jsr	PrintF
+	stx	<DP2.TextCursor
+	stz	<DP2.HiResPrintMon					; reset BG monitor value
+	ldx	#\3
+	stx	LO8.Routine_FillTextBuffer
+	stz	<DP2.TextStringPtr
+	stz	<DP2.TextStringPtr+1
+	lda	#:STR_Start\@
+	sta	<DP2.TextStringBank
+	jsl	PrintF
 
-@StringOffset\@:
-	.DB \3, 0							; instead of a return address (-1), the string address (-1) is on the stack
+STR_Start\@:
+	.DB \4, 0							; instead of a return address (-1), the string address (-1) is on the stack
 .ENDM
 
 
 
 .MACRO SetTextPos
 	ldx	#32*\1 + \2
-	stx	DP_TextCursor
-	stz	DP_HiResPrintMon					; reset BG monitor value
+	stx	<DP2.TextCursor
+	stz	<DP2.HiResPrintMon					; reset BG monitor value
 .ENDM
 
 ; ******************************** EOF *********************************

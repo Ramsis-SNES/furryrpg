@@ -1,0 +1,48 @@
+===========================================================================================
+  
+    "FURRY RPG" (WORKING TITLE)
+    (c) 2023 by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
+ 
+	*** SNESGSS FILE FORMAT NOTES ***
+ 
+===========================================================================================
+
+
+
+The SNESGSS tracker software exports any given song to a couple of source text files (unused by this project) and two .bin files, usually music_1.bin and spc700.bin. These should be renamed to match the original .gsm song file, with "-music" and "-spc700" added at the end of the file names, respectively.
+
+
+
+*-music.bin files contain music note data for the respective track.
+
+File format of *-music.bin:
+
+Offset	Data
+------------
+$0000	Size (in hex) of the note data block (i.e., <file size>-2)
+$0002	No. of channels used, n# (usually a hex number between $01 and $08)
+$0003	n# 16-bit channel pointers
+	Actual music note data starts at offset (n#*2)+3. The starting address will match the value of the first pointer as music note data blocks are stored one after another on a per-channel basis, starting with channel 1. (The data format itself is explained at the end of the SNESGSS readme file.)
+
+
+
+*-spc700.bin files contain the SNESGSS driver for the SPC700 along with some pointers, and instrument data for the respective track.
+
+File format of *-spc700.bin:
+
+Offset	Data
+------------
+$0000	Size (in hex) of the entire driver/instrument data block (i.e., <file size>-2)
+$0002	Start of SNESGSS SPC700 driver code (2,340 bytes total)
+$000A	Three embedded 16-bit track-specific pointers to ADSR table, SFX, and music
+$0926	(At least) two 16-bit pointers to something. It is unclear where sample data starts exactly.
+
+
+
+spc700-driver-v1.4.bin was obtained by exporting an empty SNESGSS song. It is used in this project to initialize the SPC700 at boot time. The track-specific pointers in it are meaningless and overwritten with each new *-spc700.bin file loaded.
+
+spc700-driver-v1.4-disassembly.asm is a raw disassembly of the SNESGSS driver back to "official" SPC700 assembly code as the original driver code uses 6502-style syntax and mnemonics for some reason (cf. https://github.com/nathancassano/snesgss/blob/master/snes/spc700.asm), which WLA-SPC700 doesn't support.
+
+spc700-driver-v1.4-reassembly-labels.asm is a "new" source code file based on the disassembly for use with WLA-SPC700. It contains labels and original annotations and allows the original driver to be incorporated into this project without having to rely on another (possibly obsolete) piece of assembler software.
+
+spc700-driver-custom.asm is a source code file based on the previous one with minor customizations specifically for this project.

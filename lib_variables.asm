@@ -1,7 +1,7 @@
 ;==========================================================================================
 ;
 ;   "FURRY RPG" (WORKING TITLE)
-;   (c) 201X by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
+;   (c) 2023 by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
 ;
 ;	*** VARIABLE DEFINITIONS ***
 ;
@@ -11,1151 +11,979 @@
 
 ; ****************************** Notation ******************************
 
-; Label prefixes:
+; Labels without prefixes generally reference easily identifiable stuff
+; (e.g. SNES registers).
 
-; __		= sub-label
-; ADDR_		= address value, as .DEFINEd
-; ARRAY_	= non-Direct Page array
-; CC_		= text box control code byte
-; EC_		= event control code byte
-; ERR_		= error code byte
-; CMD_		= constant, as .DEFINEd (used as macro/subroutine command)
-; CONST_	= arbitrary constant, stored in ROM
-; DP_		= Direct Page variable
-; GFX_		= graphics data, stored in ROM
-; HUD_		= HUD control code or special character
+; Alias label prefixes:
+; dstr_		= .DSTRUCT
+; evc_		= event control code byte
+; k		= parameter (constant/macro argument/etc.)
+; struct_	= .STRUCT
+
+; RAM address label prefixes (prefixes with a dot are INSTANCEOFs):
+; CGRAM_	= CGRAM address
+; DPx.		= Direct Page variable/array (x=2-9)
+; LO8.		= non-Direct Page variable/array in the lowest 8K of WRAM (more specifically, within $0A00-$1FFF)
+; RAM.		= variable/array within $7E2000-$7FFFFF
+; RAM_		= variable within $7E2000-$7FFFFF
+; SRAM_		= SRAM variable/array
+; VRAM_		= VRAM address
+
+; ROM address label prefixes:
+; PTR_		= 16-bit pointer(s)
+; SRC_		= binary data (code, data table, GFX ...)
+; STR_		= ASCII/dialogue string
+
+; misc label prefixes:
 ; MSU_		= MSU1 hardware register
-; PARAM_	= constant for assembly, as .DEFINEd
-; PTR_		= 16-bit pointer, stored in ROM
-; REG_		= SNES hardware register
-; SCMD_		= constant, as .DEFINEd (used as SPC700 command)
-; SRC_		= array of constants / binary data, stored in ROM
-; ST_		= .STRUCT
-; STR_		= ASCII string, stored in ROM
-; TBL_		= constant in table, as .DEFINEd
-; VAR_		= non-Direct Page variable
+; SRTC_		= real-time clock hardware register
 
 
 
-; *************************** SNES registers ***************************
+; ********************** Hardware registers etc. ***********************
 
-; -------------------------- CPU status bits
-.DEFINE DEC_MODE		$08
-.DEFINE XY_8BIT			$10
-.DEFINE A_8BIT			$20
-.DEFINE AXY_8BIT		$30
+; SNES CPU status bits
+	.DEFINE kDecimal	$08
+	.DEFINE kX8		$10
+	.DEFINE kA8		$20
+	.DEFINE kAX8		kA8|kX8
 
+; SNES PPU registers
+	.DEFINE INIDISP		$2100
+	.DEFINE OBSEL		$2101
+	.DEFINE OAMADDL		$2102
+	.DEFINE OAMADDH		$2103
+	.DEFINE OAMDATA		$2104
+	.DEFINE BGMODE		$2105
+	.DEFINE MOSAIC		$2106
+	.DEFINE BG1SC		$2107
+	.DEFINE BG2SC		$2108
+	.DEFINE BG3SC		$2109
+	.DEFINE BG4SC		$210A
+	.DEFINE BG12NBA		$210B
+	.DEFINE BG34NBA		$210C
+	.DEFINE BG1HOFS		$210D
+	.DEFINE BG1VOFS		$210E
+	.DEFINE BG2HOFS		$210F
+	.DEFINE BG2VOFS		$2110
+	.DEFINE BG3HOFS		$2111
+	.DEFINE BG3VOFS		$2112
+	.DEFINE BG4HOFS		$2113
+	.DEFINE BG4VOFS		$2114
+	.DEFINE VMAIN		$2115
+	.DEFINE VMADDL		$2116
+	.DEFINE VMADDH		$2117
+	.DEFINE VMDATAL		$2118
+	.DEFINE VMDATAH		$2119
+	.DEFINE M7SEL		$211A
+	.DEFINE M7A		$211B
+	.DEFINE M7B		$211C
+	.DEFINE M7C		$211D
+	.DEFINE M7D		$211E
+	.DEFINE M7X		$211F
+	.DEFINE M7Y		$2120
+	.DEFINE CGADD		$2121
+	.DEFINE CGDATA		$2122
+	.DEFINE W12SEL		$2123
+	.DEFINE W34SEL		$2124
+	.DEFINE WOBJSEL		$2125
+	.DEFINE WH0		$2126
+	.DEFINE WH1		$2127
+	.DEFINE WH2		$2128
+	.DEFINE WH3		$2129
+	.DEFINE WBGLOG		$212A
+	.DEFINE WOBJLOG		$212B
+	.DEFINE TM		$212C
+	.DEFINE TS		$212D
+	.DEFINE TMW		$212E
+	.DEFINE TSW		$212F
+	.DEFINE CGWSEL		$2130
+	.DEFINE CGADSUB		$2131
+	.DEFINE COLDATA		$2132
+	.DEFINE SETINI		$2133
+	.DEFINE MPYL		$2134
+	.DEFINE MPYM		$2135
+	.DEFINE MPYH		$2136
+	.DEFINE SLHV		$2137
+	.DEFINE RDOAM		$2138
+	.DEFINE RDVRAML		$2139
+	.DEFINE RDVRAMH		$213A
+	.DEFINE RDCGRAM		$213B
+	.DEFINE OPHCT		$213C
+	.DEFINE OPVCT		$213D
+	.DEFINE STAT77		$213E
+	.DEFINE STAT78		$213F
 
+; SNES SPC700 communication ports
+	.DEFINE APUIO0		$2140
+	.DEFINE APUIO1		$2141
+	.DEFINE APUIO2		$2142
+	.DEFINE APUIO3		$2143
 
-; -------------------------- CPU & PPU registers
-.DEFINE REG_INIDISP		$2100
-.DEFINE REG_OBSEL		$2101
-.DEFINE REG_OAMADDL		$2102
-.DEFINE REG_OAMADDH		$2103
-.DEFINE REG_OAMDATA		$2104
-.DEFINE REG_BGMODE		$2105
-.DEFINE REG_MOSAIC		$2106
-.DEFINE REG_BG1SC		$2107
-.DEFINE REG_BG2SC		$2108
-.DEFINE REG_BG3SC		$2109
-.DEFINE REG_BG4SC		$210A
-.DEFINE REG_BG12NBA		$210B
-.DEFINE REG_BG34NBA		$210C
-.DEFINE REG_BG1HOFS		$210D
-.DEFINE REG_BG1VOFS		$210E
-.DEFINE REG_BG2HOFS		$210F
-.DEFINE REG_BG2VOFS		$2110
-.DEFINE REG_BG3HOFS		$2111
-.DEFINE REG_BG3VOFS		$2112
-.DEFINE REG_BG4HOFS		$2113
-.DEFINE REG_BG4VOFS		$2114
-.DEFINE REG_VMAIN		$2115
-.DEFINE REG_VMADDL		$2116
-.DEFINE REG_VMADDH		$2117
-.DEFINE REG_VMDATAL		$2118
-.DEFINE REG_VMDATAH		$2119
-.DEFINE REG_M7SEL		$211A
-.DEFINE REG_M7A			$211B
-.DEFINE REG_M7B			$211C
-.DEFINE REG_M7C			$211D
-.DEFINE REG_M7D			$211E
-.DEFINE REG_M7X			$211F
-.DEFINE REG_M7Y			$2120
-.DEFINE REG_CGADD		$2121
-.DEFINE REG_CGDATA		$2122
-.DEFINE REG_W12SEL		$2123
-.DEFINE REG_W34SEL		$2124
-.DEFINE REG_WOBJSEL		$2125
-.DEFINE REG_WH0			$2126
-.DEFINE REG_WH1			$2127
-.DEFINE REG_WH2			$2128
-.DEFINE REG_WH3			$2129
-.DEFINE REG_WBGLOG		$212A
-.DEFINE REG_WOBJLOG		$212B
-.DEFINE REG_TM			$212C
-.DEFINE REG_TS			$212D
-.DEFINE REG_TMW			$212E
-.DEFINE REG_TSW			$212F
-.DEFINE REG_CGWSEL		$2130
-.DEFINE REG_CGADSUB		$2131
-.DEFINE REG_COLDATA		$2132
-.DEFINE REG_SETINI		$2133
-.DEFINE REG_MPYL		$2134
-.DEFINE REG_MPYM		$2135
-.DEFINE REG_MPYH		$2136
-.DEFINE REG_SLHV		$2137
-.DEFINE REG_RDOAM		$2138
-.DEFINE REG_RDVRAML		$2139
-.DEFINE REG_RDVRAMH		$213A
-.DEFINE REG_RDCGRAM		$213B
-.DEFINE REG_OPHCT		$213C
-.DEFINE REG_OPVCT		$213D
-.DEFINE REG_STAT77		$213E
-.DEFINE REG_STAT78		$213F
-.DEFINE REG_APUIO0		$2140
-.DEFINE REG_APUIO1		$2141
-.DEFINE REG_APUIO2		$2142
-.DEFINE REG_APUIO3		$2143
-.DEFINE REG_WMDATA		$2180
-.DEFINE REG_WMADDL		$2181
-.DEFINE REG_WMADDM		$2182
-.DEFINE REG_WMADDH		$2183
-.DEFINE REG_JOYWR		$4016
-.DEFINE REG_JOYA		$4016
-.DEFINE REG_JOYB		$4017
-.DEFINE REG_NMITIMEN		$4200
-.DEFINE REG_WRIO		$4201
-.DEFINE REG_WRMPYA		$4202
-.DEFINE REG_WRMPYB		$4203
-.DEFINE REG_WRDIVL		$4204
-.DEFINE REG_WRDIVH		$4205
-.DEFINE REG_WRDIVB		$4206
-.DEFINE REG_HTIMEL		$4207
-.DEFINE REG_HTIMEH		$4208
-.DEFINE REG_VTIMEL		$4209
-.DEFINE REG_VTIMEH		$420A
-.DEFINE REG_MDMAEN		$420B
-.DEFINE REG_HDMAEN		$420C
-.DEFINE REG_MEMSEL		$420D
-.DEFINE REG_RDNMI		$4210
-.DEFINE REG_TIMEUP		$4211
-.DEFINE REG_HVBJOY		$4212
-.DEFINE REG_RDIO		$4213
-.DEFINE REG_RDDIVL		$4214
-.DEFINE REG_RDDIVH		$4215
-.DEFINE REG_RDMPYL		$4216
-.DEFINE REG_RDMPYH		$4217
-.DEFINE REG_JOY1L		$4218
-.DEFINE REG_JOY1H		$4219
-.DEFINE REG_JOY2L		$421A
-.DEFINE REG_JOY2H		$421B
-.DEFINE REG_JOY3L		$421C
-.DEFINE REG_JOY3H		$421D
-.DEFINE REG_JOY4L		$421E
-.DEFINE REG_JOY4H		$421F
-.DEFINE REG_DMAP0		$4300
-.DEFINE REG_BBAD0		$4301
-.DEFINE REG_A1T0L		$4302
-.DEFINE REG_A1T0H		$4303
-.DEFINE REG_A1B0		$4304
-.DEFINE REG_DAS0L		$4305
-.DEFINE REG_DAS0H		$4306
-.DEFINE REG_DASB0		$4307
-.DEFINE REG_A2A0L		$4308
-.DEFINE REG_A2A0H		$4309
-.DEFINE REG_NTRL0		$430A
-.DEFINE REG_UNUSED0		$430B
-.DEFINE REG_DMAP1		$4310
-.DEFINE REG_BBAD1		$4311
-.DEFINE REG_A1T1L		$4312
-.DEFINE REG_A1T1H		$4313
-.DEFINE REG_A1B1		$4314
-.DEFINE REG_DAS1L		$4315
-.DEFINE REG_DAS1H		$4316
-.DEFINE REG_DASB1		$4317
-.DEFINE REG_A2A1L		$4318
-.DEFINE REG_A2A1H		$4319
-.DEFINE REG_NTRL1		$431A
-.DEFINE REG_UNUSED1		$431B
-.DEFINE REG_DMAP2		$4320
-.DEFINE REG_BBAD2		$4321
-.DEFINE REG_A1T2L		$4322
-.DEFINE REG_A1T2H		$4323
-.DEFINE REG_A1B2		$4324
-.DEFINE REG_DAS2L		$4325
-.DEFINE REG_DAS2H		$4326
-.DEFINE REG_DASB2		$4327
-.DEFINE REG_A2A2L		$4328
-.DEFINE REG_A2A2H		$4329
-.DEFINE REG_NTRL2		$432A
-.DEFINE REG_UNUSED2		$432B
-.DEFINE REG_DMAP3		$4330
-.DEFINE REG_BBAD3		$4331
-.DEFINE REG_A1T3L		$4332
-.DEFINE REG_A1T3H		$4333
-.DEFINE REG_A1B3		$4334
-.DEFINE REG_DAS3L		$4335
-.DEFINE REG_DAS3H		$4336
-.DEFINE REG_DASB3		$4337
-.DEFINE REG_A2A3L		$4338
-.DEFINE REG_A2A3H		$4339
-.DEFINE REG_NTRL3		$433A
-.DEFINE REG_UNUSED3		$433B
-.DEFINE REG_DMAP4		$4340
-.DEFINE REG_BBAD4		$4341
-.DEFINE REG_A1T4L		$4342
-.DEFINE REG_A1T4H		$4343
-.DEFINE REG_A1B4		$4344
-.DEFINE REG_DAS4L		$4345
-.DEFINE REG_DAS4H		$4346
-.DEFINE REG_DASB4		$4347
-.DEFINE REG_A2A4L		$4348
-.DEFINE REG_A2A4H		$4349
-.DEFINE REG_NTRL4		$434A
-.DEFINE REG_UNUSED4		$434B
-.DEFINE REG_DMAP5		$4350
-.DEFINE REG_BBAD5		$4351
-.DEFINE REG_A1T5L		$4352
-.DEFINE REG_A1T5H		$4353
-.DEFINE REG_A1B5		$4354
-.DEFINE REG_DAS5L		$4355
-.DEFINE REG_DAS5H		$4356
-.DEFINE REG_DASB5		$4357
-.DEFINE REG_A2A5L		$4358
-.DEFINE REG_A2A5H		$4359
-.DEFINE REG_NTRL5		$435A
-.DEFINE REG_UNUSED5		$435B
-.DEFINE REG_DMAP6		$4360
-.DEFINE REG_BBAD6		$4361
-.DEFINE REG_A1T6L		$4362
-.DEFINE REG_A1T6H		$4363
-.DEFINE REG_A1B6		$4364
-.DEFINE REG_DAS6L		$4365
-.DEFINE REG_DAS6H		$4366
-.DEFINE REG_DASB6		$4367
-.DEFINE REG_A2A6L		$4368
-.DEFINE REG_A2A6H		$4369
-.DEFINE REG_NTRL6		$436A
-.DEFINE REG_UNUSED6		$436B
-.DEFINE REG_DMAP7		$4370
-.DEFINE REG_BBAD7		$4371
-.DEFINE REG_A1T7L		$4372
-.DEFINE REG_A1T7H		$4373
-.DEFINE REG_A1B7		$4374
-.DEFINE REG_DAS7L		$4375
-.DEFINE REG_DAS7H		$4376
-.DEFINE REG_DASB7		$4377
-.DEFINE REG_A2A7L		$4378
-.DEFINE REG_A2A7H		$4379
-.DEFINE REG_NTRL7		$437A
-.DEFINE REG_UNUSED7		$437B
+; SNES WRAM communication ports
+	.DEFINE WMDATA		$2180
+	.DEFINE WMADDL		$2181
+	.DEFINE WMADDM		$2182
+	.DEFINE WMADDH		$2183
 
+; SNES CPU registers
+	.DEFINE JOYWR		$4016
+	.DEFINE JOYA		$4016
+	.DEFINE JOYB		$4017
+	.DEFINE NMITIMEN	$4200
+	.DEFINE WRIO		$4201
+	.DEFINE WRMPYA		$4202
+	.DEFINE WRMPYB		$4203
+	.DEFINE WRDIVL		$4204
+	.DEFINE WRDIVH		$4205
+	.DEFINE WRDIVB		$4206
+	.DEFINE HTIMEL		$4207
+	.DEFINE HTIMEH		$4208
+	.DEFINE VTIMEL		$4209
+	.DEFINE VTIMEH		$420A
+	.DEFINE MDMAEN		$420B
+	.DEFINE HDMAEN		$420C
+	.DEFINE MEMSEL		$420D
+	.DEFINE RDNMI		$4210
+	.DEFINE TIMEUP		$4211
+	.DEFINE HVBJOY		$4212
+	.DEFINE RDIO		$4213
+	.DEFINE RDDIVL		$4214
+	.DEFINE RDDIVH		$4215
+	.DEFINE RDMPYL		$4216
+	.DEFINE RDMPYH		$4217
+	.DEFINE JOY1L		$4218
+	.DEFINE JOY1H		$4219
+	.DEFINE JOY2L		$421A
+	.DEFINE JOY2H		$421B
+	.DEFINE JOY3L		$421C
+	.DEFINE JOY3H		$421D
+	.DEFINE JOY4L		$421E
+	.DEFINE JOY4H		$421F
 
+; SNES DMA registers
+	.DEFINE DMAP0		$4300
+	.DEFINE BBAD0		$4301
+	.DEFINE A1T0L		$4302
+	.DEFINE A1T0H		$4303
+	.DEFINE A1B0		$4304
+	.DEFINE DAS0L		$4305
+	.DEFINE DAS0H		$4306
+	.DEFINE DASB0		$4307
+	.DEFINE A2A0L		$4308
+	.DEFINE A2A0H		$4309
+	.DEFINE NTRL0		$430A
+	.DEFINE UNUSED0		$430B
+	.DEFINE DMAP1		$4310
+	.DEFINE BBAD1		$4311
+	.DEFINE A1T1L		$4312
+	.DEFINE A1T1H		$4313
+	.DEFINE A1B1		$4314
+	.DEFINE DAS1L		$4315
+	.DEFINE DAS1H		$4316
+	.DEFINE DASB1		$4317
+	.DEFINE A2A1L		$4318
+	.DEFINE A2A1H		$4319
+	.DEFINE NTRL1		$431A
+	.DEFINE UNUSED1		$431B
+	.DEFINE DMAP2		$4320
+	.DEFINE BBAD2		$4321
+	.DEFINE A1T2L		$4322
+	.DEFINE A1T2H		$4323
+	.DEFINE A1B2		$4324
+	.DEFINE DAS2L		$4325
+	.DEFINE DAS2H		$4326
+	.DEFINE DASB2		$4327
+	.DEFINE A2A2L		$4328
+	.DEFINE A2A2H		$4329
+	.DEFINE NTRL2		$432A
+	.DEFINE UNUSED2		$432B
+	.DEFINE DMAP3		$4330
+	.DEFINE BBAD3		$4331
+	.DEFINE A1T3L		$4332
+	.DEFINE A1T3H		$4333
+	.DEFINE A1B3		$4334
+	.DEFINE DAS3L		$4335
+	.DEFINE DAS3H		$4336
+	.DEFINE DASB3		$4337
+	.DEFINE A2A3L		$4338
+	.DEFINE A2A3H		$4339
+	.DEFINE NTRL3		$433A
+	.DEFINE UNUSED3		$433B
+	.DEFINE DMAP4		$4340
+	.DEFINE BBAD4		$4341
+	.DEFINE A1T4L		$4342
+	.DEFINE A1T4H		$4343
+	.DEFINE A1B4		$4344
+	.DEFINE DAS4L		$4345
+	.DEFINE DAS4H		$4346
+	.DEFINE DASB4		$4347
+	.DEFINE A2A4L		$4348
+	.DEFINE A2A4H		$4349
+	.DEFINE NTRL4		$434A
+	.DEFINE UNUSED4		$434B
+	.DEFINE DMAP5		$4350
+	.DEFINE BBAD5		$4351
+	.DEFINE A1T5L		$4352
+	.DEFINE A1T5H		$4353
+	.DEFINE A1B5		$4354
+	.DEFINE DAS5L		$4355
+	.DEFINE DAS5H		$4356
+	.DEFINE DASB5		$4357
+	.DEFINE A2A5L		$4358
+	.DEFINE A2A5H		$4359
+	.DEFINE NTRL5		$435A
+	.DEFINE UNUSED5		$435B
+	.DEFINE DMAP6		$4360
+	.DEFINE BBAD6		$4361
+	.DEFINE A1T6L		$4362
+	.DEFINE A1T6H		$4363
+	.DEFINE A1B6		$4364
+	.DEFINE DAS6L		$4365
+	.DEFINE DAS6H		$4366
+	.DEFINE DASB6		$4367
+	.DEFINE A2A6L		$4368
+	.DEFINE A2A6H		$4369
+	.DEFINE NTRL6		$436A
+	.DEFINE UNUSED6		$436B
+	.DEFINE DMAP7		$4370
+	.DEFINE BBAD7		$4371
+	.DEFINE A1T7L		$4372
+	.DEFINE A1T7H		$4373
+	.DEFINE A1B7		$4374
+	.DEFINE DAS7L		$4375
+	.DEFINE DAS7H		$4376
+	.DEFINE DASB7		$4377
+	.DEFINE A2A7L		$4378
+	.DEFINE A2A7H		$4379
+	.DEFINE NTRL7		$437A
+	.DEFINE UNUSED7		$437B
 
+; Enhancement chip registers
+	.DEFINE MSU_STATUS	$2000
+	.DEFINE MSU_READ	$2001
+	.DEFINE MSU_ID		$2002
+	.DEFINE MSU_SEEK	$2000
+	.DEFINE MSU_TRACK	$2004					; 16-bit register ($2004-$2005)
+	.DEFINE MSU_VOLUME	$2006
+	.DEFINE MSU_CONTROL	$2007
+	.DEFINE SRTC_READ	$2800					; register for reading the time
+	.DEFINE SRTC_WRITE	$2801					; $0D = get time (and set index for read sequence to -1), $0E = send command (+ command byte)
+									; known command bytes: $00 = set time (and set index for write sequence to 0), $04 = reset time (and set index to -1)
+	.DEFINE ULTRA16_LOCK	$21C0
+	.DEFINE ULTRA16_DATA	$21C1
+	.DEFINE ULTRA16_SNUM	$21C2
 
-; -------------------------- Enhancement chip registers
-.DEFINE MSU_STATUS		$2000
-.DEFINE MSU_READ		$2001
-.DEFINE MSU_ID			$2002
-.DEFINE MSU_SEEK		$2000
-.DEFINE MSU_TRACK		$2004
-.DEFINE MSU_VOLUME		$2006
-.DEFINE MSU_CONTROL		$2007
-.DEFINE SRTC_READ		$2800
-.DEFINE SRTC_WRITE		$2801
+; SNES joypad buttons
+	.DEFINE kAllButtons	$F0F0
+	.DEFINE kAllDpad	$0F
+
+	.DEFINE kDpadUp		%00001000
+	.DEFINE kDpadDown	%00000100
+	.DEFINE kDpadLeft	%00000010
+	.DEFINE kDpadRight	%00000001
+
+	.DEFINE kButtonA	%10000000
+	.DEFINE kButtonB	%10000000
+	.DEFINE kButtonX	%01000000
+	.DEFINE kButtonY	%01000000
+	.DEFINE kButtonL	%00100000
+	.DEFINE kButtonR	%00010000
+	.DEFINE kButtonSel	%00100000
+	.DEFINE kButtonStart	%00010000
 
 
 
 ; ************************ NMI/IRQ jump tables *************************
 
-; -------------------------- IRQ routine table (for use with SetIRQ macro)
-.ENUM $00
-;	TBL_HIRQ_XXX		db
-	TBL_VIRQ_Area		db
-	TBL_VIRQ_Mode7		db
-.ENDE
+; IRQ routine index table (for use with SetIRQ macro)
+	.ENUMID 0 STEP 4						; order has to match SRC_IRQJumpTable
+	.ENUMID kHIRQ_MenuItemsVsplit
+	.ENUMID kVIRQ_Area
+	.ENUMID kVIRQ_Mode7
 
 
 
-; -------------------------- Vblank routine table (for use with SetNMI macro)
-.ENUM $00
-	TBL_NMI_Area		db
-	TBL_NMI_DebugMenu	db
-	TBL_NMI_Error		db
-	TBL_NMI_Intro		db
-	TBL_NMI_Minimal		db
-	TBL_NMI_Mode7		db
-	TBL_NMI_WorldMap	db
-.ENDE
+; Vblank routine index table (for use with SetNMI macro)
+	.ENUMID 0 STEP 4						; order has to match SRC_VblankJumpTable
+	.ENUMID kNMI_Area
+	.ENUMID kNMI_DebugMenu
+;	.ENUMID kNMI_Error
+	.ENUMID kNMI_Intro
+	.ENUMID kNMI_Minimal
+	.ENUMID kNMI_Mode7
+	.ENUMID kNMI_WorldMap
 
 
 
 ; **************************** Error codes *****************************
 
-.ENUM 0
-	ERR_SPC700				db
-.ENDE
+	.ENUMID 0 STEP 2						; 128 possible error codes, order has to match both PTR_ErrorCode and PTR_ErrorCodeExtraInfo tables
+	.ENUMID kErrorBRK
+	.ENUMID kErrorCOP
+	.ENUMID kErrorCorruptROM
+	.ENUMID kErrorSPC700
 
 
 
 ; ************************ Event control codes *************************
 
-.ENUM $00								; argument(s) (8/16 bit) / effect(s)
-	EC_DIALOG				db			; dialog pointer (16)
-	EC_DISABLE_HDMA_CH			db			; HDMA channel(s) no. # (8)
-	EC_DMA_ROM2CGRAM			db			; CGRAM target address (8), ROM source address (16), ROM source bank (8), size (16)
-	EC_DMA_ROM2VRAM				db			; VRAM target address (16), ROM source address (16), ROM source bank (8), size (16)
-	EC_DMA_ROM2WRAM				db			; WRAM target address (16), WRAM target bank (8), ROM source address (16), ROM source bank (8), size (16)
-	EC_ENABLE_HDMA_CH			db			; HDMA channel(s) no. # (8)
-	EC_GSS_LOAD_TRACK			db			; track no. # (16)
-	EC_GSS_TRACK_FADEIN			db			; speed (16), target volume (16)
-	EC_GSS_TRACK_FADEOUT			db			; speed (16), target volume (16)
-	EC_GSS_TRACK_PLAY			db			; none
-	EC_GSS_TRACK_STOP			db			; none
-	EC_INIT_GAMEINTRO			db			; none
-	EC_JSL					db			; address (24) / go to some subroutine (long)
-	EC_JSR					db			; address (16) / go to some subroutine
-	EC_JUMP					db			; position in event script to jump to (16)
-	EC_LOAD_AREA				db			; no. # of area (16)
-	EC_LOAD_PARTY_FORMATION			db			; no. # of party formation
-	EC_MONITOR_INPUT_JOY1			db			; joypad data (16), position in event script to jump to (16)
-;	EC_MONITOR_INPUT_JOY2			db			; joypad data (16), position in event script to jump to (16)
-	EC_MOVE_ALLY				db			; ally no. #, direction(s), speed
-	EC_MOVE_HERO				db			; target screen position (16), speed (8) // caveat: position difference has to be divisible by speed value
-	EC_MOVE_NPC				db			; NPC no. #, direction(s), speed
-	EC_MOVE_OBJ				db			; obj. no. #, direction(s), speed
-	EC_MSU_LOAD_TRACK			db			; track no. # (16)
-	EC_MSU_TRACK_FADEIN			db			; speed
-	EC_MSU_TRACK_FADEOUT			db			; speed
-	EC_MSU_TRACK_PLAY			db			; 000000rpvvvvvvvv [r = Repeat flag, p = Play flag, v = volume] (16)
-	EC_MSU_TRACK_STOP			db			; none
-	EC_SCR_EFFECT				db			; effect no. #
-	EC_SCR_EFFECT_TRANSITION		db			; transition effect no. #, speed
-	EC_SCR_SCROLL				db			; BG(s), direction(s), speed
-	EC_SET_REGISTER				db			; SNES register (16), value (8)
-	EC_SET_SHADOW_REGISTER			db			; PPU shadow register & $FFFF (16), value (8)
-	EC_SIMULATE_INPUT_JOY1			db			; joypad data (16)
-	EC_SIMULATE_INPUT_JOY2			db			; joypad data (16)
-	EC_TOGGLE_AUTO_MODE			db			; none / switch auto-mode on/off
-	EC_WAIT_JOY1				db			; joypad data (16)
-	EC_WAIT_JOY2				db			; joypad data (16)
-	EC_WAIT_FRAMES				db			; no. of frames (16)
-.ENDE
-
-.DEFINE EC_END					$FF
+	.ENUMID 0							; argument(s) (8/16 bit) / effect(s) (if not self-explanatory)
+	.ENUMID evc_00_END						; none / end event script processing
+	.ENUMID evc_BG3_TEXT						; y position (8), x position (8), string pointer (24) / prints a string on BG3
+	.ENUMID evc_DIALOG						; dialogue pointer (16)
+	.ENUMID evc_DISABLE_HDMA_CH					; HDMA channel(s) no. # (8)
+	.ENUMID evc_DMA_ROM2CGRAM					; CGRAM target address (8), ROM source address (16), ROM source bank (8), size (16)
+	.ENUMID evc_DMA_ROM2VRAM					; VRAM target address (16), ROM source address (16), ROM source bank (8), size (16)
+	.ENUMID evc_DMA_ROM2WRAM					; WRAM target address (16), WRAM target bank (8), ROM source address (16), ROM source bank (8), size (16)
+	.ENUMID evc_ENABLE_HDMA_CH					; HDMA channel(s) no. # (8)
+	.ENUMID evc_GSS_COMMAND						; command (16), parameter (16)
+	.ENUMID evc_GSS_LOAD_TRACK					; track no. # (16)
+	.ENUMID evc_INIT_GAMEINTRO					; none
+	.ENUMID evc_JSL							; address (24) / go to some subroutine (long)
+	.ENUMID evc_JSR							; address (16) / go to some subroutine
+	.ENUMID evc_JUMP						; position in event script to jump to (16)
+	.ENUMID evc_LOAD_AREA						; no. # of area (16)
+	.ENUMID evc_LOAD_PARTY_FORMATION				; no. # of party formation
+	.ENUMID evc_MONITOR_INPUT_JOY1					; joypad data (16), position in event script to jump to (16)
+;	.ENUMID evc_MONITOR_INPUT_JOY2					; joypad data (16), position in event script to jump to (16)
+	.ENUMID evc_MOVE_ALLY						; ally no. #, direction(s), speed
+	.ENUMID evc_MOVE_HERO						; target screen position (16), speed (8) // caveat: position difference has to be divisible by speed value
+	.ENUMID evc_MOVE_NPC						; NPC no. #, direction(s), speed
+	.ENUMID evc_MOVE_OBJ						; obj. no. #, direction(s), speed
+	.ENUMID evc_MSU_LOAD_TRACK					; track no. # (16)
+	.ENUMID evc_MSU_TRACK_FADEIN					; speed
+	.ENUMID evc_MSU_TRACK_FADEOUT					; speed
+	.ENUMID evc_MSU_TRACK_PLAY					; 000000rpvvvvvvvv [r = Repeat flag, p = Play flag, v = volume] (16)
+	.ENUMID evc_MSU_TRACK_STOP					; none
+	.ENUMID evc_SCR_EFFECT						; effect no. #
+	.ENUMID evc_SCR_EFFECT_TRANSITION				; transition effect no. #, speed
+	.ENUMID evc_SCR_SCROLL						; BG(s), direction(s), speed
+	.ENUMID evc_SET_REGISTER					; SNES register (16), value (8)
+	.ENUMID evc_SIMULATE_INPUT_JOY1					; joypad data (16)
+	.ENUMID evc_SIMULATE_INPUT_JOY2					; joypad data (16)
+	.ENUMID evc_TOGGLE_AUTO_MODE					; none
+	.ENUMID evc_WAIT_JOY1						; joypad data (16)
+	.ENUMID evc_WAIT_JOY2						; joypad data (16)
+	.ENUMID evc_WAIT_FRAMES						; no. of frames (16)
+	.ENUMID evc_WRITE_RAM_BYTE					; address (24), value (8) // write a byte to WRAM (for setting register mirror variables etc.)
 
 
 
 ; *********************** Sprite control tables ************************
 
-; -------------------------- playable character 1 walking frames table (matches spritesheet)
-.ENUM $00
-	TBL_Hero1_frame00	db
-	TBL_Hero1_frame01	db
-	TBL_Hero1_frame02	db
-.ENDE
+; Playable character 1 walking frames table (matches spritesheet)
+	.ENUMID 0 STEP 2
+	.ENUMID k16_Hero1_frame00
+	.ENUMID k16_Hero1_frame01
+	.ENUMID k16_Hero1_frame02
 
-
-
-; -------------------------- playable character 1 direction table (matches spritesheet)
-.ENUM $00
-	TBL_Hero1_down		db
-	TBL_Hero1_up		db
-	TBL_Hero1_left		db
-	TBL_Hero1_right		db
-.ENDE
+; Playable character 1 direction table (matches spritesheet)
+	.ENUMID 0
+	.ENUMID k8_Hero1_down
+	.ENUMID k8_Hero1_up
+	.ENUMID k8_Hero1_left
+	.ENUMID k8_Hero1_right
 
 
 
 ; ************************** Misc. constants ***************************
 
-; -------------------------- Memory map
-.DEFINE ADDR_CGRAM_Portrait	$10
-.DEFINE ADDR_CGRAM_Area		$20
-.DEFINE ADDR_CGRAM_WorldMap	$20
-
-.DEFINE ADDR_SRAM_Bank		$B0
-.DEFINE ADDR_SRAM_GoodROM	$B06000					; $01 = ROM integrity test passed
-.DEFINE ADDR_SRAM_ChksumCmpl	$B0600C					; SRAM checksum & complement
-.DEFINE ADDR_SRAM_Chksum	$B0600E
-.DEFINE ADDR_SRAM_Slot1		$B06000					; 16 bytes reserved
-.DEFINE ADDR_SRAM_Slot1Data	$B06010
-.DEFINE ADDR_SRAM_Slot2		$B06800					; ditto
-.DEFINE ADDR_SRAM_Slot2Data	$B06810
-.DEFINE ADDR_SRAM_Slot3		$B07000					; ditto
-.DEFINE ADDR_SRAM_Slot3Data	$B07010
-.DEFINE ADDR_SRAM_Slot4		$B07800					; ditto
-.DEFINE ADDR_SRAM_Slot4Data	$B07810
-
-.DEFINE ADDR_VRAM_BG1_Tiles	$0000
-.DEFINE ADDR_VRAM_BG2_Tiles	$0000
-.DEFINE ADDR_VRAM_TextBox	$0000					; text box (BG2)
-.DEFINE ADDR_VRAM_TextBoxL1	$0100					; start of line 1 in text box (BG2)
-.DEFINE ADDR_VRAM_Portrait	$06C0					; end of text box, start of portrait (BG1, 2 KiB)
-.DEFINE ADDR_VRAM_AreaBG1	$0AC0					; area tiles for BG1
-.DEFINE ADDR_VRAM_AreaBG2	$3800					; area tiles for BG2 (might need to start at an earlier address)
-
-.DEFINE ADDR_VRAM_BG3_Tiles	$4000
-.DEFINE ADDR_VRAM_BG3_TileMap1	$4800
-.DEFINE ADDR_VRAM_BG3_TileMap2	$4C00
-
-.DEFINE ADDR_VRAM_BG1_TileMap1	$5000
-.DEFINE ADDR_VRAM_BG1_TileMap2	$5400
-.DEFINE ADDR_VRAM_BG2_TileMap1	$5800
-.DEFINE ADDR_VRAM_BG2_TileMap2	$5C00
-
-.DEFINE ADDR_VRAM_SpriteTiles	$6000					; sprite tiles can go up to $7B5F, and also from $7C00-$7F5F
-
-.DEFINE ADDR_VRAM_BG1_TileMap3	$7800					; only $7B60-$7BFF used for text box
-.DEFINE ADDR_VRAM_BG2_TileMap3	$7C00					; only $7F60-$7FFF used for text box
-
-.DEFINE PARAM_CollMarginLeft	3					; collision margin at left/right/top sprite edges
-.DEFINE PARAM_CollMarginRight	3
-.DEFINE PARAM_CollMarginTop	1					; the top margin value differs from the other two in that it acts as a protection against getting trapped when moving along upper edges horizontally
-
-.DEFINE PARAM_DebugMenu1stLine	78					; Y position of cursor sprite on first debug menu line
-.DEFINE PARAM_ErrWaitSPC700	3000					; max. no. of wait loops when communicating with the SPC700 until an error is triggered (the exact value doesn't really matter, but it sholud be reasonably high enough)
-.DEFINE PARAM_HUD_Xpos		24					; X position (in px) of HUD text box start
-.DEFINE PARAM_HUD_Yhidden	240					; Y position of hidden HUD text box
-.DEFINE PARAM_HUD_Yvisible	20					; Y position of visible HUD text box
-.DEFINE PARAM_Mode7SkyLines	72					; number of scanlines for sky above Mode 7 landscape
-
-.DEFINE PARAM_RingMenuCenterX	128
-.DEFINE PARAM_RingMenuCenterY	112
-.DEFINE PARAM_RingMenuRadiusMin	0
-.DEFINE PARAM_RingMenuRadiusMax	60
-
-.DEFINE PARAM_TextBox		$02C0					; tilemap entry for start of whole text box area
-.DEFINE PARAM_TextBoxAnimSpd	3					; scrolling speed for text box animation (must be a divisor of 48) // self-remainder: number must match the number of initial black scanlines in SRC_HDMA_TextBoxGradient*, or else TextBoxAnimationClose will leave behind non-black scanlines
-.DEFINE PARAM_TextBoxColMath1st	57					; start of first line in a text box selection
-;.DEFINE PARAM_TextBoxInside	$02E0					; tilemap entry for inside of text box
-.DEFINE PARAM_TextBoxLine1	$02E7					; tilemap entry for start of line 1 in text box
-.DEFINE PARAM_TextBoxLine2	$0307					; tilemap entry for start of line 2 in text box
-.DEFINE PARAM_TextBoxLine3	$0327					; tilemap entry for start of line 3 in text box
-.DEFINE PARAM_TextBoxLine4	$0347					; tilemap entry for start of line 4 in text box
-
-.DEFINE PARAM_TextBoxUL		$02C6					; tilemap entry for upper left corner of text box
-.DEFINE PARAM_TextBoxWidth	24					; in "full" (i.e., 16×8) hi-res tiles
-
-
-
-; -------------------------- dialog string numbers
-.ENUM 0
-	DialogStringNo0000	db
-	DialogStringNo0001	db
-	DialogStringNo0002	db
-	DialogStringNo0003	db
-	DialogStringNo0004	db
-	DialogStringNo0005	db
-	DialogStringNo0006	db
-	DialogStringNo0007	db
-	DialogStringNo0008	db
-	DialogStringNo0009	db
-	DialogStringNo0010	db
-	DialogStringNo0011	db
-	DialogStringNo0012	db
-	DialogStringNo0013	db
-	DialogStringNo0014	db
-	DialogStringNo0015	db
-	DialogStringNo0016	db
-	DialogStringNo0017	db
-	DialogStringNo0018	db
-	DialogStringNo0019	db
-	DialogStringNo0020	db
-	DialogStringNo0021	db
-	DialogStringNo0022	db
-	DialogStringNo0023	db
-	DialogStringNo0024	db
-	DialogStringNo0025	db
-	DialogStringNo0026	db
-	DialogStringNo0027	db
-	DialogStringNo0028	db
-	DialogStringNo0029	db
-	DialogStringNo0030	db
-	DialogStringNo0031	db
-	DialogStringNo0032	db
-	DialogStringNo0033	db
-	DialogStringNo0034	db
-	DialogStringNo0035	db
-	DialogStringNo0036	db
-	DialogStringNo0037	db
-	DialogStringNo0038	db
-	DialogStringNo0039	db
-	DialogStringNo0040	db
-	DialogStringNo0041	db
-	DialogStringNo0042	db
-	DialogStringNo0043	db
-	DialogStringNo0044	db
-	DialogStringNo0045	db
-	DialogStringNo0046	db
-	DialogStringNo0047	db
-	DialogStringNo0048	db
-	DialogStringNo0049	db
-	DialogStringNo0050	db
-	DialogStringNo0051	db
-	DialogStringNo0052	db
-	DialogStringNo0053	db
-	DialogStringNo0054	db
-	DialogStringNo0055	db
-	DialogStringNo0056	db
-	DialogStringNo0057	db
-	DialogStringNo0058	db
-	DialogStringNo0059	db
-	DialogStringNo0060	db
-	DialogStringNo0061	db
-	DialogStringNo0062	db
-	DialogStringNo0063	db
-	DialogStringNo0064	db
-	DialogStringNo0065	db
-	DialogStringNo0066	db
-	DialogStringNo0067	db
-	DialogStringNo0068	db
-	DialogStringNo0069	db
-	DialogStringNo0070	db
-	DialogStringNo0071	db
-	DialogStringNo0072	db
-	DialogStringNo0073	db
-	DialogStringNo0074	db
-	DialogStringNo0075	db
-	DialogStringNo0076	db
-	DialogStringNo0077	db
-	DialogStringNo0078	db
-	DialogStringNo0079	db
-	DialogStringNo0080	db
-	DialogStringNo0081	db
-	DialogStringNo0082	db
-	DialogStringNo0083	db
-	DialogStringNo0084	db
-	DialogStringNo0085	db
-	DialogStringNo0086	db
-	DialogStringNo0087	db
-	DialogStringNo0088	db
-	DialogStringNo0089	db
-	DialogStringNo0090	db
-	DialogStringNo0091	db
-	DialogStringNo0092	db
-	DialogStringNo0093	db
-	DialogStringNo0094	db
-	DialogStringNo0095	db
-	DialogStringNo0096	db
-	DialogStringNo0097	db
-	DialogStringNo0098	db
-	DialogStringNo0099	db
-	DialogStringNo0100	db
-	DialogStringNo0101	db
-	DialogStringNo0102	db
-	DialogStringNo0103	db
-	DialogStringNo0104	db
-	DialogStringNo0105	db
-	DialogStringNo0106	db
-	DialogStringNo0107	db
-	DialogStringNo0108	db
-	DialogStringNo0109	db
-	DialogStringNo0110	db
-	DialogStringNo0111	db
-	DialogStringNo0112	db
-	DialogStringNo0113	db
-	DialogStringNo0114	db
-	DialogStringNo0115	db
-	DialogStringNo0116	db
-	DialogStringNo0117	db
-	DialogStringNo0118	db
-	DialogStringNo0119	db
-	DialogStringNo0120	db
-	DialogStringNo0121	db
-	DialogStringNo0122	db
-	DialogStringNo0123	db
-	DialogStringNo0124	db
-	DialogStringNo0125	db
-	DialogStringNo0126	db
-	DialogStringNo0127	db
-	DialogStringNo0128	db
-	DialogStringNo0129	db
-	DialogStringNo0130	db
-	DialogStringNo0131	db
-	DialogStringNo0132	db
-	DialogStringNo0133	db
-	DialogStringNo0134	db
-	DialogStringNo0135	db
-	DialogStringNo0136	db
-	DialogStringNo0137	db
-	DialogStringNo0138	db
-	DialogStringNo0139	db
-	DialogStringNo0140	db
-	DialogStringNo0141	db
-	DialogStringNo0142	db
-	DialogStringNo0143	db
-	DialogStringNo0144	db
-	DialogStringNo0145	db
-	DialogStringNo0146	db
-	DialogStringNo0147	db
-	DialogStringNo0148	db
-	DialogStringNo0149	db
-	DialogStringNo0150	db
-	DialogStringNo0151	db
-	DialogStringNo0152	db
-	DialogStringNo0153	db
-	DialogStringNo0154	db
-	DialogStringNo0155	db
-	DialogStringNo0156	db
-	DialogStringNo0157	db
-	DialogStringNo0158	db
-	DialogStringNo0159	db
-	DialogStringNo0160	db
-	DialogStringNo0161	db
-	DialogStringNo0162	db
-	DialogStringNo0163	db
-	DialogStringNo0164	db
-	DialogStringNo0165	db
-	DialogStringNo0166	db
-	DialogStringNo0167	db
-	DialogStringNo0168	db
-	DialogStringNo0169	db
-	DialogStringNo0170	db
-	DialogStringNo0171	db
-	DialogStringNo0172	db
-	DialogStringNo0173	db
-	DialogStringNo0174	db
-	DialogStringNo0175	db
-	DialogStringNo0176	db
-	DialogStringNo0177	db
-	DialogStringNo0178	db
-	DialogStringNo0179	db
-	DialogStringNo0180	db
-	DialogStringNo0181	db
-	DialogStringNo0182	db
-	DialogStringNo0183	db
-	DialogStringNo0184	db
-	DialogStringNo0185	db
-	DialogStringNo0186	db
-	DialogStringNo0187	db
-	DialogStringNo0188	db
-	DialogStringNo0189	db
-	DialogStringNo0190	db
-	DialogStringNo0191	db
-	DialogStringNo0192	db
-	DialogStringNo0193	db
-	DialogStringNo0194	db
-	DialogStringNo0195	db
-	DialogStringNo0196	db
-	DialogStringNo0197	db
-	DialogStringNo0198	db
-	DialogStringNo0199	db
-	DialogStringNo0200	db
-	DialogStringNo0201	db
-	DialogStringNo0202	db
-	DialogStringNo0203	db
-	DialogStringNo0204	db
-	DialogStringNo0205	db
-	DialogStringNo0206	db
-	DialogStringNo0207	db
-	DialogStringNo0208	db
-.ENDE
-
-
-
-; -------------------------- language constants
-.ENUM $00
-	TBL_Lang_Eng		db					; the order of the languages must match the order of dialog banks!
-;	TBL_Lang_Eng2		db
-;	TBL_Lang_Eng3		db
-	TBL_Lang_Ger		db
-;	TBL_Lang_Ger2		db
-;	TBL_Lang_Ger3		db
-;	TBL_Lang_XXX		db
-;	TBL_Lang_XXX		db
-;	TBL_Lang_XXX		db
-.ENDE
-
-
-
-; -------------------------- HUD special character codes
-.DEFINE HUD_auml	$1C						; ä
-.DEFINE HUD_ouml	$1D						; ö
-.DEFINE HUD_uuml	$1E						; ü
-.DEFINE HUD_szlig	$1F						; ß
-
-
-
-; -------------------------- text box control codes (order has to match the PTR_ProcessTextCC jump table)
-.ENUM $00								; argument(s), if applicable
-	CC_BoxBlack		db
-	CC_BoxBlue		db
-	CC_BoxRed		db
-	CC_BoxPink		db
-	CC_BoxEvil		db
-	CC_BoxAlert		db
-	CC_ClearTextBox		db
-	CC_Indent		db
-	CC_Jump			db					; 16-bit address of next string
-	CC_NewLine		db
-	CC_Portrait		db					; no. of portrait (8-bit)
-	CC_Selection		db
-	CC_SubHex		db					; 24-bit address of byte to print in hex
-	CC_SubInt8		db					; 24-bit address of byte to print in decimal
-	CC_SubInt16		db					; 24-bit start address of bytes to print in decimal
-	CC_SubString		db					; 24-bit address of sub-string to print
-	CC_ToggleBold		db
-	NO_CC			db					; this must be has to be greater than the last control code
-.ENDE
-
-.DEFINE CC_End			$FF					; $FF = string terminator
-
-
-
-; -------------------------- text box (dialog) special character codes
-.DEFINE	Auml		$80						; Ä
-.DEFINE	Ouml		$81						; Ö
-.DEFINE	Uuml		$82						; Ü
-.DEFINE	auml		$83						; ä
-.DEFINE	ouml		$84						; ö
-.DEFINE	uuml		$85						; ü
-.DEFINE	szlig		$86						; ß
-.DEFINE	SYM_heart	$87, $88					; heart symbol
-.DEFINE SYM_mult	$89						; multiplication sign
-
-
-
-; -------------------------- effect numbers
-.ENUM 0
-	EffectNoFadeFromBlack	dw
-	EffectNoFadeToBlack	dw
-	EffectNoHSplitIn	dw
-	EffectNoHSplitOut	dw
-	EffectNoHSplitOut2	dw
-	EffectNoShutterIn	dw
-	EffectNoShutterOut	dw
-	EffectNoDiamondIn	dw
-	EffectNoDiamondOut	dw
-.ENDE
-
-
-
-; -------------------------- effect speed values
-.ENUM 1									; positive numbers
-	CMD_EffectSpeed1	db
-	CMD_EffectSpeed2	db
-	CMD_EffectSpeed3	db
-	CMD_EffectSpeed4	db
-	CMD_EffectSpeed5	db
-	CMD_EffectSpeed6	db
-	CMD_EffectSpeed7	db
-	CMD_EffectSpeed8	db
-	CMD_EffectSpeed9	db
-	CMD_EffectSpeed10	db
-	CMD_EffectSpeed11	db
-	CMD_EffectSpeed12	db
-.ENDE
-
-
-
-; -------------------------- effect delay values
-.ENUM $100 DESC								; negative numbers
-	CMD_EffectDelay1	db
-	CMD_EffectDelay2	db
-	CMD_EffectDelay3	db
-	CMD_EffectDelay4	db
-	CMD_EffectDelay5	db
-	CMD_EffectDelay6	db
-	CMD_EffectDelay7	db
-	CMD_EffectDelay8	db
-	CMD_EffectDelay9	db
-	CMD_EffectDelay10	db
-	CMD_EffectDelay11	db
-	CMD_EffectDelay12	db
-.ENDE
-
-
-
-; -------------------------- SNESGSS SPC commands
-.DEFINE SCMD_NONE		$00
-.DEFINE SCMD_INITIALIZE		$01
-.DEFINE SCMD_LOAD		$02
-.DEFINE SCMD_STEREO		$03
-.DEFINE SCMD_GLOBAL_VOLUME	$04
-.DEFINE SCMD_CHANNEL_VOLUME	$05
-.DEFINE SCMD_MUSIC_PLAY 	$06
-.DEFINE SCMD_MUSIC_STOP 	$07
-.DEFINE SCMD_MUSIC_PAUSE 	$08
-.DEFINE SCMD_SFX_PLAY		$09
-.DEFINE SCMD_STOP_ALL_SOUNDS	$0a
-.DEFINE SCMD_STREAM_START	$0b
-.DEFINE SCMD_STREAM_STOP	$0c
-.DEFINE SCMD_STREAM_SEND	$0d
-
-
-
-; *********************** Direct page variables ************************
-
-.ENUM $00
-	ONE_JumpVblank		dsb 4	; DON'T RELOCATE THIS!!		; holds a 4-byte instruction like jml SomeVblankRoutine (NMI vector points here)
-	TWO_JumpIRQ		dsb 4	; DON'T RELOCATE THIS!!		; holds a 4-byte instruction like jml SomeIRQRoutine (IRQ vector points here)
-
-	DP_AreaCurrent		dw					; holds no. of current area
-	DP_AreaMetaMapAddr	dsb 3					; holds 24-bit address of collision map
-	DP_AreaMetaMapIndex	dw
-	DP_AreaMetaMapIndex2	dw
-	DP_AreaNamePointerNo	dw
-	DP_AreaProperties	dw					; rrrrrrrrrrbayxss [s = screen size, as in BGXSC regs, x/y = area is scrollable horizontally/vertically, a/b = auto-scroll area horizontally/vertically, r = reserved]
-	DP_AutoJoy1		dw
-	DP_AutoJoy2		dw
-;	DP_BRR_stream_src	dsb 4					; SNESGSS
-;	DP_BRR_stream_list	dsb 4					; SNESGSS
-	DP_Chapter		db					; holds no. of current game chapter
-	DP_Hero1FrameCounter	db
-	DP_Hero1MapPosX		dw					; in px
-	DP_Hero1MapPosY		dw					; in px
-	DP_Hero1ScreenPosYX	dw					; high byte = Y position, low byte = X position (in px)
-	DP_Hero1SpriteStatus	db					; irrrrddd [i = not walking (idle), ddd = facing direction (0 = down, 1 = up, 2 = left, 3 = right)]
-	DP_Hero1WalkingSpd	dw
-;	DP_CurrentScanline	dw					; holds no. of current scanline (for CPU load meter)
-	DP_DataAddress		dsb 2					; holds a 24-bit data address e.g. for string pointers, data transfers to SRAM, etc.
-	DP_DataBank		db
-	DP_DiagASCIIChar	dw					; holds current dialog ASCII character no.
-	DP_DiagStringAddress	dw					; 16-bit address of dialog string // caveat: dialog string addresses need to be separate from other (FWF/sprite) string addresses as the engine can process both types of strings at the same time (e.g. text box + HUD)
-	DP_DiagStringBank	db					; 8-bit bank no. of dialog string
-	DP_DiagStringPos	dw					; holds current dialog string position (= index to current character)
-	DP_DiagTextEffect	db					; bsrrrrrr [b = toggle bold font, s = sub-string active, r = reserved]
-	DP_DiagTileDataCounter	dw					; holds current VRAM tile data address
-	DP_DMA_Updates		dw					; rrrcbbaarrr32211 [123 = BG no. that needs to have its tile map(s) updated on next Vblank (low bytes), abc = same thing for high bytes, r = reserved. The lower bit of each BG represents the first half of a 64×32/32×64 tile map, the higher one represents the second half.]
-	DP_EffectSpeed		dw
-	DP_ErrorCode		db
-	DP_EmptySpriteNo	db					; holds no. of empty sprite in current spritesheet (usually 0), this is acknowledged in the sprite initialization routine
-	DP_EventCodeAddress	dsb 2
-	DP_EventCodeBank	db
-	DP_EventCodeJump	dw					; holds event script code pointer to jump to
-	DP_EventCodePointer	dw					; holds current event script code pointer
-	DP_EventControl		db					; rrrrrrrm [m = monitor joypad 1, r = reserved]
-	DP_EventMonitorJoy1	dw					; joypad bits to be monitored by event handler
-	DP_EventWaitFrames	dw
-	DP_GameConfig		db					; rrrrrucm [c = RTC present, m = MSU1 present, u = Ultra16 present, r = reserved]
-	DP_GameLanguage		db					; holds global game language constant (used to determine both text and gfx banks/addresses according to language chosen by player)
-	DP_GameMode		db					; arrrrrrr [a = auto-mode, r = reserved]
-	DP_GameTimeSeconds	db					; 1 game time second = 1 frame (??)
-	DP_GameTimeMinutes	db
-	DP_GameTimeHours	db
-	DP_GSS_command		dsb 2					; SNESGSS
-	DP_GSS_param		dsb 2					; SNESGSS
-	DP_HDMA_Channels	db					; variable is copied to $420C (HDMAEN) during Vblank
-	DP_HiResPrintLen	db					; holds length of menu hi-res string to print
-	DP_HiResPrintMon	db					; keep track of BG we're printing on: $00 = BG1 (start), $01 = BG2
-	DP_HUD_DispCounter	dw					; holds frame count since HUD appeared
-	DP_HUD_Status		db					; adrrrrrp [a/d = HUD should (re-)appear/disappear, p = HUD is present on screen, r = reserved]
-	DP_HUD_StrLength	db					; holds no. of HUD text characters
-	DP_HUD_TextBoxSize	db					; holds no. of HUD text box (frame) sprites
-	DP_HUD_Ypos		db					; holds current Y position of HUD
-	DP_Joy1			dw					; Current button state of joypad1, bit0=0 if it is a valid joypad
-	DP_Joy2			dw					; same thing for all pads...
-	DP_Joy1Press		dw					; Holds joypad1 keys that are pressed and have been pressed since clearing this mem location
-	DP_Joy2Press		dw					; same thing for all pads...
-	DP_Joy1New		dw
-	DP_Joy2New		dw
-	DP_Joy1Old		dw
-	DP_Joy2Old		dw
-	DP_LoopCounter		dw					; counts loop iterations
-	DP_Mode7_Altitude	db					; altitude setting (currently 0-127)
-	DP_Mode7_BG2HScroll	db
-	DP_Mode7_CenterCoordX	dw
-	DP_Mode7_CenterCoordY	dw
-	DP_Mode7_RotAngle	dw					; currently needs to be 16-bit as it's used as an index in CalcMode7Matrix
-	DP_Mode7_ScrollOffsetX	dw
-	DP_Mode7_ScrollOffsetY	dw
-	DP_MSU1_NextTrack	dw
-	DP_Multi5_Reg0lo	db
-	DP_Multi5_Reg0hi	db
-	DP_Multi5_Reg1lo	db
-	DP_Multi5_Reg1hi	db
-	DP_Multi5_Status	db
-	DP_NextTrack		dw					; holds no. of music track to load
-	DP_NextEvent		dw					; holds no. of event to load
-	DP_PlayerIdleCounter	dw					; holds frame count since last button press
-	DP_RegisterBuffer	dw					; holds register to be written to next by event handler
-	DP_RingMenuAngle	db
-	DP_RingMenuAngleOffset	dw
-	DP_RingMenuRadius	db
-	DP_RingMenuStatus	db					; eirrrrrr 	[e = rotate ring menu left, i = rotate ring menu right, r = reserved]
-	DP_SNESlib_ptr		dsb 4					; SNESGSS
-;	DP_SNESlib_rand1	dsb 2					; SNESGSS
-;	DP_SNESlib_rand2	dsb 2					; SNESGSS
-;	DP_SNESlib_temp		dsb 2					; SNESGSS
-	DP_SPC_DataBank		dw
-	DP_SPC_DataOffset	dw
-	DP_SPC_DataSize		dw
-	DP_SPC_DataAddress	dw
-	DP_SPC_VolCurrent	dw
-	DP_SPC_VolFadeSpeed	dw
-	DP_SprDataObjNo		db					; holds no. of current object (0-127)
-	DP_SprDataHiOAMBits	db					; holds bits to manipulate in high OAM/ARRAY_SpriteBuf2
-	DP_SpriteTextMon	dw					; keeps track of sprite-based text buffer filling level
-	DP_SpriteTextPalette	db					; holds palette to use when printing sprite-based text
-	DP_SubMenuNext		db					; holds no. of sub menu selected
-	DP_Temp			dsb 8
-	DP_TextBoxBG		db					; bnnnnnnn [b = change text box background, n = no. of color table (0-127)
-	DP_TextBoxCharPortrait	db					; pnnnnnnn [p = change character portrait, n = no. of portrait (0-127)
-	DP_TextBoxSelection	db					; dcba4321 [1-4 = text box contains selection on line no. 1-4, a-d = selection made by player (1-4)
-	DP_TextBoxSelMax	db					; for HDMA selection bar
-	DP_TextBoxSelMin	db					; ditto
-	DP_TextBoxStatus	db					; awrrrkcb [a = text box active, b = VWF buffer full, c = clear text box, k = kill text box, r = reserved, w = wait for player input]
-	DP_TextBoxVIRQ		db					; scanline no. of text box start (for scrolling animation)
-	DP_TextCursor		dw
-	DP_TextPointerNo	dw
-	DP_TextStringPtr	dw					; 16-bit FWF/sprite string pointer (or zeroes) // see caveat @ DP_DiagStringPtr
-	DP_TextStringBank	db					; 8-bit bank no. of FWF/sprite string
-	DP_VWF_BitsUsed		dw
-	DP_VWF_BufferIndex	dw
-	DP_VWF_Loop		db
-	DP_WorldMapBG1VScroll	dw
-	DP_WorldMapBG1HScroll	dw
-.ENDE									; 187 of 256 bytes used
-
-
-
-; *********** $0100-$01FF: Reserved for another direct page ************
-
-
-
-; ****************************** .STRUCTs ******************************
-
-.STRUCT ST_RAM_Code
-	DoDMA			dsb 49
-	UpdatePPURegs		dsb 121
-.ENDST
-
-
-
-.STRUCT ST_SRAM
-	Slot1			dsb 16					; 16 bytes per slot reserved
-	Slot1Data		dsb 2032
-	Slot2			dsb 16
-	Slot2Data		dsb 2032
-	Slot3			dsb 16
-	Slot3Data		dsb 2032
-	Slot4			dsb 16
-	Slot4Data		dsb 2032
-.ENDST
-
-
-
-.STRUCT ST_BG1TileMap1
-	Beginning		dsb 704
-	TextBox			dsb 192					; 6 lines, 32 tiles each
-	Unused			dsb 128
-.ENDST
-
-
-
-.STRUCT ST_BG1TileMap1Hi
-	Beginning		dsb 704
-	TextBox			dsb 192
-	Unused			dsb 128
-.ENDST
-
-
-
-.STRUCT ST_BG2TileMap1
-	Beginning		dsb 704
-	TextBox			dsb 192
-	Unused			dsb 128
-.ENDST
-
-
-
-.STRUCT ST_BG2TileMap1Hi
-	Beginning		dsb 704
-	TextBox			dsb 192
-	Unused			dsb 128
-.ENDST
-
-
-
-.STRUCT ST_BG3TileMap
-	AllTiles		dsb 1024
-.ENDST
-
-
-
-.STRUCT ST_BG3TileMapHi
-	AllTiles		dsb 1024
-.ENDST
-
-
-
-.STRUCT ST_SpriteDataArea
-	Text			dsb 32 * 5				; 32 chars = one line of text
-	HUD_TextBox		dsb 36 * 5				; (180 / 2) / 5 = 18 characters in a full box
-	Hero1a			dsb 5
-	Hero1b			dsb 5
-	Hero1c			dsb 5
-	Hero1d			dsb 5
-	Hero1Weapon1		dsb 5
-	Hero1Weapon2		dsb 5
-	Hero1Weapon3		dsb 5
-	Hero1Weapon4		dsb 5
-	Hero2a			dsb 5
-	Hero2b			dsb 5
-	Hero2c			dsb 5
-	Hero2d			dsb 5
-	Hero2Weapon1		dsb 5
-	Hero2Weapon2		dsb 5
-	Hero2Weapon3		dsb 5
-	Hero2Weapon4		dsb 5
-	Hero3a			dsb 5
-	Hero3b			dsb 5
-	Hero3c			dsb 5
-	Hero3d			dsb 5
-	Hero3Weapon1		dsb 5
-	Hero3Weapon2		dsb 5
-	Hero3Weapon3		dsb 5
-	Hero3Weapon4		dsb 5
-	NPCs			dsb 36 * 5				; 36 / 2 = max. 18 (16×32) furries
-.ENDST
-
-
-
-;.STRUCT ST_SpriteDataBattle
-;.ENDST
-
-
-
-.STRUCT ST_SpriteDataMenu
-	Hero1a			dsb 5
-	Hero1b			dsb 5
-	Hero1c			dsb 5
-	Hero1d			dsb 5
-	Hero2a			dsb 5
-	Hero2b			dsb 5
-	Hero2c			dsb 5
-	Hero2d			dsb 5
-	Hero3a			dsb 5
-	Hero3b			dsb 5
-	Hero3c			dsb 5
-	Hero3d			dsb 5
-	MainCursor		dsb 5
-	RingCursor		dsb 5
-	RingItem0		dsb 5
-	RingItem1		dsb 5
-	RingItem2		dsb 5
-	RingItem3		dsb 5
-	RingItem4		dsb 5
-	RingItem5		dsb 5
-	RingItem6		dsb 5
-	RingItem7		dsb 5
-	Z_Reserved		dsb 106 * 5
-.ENDST
-
-
-
-;.STRUCT ST_SpriteDataMode7
-;.ENDST
-
-
-
-; ******************* Variables in lower 8K of WRAM ********************
-
-.ENUM $0200
-	ARRAY_HDMA_ColorMath		dsb 96
-	ARRAY_HDMA_M7A			dsb 448
-	ARRAY_HDMA_M7B			dsb 448
-	ARRAY_HDMA_M7C			dsb 448
-	ARRAY_HDMA_M7D			dsb 448
-	ARRAY_HDMA_FX_1Byte		dsb 224
-	ARRAY_HDMA_FX_2Bytes		dsb 448
-	ARRAY_HDMA_BG_Scroll		dsb 16
-	ARRAY_HDMA_WorMapVScroll	dsb 448
-	ARRAY_ObjectList		dsb 128				; keeps track of currently active sprites, 1 byte per sprite: hcirrrra [a = object is active, c = object can collide with other objects, h = object can collide with hero(es), i = object is hero sprite, r = reserved]
-	ARRAY_RandomNumbers		dsb 130				; for random numbers
-	ARRAY_ShadowOAM_Lo		dsb 512
-	ARRAY_ShadowOAM_Hi		dsb 32
-	ARRAY_Temp			dsb 32				; for misc. temp bytes
-	ARRAY_TempString		dsb 32				; for temp strings
-	ARRAY_VWF_TileBuffer		dsb 32
-	ARRAY_VWF_TileBuffer2		dsb 32
-
-	VAR_DiagStringAddress		dw				; backup for DP variable of the same name (while processing sub-strings etc.)
-	VAR_DiagStringBank		db				; ditto
-	VAR_DiagStringPos		dw				; ditto
-	VAR_DiagSubStrAddress		dw				; holds sub-string address
-	VAR_DiagSubStrBank		db				; holds sub-string bank
-	VAR_GameDataItemQty		db
-	VAR_Hero1TargetScrPosYX		dw				; high byte = Y position, low byte = X position (in px)
-	VAR_Shadow_NMITIMEN		db				; shadow copy of REG_NMITIMEN
-	VAR_TextBox_TSTM		dw				; shadow copies of subscreen (high) & mainscreen (low) designation registers ($212C/212D) for text box area
-	VAR_Time_Second			db				; RTC-based time/date variables
-	VAR_Time_Minute			db
-	VAR_Time_Hour			db
-	VAR_Time_Day			db
-	VAR_Time_Month			db
-	VAR_Time_Year			db
-	VAR_Time_Century		db
-	VAR_TimeoutCounter		dw
-.ENDE									; $F89 bytes + $200 = $1189 bytes used (initial stack pointer is set to $1FFF)
-
-
-
-; ********************** Variables in upper WRAM ***********************
-
-.ENUM $7E2000
-	ARRAY_BG1TileMap1		INSTANCEOF ST_BG1TileMap1	; each tile map is 1024 bytes in size (32×32 tiles)
-	ARRAY_BG1TileMap2		dsb 1024
-	ARRAY_BG1TileMap1Hi		INSTANCEOF ST_BG1TileMap1Hi
-	ARRAY_BG1TileMap2Hi		dsb 1024
-	ARRAY_BG2TileMap1		INSTANCEOF ST_BG2TileMap1
-	ARRAY_BG2TileMap2		dsb 1024
-	ARRAY_BG2TileMap1Hi		INSTANCEOF ST_BG2TileMap1Hi
-	ARRAY_BG2TileMap2Hi		dsb 1024
-	ARRAY_BG3TileMap		INSTANCEOF ST_BG3TileMap
-	ARRAY_BG3TileMapHi		INSTANCEOF ST_BG3TileMapHi
-	ARRAY_GameDataInventory		dsb 512				; two-byte array for 256 items. Low byte = item no., high byte = quantity
-	ARRAY_HDMA_BackgrPlayfield	dsb 704				; 16-bit palette index & 16-bit color entry for 176 scanlines
-	ARRAY_HDMA_BackgrTextBox	dsb 192				; ditto for 48 scanlines
-	ARRAY_ScratchSpace		dsb 16384
-	ARRAY_SpriteDataArea		INSTANCEOF ST_SpriteDataArea	; 128 * 5 = 640 bytes
-;	ARRAY_SpriteDataBattle		INSTANCEOF ST_SpriteDataBattle	; ditto
-	ARRAY_SpriteDataMenu		INSTANCEOF ST_SpriteDataMenu	; ditto
-;	ARRAY_SpriteDataXXX		INSTANCEOF ST_SpriteDataXXX	; ditto
-	RAM_Code			INSTANCEOF ST_RAM_Code		; for modifiable routines
-.ENDE
-
-.DEFINE VAR_DMAModeBBusReg		RAM_Code.DoDMA+14
-.DEFINE VAR_DMASourceOffset		RAM_Code.DoDMA+20
-.DEFINE VAR_DMASourceBank		RAM_Code.DoDMA+26
-.DEFINE VAR_DMATransferLength		RAM_Code.DoDMA+31
-
-.DEFINE VAR_ShadowINIDISP		RAM_Code.UpdatePPURegs+11
-.DEFINE VAR_ShadowOBSEL			RAM_Code.UpdatePPURegs+15
-.DEFINE VAR_ShadowBGMODE		RAM_Code.UpdatePPURegs+19
-.DEFINE VAR_ShadowMOSAIC		RAM_Code.UpdatePPURegs+23
-.DEFINE VAR_ShadowBG1SC			RAM_Code.UpdatePPURegs+27
-.DEFINE VAR_ShadowBG2SC			RAM_Code.UpdatePPURegs+31
-.DEFINE VAR_ShadowBG3SC			RAM_Code.UpdatePPURegs+35
-.DEFINE VAR_ShadowBG4SC			RAM_Code.UpdatePPURegs+39
-.DEFINE VAR_ShadowBG12NBA		RAM_Code.UpdatePPURegs+43
-.DEFINE VAR_ShadowBG34NBA		RAM_Code.UpdatePPURegs+47
-.DEFINE VAR_ShadowW12SEL		RAM_Code.UpdatePPURegs+51
-.DEFINE VAR_ShadowW34SEL		RAM_Code.UpdatePPURegs+55
-.DEFINE VAR_ShadowWOBJSEL		RAM_Code.UpdatePPURegs+59
-.DEFINE VAR_ShadowWH0			RAM_Code.UpdatePPURegs+63
-.DEFINE VAR_ShadowWH1			RAM_Code.UpdatePPURegs+67
-.DEFINE VAR_ShadowWH2			RAM_Code.UpdatePPURegs+71
-.DEFINE VAR_ShadowWH3			RAM_Code.UpdatePPURegs+75
-.DEFINE VAR_ShadowWBGLOG		RAM_Code.UpdatePPURegs+79
-.DEFINE VAR_ShadowWOBJLOG		RAM_Code.UpdatePPURegs+83
-.DEFINE VAR_ShadowTM			RAM_Code.UpdatePPURegs+87
-.DEFINE VAR_ShadowTS			RAM_Code.UpdatePPURegs+91
-.DEFINE VAR_ShadowTMW			RAM_Code.UpdatePPURegs+95
-.DEFINE VAR_ShadowTSW			RAM_Code.UpdatePPURegs+99
-.DEFINE VAR_ShadowCGWSEL		RAM_Code.UpdatePPURegs+103
-.DEFINE VAR_ShadowCGADSUB		RAM_Code.UpdatePPURegs+107
-.DEFINE VAR_ShadowCOLDATA		RAM_Code.UpdatePPURegs+111
-.DEFINE VAR_ShadowSETINI		RAM_Code.UpdatePPURegs+115
-
-
-
-; *************************** SRAM variables ***************************
-
-.ENUM $6000
-	SRAM				INSTANCEOF ST_SRAM
-.ENDE									; max. 8192 bytes
+	.DEFINE kTextBG3		$0000				; used as index into PTR_FillTextBuffer, order (ascending value) has to match
+	.DEFINE kTextMode5		$0002				; ditto
+
+	.DEFINE kCollMarginLeft		3				; collision margin at left/right/top sprite edges
+	.DEFINE kCollMarginRight	3
+	.DEFINE kCollMarginTop		1				; the top margin value differs from the other two in that it acts as a protection against getting trapped when moving along upper edges horizontally
+
+	.DEFINE kDebugMenu1stLine	78				; Y position of cursor sprite on first debug menu line
+
+	.DEFINE kGSS_DriverOffset	$0200				; address/offset of SNESGSS driver code in sound RAM
+	.DEFINE kGSS_DriverSize		2340				; size (in bytes) of SNESGSS driver code (used in .INCBINs of music data exported by either the original tracker software or a custom exporter)
+
+	.DEFINE kHUD_Xpos		24				; X position (in px) of HUD text box start
+	.DEFINE kHUD_Yhidden		240				; Y position of hidden HUD text box
+	.DEFINE kHUD_Yvisible		20				; Y position of visible HUD text box
+
+	.DEFINE kMode7SkyLines		72				; number of scanlines for sky above Mode 7 landscape
+
+	.DEFINE kRingMenuCenterX	128
+	.DEFINE kRingMenuCenterY	112
+	.DEFINE kRingMenuRadiusMin	0
+	.DEFINE kRingMenuRadiusMax	60
+
+	.DEFINE kTextBox		$02C0				; tilemap entry for start of whole text box area
+	.DEFINE kTextBoxAnimSpd		3				; scrolling speed for text box animation (must be a divisor of 48) // self-reminder: number must match the number of initial black scanlines in SRC_HDMA_TextBoxGradient*, or else TextBoxAnimationClose will leave behind non-black scanlines
+	.DEFINE kTextBoxColMath1st	57				; start of first line in a text box selection
+;	.DEFINE kTextBoxInside		$02E0				; tilemap entry for inside of text box
+	.DEFINE kTextBoxLine1		$02E7				; tilemap entry for start of line 1 in text box
+	.DEFINE kTextBoxLine2		$0307				; tilemap entry for start of line 2 in text box
+	.DEFINE kTextBoxLine3		$0327				; tilemap entry for start of line 3 in text box
+	.DEFINE kTextBoxLine4		$0347				; tilemap entry for start of line 4 in text box
+	.DEFINE kTextBoxUL		$02C6				; tilemap entry for upper left corner of text box
+	.DEFINE kTextBoxWidth		24				; in "full" (i.e., 16×8) hi-res tiles
+
+	.DEFINE kWaitSPC700		3000				; max. no. of wait loops when communicating with the SPC700 until an error is triggered (the exact value doesn't really matter, but it sholud be reasonably high enough)
+
+; Language constants
+	.ENUMID 0
+	.ENUMID kLang_Eng						; the order of the languages must match the order of dialogue banks!
+;	.ENUMID kLang_Eng2
+;	.ENUMID kLang_Eng3
+	.ENUMID kLang_Ger
+;	.ENUMID kLang_Ger2
+;	.ENUMID kLang_Ger3
+;	.ENUMID kLang_XXX
+;	.ENUMID kLang_XXX
+;	.ENUMID kLang_XXX
+
+; Effect types
+	.ENUMID 0 STEP 2						; order has to match PTR_EffectTypes table
+	.ENUMID kEffectTypeFadeFromBlack
+	.ENUMID kEffectTypeFadeToBlack
+	.ENUMID kEffectTypeHSplitIn
+	.ENUMID kEffectTypeHSplitOut
+	.ENUMID kEffectTypeHSplitOut2
+	.ENUMID kEffectTypeShutterIn
+	.ENUMID kEffectTypeShutterOut
+	.ENUMID kEffectTypeDiamondIn
+	.ENUMID kEffectTypeDiamondOut
+
+; Effect speed values (signed numbers)
+	.ENUMID 1							; positive values
+	.ENUMID kEffectSpeed1
+	.ENUMID kEffectSpeed2
+	.ENUMID kEffectSpeed3
+	.ENUMID kEffectSpeed4
+	.ENUMID kEffectSpeed5
+	.ENUMID kEffectSpeed6
+	.ENUMID kEffectSpeed7
+	.ENUMID kEffectSpeed8
+	.ENUMID kEffectSpeed9
+	.ENUMID kEffectSpeed10
+	.ENUMID kEffectSpeed11
+	.ENUMID kEffectSpeed12
+
+; Effect delay values (signed numbers)
+	.ENUMID $FF STEP -1						; negative values (self-reminder: a negative STEP produces a decrementing .ENUMID)
+	.ENUMID kEffectDelay1
+	.ENUMID kEffectDelay2
+	.ENUMID kEffectDelay3
+	.ENUMID kEffectDelay4
+	.ENUMID kEffectDelay5
+	.ENUMID kEffectDelay6
+	.ENUMID kEffectDelay7
+	.ENUMID kEffectDelay8
+	.ENUMID kEffectDelay9
+	.ENUMID kEffectDelay10
+	.ENUMID kEffectDelay11
+	.ENUMID kEffectDelay12
+
+; SNESGSS commands
+	.ENUMID 0
+	.ENUMID kGSS_NONE						; no command, means the APU is ready for a new command
+	.ENUMID kGSS_INITIALIZE						; initialize DSP
+	.ENUMID kGSS_LOAD						; load new music data
+	.ENUMID kGSS_STEREO						; change stereo sound mode (mono by default in original SNESGSS sound driver)
+	.ENUMID kGSS_GLOBAL_VOLUME					; set global volume
+	.ENUMID kGSS_CHANNEL_VOLUME					; set channel volume
+	.ENUMID kGSS_MUSIC_PLAY						; start music
+	.ENUMID kGSS_MUSIC_STOP						; stop music
+	.ENUMID kGSS_MUSIC_PAUSE					; pause music
+	.ENUMID kGSS_SFX_PLAY						; play sound effect
+	.ENUMID kGSS_STOP_ALL_SOUNDS					; stop all sounds
+	.ENUMID kGSS_STREAM_START					; start sound streaming
+	.ENUMID kGSS_STREAM_STOP					; stop sound streaming
+	.ENUMID kGSS_STREAM_SEND					; send a block of data if needed
+	.ENUMID kGSS_FASTLOAD						; WIP
+
+
+; *********************** Misc. memory addresses ***********************
+
+	.DEFINE CGRAM_Portrait		$10
+	.DEFINE CGRAM_Area		$20
+	.DEFINE CGRAM_WorldMap		$20
+
+	.DEFINE VRAM_BG1_Tiles		$0000
+	.DEFINE VRAM_BG2_Tiles		$0000
+	.DEFINE VRAM_TextBox		$0000				; text box (BG2)
+	.DEFINE VRAM_TextBoxL1		$0100				; start of line 1 in text box (BG2)
+	.DEFINE VRAM_Portrait		$06C0				; end of text box, start of portrait (BG1, 2 KiB)
+	.DEFINE VRAM_AreaBG1		$0AC0				; area tiles for BG1
+	.DEFINE VRAM_AreaBG2		$3800				; area tiles for BG2 (might need to start at an earlier address)
+
+	.DEFINE VRAM_BG3_Tiles		$4000
+	.DEFINE VRAM_BG3_Tilemap1	$4800
+	.DEFINE VRAM_BG3_Tilemap2	$4C00
+
+	.DEFINE VRAM_BG1_Tilemap1	$5000
+	.DEFINE VRAM_BG1_Tilemap2	$5400
+	.DEFINE VRAM_BG2_Tilemap1	$5800
+	.DEFINE VRAM_BG2_Tilemap2	$5C00
+
+	.DEFINE VRAM_Sprites		$6000				; sprite tiles can go up to $7B5F, and also from $7C00-$7F5F
+
+	.DEFINE VRAM_BG1_Tilemap3	$7800				; only $7B60-$7BFF used for text box
+	.DEFINE VRAM_BG2_Tilemap3	$7C00				; only $7F60-$7FFF used for text box
+
+
+
+; ************************** WRAM memory map ***************************
+
+; $0000-$01FF: Reserved for stack, Vblank/IRQ jump instructions
+; $0200-$09FF: 8 Direct Pages, only the first one is used as of now
+; $0A00-$1FFF: various variables
+
+; $7E2000-...: various variables
+; $7F0000-...: unused as of now
+
+
+
+; WRAM .STRUCTs (in ascending order)
+
+; Self-reminder: Use (at least) 16-bit operand hints for anything within RAM_0000_00FF and RAM_RAM_0100_01FF as these look to WLA DX like Direct Page address space!
+
+	.STRUCT struct_RAM_0000_00FF SIZE 256
+		JmpVblank			dsb 4			; NMI vector points here. Holds a 4-byte instruction like jml $C01234
+		JmpIRQ				dsb 4			; IRQ vector points here. Holds a 4-byte instruction like jml $C56789
+	.ENDST
+
+	.STRUCT struct_RAM_0100_01FF SIZE 256
+		Reserved			dsb 255
+		InitStackPtr			db			; initial stack pointer = $01FF
+	.ENDST
+
+	.STRUCT struct_RAM_0200_02FF SIZE 256
+		AreaCurrent			dw			; holds no. of current area
+		AreaMetaMapAddr			dsb 3			; holds 24-bit address of collision map
+		AreaMetaMapIndex		dw
+		AreaMetaMapIndex2		dw
+		AreaNamePointerNo		dw
+		AreaProperties			dw			; rrrrrrrrrrbayxss [s = screen size, as in BGXSC regs, x/y = area is scrollable horizontally/vertically, a/b = auto-scroll area horizontally/vertically, r = reserved]
+		AutoJoy1			dw
+		AutoJoy2			dw
+;		BRR_stream_src			dsb 4			; SNESGSS
+;		BRR_stream_list			dsb 4			; SNESGSS
+		Chapter				db			; holds no. of current game chapter
+		Hero1FrameCounter		db
+		Hero1MapPosX			dw			; in px
+		Hero1MapPosY			dw			; in px
+		Hero1ScreenPosYX		dw			; high byte = Y position, low byte = X position (in px)
+		Hero1SpriteStatus		db			; irrrrddd [i = not walking (idle), ddd = facing direction (0 = down, 1 = up, 2 = left, 3 = right)]
+		Hero1WalkingSpd			dw
+;		CurrentScanline			dw			; holds no. of current scanline (for CPU load meter)
+		DataAddress			dsb 2			; holds a 24-bit data address e.g. for string pointers, data transfers to SRAM, etc.
+		DataBank			db
+		DiagASCIIChar			dw			; holds current dialogue ASCII character no.
+		DiagStringAddress		dw			; 16-bit address of dialogue string // caveat: dialogue string addresses need to be separate from other (FWF/sprite) string addresses as the engine can process both types of strings at the same time (e.g. text box + HUD)
+		DiagStringBank			db			; 8-bit bank no. of dialogue string
+		DiagStringPos			dw			; holds current dialogue string position (= index to current character)
+		DiagTextEffect			db			; bsrrrrrr [b = toggle bold font, s = sub-string active, r = reserved]
+		DiagTileDataCounter		dw			; holds current VRAM tile data address
+		DMA_Updates			dw			; rrrcbbaarrr32211 [123 = BG no. that needs to have its tilemap(s) updated on next Vblank (low bytes), abc = same thing for high bytes, r = reserved. The lower bit of each BG represents the first half of a 64×32/32×64 tilemap, the higher one represents the second half.]
+		EffectSpeed			dw
+		ErrorCode			db
+		ErrorSignature			db
+		EmptySpriteNo			db			; holds no. of empty sprite in current spritesheet (usually 0), this is acknowledged in the sprite initialization routine
+		EventCodeAddress		dsb 2
+		EventCodeBank			db
+		EventCodeJump			dw			; holds event script code pointer to jump to
+		EventCodePointer		dw			; holds current event script code pointer
+		EventControl			db			; rrrrrrrm [m = monitor joypad 1, r = reserved]
+		EventMonitorJoy1		dw			; joypad bits to be monitored by event handler
+		EventWaitFrames			dw
+		GameConfig			db			; rrrrvucm [c = RTC present, m = MSU1 present, u = Ultra16 present, v = 128K VRAM installed, r = reserved]
+		GameLanguage			db			; holds global game language constant (used to determine both text and gfx banks/addresses according to language chosen by player)
+		GameMode			db			; arrrrrrr [a = auto-mode, r = reserved]
+		GameTimeSeconds			db			; 1 game time second = 1 frame (??)
+		GameTimeMinutes			db
+		GameTimeHours			db
+		GSS_command			dsb 2			; SNESGSS
+		GSS_GlobalVol			db			; GlobalVol (lo) and FadeSpeed (hi) are addressed as a word!
+		GSS_FadeSpeed			db
+		GSS_param			dsb 2			; SNESGSS
+		HDMA_Channels			db			; variable is copied to $420C (HDMAEN) during Vblank
+		HiResPrintLen			db			; holds length of menu hi-res string to print
+		HiResPrintMon			db			; keep track of BG we're printing on: $00 = BG1 (start), $01 = BG2
+		HUD_DispCounter			dw			; holds frame count since HUD appeared
+		HUD_Status			db			; adrrrrrp [a/d = HUD should (re-)appear/disappear, p = HUD is present on screen, r = reserved]
+		HUD_StrLength			db			; holds no. of HUD text characters
+		HUD_TextBoxSize			db			; holds no. of HUD text box (frame) sprites
+		HUD_Ypos			db			; holds current Y position of HUD
+		Joy1				dw			; Current button state of joypad1, bit0=0 if it is a valid joypad
+		Joy2				dw			; same thing for all pads...
+		Joy1Press			dw			; Holds joypad1 keys that are pressed and have been pressed since clearing this mem location
+		Joy2Press			dw			; same thing for all pads...
+		Joy1New				dw
+		Joy2New				dw
+		Joy1Old				dw
+		Joy2Old				dw
+		LoopCounter			dw			; counts loop iterations
+		Mode7_Altitude			db			; altitude setting (currently 0-127)
+		Mode7_BG2HScroll		db
+		Mode7_CenterCoordX		dw
+		Mode7_CenterCoordY		dw
+		Mode7_RotAngle			dw			; currently needs to be 16-bit as it's used as an index in CalcMode7Matrix
+		Mode7_ScrollOffsetX		dw
+		Mode7_ScrollOffsetY		dw
+		MSU1_NextTrack			dw			; holds no. of MSU1 track to load
+		Multi5_Reg0lo			db
+		Multi5_Reg0hi			db
+		Multi5_Reg1lo			db
+		Multi5_Reg1hi			db
+		Multi5_Status			db
+		NextTrack			dw			; holds no. of SNESGSS song track to load
+		NextEvent			dw			; holds no. of event to load
+		PlayerIdleCounter		dw			; holds frame count since last button press
+		RegisterBuffer			dw			; holds register to be written to next by event handler
+		RingMenuAngle			db
+		RingMenuAngleOffset		dw
+		RingMenuRadius			db
+		RingMenuStatus			db			; eirrrrrr [e = rotate ring menu left, i = rotate ring menu right, r = reserved]
+		SNESlib_ptr			dsb 4			; SNESGSS (24-bit source data address, highest 8 bits always 0!?)
+;		SNESlib_rand1			dsb 2			; SNESGSS
+;		SNESlib_rand2			dsb 2			; SNESGSS
+;		SNESlib_temp			dsb 2			; SNESGSS
+;		SPC_DataBank			dw			; bank byte of source data to be uploaded to SPC700 (FIXME, high byte is always 0 --> waste of precious DP space)
+;		SPC_DataOffset			dw			; 16-bit address of source data to be uploaded to SPC700
+		SPC_DataDestAddr		dw			; 16-bit destination address in sound RAM for data to be uploaded to SPC700
+		SPC_DataSize			dw			; 16-bit size of source data to be uploaded to SPC700
+		SprDataObjNo			db			; holds no. of current object (0-127)
+		SprDataHiOAMBits		db			; holds bits to manipulate in high OAM/ShadowOAM_Hi
+		SpriteTextMon			dw			; keeps track of sprite-based text buffer filling level
+		SpriteTextPalette		db			; holds palette to use when printing sprite-based text
+		SubMenuNext			db			; holds no. of sub menu selected
+		Temp				dsb 8
+		TextBoxBG			db			; bnnnnnnn [b = change text box background, n = no. of color table (0-127)
+		TextBoxCharPortrait		db			; pnnnnnnn [p = change character portrait, n = no. of portrait (0-127)
+		TextBoxSelection		db			; dcba4321 [1-4 = text box contains selection on line no. 1-4, a-d = selection made by player (1-4)
+		TextBoxSelMax			db			; for HDMA selection bar
+		TextBoxSelMin			db			; ditto
+		TextBoxStatus			db			; awrrrkcb [a = text box active, b = VWF buffer full, c = clear text box, k = kill text box, r = reserved, w = wait for player input]
+		TextBoxVIRQ			db			; scanline no. of text box start (for scrolling animation)
+		TextCursor			dw
+		TextPointerNo			dw
+		TextStringPtr			dw			; 16-bit FWF/sprite string pointer (or zeroes) // see caveat @ DiagStringAddress
+		TextStringBank			db			; 8-bit bank no. of FWF/sprite string
+		VWF_BitsUsed			dw
+		VWF_BufferIndex			dw
+		VWF_Loop			db
+		WorldMapBG1VScroll		dw
+		WorldMapBG1HScroll		dw
+	.ENDST
+
+	.STRUCT struct_RAM_0300_03FF SIZE 256
+		dummy_byte			db
+	.ENDST
+
+	.STRUCT struct_RAM_0400_04FF SIZE 256
+		dummy_byte			db
+	.ENDST
+
+	.STRUCT struct_RAM_0500_05FF SIZE 256
+		dummy_byte			db
+	.ENDST
+
+	.STRUCT struct_RAM_0600_06FF SIZE 256
+		dummy_byte			db
+	.ENDST
+
+	.STRUCT struct_RAM_0700_07FF SIZE 256
+		dummy_byte			db
+	.ENDST
+
+	.STRUCT struct_RAM_0800_08FF SIZE 256
+		dummy_byte			db
+	.ENDST
+
+	.STRUCT struct_RAM_0900_09FF SIZE 256
+		dummy_byte			db
+	.ENDST
+
+	.STRUCT struct_RAM_0A00_1FFF SIZE $1600				; the SIZE here might get relevant later on (e.g., should we decide to convert the WRAM .ENUMs into .RAMSECTIONs)
+		HDMA_ColorMath			dsb 96
+		HDMA_M7A			dsb 448
+		HDMA_M7B			dsb 448
+		HDMA_M7C			dsb 448
+		HDMA_M7D			dsb 448
+		HDMA_FX_1Byte			dsb 224
+		HDMA_FX_2Bytes			dsb 448
+		HDMA_BG_Scroll			dsb 16
+		HDMA_WorMapVScroll		dsb 448
+		ObjectList			dsb 128			; keeps track of currently active sprites, 1 byte per sprite: hcirrrra [a = object is active, c = object can collide with other objects, h = object can collide with hero(es), i = object is hero sprite, r = reserved]
+		RandomNumbers			dsb 130			; for random numbers
+		ShadowOAM_Lo			dsb 512
+		ShadowOAM_Hi			dsb 32
+		Temp				dsb 32			; for misc. temp bytes
+		TempString			dsb 32			; for temp strings
+		VWF_TileBuffer			dsb 32
+		VWF_TileBuffer2			dsb 32
+
+		DiagStringAddress		dw			; backup for DP variable of the same name (while processing sub-strings etc.)
+		DiagStringBank			db			; ditto
+		DiagStringPos			dw			; ditto
+		DiagSubStrAddress		dw			; holds sub-string address
+		DiagSubStrBank			db			; holds sub-string bank
+		GameDataItemQty			db
+		Hero1TargetScrPosYX		dw			; high byte = Y position, low byte = X position (in px)
+		Routine_FillTextBuffer		dw			; holds address of routine to be used for printing strings to the screen
+		NMITIMEN			db			; mirror of NMITIMEN
+		TextBox_TSTM			dw			; mirrors of subscreen (high) & mainscreen (low) designation registers ($212C/212D) for text box area
+		Time_Second			db			; RTC-based time/date variables
+		Time_Minute			db
+		Time_Hour			db
+		Time_Day			db
+		Time_Month			db
+		Time_Year			db
+		Time_Century			db
+		TimeoutCounter			dw
+	.ENDST
+
+	.STRUCT struct_BG12Tilemap
+		Beginning			dsb 704
+		TextBox				dsb 192			; 6 lines, 32 tiles each
+		Reserved			dsb 128
+	.ENDST
+
+	.STRUCT struct_BG3Tilemap
+		AllTiles			dsb 1024
+	.ENDST
+
+	.STRUCT struct_BG3TilemapHi
+		AllTiles			dsb 1024
+	.ENDST
+
+	.STRUCT struct_RAM_Routines
+		BurstTransferSPC700		dsb 71
+		DMA				dsb 49
+		UpdatePPURegs			dsb 121
+	.ENDST
+
+	.STRUCT struct_SpriteDataArea
+		Text				dsb 32 * 5		; 32 chars = one line of text
+		HUD_TextBox			dsb 36 * 5		; (180 / 2) / 5 = 18 characters in a full box
+		Hero1a				dsb 5
+		Hero1b				dsb 5
+		Hero1c				dsb 5
+		Hero1d				dsb 5
+		Hero1Weapon1			dsb 5
+		Hero1Weapon2			dsb 5
+		Hero1Weapon3			dsb 5
+		Hero1Weapon4			dsb 5
+		Hero2a				dsb 5
+		Hero2b				dsb 5
+		Hero2c				dsb 5
+		Hero2d				dsb 5
+		Hero2Weapon1			dsb 5
+		Hero2Weapon2			dsb 5
+		Hero2Weapon3			dsb 5
+		Hero2Weapon4			dsb 5
+		Hero3a				dsb 5
+		Hero3b				dsb 5
+		Hero3c				dsb 5
+		Hero3d				dsb 5
+		Hero3Weapon1			dsb 5
+		Hero3Weapon2			dsb 5
+		Hero3Weapon3			dsb 5
+		Hero3Weapon4			dsb 5
+		NPCs				dsb 36 * 5		; 36 / 2 = max. 18 (16×32) furries
+	.ENDST
+
+;	.STRUCT struct_SpriteDataBattle
+;	.ENDST
+
+	.STRUCT struct_SpriteDataMenu
+		Hero1a				dsb 5
+		Hero1b				dsb 5
+		Hero1c				dsb 5
+		Hero1d				dsb 5
+		Hero2a				dsb 5
+		Hero2b				dsb 5
+		Hero2c				dsb 5
+		Hero2d				dsb 5
+		Hero3a				dsb 5
+		Hero3b				dsb 5
+		Hero3c				dsb 5
+		Hero3d				dsb 5
+		MainCursor			dsb 5
+		RingCursor			dsb 5
+		RingItem0			dsb 5
+		RingItem1			dsb 5
+		RingItem2			dsb 5
+		RingItem3			dsb 5
+		RingItem4			dsb 5
+		RingItem5			dsb 5
+		RingItem6			dsb 5
+		RingItem7			dsb 5
+		Z_Reserved			dsb 106 * 5
+	.ENDST
+
+;	.STRUCT struct_SpriteDataX
+;	.ENDST
+
+	.STRUCT struct_RAM_7E2000 SIZE $E000
+		BG1Tilemap1			INSTANCEOF struct_BG12Tilemap		; each tilemap is 1024 bytes in size (32×32 tiles)
+		BG1Tilemap2			dsb 1024
+		BG1Tilemap1Hi			INSTANCEOF struct_BG12Tilemap
+		BG1Tilemap2Hi			dsb 1024
+		BG2Tilemap1			INSTANCEOF struct_BG12Tilemap
+		BG2Tilemap2			dsb 1024
+		BG2Tilemap1Hi			INSTANCEOF struct_BG12Tilemap
+		BG2Tilemap2Hi			dsb 1024
+		BG3Tilemap			INSTANCEOF struct_BG3Tilemap
+		BG3TilemapHi			INSTANCEOF struct_BG3TilemapHi
+		GameDataInventory		dsb 512					; two-byte array for 256 items. Low byte = item no., high byte = quantity
+		HDMA_BackgrPlayfield		dsb 704					; 16-bit palette index & 16-bit color entry for 176 scanlines
+		HDMA_BackgrTextBox		dsb 192					; ditto for 48 scanlines
+		ScratchSpace			dsb 16384
+		SpriteDataArea			INSTANCEOF struct_SpriteDataArea	; 128*5 = 640 bytes
+;		SpriteDataBattle		INSTANCEOF struct_SpriteDataBattle	; ditto
+		SpriteDataMenu			INSTANCEOF struct_SpriteDataMenu	; ditto
+;		SpriteDataX			INSTANCEOF struct_SpriteDataX		; ditto
+		Routines			INSTANCEOF struct_RAM_Routines		; for modifiable routines
+	.ENDST
+
+	.STRUCT struct_RAM_7F SIZE $10000
+		dummy_byte			db
+	.ENDST
+
+	.STRUCT struct_RAM_AllUpper
+						INSTANCEOF struct_RAM_7E2000
+						INSTANCEOF struct_RAM_7F
+	.ENDST
+
+
+
+; Variables referencing the above .STRUCTs
+
+; WRAM area $7E0000-$7E1FFF is addressed with a bank byte of $00 most of the time, so the following
+; .ENUM omits that
+
+	.ENUM 0
+		P00				INSTANCEOF struct_RAM_0000_00FF
+		P01				INSTANCEOF struct_RAM_0100_01FF
+
+; We don't use .UNIONs for the DPs because we do need the respective high byte sometimes (not only for
+; tricks like "SetDP DPx", but also for conveniently setting data source addresses within the DP).
+; This means we need to address *all* DPx variables with an 8-bit operand hint, like "lda <DP2.Temp".
+
+		DP2				INSTANCEOF struct_RAM_0200_02FF
+		DP3				INSTANCEOF struct_RAM_0300_03FF
+		DP4				INSTANCEOF struct_RAM_0400_04FF
+		DP5				INSTANCEOF struct_RAM_0500_05FF
+		DP6				INSTANCEOF struct_RAM_0600_06FF
+		DP7				INSTANCEOF struct_RAM_0700_07FF
+		DP8				INSTANCEOF struct_RAM_0800_08FF
+		DP9				INSTANCEOF struct_RAM_0900_09FF
+		LO8				INSTANCEOF struct_RAM_0A00_1FFF
+	.ENDE
+
+; WRAM area $7E2000-$7FFFFF is generally addressed with the corresponding bank byte, so the following
+; .ENUM includes that
+
+	.ENUM $7E2000
+		RAM				INSTANCEOF struct_RAM_AllUpper
+	.ENDE
+
+; The following .DEFINEs help keep struct_RAM_Routines more clean, and allow for shorter variable names
+
+	.DEFINE RAM_BurstXfer_SrcBank		RAM.Routines.BurstTransferSPC700+1
+	.DEFINE RAM_BurstXfer_Src00		RAM.Routines.BurstTransferSPC700+28
+	.DEFINE RAM_BurstXfer_Src40		RAM.Routines.BurstTransferSPC700+33
+	.DEFINE RAM_BurstXfer_Src80		RAM.Routines.BurstTransferSPC700+38
+	.DEFINE RAM_BurstXfer_SrcC0		RAM.Routines.BurstTransferSPC700+43
+	.DEFINE RAM_BurstXfer_CPX		RAM.Routines.BurstTransferSPC700+66
+
+	.DEFINE RAM_DMA_ModeBBusReg		RAM.Routines.DMA+14
+	.DEFINE RAM_DMA_SourceOffset		RAM.Routines.DMA+20
+	.DEFINE RAM_DMA_SourceBank		RAM.Routines.DMA+26
+	.DEFINE RAM_DMA_TransferLength		RAM.Routines.DMA+31
+
+	.DEFINE RAM_INIDISP			RAM.Routines.UpdatePPURegs+11
+	.DEFINE RAM_OBSEL			RAM.Routines.UpdatePPURegs+15
+	.DEFINE RAM_BGMODE			RAM.Routines.UpdatePPURegs+19
+	.DEFINE RAM_MOSAIC			RAM.Routines.UpdatePPURegs+23
+	.DEFINE RAM_BG1SC			RAM.Routines.UpdatePPURegs+27
+	.DEFINE RAM_BG2SC			RAM.Routines.UpdatePPURegs+31
+	.DEFINE RAM_BG3SC			RAM.Routines.UpdatePPURegs+35
+	.DEFINE RAM_BG4SC			RAM.Routines.UpdatePPURegs+39
+	.DEFINE RAM_BG12NBA			RAM.Routines.UpdatePPURegs+43
+	.DEFINE RAM_BG34NBA			RAM.Routines.UpdatePPURegs+47
+	.DEFINE RAM_W12SEL			RAM.Routines.UpdatePPURegs+51
+	.DEFINE RAM_W34SEL			RAM.Routines.UpdatePPURegs+55
+	.DEFINE RAM_WOBJSEL			RAM.Routines.UpdatePPURegs+59
+	.DEFINE RAM_WH0				RAM.Routines.UpdatePPURegs+63
+	.DEFINE RAM_WH1				RAM.Routines.UpdatePPURegs+67
+	.DEFINE RAM_WH2				RAM.Routines.UpdatePPURegs+71
+	.DEFINE RAM_WH3				RAM.Routines.UpdatePPURegs+75
+	.DEFINE RAM_WBGLOG			RAM.Routines.UpdatePPURegs+79
+	.DEFINE RAM_WOBJLOG			RAM.Routines.UpdatePPURegs+83
+	.DEFINE RAM_TM				RAM.Routines.UpdatePPURegs+87
+	.DEFINE RAM_TS				RAM.Routines.UpdatePPURegs+91
+	.DEFINE RAM_TMW				RAM.Routines.UpdatePPURegs+95
+	.DEFINE RAM_TSW				RAM.Routines.UpdatePPURegs+99
+	.DEFINE RAM_CGWSEL			RAM.Routines.UpdatePPURegs+103
+	.DEFINE RAM_CGADSUB			RAM.Routines.UpdatePPURegs+107
+	.DEFINE RAM_COLDATA			RAM.Routines.UpdatePPURegs+111
+	.DEFINE RAM_SETINI			RAM.Routines.UpdatePPURegs+115
+
+
+
+; ************************** SRAM memory map ***************************
+
+; SRAM .STRUCTs
+
+	.STRUCT struct_SRAM_Header SIZE 64				; 64 bytes total
+		GoodROM				db			; $01 = ROM integrity test passed
+		ChecksumCmpl			dw			; SRAM checksum complement
+		Checksum			dw			; SRAM checksum
+	.ENDST
+
+	.STRUCT struct_SRAM_Slot SIZE 2032				; fill with game vars/event flags/etc. as needed
+		Hero1HPCur			.dw
+		Hero1HPCurLo			db
+		Hero1HPCurHi			db
+		Hero1HPMax			.dw
+		Hero1HPMaxLo			db
+		Hero1HPMaxHi			db
+
+		Hero2HPCur			.dw
+		Hero2HPCurLo			db
+		Hero2HPCurHi			db
+		Hero2HPMax			.dw
+		Hero2HPMaxLo			db
+		Hero2HPMaxHi			db
+
+		Hero3HPCur			.dw
+		Hero3HPCurLo			db
+		Hero3HPCurHi			db
+		Hero3HPMax			.dw
+		Hero3HPMaxLo			db
+		Hero3HPMaxHi			db
+
+		Hero4HPCur			.dw
+		Hero4HPCurLo			db
+		Hero4HPCurHi			db
+		Hero4HPMax			.dw
+		Hero4HPMaxLo			db
+		Hero4HPMaxHi			db
+	.ENDST
+
+	.STRUCT struct_SRAM						; 64 + 2032 * 4 = 8192 bytes
+						INSTANCEOF struct_SRAM_Header
+		Slot1				INSTANCEOF struct_SRAM_Slot
+		Slot2				INSTANCEOF struct_SRAM_Slot
+		Slot3				INSTANCEOF struct_SRAM_Slot
+		Slot4				INSTANCEOF struct_SRAM_Slot
+	.ENDST
+
+
+
+; Variables referencing the above .STRUCTs
+
+	.ENUM $B06000
+		SRAM				INSTANCEOF struct_SRAM
+	.ENDE
 
 
 

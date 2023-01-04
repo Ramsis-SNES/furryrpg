@@ -1,7 +1,7 @@
 ;==========================================================================================
 ;
 ;   "FURRY RPG" (WORKING TITLE)
-;   (c) 201X by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
+;   (c) 2023 by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
 ;
 ;	*** TEXT: MAIN MENU (ENGLISH) ***
 ;

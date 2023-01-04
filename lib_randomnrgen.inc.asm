@@ -1,7 +1,7 @@
 ;==========================================================================================
 ;
 ;   "FURRY RPG" (WORKING TITLE)
-;   (c) 201X by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
+;   (c) 2023 by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
 ;
 ;	*** RANDOM NUMBER GENERATOR ***
 ;
@@ -30,9 +30,9 @@ __AGAIN:								; begin
 	;adc	$213e							; read $213f to swtich H/V scroll to low byte (unnecessary)
 	adc	$2136							; read $2137 to latch H/V scroll register ($4201 msb must be set, usually is)
 	adc	$213c							; use H/V scroll value (sometimes fails to latch but still random)
-	ror	ARRAY_RandomNumbers+1, x ;$1101,x			; rotate array location
-	adc	ARRAY_RandomNumbers, x ;$1100,x				; use low byte as high byte
-	sta	ARRAY_RandomNumbers, y ;$1100,y				; complete entry
+	ror	LO8.RandomNumbers+1, x ;$1101,x				; rotate array location
+	adc	LO8.RandomNumbers, x ;$1100,x				; use low byte as high byte
+	sta	LO8.RandomNumbers, y ;$1100,y				; complete entry
 	dey
 	beq	__AGAIN							; ensure final entry is written
 	bvs	__SKIP							; randomize entry location by (0,1)

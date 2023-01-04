@@ -1,7 +1,7 @@
 ;==========================================================================================
 ;
 ;   "FURRY RPG" (WORKING TITLE)
-;   (c) 201X by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
+;   (c) 2023 by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
 ;
 ;	*** SRAM HANDLER ***
 ;
@@ -9,61 +9,61 @@
 
 
 
-.ACCU 8
-.INDEX 16
-
 CheckSRAM:
-	lda	#ADDR_SRAM_Bank						; set start address to SRAM data
-	sta	DP_Temp+7
+	.ACCU 8
+	.INDEX 16
+
+	lda	#bankbyte(SRAM)						; set start address to SRAM data
+	sta	<DP2.Temp+7
 
 	Accu16
 
-	lda	#(ADDR_SRAM_Slot1 & $FFFF)
-	sta	DP_Temp+5
-	lda	#$01FE							; assume ADDR_SRAM_ChksumCmpl = $FFFF and ADDR_SRAM_Chksum = $0000, so add these right now
-	sta	DP_Temp+3
+	lda	#loword(SRAM)
+	sta	<DP2.Temp+5
+	lda	#$01FE							; assume ChecksumCmpl = $FFFF and Checksum = $0000, so add these up right now
+	sta	<DP2.Temp+3
 
 	ldy	#0
--	lda	[DP_Temp+5], y
+-	lda	[<DP2.Temp+5], y
 	and	#$00FF
 	clc
-	adc	DP_Temp+3
-	sta	DP_Temp+3
+	adc	<DP2.Temp+3
+	sta	<DP2.Temp+3
 	iny
-	cpy	#<ADDR_SRAM_ChksumCmpl					; location of SRAM checksum complement & checksum reached?
+	cpy	#lobyte(SRAM.ChecksumCmpl)				; location of SRAM checksum complement & checksum reached? // self-reminder: Use low byte here as y is zero-based and Temp+5 contains SRAM offset in middle byte. As it's an immediate value, WLA DX will still generate $00 as the high byte of a 16-bit operand.
 	bne	-
 
-	ldy	#<ADDR_SRAM_Slot1Data					; skip both
--	lda	[DP_Temp+5], y
+	ldy	#lobyte(SRAM.Checksum+2)				; skip both // ditto
+-	lda	[<DP2.Temp+5], y
 	and	#$00FF
 	clc
-	adc	DP_Temp+3
-	sta	DP_Temp+3
+	adc	<DP2.Temp+3
+	sta	<DP2.Temp+3
 	iny
-	cpy	#$2000							; end of SRAM data reached?
+	cpy	#8192							; all SRAM data checked?
 	bne	-
 
-	lda	DP_Temp+3
-	cmp	ADDR_SRAM_Chksum
+	lda	<DP2.Temp+3						; Temp+3 now contains the sum of all SRAM bytes
+	cmp	SRAM.Checksum						; compare sum to checksum
 	bne	@ClearSRAM
 
-	eor	#$FFFF
-	cmp	ADDR_SRAM_ChksumCmpl
+	eor	#$FFFF							; compare checksum XOR $FFFF to complement
+	cmp	SRAM.ChecksumCmpl
 	beq	@SRAMGood
 
-@ClearSRAM:
-	lda	#$0000							; checksum invalid, zero out SRAM data
+@ClearSRAM:								; checksum and/or complement invalid means SRAM is corrupt
+	lda	#$0000
 	ldx	#$0000
--	sta	ADDR_SRAM_Slot1, x
+-	sta	SRAM, x							; zero out SRAM data
 	inx
 	inx
 	cpx	#8192
 	bne	-
 
 	lda	#$01FE							; write good checksum (has to be $01FE when everything else is zero)
-	sta	ADDR_SRAM_Chksum
+	sta	SRAM.Checksum
 	xba								; write checksum complement ($FE01)
-	sta	ADDR_SRAM_ChksumCmpl
+	sta	SRAM.ChecksumCmpl
 
 @SRAMGood:
 	Accu8
@@ -72,60 +72,58 @@ CheckSRAM:
 
 
 
-WriteDataToSRAM:							; this routine expects the 24-bit source data address in DP_DataAddress, destination offset (with data length added) in X, and data length in Y
-	dex								; decrement X for actual dest offset of last data byte
-	dey								; decrement Y for actual src offset of last data byte
--	lda	[DP_DataAddress], y
-	sta.l	$B00000, x
-	dex
-	dey
-	cpy	#$FFFF							; all bytes written?
+FixSRAMChecksum:
+	lda	#bankbyte(SRAM)						; set start address to SRAM data
+	sta	<DP2.Temp+7
+
+	Accu16
+
+	lda	#loword(SRAM)
+	sta	<DP2.Temp+5
+	lda	#$01FE							; assume ChecksumCmpl = $FFFF and Checksum = $0000, so add these right now
+	sta	<DP2.Temp+3
+	ldy	#0
+-	lda	[<DP2.Temp+5], y
+	and	#$00FF
+	clc
+	adc	<DP2.Temp+3
+	sta	<DP2.Temp+3
+	iny
+	cpy	#lobyte(SRAM.ChecksumCmpl)				; location of SRAM checksum complement & checksum reached? // self-reminder as in CheckSRAM above
+	bne	-
+
+	ldy	#lobyte(SRAM.Checksum+2)				; skip both // ditto
+-	lda	[<DP2.Temp+5], y
+	and	#$00FF
+	clc
+	adc	<DP2.Temp+3
+	sta	<DP2.Temp+3
+	iny
+	cpy	#8192							; end of SRAM data reached?
+	bne	-
+
+	lda	<DP2.Temp+3						; write new checksum and complement
+	sta	SRAM.Checksum
+	eor	#$FFFF
+	sta	SRAM.ChecksumCmpl
+
+	Accu8
+
+	rts
+
+
+
+WriteDataToSRAM:							; this routine expects the 24-bit source data address in DP2.DataAddress, destination offset (with data length added) in X, and data length in Y
+-	dex								; counting down dest from (last data byte index + 1)
+	dey								; counting down src from transfer length
+	lda	[<DP2.DataAddress], y
+	sta.l	bankbyte(SRAM)<<16, x					; x contains offset in middle byte, so just use SRAM bank as a base for writing bytes
+	cpy	#0							; all bytes written?
 	bne	-
 
 	jsr	FixSRAMChecksum
 
 	rtl
-
-
-
-FixSRAMChecksum:
-	lda	#ADDR_SRAM_Bank						; set start address to SRAM data
-	sta	DP_Temp+7
-
-	Accu16
-
-	lda	#(ADDR_SRAM_Slot1 & $FFFF)
-	sta	DP_Temp+5
-	lda	#$01FE							; assume ADDR_SRAM_ChksumCmpl = $FFFF and ADDR_SRAM_Chksum = $0000, so add these right now
-	sta	DP_Temp+3
-	ldy	#0
--	lda	[DP_Temp+5], y
-	and	#$00FF
-	clc
-	adc	DP_Temp+3
-	sta	DP_Temp+3
-	iny
-	cpy	#<ADDR_SRAM_ChksumCmpl					; location of SRAM checksum complement & checksum reached?
-	bne	-
-
-	ldy	#<ADDR_SRAM_Slot1Data					; skip both
--	lda	[DP_Temp+5], y
-	and	#$00FF
-	clc
-	adc	DP_Temp+3
-	sta	DP_Temp+3
-	iny
-	cpy	#$2000							; end of SRAM data reached?
-	bne	-
-
-	lda	DP_Temp+3							; write new checksum
-	sta	ADDR_SRAM_Chksum
-	eor	#$FFFF							; and complement
-	sta	ADDR_SRAM_ChksumCmpl
-
-	Accu8
-
-	rts
 
 
 

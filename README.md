@@ -1,25 +1,23 @@
 # Furry RPG! (Working Title)
 
-Welcome to Furry RPG!, an all-new Japanese-style role-playing game for the Super Nintendo Entertainment System, or SNES. The game is currently in development.
+Welcome to *Furry RPG!,* an all-new Japanese-style role-playing game for the Super Nintendo Entertainment System (SNES). The game is currently in development (on and off, see down below).
 
-![Title screen](https://manuloewe.de/snestuff/projects/furryrpg_build_00301_1.png)
-
-### Implemented features:
+### Implemented features
 
 * Epic storyline spanning over multiple realms, featuring an all-Furry cast.
 * 48 Mbit ROM size (ExHiROM) with SRAM-based game save support (think *Tales of Phantasia*). ROM expansion to 64 or even 96 Mbit may or may not be necessary in the future depending on the need for fitting all game data.
 * Extendable scripting language supporting up to 32,768 commands ("event codes").
-* High resolution, VWF-based multi-language dialog rendering engine, complete with character portrait, background color gradient, and *Suikoden*-style selection bar support.
+* High resolution, VWF-based multi-language dialogue rendering engine, complete with character portrait, background color gradient, and *Suikoden*-style selection bar support.
 * Fully controllable, Mode-7-based "flying" animation with rotating sky background.
 * Fully controllable, Mode-1-based world map with scrolling displacement and horizon curvature effects, simulating a planet surface (think *Treasure Hunter G*).
 * Extendable area loading engine (four/eight-directional scrolling is WIP) with fully working sprite-to-BG collision detection support.
-* Full-fledged and easily extendable sprite animation engine.
-* High-quality, SNESGSS-based soundtrack engine with audio streaming support.
-* Optional ambient sound effects featuring real recordings thanks to MSU-1 support (only available on advanced emulators/flashcarts like higan/bsnes and SD2SNES).
-* Optional real-time clock support (only available on certain emulators and advanced flashcarts like higan/bsnes and SD2SNES).
+* Full-fledged and easily extendable sprite animation engine (WIP).
+* High-quality, SNESGSS-based soundtrack engine with audio streaming support (WIP).
+* Optional ambient sound effects featuring real recordings thanks to MSU-1 support (only available on certain emulators and advanced flashcarts like SD2SNES/FXPAK PRO).
+* Optional real-time clock support (only available on certain emulators and advanced flashcarts like SD2SNES/FXPAK PRO).
 * ... and more!
 
-### Planned features:
+### Planned features
 
 * More or less open world (story-related restrictions apply).
 * Several endings, each requiring the player to make specific choices during the course of the game.
@@ -33,37 +31,32 @@ Welcome to Furry RPG!, an all-new Japanese-style role-playing game for the Super
 * Log/notebook providing hints (once acquired) on what to do next.
 * Unlockable character and cut scene galleries/sound test/mini games/special features/you name it.
 
-### Screenshots:
+### Screenshots
 
-![Sound engines](https://manuloewe.de/snestuff/projects/furryrpg_build_00301_2.png)
+![Title screen](https://user-images.githubusercontent.com/11965591/210632347-86449f58-fe73-44c3-95f0-37823843d8c5.jpg)
 
-![Debug Menu](https://manuloewe.de/snestuff/projects/furryrpg_build_00301_3.png)
+![Sound engines](https://user-images.githubusercontent.com/11965591/210632394-e269e685-52a2-4749-bd67-b488d5b42f08.jpg)
 
-![Dialog 1](https://manuloewe.de/snestuff/projects/furryrpg_build_00301_4.png)
+![Debug menu](https://user-images.githubusercontent.com/11965591/210632145-0b06c7f5-6d6f-4cc6-911d-26207d89f59b.jpg)
 
-![Dialog 2](https://manuloewe.de/snestuff/projects/furryrpg_build_00301_5.png)
+![Dialogue test](https://user-images.githubusercontent.com/11965591/210632441-c2139631-8ebe-412c-9055-180d4d0c94b8.jpg)
 
-![Dialog 3](https://manuloewe.de/snestuff/projects/furryrpg_build_00301_6.png)
+![Dialogue test](https://user-images.githubusercontent.com/11965591/210632494-c5f9b4c8-0b04-43e2-9fe8-c7f9f21c7177.jpg)
 
-![Dialog 4](https://manuloewe.de/snestuff/projects/furryrpg_build_00301_7.png)
+![Flying](https://user-images.githubusercontent.com/11965591/210632529-041f86f9-2872-47f5-8479-d78a9e5b4d52.jpg)
 
-![World Map](https://manuloewe.de/snestuff/projects/furryrpg_build_00301_8.png)
+![Main menu](https://user-images.githubusercontent.com/11965591/210632549-c7a9206e-a2df-4fdd-9923-a2d9752c6ec1.jpg)
 
-![Flying](https://manuloewe.de/snestuff/projects/furryrpg_build_00301_9.png)
+Note that all graphics is placeholder artwork. Game presentation is subject to change. Screenshots were made using my Analogue Super Nt hooked up to a StarTech USB3HDCAP capture device.
 
-Note that all graphics is placeholder artwork. Screenshots were made using higan v106.
-
-### Download ROM image:
+### Download ROM image
 
 [Latest build](https://github.com/Ramsis-SNES/furryrpg/raw/master/furryrpg.sfc)
 
-### Help wanted!
+### Last but not least
 
-If you happen to be a Furry designer/illustrator, pixel artist, SNES programmer, and/or music composer, you are welcome to contribute to this open-source freeware project. If you feel your skills could be of help, please contact me by e-mail (ramsis @ the domain name of my [website](https://manuloewe.de/)).
+Please bear in mind that this is a personal project, which I'm working on in my very limited spare time, so there's no ETA. Instead of getting the game out as fast as possible, the goal of *Furry RPG!* is more of an educational one. I enjoy documenting my knowledge and improving my skills in programming the SNES and working with its limited hardware resources, and hope that others might benefit from it as well.
 
-Thanks!
+Then again, I'd be more than happy to see the project one day evolve from a (sort of) SNES tech demo into a full-fledged RPG that is playable from start to finish, so if you happen to be a furry designer/illustrator and/or graphics/pixel artist, you are welcome to contribute to this open-source freeware project, especially since I'm hopeless at creating graphics myself. ;-) If you feel your skills could be of help, please contact me by e-mail (ramsis @ the domain name of my [website](https://manuloewe.de/).
 
-### Discuss the project:
-
-* [Discuss in English](https://forums.nesdev.com/viewtopic.php?f=12&t=12317)
-* [Discuss in German](https://forum.snesfreaks.com/viewtopic.php?f=157&t=13720)
+Thanks, and happy retrogaming! :-)

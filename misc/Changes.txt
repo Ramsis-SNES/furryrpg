@@ -1,11 +1,118 @@
 ===========================================================================================
   
     "FURRY RPG" (WORKING TITLE)
-    (c) 201X by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
+    (c) 2023 by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
  
 	*** CHANGES ***
  
 ===========================================================================================
+
+
+
+******************************** Notes *********************************
+
+This list contains the most notable features/changes. A more complete
+history of changes since build #00250 (when the project went up on Git-
+Hub) is here: https://github.com/Ramsis-SNES/furryrpg/commits/master
+
+
+
+Build #00520:
+- Rewrite dialogue text box engine (part 3)
+- Enhance and improve old string printing routines
+- Add SNESGSS control panel (WIP). Also, improve SNESGSS implementation overall
+- Improve error handler
+- Remove some placeholder artwork
+- Lots of bugfixes & code reorganization
+- Update readme file
+
+
+
+Build #00395:
+- Rewrite dialogue text box engine (part 2)
+
+
+
+Build #00379:
+- Rewrite dialogue text box engine (part 1)
+
+
+
+Build #00349:
+- Simplify/optimize text box background loading a bit by using a dedicated pointer table instead of clumsy calculations during Vblank. This makes the fully black text box background actually accessible, as well. ;-)
+
+
+
+Build #00347:
+- Make ring menu react to player input even while rotating. Also, fix blinking cursor (don't stop blinking while ring is rotating)
+- Small debug menu fixes
+- Add game chapter skeleton data
+- Small text box fix
+- Add/improve SNESGSS code documentation
+- Fix internal header so bsnes will run the game in 60 Hz mode
+
+
+
+Build #00328:
+- Add option to adjust the RTC (only useful for emulators like bsnes/higan, which don't sync RTC data to OS time)
+
+
+
+Build #00325:
+- Implement global soft reset via L+R+Start+Select button combo
+- Add proper software error handler (WIP)
+
+
+
+Build #00318:
+- Fix cursor sprite visibility on Mode 7 map
+
+
+
+Build #00317:
+- Add bold text effect 
+- Begin work on preliminary area object handler
+
+
+
+Build #00315:
+- Fix sprite visibility during screen transition animation. Also, fix sprite movement in demo event
+
+
+
+Build #00310:
+- Add blinking cursor + closing animation to ring menu
+- Add Ultra16 hardware check
+- Rename lots of stuff for clarity and/or consistency. Also, use different variables in a few places
+- Make readme file actually worth reading ;-)
+- Add option to clear SRAM for testing
+
+
+
+Build #00301:
+- Convert project to ExHiROM (48 Mbit for now) so the RTC is properly detected/acknowledged by most emulators
+
+
+
+Build #00297:
+- Refine font a bit, and update dialogue
+- Add preliminary RTC support
+
+
+
+Build #00296:
+- Make area selector only allow access to available areas
+- Add preliminary screen saver to area mode
+- Fix "jumpy" sprite HUD for good (hopefully)
+
+
+
+Build #00294:
+- Pre-load area soundtrack before showing area to avoid control delay
+- Add inventory array, and implement Mode-5-based item display demo screen
+- Make random number generator actually work ;-)
+- Add proper PPU register shadowing using RAM code for fast execution
+- Remove H-IRQ based vertical split-screen in main menu as it seems impractical after all
 
 
 
@@ -23,14 +130,14 @@ Build #00285:
 - made HUD look sleeker and less intrusive
 - moved HUD to the sprite layer so BG3 can be used e.g. for weather effects
 - overhauled Mode 1 world map with sky graphics and HDMA-based vertical scrolling displacement to simulate a curved planet surface (WIP)
-- added lots of new dialog strings
-- more work on the German localization (dialog, typography)
+- added lots of new dialogue strings
+- more work on the German localization (dialogue, typography)
 
 
 
 Build #00284:
 - more work on the event handler
-- converted some loops to subroutines in preparation of one (or more) main game loop(s), this allows e.g. dialog to appear while sprites are moving on the screen
+- converted some loops to subroutines in preparation of one (or more) main game loop(s), this allows e.g. dialogue to appear while sprites are moving on the screen
 
 
 
@@ -100,7 +207,7 @@ Build #00271:
 Build #00268:
 - added hi-res splash screen to intro (for disclaimer or whatever)
 - added opening animation to ring menu
-- more work on both English and German dialog
+- more work on both English and German dialogue
 - improved "clear text box" control code behavior
 - minor fixes
 
@@ -150,7 +257,7 @@ Build #00258:
 
 Build #00257:
 - changed code layout for better readability
-- additions to the dialog script (English only for now)
+- additions to the dialogue script (English only for now)
 - minor bugfixes
 
 
@@ -172,12 +279,12 @@ Build #00254:
 
 
 Build #00253:
-- enhanced dialog text engine with a new control code to clear the text box (mainly as a preparation for easier future cut-scene scripting)
+- enhanced dialogue text engine with a new control code to clear the text box (mainly as a preparation for easier future cut-scene scripting)
 
 
 
 Build #00252:
-- added multi-language support to the dialog text engine
+- added multi-language support to the dialogue text engine
 - started to work on the German localization (press up/down on the d-pad to change languages when the text box is open)
 
 
@@ -250,13 +357,13 @@ Build #00233:
 - added selection support to text box routine
 - major VWF/HUD font changes
 - simplified debug menu
-- more dialog fixes & additions
+- more dialogue fixes & additions
 
 
 
 Build #00230:
 - reworked split in/out transition effects using simple loops that generate HDMA tables on-the-fly, saving ~16 KB of ROM space
-- dialog fixes & additions
+- dialogue fixes & additions
 
 
 
@@ -267,7 +374,7 @@ Build #00229:
 
 
 Build #00228:
-- added more dialog
+- added more dialogue
 - wrote up the storyline
 
 
@@ -300,7 +407,7 @@ Build #00220:
 
 
 Build #00215:
-- slight changes to the dialog font to distinguish between characters a and o (and their respective umlauts) more easily
+- slight changes to the dialogue font to distinguish between characters a and o (and their respective umlauts) more easily
 
 
 
@@ -375,7 +482,7 @@ Build #00192:
 
 Build #00190:
 - reorganized the codebase
-- added control codes to dialog strings to set the text box background color, and refined text box routines
+- added control codes to dialogue strings to set the text box background color, and refined text box routines
 
 
 
@@ -393,9 +500,9 @@ Build #00179:
 
 
 Build #00178:
-- added world map demo screen (with placeholder artwork from Suikoden II :p). The text box will only show up whenever there is dialog -- otherwise, the lower screen area will probably be used for character stats etc.
+- added world map demo screen (with placeholder artwork from Suikoden II :p). The text box will only show up whenever there is dialogue -- otherwise, the lower screen area will probably be used for character stats etc.
 - added a more flexible way to update graphics during Vblank (still needs work though)
-- added 3 more placeholder character portraits that can be switched with the d-pad in the dialog test
+- added 3 more placeholder character portraits that can be switched with the d-pad in the dialogue test
 - deactivated intro screen for now for faster testing ;-)
 
 

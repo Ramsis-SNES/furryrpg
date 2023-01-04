@@ -1,0 +1,168 @@
+;==========================================================================================
+;
+;   "FURRY RPG" (WORKING TITLE)
+;   (c) 2023 by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
+;
+;	*** DIALOGUE TEXT CHARACTER TABLE ***
+;
+;==========================================================================================
+
+
+
+; ******************************* Notes ********************************
+
+; --------------------------
+
+
+
+; ******************************* Table ********************************
+
+00=<END>
+; next char (20) is space (20-7E = ASCII)
+20= 
+21=!
+; next char (22) is English open quotation mark
+22=“
+23=#
+24=$
+25=%
+26=&
+; next char (27) is apostrophe
+27=’
+28=(
+29=)
+2A=*
+2B=+
+2C=,
+2D=-
+2E=.
+2F=/
+30=0
+31=1
+32=2
+33=3
+34=4
+35=5
+36=6
+37=7
+38=8
+39=9
+3A=:
+3B=;
+3C=<
+3D==
+3E=>
+3F=?
+40=@
+41=A
+42=B
+43=C
+44=D
+45=E
+46=F
+47=G
+48=H
+49=I
+4A=J
+4B=K
+4C=L
+4D=M
+4E=N
+4F=O
+50=P
+51=Q
+52=R
+53=S
+54=T
+55=U
+56=V
+57=W
+58=X
+59=Y
+5A=Z
+5B=[
+5C=\
+5D=]
+5E=^
+5F=_
+; next char (60) is backtick
+60=`
+61=a
+62=b
+63=c
+64=d
+65=e
+66=f
+67=g
+68=h
+69=i
+6A=j
+6B=k
+6C=l
+6D=m
+6E=n
+6F=o
+70=p
+71=q
+72=r
+73=s
+74=t
+75=u
+76=v
+77=w
+78=x
+79=y
+7A=z
+7B={
+7C=|
+7D=}
+7E=~
+; end of ASCII, next char (7F) is multiplication sign
+7F=×
+80=Ä
+81=Ö
+82=Ü
+85=ä
+86=ë
+87=ï
+88=ö
+89=ü
+8A=ß
+; next char (A0A1) is heart symbol (UTF-8 hex code $2665)
+A0A1=♥
+; next char (A2A3) is beamed eighth notes (UTF-8 hex code $266B)
+A2A3=♫
+;
+;F0=ff
+;
+; The order of the following text box control codes has to match the order of entries in the PTR_ProcessDiagCC jump table.
+; Some control codes take arguments as outlined in the comments for each control code below.
+;
+; <BG> needs no. of color gradient (7-bit only, bit 7 should be clear) for text box background. 0 = black, 1 = blue, 2 = red, 3 = pink, 4 = evil, 5 = alert
+FF00=<BG>
+; <CLR> clears the text box
+FF01=<CLR>
+; <IND> indents text
+FF02=<IND>
+; <JMP> needs 24-bit address of next string (24-bit for jumps e.g. to strings in WRAM)
+FF03=<JMP>
+; <NL> begins a new line
+FF04=<NL>
+; <PORTRAIT> needs no. of portrait (8-bit)
+FF05=<PORTRAIT>
+; <SEL> denotes a line with a selection
+FF06=<SEL>
+; <SUBHEX> needs 24-bit address of byte to print in hex
+FF07=<SUBHEX>
+; <SUBINT8> needs 24-bit address of byte to print in decimal
+FF08=<SUBINT8>
+; <SUBINT16> needs 24-bit start address of bytes to print in decimal
+FF09=<SUBINT16>
+; <SUBSTR> needs 24-bit address of sub-string to print
+FF0A=<SUBSTR>
+; <B> toggles bold text
+FF0B=<B>
+
+
+
+; ******************************** EOF *********************************
