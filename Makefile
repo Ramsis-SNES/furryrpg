@@ -47,6 +47,7 @@ $(swc): $(sfc)
 
 $(msu):
 	touch $(msu)
+	cp music/ambient/nightingale.pcm $(target)-1.pcm
 
 $(obj): $(src)
 	$(AS) $(ASFLAGS) $@ $<
@@ -63,4 +64,4 @@ gfx:
 	cd ..
 
 clean:
-	-rm -f $(lnk) $(msu) $(obj) $(sfc) $(swc) $(sym) data/mode7_scalingtables.bin
+	-rm -f $(lnk) $(msu) $(obj) $(sfc) $(swc) $(sym) *.pcm data/mode7_scalingtables.bin
