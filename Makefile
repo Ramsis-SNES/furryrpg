@@ -37,31 +37,29 @@ sym=$(target).sym
 
 all: $(msu) $(sfc) $(swc)
 
-$(sfc): bindata $(obj)
-	$(LD) $(LDFLAGS) $(lnk) $(sfc)
-#	cd tools && \
-#	./$(chsumscript) ../$(sfc)
+$(msu):
+	touch $@
+	cp -u music/ambient/nightingale.pcm $(target)-1.pcm
+
+$(obj): $(src) bindata
+	$(AS) $(ASFLAGS) $@ $<
+
+$(sfc): $(obj)
+	echo '[objects]\n$<' > $(lnk)
+	$(LD) $(LDFLAGS) $(lnk) $@
+#	cd tools; \
+#	./$(chsumscript) ../$@
 
 $(swc): $(sfc)
-	cat $(header) $(sfc) > $(swc)
-
-$(msu):
-	touch $(msu)
-	cp music/ambient/nightingale.pcm $(target)-1.pcm
-
-$(obj): $(src)
-	$(AS) $(ASFLAGS) $@ $<
-	echo '[objects]\n$@' > $(lnk)
+	cat $(header) $< > $@
 
 bindata:
-	cd tools && \
-	python $(pyscript_m7) && \
-	cd ..
-
-gfx:
-	cd gfx && \
-#	superfamiconv && \
-	cd ..
+	cd tools; \
+	python $(pyscript_m7)
 
 clean:
 	-rm -f $(lnk) $(msu) $(obj) $(sfc) $(swc) $(sym) *.pcm data/mode7_scalingtables.bin
+
+gfx:
+	cd gfx; \
+#	superfamiconv
