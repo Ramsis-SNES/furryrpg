@@ -1,22 +1,21 @@
-#==========================================================================================
+# ==================================================================================================
 #
-#   "FURRY RPG" (WORKING TITLE)
-#   (c) 2023 by Ramsis a.k.a. ManuLoewe (https://manuloewe.de/)
+#	"FURRY RPG" (WORKING TITLE)
+#	(c) by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
 #
-#	*** MAKEFILE ***
+#	MAKEFILE
 #
-#==========================================================================================
+# ==================================================================================================
 
 
 
-# This requires Python2 (I use v2.7.18), and the WLA DX cross assembler v10.4.
-# Graphics conversion (not implemented yet) will require superfamiconv
-# (available at https://github.com/Optiroc/SuperFamiconv).
+# Requirements: see README.md
 
 AS=wla-65816
 ASFLAGS=-x -o
 LD=wlalink
 LDFLAGS=-r -s
+SHELL=/bin/bash
 
 # name of ROM and associated files
 target=furryrpg
@@ -45,7 +44,7 @@ $(obj): $(src) bindata
 	$(AS) $(ASFLAGS) $@ $<
 
 $(sfc): $(obj)
-	echo '[objects]\n$<' > $(lnk)
+	echo -e '[objects]\n$<' > $(lnk)
 	$(LD) $(LDFLAGS) $(lnk) $@
 #	cd tools; \
 #	./$(chsumscript) ../$@

@@ -1,26 +1,26 @@
-;==========================================================================================
+; ==================================================================================================
 ;
-;   "FURRY RPG" (WORKING TITLE)
-;   (c) 2023 by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
+;	"FURRY RPG" (WORKING TITLE)
+;	(c) by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
 ;
-;	*** HDMA TABLES ***
+;	HDMA TABLES
 ;
-;==========================================================================================
+; ==================================================================================================
 
 
 
 SRC_HDMA_BG12CharData:							; for vertical split-screen test
 	.DB 112|$80
 
-	.REPEAT 112
-		.DB $40
-	.ENDR
+.REPEAT 112
+	.DB $40
+.ENDR
 
 	.DB 112|$80
 
-	.REPEAT 112
-		.DB $40
-	.ENDR
+.REPEAT 112
+	.DB $40
+.ENDR
 
 	.DB 0
 
@@ -326,15 +326,15 @@ SRC_HDMA_M7D:
 SRC_HDMA_Mode5:								; for vertical split-screen test
 	.DB 112|$80
 
-	.REPEAT 112
-		.DB $05
-	.ENDR
+.REPEAT 112
+	.DB $05
+.ENDR
 
 	.DB 112|$80
 
-	.REPEAT 112
-		.DB $05
-	.ENDR
+.REPEAT 112
+	.DB $05
+.ENDR
 
 	.DB 0
 
@@ -392,9 +392,10 @@ SRC_HDMA_WorMapVScroll:
 
 
 SRC_HDMA_WorMapVScrollDisplacement:
-	.REPEAT 32							; 32 scanlines = sky
-		.DW 0
-	.ENDR
+
+.REPEAT 32								; 32 scanlines = sky
+	.DW 0
+.ENDR
 
 	.DW 64
 	.DW 62
@@ -510,13 +511,14 @@ SRC_HDMA_WorMapVScrollDisplacement:
 	.DW 1
 	.DW 1
 
-	.REPEAT 79
-		.DW 0
-	.ENDR
+.REPEAT 79
+	.DW 0
+.ENDR
 
 
 
-; ********************** Backdrop color gradients **********************
+; BACKDROP COLOR GRADIENTS
+; --------------------------------------------------------------------------------------------------
 
 ; textbox scanlines:
 
@@ -538,133 +540,134 @@ SRC_HDMA_ColorGradient:
 
 
 SRC_HDMA_MenuParty:							; color gradient: black --> bright blue
-	.REPEAT 7
-		.dw $0000,$0000
-	.ENDR
 
-	.REPEAT 7
-		.dw $0000,$0400
-	.ENDR
+.REPEAT 7
+	.dw $0000,$0000
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$0800
-	.ENDR
+.REPEAT 7
+	.dw $0000,$0400
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$0C00
-	.ENDR
+.REPEAT 7
+	.dw $0000,$0800
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$1000
-	.ENDR
+.REPEAT 7
+	.dw $0000,$0C00
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$1400
-	.ENDR
+.REPEAT 7
+	.dw $0000,$1000
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$1800
-	.ENDR
+.REPEAT 7
+	.dw $0000,$1400
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$1C00
-	.ENDR
+.REPEAT 7
+	.dw $0000,$1800
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$2000
-	.ENDR
+.REPEAT 7
+	.dw $0000,$1C00
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$2400
-	.ENDR
+.REPEAT 7
+	.dw $0000,$2000
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$2800
-	.ENDR
+.REPEAT 7
+	.dw $0000,$2400
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$2C00
-	.ENDR
+.REPEAT 7
+	.dw $0000,$2800
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$3000
-	.ENDR
+.REPEAT 7
+	.dw $0000,$2C00
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$3400
-	.ENDR
+.REPEAT 7
+	.dw $0000,$3000
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$3800
-	.ENDR
+.REPEAT 7
+	.dw $0000,$3400
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$3C00
-	.ENDR
+.REPEAT 7
+	.dw $0000,$3800
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$4000
-	.ENDR
+.REPEAT 7
+	.dw $0000,$3C00
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$4400
-	.ENDR
+.REPEAT 7
+	.dw $0000,$4000
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$4800
-	.ENDR
+.REPEAT 7
+	.dw $0000,$4400
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$4C00
-	.ENDR
+.REPEAT 7
+	.dw $0000,$4800
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$5000
-	.ENDR
+.REPEAT 7
+	.dw $0000,$4C00
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$5400
-	.ENDR
+.REPEAT 7
+	.dw $0000,$5000
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$5800
-	.ENDR
+.REPEAT 7
+	.dw $0000,$5400
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$5C00
-	.ENDR
+.REPEAT 7
+	.dw $0000,$5800
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$6000
-	.ENDR
+.REPEAT 7
+	.dw $0000,$5C00
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$6400
-	.ENDR
+.REPEAT 7
+	.dw $0000,$6000
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$6800
-	.ENDR
+.REPEAT 7
+	.dw $0000,$6400
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$6C00
-	.ENDR
+.REPEAT 7
+	.dw $0000,$6800
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$7000
-	.ENDR
+.REPEAT 7
+	.dw $0000,$6C00
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$7400
-	.ENDR
+.REPEAT 7
+	.dw $0000,$7000
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$7800
-	.ENDR
+.REPEAT 7
+	.dw $0000,$7400
+.ENDR
 
-	.REPEAT 7
-		.dw $0000,$7C00
-	.ENDR
+.REPEAT 7
+	.dw $0000,$7800
+.ENDR
+
+.REPEAT 7
+	.dw $0000,$7C00
+.ENDR
 
 
 
@@ -744,7 +747,7 @@ SRC_HDMA_Mode7Sky72:
 
 
 
-PTR_TextBoxGradient:
+SRC_TextBoxGradient:
 	.DW 0								; dummy pointer for black background
 	.DW SRC_HDMA_TextBoxGradientBlue
 	.DW SRC_HDMA_TextBoxGradientRed
@@ -1055,28 +1058,32 @@ SRC_HDMA_WorldMapSky:
 
 
 SRC_HDMA_Diamond1:							; 448 bytes, usable with LO8.HDMA_FX_2Bytes --> $2126, $2127 for a diamond-shaped window // UNUSED
-	.DEFINE Value2126	$7F
-	.DEFINE Value2127	$80
 
-	.REPEAT 112							; create a 224 byte-long pattern of 7F 80 7E 81 ... 11 EE 10 EF
-		.DB Value2126
-		.DB Value2127
+.DEFINE Value2126	$7F
+.DEFINE Value2127	$80
 
-		.REDEFINE Value2126	Value2126-1
-		.REDEFINE Value2127	Value2127+1
-	.ENDR
+.REPEAT 112								; create a 224 byte-long pattern of 7F 80 7E 81 ... 11 EE 10 EF
+	.DB Value2126
+	.DB Value2127
 
-	.REDEFINE Value2126	$10
-	.REDEFINE Value2127	$EF
+	decr	&Value2126
+	incr	&Value2127
+.ENDR
 
-	.REPEAT 112							; create a 224 byte-long pattern of 10 EF 11 EE ... 7E 81 7F 80 (inverse of above pattern)
-		.DB Value2126
-		.DB Value2127
+.REDEFINE Value2126	$10
+.REDEFINE Value2127	$EF
 
-		.REDEFINE Value2126	Value2126+1
-		.REDEFINE Value2127	Value2127-1
-	.ENDR
+.REPEAT 112								; create a 224 byte-long pattern of 10 EF 11 EE ... 7E 81 7F 80 (inverse of above pattern)
+	.DB Value2126
+	.DB Value2127
+
+	incr	&Value2126
+	decr	&Value2127
+.ENDR
+
+.UNDEFINE Value2126
+.UNDEFINE Value2127
 
 
 
-; ******************************** EOF *********************************
+; EOF

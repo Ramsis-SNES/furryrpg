@@ -1,106 +1,108 @@
-;==========================================================================================
+; ==================================================================================================
 ;
-;   "FURRY RPG" (WORKING TITLE)
-;   (c) 2023 by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
+;	"FURRY RPG" (WORKING TITLE)
+;	(c) by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
 ;
-;	*** MODE7 HANDLER ***
+;	MODE7 HANDLER
 ;
-;==========================================================================================
+; ==================================================================================================
 
 
+
+.ACCU 8
+.INDEX 16
 
 TestMode7:
-	.ACCU 8
-	.INDEX 16
-
-	lda	#$80							; enter forced blank
+	lda	#kForcedBlank
 	sta	RAM_INIDISP
 	stz	<DP2.HDMA_Channels					; disable HDMA
 	wai								; wait for OAM to refresh
 
-	DisableIRQs
+	jsl	DisableInterrupts
 
-	.IFNDEF PrecalcMode7Tables
-		stz	WMADDL						; set WRAM address to $7F0000
-		stz	WMADDM
-		lda	#$01
-		sta	WMADDH
+.IFNDEF PrecalcMode7Tables
 
-	;old:
-	; generate tables for 128 altitude settings, 152 scanlines each:
-	; altitude 0: $800 / $20, $24, $28 ... $280
-	; altitude 1: $1000 / $20, $24, $28 ... $280
-	; altitude 2: $1800 / $20, $24, $28 ... $280
-	; ...
+	stz	WMADDL							; set WRAM address to $7F0000
+	stz	WMADDM
+	lda	#$01
+	sta	WMADDH
 
-	;new:
-	; generate tables for 112 altitude settings, 152 scanlines each:
-	; altitude 0: $8800 / $20, $24, $28 ... $280
-	; altitude 1: $9000 / $20, $24, $28 ... $280
-	; altitude 2: $9800 / $20, $24, $28 ... $280
-	; ...
+;old:
+; generate tables for 128 altitude settings, 152 scanlines each:
+; altitude 0: $800 / $20, $24, $28 ... $280
+; altitude 1: $1000 / $20, $24, $28 ... $280
+; altitude 2: $1800 / $20, $24, $28 ... $280
+; ...
 
-		Accu16
+;new:
+; generate tables for 112 altitude settings, 152 scanlines each:
+; altitude 0: $8800 / $20, $24, $28 ... $280
+; altitude 1: $9000 / $20, $24, $28 ... $280
+; altitude 2: $9800 / $20, $24, $28 ... $280
+; ...
 
-		pea	$0000						; high word of 32-bit dividend
-		pea	$8800						; low word of 32-bit dividend
-	--	pea	$0020						; 16-bit divisor
-	-	jsr	Div32by16
+	Accu16
 
-		Accu8
+	pea	$0000							; high word of 32-bit dividend
+	pea	$8800							; low word of 32-bit dividend
+--	pea	$0020							; 16-bit divisor
+-	jsr	Div32by16
 
-		lda	<DP2.Temp+4					; location of quotient
-		sta	WMDATA
-		lda	<DP2.Temp+5
-		sta	WMDATA
+	Accu8
 
-		Accu16
+	lda	<DP2.Temp+4						; location of quotient
+	sta	WMDATA
+	lda	<DP2.Temp+5
+	sta	WMDATA
 
-		pla							; divisor += 4
-		clc
-		adc	#4
-		cmp	#$0280
-		bcs	+
-		pha
-		bra	-
+	Accu16
 
-	+	pla							; dividend += $800
-		clc
-		adc	#$0800
-		bcc	+
-		plx
-		inx
-		cpx	#4
-		beq	++
-		phx							; push high word of dividend
-	+	pha							; push low word of dividend
-	;	pea	$0020						; push initial divisor
-		bra	--
+	pla								; divisor += 4
+	clc
+	adc	#4
+	cmp	#$0280
+	bcs	+
+	pha
+	bra	-
+
++	pla								; dividend += $800
+	clc
+	adc	#$0800
+	bcc	+
+	plx
+	inx
+	cpx	#4
+	beq	++
+	phx								; push high word of dividend
++	pha								; push low word of dividend
+;	pea	$0020							; push initial divisor
+	bra	--
 
 
-	++	phx
-		pha
-		pea	$0020						; 16-bit divisor
-	-	jsr	Div32by16
+++	phx
+	pha
+	pea	$0020							; 16-bit divisor
+-	jsr	Div32by16
 
-		Accu8
+	Accu8
 
-		lda	<DP2.Temp+4					; location of quotient
-		sta	WMDATA
-		lda	<DP2.Temp+5
-		sta	WMDATA
+	lda	<DP2.Temp+4						; location of quotient
+	sta	WMDATA
+	lda	<DP2.Temp+5
+	sta	WMDATA
 
-		Accu16
+	Accu16
 
-		pla							; divisor += 4
-		clc
-		adc	#4
-		cmp	#$0280
-		bcs	+
-		pha
-		bra	-
+	pla								; divisor += 4
+	clc
+	adc	#4
+	cmp	#$0280
+	bcs	+
+	pha
+	bra	-
 
-	+	Accu8
++	Accu8
+
 .ENDIF
 
 
@@ -176,7 +178,7 @@ TestMode7:
 ; Load Mode 7 palette
 	stz	CGADD							; start at color 0
 
-	DMA_CH0 $02, SRC_IoTmappal, CGDATA, 512
+	dma_0	$02, SRC_IoTmappal, CGDATA, 512
 
 
 
@@ -187,7 +189,7 @@ TestMode7:
 	ldx	#$0000							; set VRAM address $0000
 	stx	VMADDL
 
-	DMA_CH0 $01, SRC_IoTmappic, VMDATAL, 32768
+	dma_0	$01, SRC_IoTmappic, VMDATAL, 32768
 ; ##########################################################
 
 
@@ -197,14 +199,14 @@ TestMode7:
 ;	ldx	#$0000							; set VRAM address $0000
 ;	stx	VMADDL
 
-;	DMA_CH0 $00, SRC_Maptilemap, VMDATAL, _sizeof_SRC_Maptilemap
+;	dma_0	$00, SRC_Maptilemap, VMDATAL, _sizeof_SRC_Maptilemap
 
 ;	lda	#$80							; increment VRAM address by 1 after writing to $2119
 ;	sta	VMAIN
 ;	ldx	#$0000							; set VRAM address $0000
 ;	stx	VMADDL
 
-;	DMA_CH0 $00, SRC_Mappic, VMDATAH, _sizeof_SRC_Mappic
+;	dma_0	$00, SRC_Mappic, VMDATAH, _sizeof_SRC_Mappic
 ; ##############################################################
 
 .ENDASM
@@ -214,42 +216,42 @@ TestMode7:
 	ldx	#$4000							; set VRAM address $4000
 	stx	VMADDL
 
-	DMA_CH0 $01, SRC_Mode7_Sky, VMDATAL, _sizeof_SRC_Mode7_Sky
+	dma_0	$01, SRC_Mode7_Sky, VMDATAL, _sizeof_SRC_Mode7_Sky
 
 	ldx	#$5800							; set VRAM address $5800
 	stx	VMADDL
 
-	DMA_CH0 $01, SRC_TileMap_Mode7_Sky, VMDATAL, _sizeof_SRC_TileMap_Mode7_Sky
+	dma_0	$01, SRC_TileMap_Mode7_Sky, VMDATAL, _sizeof_SRC_TileMap_Mode7_Sky
 
 	stz	CGADD							; reset CGRAM address
 
-	DMA_CH0 $02, SRC_Palette_Mode7_Sky, CGDATA, 32
+	dma_0	$02, SRC_Palette_Mode7_Sky, CGDATA, 32
 
 .ASM
 
 
 
 ; Load HUD font
-	ResetSprites
+	jsr	ResetSprites
 
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	VMAIN
 	ldx	#VRAM_Sprites						; set VRAM address for sprite tiles
 	stx	VMADDL
 
-	DMA_CH0 $01, SRC_Sprites_HUDfont, VMDATAL, 4096
+	dma_0	$01, SRC_Sprites_HUDfont, VMDATAL, 4096
 
 
 
 .ENDASM
 
 ; Load cloud sprites
-	DMA_CH0 $01, SRC_Sprites_Clouds, VMDATAL, 2048
+	dma_0	$01, SRC_Sprites_Clouds, VMDATAL, 2048
 
 	lda	#$A0							; start at 3rd sprite color
 	sta	CGADD
 
-	DMA_CH0 $02, SRC_Palette_Clouds, CGDATA, 32
+	dma_0	$02, SRC_Palette_Clouds, CGDATA, 32
 
 
 
@@ -325,7 +327,7 @@ TestMode7:
 	stx	WMADDL
 	stz	WMADDH
 
-	DMA_CH0 $00, SRC_HDMA_Mode7Sky72, WMDATA, _sizeof_SRC_HDMA_Mode7Sky72
+	dma_0	$00, SRC_HDMA_Mode7Sky72, WMDATA, _sizeof_SRC_HDMA_Mode7Sky72
 
 
 
@@ -334,10 +336,10 @@ TestMode7:
 	sta	RAM_BG2SC
 	lda	#$40							; VRAM address for BG2 character data: $4000 (ignore BG1 bits)
 	sta	RAM_BG12NBA
-	lda	#$01|$08						; BG Mode 1 for sky, BG3 priority (Mode 7 is switched to via IRQ)
+	lda	#kBGMODE_1|kBG3priority					; BG Mode 1 for sky, BG3 priority (Mode 7 is switched to via IRQ)
 	sta	RAM_BGMODE
-;	lda	#%00010010						; turn on BG2 (for rotating sky above Mode 7 world) and sprites
-	lda	#%00010000						; turn on sprites only
+;	lda	#kTM_BG2|kTM_OBJ					; turn on BG2 (for rotating sky above Mode 7 world) and sprites
+	lda	#kTM_OBJ						; turn on sprites only
 	sta	RAM_TM							; on the mainscreen
 	sta	RAM_TS							; and on the subscreen
 ;	lda	#$FF							; scroll BG2 down by 1 px (for rotating sky above Mode 7 world)
@@ -362,29 +364,30 @@ TestMode7:
 
 
 ; Set new NMI/IRQ vectors & screen parameters
-	SetNMI	kNMI_Mode7
+	set	"NMI", Vblank_Mode7
 
 	Accu16
 
-	lda	#220							; dot number for interrupt (256 = too late, 204 = too early)
+	lda	#220		;FIXME readjust				; dot number for interrupt (256 = too late, 204 = too early)
 	sta	HTIMEL
+;	stz	HTIMEL
 	lda	#kMode7SkyLines						; scanline number for interrupt
 	sta	VTIMEL
 
 	Accu8
 
-	SetIRQ	kVIRQ_Mode7
+	set	"IRQ", VIRQ_Mode7
 
 	lda	#%11111100						; enable HDMA channels 2-7
 	sta	<DP2.HDMA_Channels
 	lda	RDNMI							; clear NMI flag
-	lda	#%10110001						; enable NMI, auto-joypad read, and IRQ at H=HTIMEL and V=VTIMEL
+	lda	#kNMITIMEN_Enable|kHVIRQ|kAutoJoy			; enable NMI, auto joypad read, and IRQ at H=HTIMEL and V=VTIMEL
 	sta	LO8.NMITIMEN
 	sta	NMITIMEN
 	cli
 	jsr	ResetMode7Matrix
 
-	WaitFrames	1						; wait for altitude setting to take effect
+	wait	"frames", 1						; wait for altitude setting to take effect
 
 	Accu16
 
@@ -400,17 +403,17 @@ TestMode7:
 	lda	#kEffectSpeed3
 	sta	<DP2.EffectSpeed
 	ldx	#kEffectTypeHSplitIn
-	jsr	(PTR_EffectTypes, x)
+	jsr	(SRC_EffectTypes, x)
 
 Mode7Loop:
 ;	PrintSpriteText	25, 22, "V-Line: $", 1
 ;	PrintSpriteHexNum	<DP2.Temp+7
 
-	PrintSpriteText	25, 20, "Altitude: $", 1
+	PrintSpriteText	25, 21, "Altitude: $", 1
 	PrintSpriteHexNum	<DP2.Mode7_Altitude
 
-;	PrintSpriteText	23, 22, "Angle: $", 1
-;	PrintSpriteHexNum	<DP2.Mode7_RotAngle
+	PrintSpriteText	23, 22, "Angle: $", 1
+	PrintSpriteHexNum	<DP2.Mode7_RotAngle
 
 ;	PrintSpriteText	25, 18, "Center-X: $", 1
 ;	PrintSpriteHexNum	<DP2.Mode7_CenterCoordX+1
@@ -424,18 +427,18 @@ Mode7Loop:
 ;	PrintSpriteHexNum	<DP2.Mode7_ScrollOffsetY+1
 ;	PrintSpriteHexNum	<DP2.Mode7_ScrollOffsetY
 
-	WaitFrames	1						; don't use WAI here as IRQ is enabled
+	wait	"frames", 1						; don't use WAI here as IRQ is enabled
 
 
 
 ; Check for dpad up+left
 	lda	<DP2.Joy1Press+1
-	and	#%00001010
-	cmp	#%00001010
+	and	#kDpadUp|kDpadLeft
+	cmp	#kDpadUp|kDpadLeft
 	bne	@DpadUpLeftDone
 	dec	<DP2.Mode7_RotAngle
 	lda	<DP2.Mode7_Altitude
-	inc	a
+	ina
 	cmp	#112
 	bcc	+
 	lda	#111
@@ -450,12 +453,12 @@ Mode7Loop:
 
 ; Check for dpad up+right
 	lda	<DP2.Joy1Press+1
-	and	#%00001001
-	cmp	#%00001001
+	and	#kDpadUp|kDpadRight
+	cmp	#kDpadUp|kDpadRight
 	bne	@DpadUpRightDone
 	inc	<DP2.Mode7_RotAngle
 	lda	<DP2.Mode7_Altitude
-	inc	a
+	ina
 	cmp	#112
 	bcc	+
 	lda	#111
@@ -470,12 +473,12 @@ Mode7Loop:
 
 ; Check for dpad down+left
 	lda	<DP2.Joy1Press+1
-	and	#%00000110
-	cmp	#%00000110
+	and	#kDpadDown|kDpadLeft
+	cmp	#kDpadDown|kDpadLeft
 	bne	@DpadDownLeftDone
 	dec	<DP2.Mode7_RotAngle
 	lda	<DP2.Mode7_Altitude
-	dec	a
+	dea
 	bpl	+
 	lda	#0
 +	sta	<DP2.Mode7_Altitude
@@ -489,12 +492,12 @@ Mode7Loop:
 
 ; Check for dpad down+right
 	lda	<DP2.Joy1Press+1
-	and	#%00000101
-	cmp	#%00000101
+	and	#kDpadDown|kDpadRight
+	cmp	#kDpadDown|kDpadRight
 	bne	@DpadDownRightDone
 	inc	<DP2.Mode7_RotAngle
 	lda	<DP2.Mode7_Altitude
-	dec	a
+	dea
 	bpl	+
 	lda	#0
 +	sta	<DP2.Mode7_Altitude
@@ -511,7 +514,7 @@ Mode7Loop:
 	and	#kDpadUp
 	beq	@DpadUpDone
 	lda	<DP2.Mode7_Altitude
-	inc	a
+	ina
 	cmp	#112
 	bcc	+
 	lda	#111
@@ -527,7 +530,7 @@ Mode7Loop:
 	and	#kDpadDown
 	beq	@DpadDownDone
 	lda	<DP2.Mode7_Altitude
-	dec	a
+	dea
 	bpl	+
 	lda	#0
 +	sta	<DP2.Mode7_Altitude
@@ -596,6 +599,37 @@ Mode7Loop:
 ; Check for A = fly forward
 	lda	<DP2.Joy1Press
 	bpl	@AButtonDone
+
+/*
+; Try a shorter, faster implementation with sine/cosine lookup tables for inc/dec X/Y values
+; (no luck yet, probably just needs a simple math fix though *cough* ScrollOffsetY *cough*)
+	ldx	<DP2.Mode7_RotAngle
+
+	Accu16
+
+	lda.l	SRC_SineTableX, x
+	clc
+	adc	<DP2.Mode7_ScrollOffsetX
+	and	#$1FFF							; max scroll value (CHECKME)
+	sta	<DP2.Mode7_ScrollOffsetX
+	clc								; add 128 pixels (half a scanline)
+	adc	#$0400
+	sta	<DP2.Mode7_CenterCoordX
+
+	lda.l	SRC_CosineTableY, x
+	clc
+	adc	<DP2.Mode7_ScrollOffsetY
+	and	#$1FFF							; max scroll value (CHECKME)
+	sta	<DP2.Mode7_ScrollOffsetY
+	clc
+	adc	#$0400 + (kMode7SkyLines*8)
+	sta	<DP2.Mode7_CenterCoordY
+
+	Accu8
+
+	bra	@AButtonDone
+*/
+
 	lda	<DP2.Mode7_RotAngle					; $00 < angle < $80 --> inc X
 	beq	@FlightY						; don't change X if angle = 0
 	cmp	#$80
@@ -656,9 +690,9 @@ Mode7Loop:
 	lda	#kEffectSpeed3
 	sta	<DP2.EffectSpeed
 	ldx	#kEffectTypeHSplitOut2
-	jsr	(PTR_EffectTypes, x)
+	jsr	(SRC_EffectTypes, x)
 
-	lda	#%00110000						; clear IRQ enable bits
+	lda	#kHVIRQ							; clear IRQ enable bits
 	trb	LO8.NMITIMEN
 
 ;	jsr	SpriteInit						; purge OAM
@@ -668,7 +702,7 @@ Mode7Loop:
 ;	stz	VMADDL							; reset VRAM address
 ;	stz	VMADDH
 
-;	DMA_CH0 $09, SRC_Zeroes, VMDATAL, 0				; clear VRAM // no, not with NMI enabled
+;	dma_0	$09, SRC_0000, VMDATAL, 0				; clear VRAM // no, not with NMI enabled
 
 	jml	DebugMenu
 
@@ -682,7 +716,7 @@ Mode7Loop:
 	beq	@SelButtonDone
 	jsr	ResetMode7Matrix
 
-	WaitFrames	1						; wait for altitude setting to take effect
+	wait	"frames", 1						; wait for altitude setting to take effect
 
 	jsr	CalcMode7Matrix
 
@@ -724,10 +758,10 @@ CalcMode7Matrix:
 	sta	WRMPYA
 
 	ldx	<DP2.Mode7_RotAngle					; angle into X for indexing into the cos table
-	lda.l	SRC_CosineTable, x
+	lda.l	SRC_CosineTable8, x
 	bpl	+							; check for negative multiplier
 	eor	#$FF							; make multiplier positive
-	inc	a
+	ina
 	dec	<DP2.Temp+6						; remember that multplier has wrong sign
 +	sta	WRMPYB
 	nop								; burn a few cycles
@@ -741,10 +775,10 @@ CalcMode7Matrix:
 	sta	WRMPYA
 
 	ldx	<DP2.Mode7_RotAngle					; angle into X for indexing into the cos table
-	lda.l	SRC_CosineTable, x
+	lda.l	SRC_CosineTable8, x
 	bpl	+							; check for negative multiplier once again
 	eor	#$FF							; make multiplier positive
-	inc	a
+	ina
 +	sta	WRMPYB
 	tyx
 	dex								; make up for preceding iny
@@ -757,7 +791,7 @@ CalcMode7Matrix:
 	bit	<DP2.Temp+5						; check for multiplier sign
 	bpl	+
 	eor	#$FFFF							; multiplier was negative, so make final result negative
-	inc	a
+	ina
 +	sta	LO8.HDMA_M7A+(kMode7SkyLines*2), x
 	sta	LO8.HDMA_M7D+(kMode7SkyLines*2), x
 
@@ -780,10 +814,10 @@ CalcMode7Matrix:
 	sta	WRMPYA
 
 	ldx	<DP2.Mode7_RotAngle					; angle into X for indexing into the sin table
-	lda.l	SRC_SineTable, x
+	lda.l	SRC_SineTable8, x
 	bpl	+							; check for negative multiplier
 	eor	#$FF							; make multiplier positive
-	inc	a
+	ina
 	dec	<DP2.Temp+6						; remember that multplier has wrong sign
 +	sta	WRMPYB
 	nop								; burn a few cycles
@@ -797,10 +831,10 @@ CalcMode7Matrix:
 	sta	WRMPYA
 
 	ldx	<DP2.Mode7_RotAngle					; angle into X for indexing into the sin table
-	lda.l	SRC_SineTable, x
+	lda.l	SRC_SineTable8, x
 	bpl	+							; check for negative multiplier once again
 	eor	#$FF							; make multiplier positive
-	inc	a
+	ina
 +	sta	WRMPYB
 	tyx
 	dex
@@ -814,7 +848,7 @@ CalcMode7Matrix:
 	bmi	+
 	sta	LO8.HDMA_M7C+(kMode7SkyLines*2), x
 	eor	#$FFFF							; make M7C parameter negative and store in M7B
-	inc	a
+	ina
 	sta	LO8.HDMA_M7B+(kMode7SkyLines*2), x
 
 	Accu8
@@ -826,14 +860,93 @@ CalcMode7Matrix:
 
 	rts
 
-	.ACCU 16
+.ACCU 16
 
 +	sta	LO8.HDMA_M7B+(kMode7SkyLines*2), x			; multiplier was negative, store negative value first in M7B
 	eor	#$FFFF							; make M7B parameter positive and store in M7C
-	inc	a
+	ina
 	sta	LO8.HDMA_M7C+(kMode7SkyLines*2), x
 
 	Accu8
+
+	inx
+	inx
+	cpx	#448-(kMode7SkyLines*2)
+	bne	-
+
+	rts
+
+
+
+; FIXME Try using PPU multiplication instead during Vblank w/ below new routine
+
+CalcMode7MatrixPPU:
+	lda	#:SRC_Mode7Scaling
+	sta	<DP2.DataBank
+
+
+
+; Calculate M7A/M7D for next frame
+	ldx	#0
+-	txy
+	lda	[<DP2.DataAddress], y
+	sta	M7A
+	iny
+	lda	[<DP2.DataAddress], y
+	sta	M7A
+
+	ldx	<DP2.Mode7_RotAngle					; angle into X for indexing into the cos table
+	lda.l	SRC_CosineTable8, x
+	sta	M7B
+	tyx
+	dex								; make up for preceding iny
+
+	Accu16
+
+	lda	MPYM
+	sta	LO8.HDMA_M7A+(kMode7SkyLines*2), x
+	sta	LO8.HDMA_M7D+(kMode7SkyLines*2), x
+
+	Accu8
+
+	inx
+	inx
+	cpx	#448-(kMode7SkyLines*2)
+	bne	-
+
+
+
+; Calculate M7B/M7C for next frame
+	ldx	#0
+-	txy
+	lda	[<DP2.DataAddress], y
+	sta	M7A
+	iny
+	lda	[<DP2.DataAddress], y
+	sta	M7A
+
+	ldx	<DP2.Mode7_RotAngle					; angle into X for indexing into the sin table
+	lda.l	SRC_SineTable8, x
+	sta	M7B
+	tyx
+	dex
+
+	Accu16
+
+	lda	MPYM
+	bmi	+
+	sta	LO8.HDMA_M7C+(kMode7SkyLines*2), x
+	eor	#$FFFF							; make M7C parameter negative and store in M7B
+	ina
+	sta	LO8.HDMA_M7B+(kMode7SkyLines*2), x
+	bra	++
+
++	sta	LO8.HDMA_M7B+(kMode7SkyLines*2), x			; multiplier was negative, store negative value first in M7B
+	eor	#$FFFF							; make M7B parameter positive and store in M7C
+	ina
+	sta	LO8.HDMA_M7C+(kMode7SkyLines*2), x
+
+++	Accu8
 
 	inx
 	inx
@@ -861,10 +974,10 @@ CalcMode7Matrix:
 	sta	WRMPYA
 	txy								; preserve X in Y, this is faster than using the stack
 	ldx	<DP2.Mode7_RotAngle					; angle into X for indexing into the cos table
-	lda.l	SRC_CosineTable, x
+	lda.l	SRC_CosineTable8, x
 	bpl	+							; check for negative multiplier
 	eor	#$FF							; make multiplier positive
-	inc	a
+	ina
 	dec	<DP2.Temp+6						; remember that multplier has wrong sign
 +	sta	WRMPYB
 	nop								; burn a few cycles
@@ -876,10 +989,10 @@ CalcMode7Matrix:
 	lda	WMDATA							; read table entry
 	sta	WRMPYA
 	ldx	<DP2.Mode7_RotAngle					; angle into X for indexing into the cos table
-	lda.l	SRC_CosineTable, x
+	lda.l	SRC_CosineTable8, x
 	bpl	+							; check for negative multiplier once again
 	eor	#$FF							; make multiplier positive
-	inc	a
+	ina
 +	sta	WRMPYB
 	tyx								; restore X // 2 cycles
 
@@ -891,7 +1004,7 @@ CalcMode7Matrix:
 	bit	<DP2.Temp+5						; check for multiplier sign
 	bpl	+
 	eor	#$FFFF							; multiplier was negative, so make final result negative
-	inc	a
+	ina
 +	sta	LO8.HDMA_M7A+(kMode7SkyLines*2), x
 	sta	LO8.HDMA_M7D+(kMode7SkyLines*2), x
 
@@ -916,10 +1029,10 @@ CalcMode7Matrix:
 	sta	WRMPYA
 	txy								; preserve X
 	ldx	<DP2.Mode7_RotAngle					; angle into X for indexing into the sin table
-	lda.l	SRC_SineTable, x
+	lda.l	SRC_SineTable8, x
 	bpl	+							; check for negative multiplier
 	eor	#$FF							; make multiplier positive
-	inc	a
+	ina
 	dec	<DP2.Temp+6						; remember that multplier has wrong sign
 +	sta	WRMPYB
 	nop								; burn a few cycles
@@ -931,10 +1044,10 @@ CalcMode7Matrix:
 	lda	WMDATA							; read table entry
 	sta	WRMPYA
 	ldx	<DP2.Mode7_RotAngle					; angle into X for indexing into the sin table
-	lda.l	SRC_SineTable, x
+	lda.l	SRC_SineTable8, x
 	bpl	+							; check for negative multiplier once again
 	eor	#$FF							; make multiplier positive
-	inc	a
+	ina
 +	sta	WRMPYB
 	tyx								; restore X // 2 cycles
 
@@ -947,7 +1060,7 @@ CalcMode7Matrix:
 	bmi	+
 	sta	LO8.HDMA_M7C+(kMode7SkyLines*2), x
 	eor	#$FFFF							; make M7C parameter negative and store in M7B
-	inc	a
+	ina
 	sta	LO8.HDMA_M7B+(kMode7SkyLines*2), x
 
 	Accu8
@@ -959,11 +1072,11 @@ CalcMode7Matrix:
 
 	rts
 
-	.ACCU 16
+.ACCU 16
 
 +	sta	LO8.HDMA_M7B+(kMode7SkyLines*2), x			; multiplier was negative, store negative value first in M7B
 	eor	#$FFFF							; make M7B parameter positive and store in M7C
-	inc	a
+	ina
 	sta	LO8.HDMA_M7C+(kMode7SkyLines*2), x
 
 	Accu8
@@ -977,7 +1090,7 @@ CalcMode7Matrix:
 
 
 
-	.ACCU 16
+.ACCU 16
 
 ;-----------------------------
 ; 32 by 16 bit division (c) by Garth Wilson
@@ -1040,11 +1153,12 @@ Div32by16:
  @umend:
 
 	rts
+
 .ENDIF
 
 
 
-	.ACCU 8
+.ACCU 8
 
 M7FlightDecX:								; expects angle in Accu
 	cmp	#$A0
@@ -1062,8 +1176,8 @@ M7FlightDecX:								; expects angle in Accu
 @DoXDecByAngle:
 	Accu16
 
-	and	#$003F							; remove garbage in high byte, make sure angle in low byte doesn't exceed max. index ($20)
-	dec	a
+	and	#$003F							; clear high byte, make sure angle in low byte doesn't exceed max. index ($20)
+	dea
 	asl	a
 	tax
 	lda	<DP2.Mode7_ScrollOffsetX
@@ -1075,101 +1189,100 @@ M7FlightDecX:								; expects angle in Accu
 	.DW @DecX1, @DecX2, @DecX3, @DecX4, @DecX5, @DecX6, @DecX7, @DecX8, @DecX9, @DecX10, @DecX11, @DecX12, @DecX13, @DecX14, @DecX15, @DecX16, @DecX17, @DecX18, @DecX19, @DecX20, @DecX21, @DecX22, @DecX23, @DecX24, @DecX25, @DecX26, @DecX27, @DecX28, @DecX29, @DecX30, @DecX31, @DecX32
 
 @DecX32:
-	dec	a
+	dea
 
 @DecX31:
-	dec	a
+	dea
 
 @DecX30:
-	dec	a
+	dea
 
 @DecX29:
-	dec	a
+	dea
 
 @DecX28:
-	dec	a
+	dea
 
 @DecX27:
-	dec	a
+	dea
 
 @DecX26:
-	dec	a
+	dea
 
 @DecX25:
-	dec	a
+	dea
 
 @DecX24:
-	dec	a
+	dea
 
 @DecX23:
-	dec	a
+	dea
 
 @DecX22:
-	dec	a
+	dea
 
 @DecX21:
-	dec	a
+	dea
 
 @DecX20:
-	dec	a
+	dea
 
 @DecX19:
-	dec	a
+	dea
 
 @DecX18:
-	dec	a
+	dea
 
 @DecX17:
-	dec	a
+	dea
 
 @DecX16:
-	dec	a
+	dea
 
 @DecX15:
-	dec	a
+	dea
 
 @DecX14:
-	dec	a
+	dea
 
 @DecX13:
-	dec	a
+	dea
 
 @DecX12:
-	dec	a
+	dea
 
 @DecX11:
-	dec	a
+	dea
 
 @DecX10:
-	dec	a
+	dea
 
 @DecX9:
-	dec	a
+	dea
 
 @DecX8:
-	dec	a
+	dea
 
 @DecX7:
-	dec	a
+	dea
 
 @DecX6:
-	dec	a
+	dea
 
 @DecX5:
-	dec	a
+	dea
 
 @DecX4:
-	dec	a
+	dea
 
 @DecX3:
-	dec	a
+	dea
 
 @DecX2:
-	dec	a
+	dea
 
 @DecX1:
-	dec	a
-
+	dea
 	and	#$1FFF							; max scroll value (CHECKME)
 	sta	<DP2.Mode7_ScrollOffsetX
 	clc								; add 128 pixels (half a scanline)
@@ -1199,7 +1312,7 @@ M7FlightIncX:								; expects angle in Accu
 	Accu16
 
 	and	#$003F
-	dec	a
+	dea
 	asl	a
 	tax
 	lda	<DP2.Mode7_ScrollOffsetX
@@ -1211,101 +1324,100 @@ M7FlightIncX:								; expects angle in Accu
 	.DW @IncX1, @IncX2, @IncX3, @IncX4, @IncX5, @IncX6, @IncX7, @IncX8, @IncX9, @IncX10, @IncX11, @IncX12, @IncX13, @IncX14, @IncX15, @IncX16, @IncX17, @IncX18, @IncX19, @IncX20, @IncX21, @IncX22, @IncX23, @IncX24, @IncX25, @IncX26, @IncX27, @IncX28, @IncX29, @IncX30, @IncX31, @IncX32
 
 @IncX32:
-	inc	a
+	ina
 
 @IncX31:
-	inc	a
+	ina
 
 @IncX30:
-	inc	a
+	ina
 
 @IncX29:
-	inc	a
+	ina
 
 @IncX28:
-	inc	a
+	ina
 
 @IncX27:
-	inc	a
+	ina
 
 @IncX26:
-	inc	a
+	ina
 
 @IncX25:
-	inc	a
+	ina
 
 @IncX24:
-	inc	a
+	ina
 
 @IncX23:
-	inc	a
+	ina
 
 @IncX22:
-	inc	a
+	ina
 
 @IncX21:
-	inc	a
+	ina
 
 @IncX20:
-	inc	a
+	ina
 
 @IncX19:
-	inc	a
+	ina
 
 @IncX18:
-	inc	a
+	ina
 
 @IncX17:
-	inc	a
+	ina
 
 @IncX16:
-	inc	a
+	ina
 
 @IncX15:
-	inc	a
+	ina
 
 @IncX14:
-	inc	a
+	ina
 
 @IncX13:
-	inc	a
+	ina
 
 @IncX12:
-	inc	a
+	ina
 
 @IncX11:
-	inc	a
+	ina
 
 @IncX10:
-	inc	a
+	ina
 
 @IncX9:
-	inc	a
+	ina
 
 @IncX8:
-	inc	a
+	ina
 
 @IncX7:
-	inc	a
+	ina
 
 @IncX6:
-	inc	a
+	ina
 
 @IncX5:
-	inc	a
+	ina
 
 @IncX4:
-	inc	a
+	ina
 
 @IncX3:
-	inc	a
+	ina
 
 @IncX2:
-	inc	a
+	ina
 
 @IncX1:
-	inc	a
-
+	ina
 	and	#$1FFF							; max scroll value (CHECKME)
 	sta	<DP2.Mode7_ScrollOffsetX
 	clc								; add 128 pixels (half a scanline)
@@ -1340,7 +1452,7 @@ M7FlightDecY:								; expects angle in Accu
 	Accu16
 
 	and	#$003F
-	dec	a
+	dea
 	asl	a
 	tax
 	lda	<DP2.Mode7_ScrollOffsetY
@@ -1352,101 +1464,100 @@ M7FlightDecY:								; expects angle in Accu
 	.DW @DecY1, @DecY2, @DecY3, @DecY4, @DecY5, @DecY6, @DecY7, @DecY8, @DecY9, @DecY10, @DecY11, @DecY12, @DecY13, @DecY14, @DecY15, @DecY16, @DecY17, @DecY18, @DecY19, @DecY20, @DecY21, @DecY22, @DecY23, @DecY24, @DecY25, @DecY26, @DecY27, @DecY28, @DecY29, @DecY30, @DecY31, @DecY32
 
 @DecY32:
-	dec	a
+	dea
 
 @DecY31:
-	dec	a
+	dea
 
 @DecY30:
-	dec	a
+	dea
 
 @DecY29:
-	dec	a
+	dea
 
 @DecY28:
-	dec	a
+	dea
 
 @DecY27:
-	dec	a
+	dea
 
 @DecY26:
-	dec	a
+	dea
 
 @DecY25:
-	dec	a
+	dea
 
 @DecY24:
-	dec	a
+	dea
 
 @DecY23:
-	dec	a
+	dea
 
 @DecY22:
-	dec	a
+	dea
 
 @DecY21:
-	dec	a
+	dea
 
 @DecY20:
-	dec	a
+	dea
 
 @DecY19:
-	dec	a
+	dea
 
 @DecY18:
-	dec	a
+	dea
 
 @DecY17:
-	dec	a
+	dea
 
 @DecY16:
-	dec	a
+	dea
 
 @DecY15:
-	dec	a
+	dea
 
 @DecY14:
-	dec	a
+	dea
 
 @DecY13:
-	dec	a
+	dea
 
 @DecY12:
-	dec	a
+	dea
 
 @DecY11:
-	dec	a
+	dea
 
 @DecY10:
-	dec	a
+	dea
 
 @DecY9:
-	dec	a
+	dea
 
 @DecY8:
-	dec	a
+	dea
 
 @DecY7:
-	dec	a
+	dea
 
 @DecY6:
-	dec	a
+	dea
 
 @DecY5:
-	dec	a
+	dea
 
 @DecY4:
-	dec	a
+	dea
 
 @DecY3:
-	dec	a
+	dea
 
 @DecY2:
-	dec	a
+	dea
 
 @DecY1:
-	dec	a
-
+	dea
 	and	#$1FFF							; max scroll value (CHECKME)
 	sta	<DP2.Mode7_ScrollOffsetY
 	clc
@@ -1475,7 +1586,7 @@ M7FlightIncY:								; expects angle in Accu
 	Accu16
 
 	and	#$003F
-	dec	a
+	dea
 	asl	a
 	tax
 	lda	<DP2.Mode7_ScrollOffsetY
@@ -1487,101 +1598,100 @@ M7FlightIncY:								; expects angle in Accu
 	.DW @IncY1, @IncY2, @IncY3, @IncY4, @IncY5, @IncY6, @IncY7, @IncY8, @IncY9, @IncY10, @IncY11, @IncY12, @IncY13, @IncY14, @IncY15, @IncY16, @IncY17, @IncY18, @IncY19, @IncY20, @IncY21, @IncY22, @IncY23, @IncY24, @IncY25, @IncY26, @IncY27, @IncY28, @IncY29, @IncY30, @IncY31, @IncY32
 
 @IncY32:
-	inc	a
+	ina
 
 @IncY31:
-	inc	a
+	ina
 
 @IncY30:
-	inc	a
+	ina
 
 @IncY29:
-	inc	a
+	ina
 
 @IncY28:
-	inc	a
+	ina
 
 @IncY27:
-	inc	a
+	ina
 
 @IncY26:
-	inc	a
+	ina
 
 @IncY25:
-	inc	a
+	ina
 
 @IncY24:
-	inc	a
+	ina
 
 @IncY23:
-	inc	a
+	ina
 
 @IncY22:
-	inc	a
+	ina
 
 @IncY21:
-	inc	a
+	ina
 
 @IncY20:
-	inc	a
+	ina
 
 @IncY19:
-	inc	a
+	ina
 
 @IncY18:
-	inc	a
+	ina
 
 @IncY17:
-	inc	a
+	ina
 
 @IncY16:
-	inc	a
+	ina
 
 @IncY15:
-	inc	a
+	ina
 
 @IncY14:
-	inc	a
+	ina
 
 @IncY13:
-	inc	a
+	ina
 
 @IncY12:
-	inc	a
+	ina
 
 @IncY11:
-	inc	a
+	ina
 
 @IncY10:
-	inc	a
+	ina
 
 @IncY9:
-	inc	a
+	ina
 
 @IncY8:
-	inc	a
+	ina
 
 @IncY7:
-	inc	a
+	ina
 
 @IncY6:
-	inc	a
+	ina
 
 @IncY5:
-	inc	a
+	ina
 
 @IncY4:
-	inc	a
+	ina
 
 @IncY3:
-	inc	a
+	ina
 
 @IncY2:
-	inc	a
+	ina
 
 @IncY1:
-	inc	a
-
+	ina
 	and	#$1FFF							; max scroll value (CHECKME)
 	sta	<DP2.Mode7_ScrollOffsetY
 	clc
@@ -1615,4 +1725,4 @@ ResetMode7Matrix:
 
 
 
-; ******************************** EOF *********************************
+; EOF

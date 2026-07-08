@@ -1,0 +1,169 @@
+; ==================================================================================================
+;
+;	"FURRY RPG" (WORKING TITLE)
+;	(c) by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
+;
+;	DIALOGUE TEXT CHARACTER TABLE
+;
+; ==================================================================================================
+
+
+
+; TABLE
+; --------------------------------------------------------------------------------------------------
+
+; $00-$0F are standard hex values, represented in angle brackets
+; $00 also serves as a NUL terminator for strings
+00=<00>
+01=<01>
+02=<02>
+03=<03>
+04=<04>
+05=<05>
+06=<06>
+07=<07>
+08=<08>
+09=<09>
+0A=<0A>
+0B=<0B>
+0C=<0C>
+0D=<0D>
+0E=<0E>
+0F=<0F>
+; $20-$7E are standard ASCII characters
+; $20 is space
+20= 
+21=!
+; $22 is English open quotation mark
+22=“
+23=#
+24=$
+25=%
+26=&
+; $27 is apostrophe
+27=’
+28=(
+29=)
+2A=*
+2B=+
+2C=,
+2D=-
+2E=.
+2F=/
+30=0
+31=1
+32=2
+33=3
+34=4
+35=5
+36=6
+37=7
+38=8
+39=9
+3A=:
+3B=;
+3C=<
+3D==
+3E=>
+3F=?
+40=@
+41=A
+42=B
+43=C
+44=D
+45=E
+46=F
+47=G
+48=H
+49=I
+4A=J
+4B=K
+4C=L
+4D=M
+4E=N
+4F=O
+50=P
+51=Q
+52=R
+53=S
+54=T
+55=U
+56=V
+57=W
+58=X
+59=Y
+5A=Z
+5B=[
+5C=\
+5D=]
+5E=^
+5F=_
+; $60 is backtick
+60=`
+61=a
+62=b
+63=c
+64=d
+65=e
+66=f
+67=g
+68=h
+69=i
+6A=j
+6B=k
+6C=l
+6D=m
+6E=n
+6F=o
+70=p
+71=q
+72=r
+73=s
+74=t
+75=u
+76=v
+77=w
+78=x
+79=y
+7A=z
+7B={
+7C=|
+7D=}
+7E=~
+; $7F is multiplication sign
+7F=×
+80=Ä
+81=Ö
+82=Ü
+85=ä
+86=ë
+87=ï
+88=ö
+89=ü
+8A=ß
+; $A0A1 is heart symbol (UTF-8 hex code $2665)
+A0A1=♥
+; $A2A3 is beamed eighth notes (UTF-8 hex code $266B)
+A2A3=♫
+;
+;F0=ff
+;
+; The order of the following text box control codes has to match the order of entries in the ProcessDialogueCC jump table.
+; 
+FF00=<BG>
+FF01=<CLR>
+FF02=<IND>
+FF03=<JMP>
+FF04=<NL>
+FF05=<PORTRAIT>
+FF06=<SEL>
+FF07=<SUBHEX>
+FF08=<SUBINT8>
+FF09=<SUBINT16>
+FF0A=<SUBSTR>
+FF0B=<B>
+FF0C=<NAME>
+
+
+
+; EOF

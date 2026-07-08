@@ -1,26 +1,25 @@
-;==========================================================================================
+; ==================================================================================================
 ;
-;   "FURRY RPG" (WORKING TITLE)
-;   (c) 2023 by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
+;	"FURRY RPG" (WORKING TITLE)
+;	(c) by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
 ;
-;	*** WORLD MAP ***
+;	WORLD MAP
 ;
-;==========================================================================================
+; ==================================================================================================
 
 
+
+.ACCU 8
+.INDEX 16
 
 LoadWorldMap:
-	.ACCU 8
-	.INDEX 16
-
-	lda	#$80							; enter forced blank
+	lda	#kForcedBlank
 	sta	RAM_INIDISP
 	stz	<DP2.HDMA_Channels					; disable HDMA
 	jsr	SpriteInit
 
 	wai
-
-	DisableIRQs
+	jsl	DisableInterrupts
 
 
 
@@ -30,14 +29,13 @@ LoadWorldMap:
 	ldx	#$0000							; reset VRAM address
 	stx	VMADDL
 
-	DMA_CH0 $01, SRC_WorldMap, VMDATAL, 29696
-
-	DMA_CH0 $09, SRC_Zeroes, VMDATAL, 3072				; clear area $3C00-$4000 (BG2 tilemap) in case it was used (like by Mode 7 map) // FIXME, use for BG2 tilemap data or disable BG2 completely
+	dma_0	$01, SRC_WorldMap, VMDATAL, 29696
+	dma_0	$09, SRC_0000, VMDATAL, 3072				; clear area $3C00-$4000 (BG2 tilemap) in case it was used (like by Mode 7 map) // FIXME, use for BG2 tilemap data or disable BG2 completely
 
 ;	ldx	#$4000							; set VRAM address of new BG1 tilemap
 ;	stx	VMADDL
 
-	DMA_CH0 $01, SRC_Tilemap_WorldMap, VMDATAL, 8192
+	dma_0	$01, SRC_Tilemap_WorldMap, VMDATAL, 8192
 
 
 
@@ -45,12 +43,12 @@ LoadWorldMap:
 ;	ldx	#$5000							; set VRAM address $5000
 ;	stx	VMADDL
 
-;	DMA_CH0 $01, SRC_Mode7_Sky, VMDATAL, 4368			; only load upper half of sky gfx
+;	dma_0	$01, SRC_Mode7_Sky, VMDATAL, 4368			; only load upper half of sky gfx
 
 ;	ldx	#$3C00							; set VRAM address $3C00
 ;	stx	VMADDL
 
-;	DMA_CH0 $01, SRC_TileMap_Mode7_Sky, VMDATAL, _sizeof_SRC_TileMap_Mode7_Sky
+;	dma_0	$01, SRC_TileMap_Mode7_Sky, VMDATAL, _sizeof_SRC_TileMap_Mode7_Sky
 
 
 
@@ -58,24 +56,24 @@ LoadWorldMap:
 	ldx	#VRAM_Sprites						; set VRAM address for sprite tiles
 	stx	VMADDL
 
-	DMA_CH0 $01, SRC_Sprites_SkyBlur, VMDATAL, 576
+	dma_0	$01, SRC_Sprites_SkyBlur, VMDATAL, 576
 
 
 
 ; Load palettes
 ;	stz	CGADD							; reset CGRAM address
 
-;	DMA_CH0 $02, SRC_Palette_Mode7_Sky, CGDATA, 32
+;	dma_0	$02, SRC_Palette_Mode7_Sky, CGDATA, 32
 
 	lda	#$10
 	sta	CGADD
 
-	DMA_CH0 $02, SRC_Palette_WorldMap+32, CGDATA, 224
+	dma_0	$02, SRC_Palette_WorldMap+32, CGDATA, 224
 
 	lda	#$C0
 	sta	CGADD
 
-	DMA_CH0 $02, SRC_Palette_Sprites_SkyBlur, CGDATA, 32
+	dma_0	$02, SRC_Palette_Sprites_SkyBlur, CGDATA, 32
 
 
 
@@ -321,7 +319,7 @@ LoadWorldMap:
 
 
 ; Set up NMI and shadow PPU regs /misc. parameters
-	SetNMI	kNMI_WorldMap
+	set	"NMI", Vblank_WorldMap
 
 	lda	#%01111000						; enable HDMA ch. 3 (sky color gradient), 4 (BG1 scroll), 5 (layer control) & 6 (window mask)
 	tsb	<DP2.HDMA_Channels
@@ -342,7 +340,7 @@ LoadWorldMap:
 	sta	RAM_TMW
 	sta	RAM_TSW
 	lda	RDNMI							; clear NMI flag
-	lda	#$81							; enable NMI & auto-joypad read
+	lda	#kNMITIMEN_Enable|kAutoJoy				; enable interrupts + auto joypad read
 	sta	LO8.NMITIMEN
 	sta	NMITIMEN
 	cli
@@ -352,7 +350,7 @@ LoadWorldMap:
 	lda	#kEffectSpeed3
 	sta	<DP2.EffectSpeed
 	ldx	#kEffectTypeHSplitIn
-	jsr	(PTR_EffectTypes, x)
+	jsr	(SRC_EffectTypes, x)
 
 
 
@@ -460,7 +458,7 @@ WorldMapLoop:
 	lda	#kEffectSpeed3
 	sta	<DP2.EffectSpeed
 	ldx	#kEffectTypeHSplitOut2
-	jsr	(PTR_EffectTypes, x)
+	jsr	(SRC_EffectTypes, x)
 
 ;	stz	<DP2.HDMA_Channels					; disable HDMA // never mind, done in debug menu
 ;	lda	#%00110000						; set color math disable bits (4-5) // never mind, all done in debug menu
@@ -477,7 +475,7 @@ WorldMapLoop:
 ;	stz	VMADDL							; reset VRAM address
 ;	stz	VMADDH
 
-;	DMA_CH0 $09, SRC_Zeroes, VMDATAL, 0				; clear VRAM // no, not with NMI enabled
+;	dma_0	$09, SRC_0000, VMDATAL, 0				; clear VRAM // no, not with NMI enabled
 
 	jml	DebugMenu
 
@@ -517,4 +515,4 @@ CalcVScrollDisplacement:
 
 
 
-; ******************************** EOF *********************************
+; EOF

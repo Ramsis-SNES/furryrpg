@@ -1,46 +1,50 @@
-;==========================================================================================
+; ==================================================================================================
 ;
-;   "FURRY RPG" (WORKING TITLE)
-;   (c) 2023 by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
+;	"FURRY RPG" (WORKING TITLE)
+;	(c) by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
 ;
-;	*** AREA DATA ***
+;	AREA DATA
 ;
-;==========================================================================================
+; ==================================================================================================
 
 
 
-	.DEFINE	NextAreaNamePtr		0
-	.DEFINE	NextAreaObjsPtr		0				; allow zero-based calculations
-	.DEFINE	NextAreaPropsPtr	0				; allow zero-based calculations
+.DEFINE	NextAreaNamePtr		0
+.DEFINE	NextAreaObjsPtr		0					; allow zero-based calculations
+.DEFINE	NextAreaPropsPtr	0					; allow zero-based calculations
 
 
 
-; *************************** Pointer tables ***************************
+; POINTER TABLES
+; --------------------------------------------------------------------------------------------------
 
-PTR_AreaObjects:
+SRC_AreaObjects:
 
-	.REPEAT 3
-		.DW NextAreaObjsPtr
-		.REDEFINE NextAreaObjsPtr	NextAreaObjsPtr + _sizeof_SRC_AreaObjects000	; add table size for each new pointer
-	.ENDR
-
-
-
-PTR_AreaProperties:
-
-	.REPEAT 3
-		.DW NextAreaPropsPtr
-		.REDEFINE NextAreaPropsPtr	NextAreaPropsPtr + _sizeof_SRC_AreaProperties000	; add table size for each new pointer
-	.ENDR
+.REPEAT 3
+	.DW NextAreaObjsPtr
+	.REDEFINE NextAreaObjsPtr	NextAreaObjsPtr + _sizeof_SRC_AreaObjects000	; add table size for each new pointer
+.ENDR
 
 
 
-; *************************** Area meta maps ***************************
+SRC_AreaProperties:
+
+.REPEAT 3
+	.DW NextAreaPropsPtr
+	.REDEFINE NextAreaPropsPtr	NextAreaPropsPtr + _sizeof_SRC_AreaProperties000	; add table size for each new pointer
+.ENDR
+
+
+
+; AREA META MAPS
+; --------------------------------------------------------------------------------------------------
 
 SRC_AreaMetaMap000:
+
 .REPEAT 224
 	.DB $00
 .ENDR
+
 /*
 	.DB $80, $80, $80, $80, $80, $80, $80, $80, $80, $80, $80, $80, $80, $80, $80, $80, $80, $80, $80, $80, $80, $80, $80, $80, $80, $80, $80, $80, $80, $80, $80, $80
 	.DB $80, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $80
@@ -79,13 +83,15 @@ SRC_AreaMetaMap001:
 
 
 SRC_AreaMetaMap002:
+
 .REPEAT 512								; 64×32 (8×8) tiles, so 2048/4 meta entries (each entry represents a block of 2×2 tiles)
 	.DB $00
 .ENDR
 
 
 
-; **************************** Area objects ****************************
+; AREA OBJECTS
+; --------------------------------------------------------------------------------------------------
 
 SRC_AreaObjectsTable:
 
@@ -106,7 +112,8 @@ SRC_AreaObjects002:
 
 
 
-; ************************** Area properties ***************************
+; AREA PROPERTIES
+; --------------------------------------------------------------------------------------------------
 
 SRC_AreaPropertyTables:
 
@@ -177,4 +184,4 @@ SRC_AreaProperties00X:
 
 
 
-; ******************************** EOF *********************************
+; EOF

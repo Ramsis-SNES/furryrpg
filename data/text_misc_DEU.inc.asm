@@ -1,0 +1,1043 @@
+; ==================================================================================================
+;
+;	"FURRY RPG" (WORKING TITLE)
+;	(c) by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
+;
+;	MISC. TEXT (GERMAN/DEU)
+;
+; ==================================================================================================
+
+
+
+; NOTES
+; --------------------------------------------------------------------------------------------------
+
+; For a list of available special character aliases, see variables.asm.
+
+
+
+; AREA NAME TEXT POINTERS
+; --------------------------------------------------------------------------------------------------
+
+SRC_AreaNamesDEU:
+
+.REPEAT 3 INDEX COUNT
+	.DW STR_AreaNameDEU{%.3d{COUNT}}				; create pointers for German area names
+.ENDR
+
+
+
+; AREA NAMES
+; --------------------------------------------------------------------------------------------------
+
+STR_AreaNameDEU000:
+	.STRINGMAP HUD, "Schachbrett<END>"
+
+STR_AreaNameDEU001:
+	.STRINGMAP HUD, "Sandkasten<END>"
+
+STR_AreaNameDEU002:
+	.STRINGMAP HUD, "Tembas Wäldchen<END>"
+
+
+
+; CHAPTER NAME TEXT POINTERS
+; --------------------------------------------------------------------------------------------------
+
+SRC_ChapterNameDEU:
+
+.REPEAT 4 INDEX COUNT
+	.DW STR_ChapterNameDEU{%.3d{COUNT}}				; create pointers for German chapter names
+.ENDR
+
+
+
+; CHAPTER NAMES
+; --------------------------------------------------------------------------------------------------
+
+STR_ChapterNameDEU000:
+	.DB "PROLOG", 0
+
+STR_ChapterNameDEU001:
+	.DB "KAPITEL 1", 0
+
+STR_ChapterNameDEU002:
+	.DB "KAPITEL 2", 0
+
+STR_ChapterNameDEU003:
+	.DB "KAPITEL 3", 0
+
+
+
+; ITEM NAMES
+; --------------------------------------------------------------------------------------------------
+
+STR_ItemsDEU:
+
+STR_ItemDEU000:
+	.DB "Item000000000000"
+
+STR_ItemDEU001:
+	.DB "Item000000000001"
+
+STR_ItemDEU002:
+	.DB "Item000000000002"
+
+STR_ItemDEU003:
+	.DB "Item000000000003"
+
+STR_ItemDEU004:
+	.DB "Item000000000004"
+
+STR_ItemDEU005:
+	.DB "Item000000000005"
+
+STR_ItemDEU006:
+	.DB "Item000000000006"
+
+STR_ItemDEU007:
+	.DB "Item000000000007"
+
+STR_ItemDEU008:
+	.DB "Item000000000008"
+
+STR_ItemDEU009:
+	.DB "Item000000000009"
+
+STR_ItemDEU010:
+	.DB "Item000000000010"
+
+STR_ItemDEU011:
+	.DB "Item000000000011"
+
+STR_ItemDEU012:
+	.DB "Item000000000012"
+
+STR_ItemDEU013:
+	.DB "Item000000000013"
+
+STR_ItemDEU014:
+	.DB "Item000000000014"
+
+STR_ItemDEU015:
+	.DB "Item000000000015"
+
+STR_ItemDEU016:
+	.DB "Item000000000016"
+
+STR_ItemDEU017:
+	.DB "Item000000000017"
+
+STR_ItemDEU018:
+	.DB "Item000000000018"
+
+STR_ItemDEU019:
+	.DB "Item000000000019"
+
+STR_ItemDEU020:
+	.DB "Item000000000020"
+
+STR_ItemDEU021:
+	.DB "Item000000000021"
+
+STR_ItemDEU022:
+	.DB "Item000000000022"
+
+STR_ItemDEU023:
+	.DB "Item000000000023"
+
+STR_ItemDEU024:
+	.DB "Item000000000024"
+
+STR_ItemDEU025:
+	.DB "Item000000000025"
+
+STR_ItemDEU026:
+	.DB "Item000000000026"
+
+STR_ItemDEU027:
+	.DB "Item000000000027"
+
+STR_ItemDEU028:
+	.DB "Item000000000028"
+
+STR_ItemDEU029:
+	.DB "Item000000000029"
+
+STR_ItemDEU030:
+	.DB "Item000000000030"
+
+STR_ItemDEU031:
+	.DB "Item000000000031"
+
+STR_ItemDEU032:
+	.DB "Item000000000032"
+
+STR_ItemDEU033:
+	.DB "Item000000000033"
+
+STR_ItemDEU034:
+	.DB "Item000000000034"
+
+STR_ItemDEU035:
+	.DB "Item000000000035"
+
+STR_ItemDEU036:
+	.DB "Item000000000036"
+
+STR_ItemDEU037:
+	.DB "Item000000000037"
+
+STR_ItemDEU038:
+	.DB "Item000000000038"
+
+STR_ItemDEU039:
+	.DB "Item000000000039"
+
+STR_ItemDEU040:
+	.DB "Item000000000040"
+
+STR_ItemDEU041:
+	.DB "Item000000000041"
+
+STR_ItemDEU042:
+	.DB "Item000000000042"
+
+STR_ItemDEU043:
+	.DB "Item000000000043"
+
+STR_ItemDEU044:
+	.DB "Item000000000044"
+
+STR_ItemDEU045:
+	.DB "Item000000000045"
+
+STR_ItemDEU046:
+	.DB "Item000000000046"
+
+STR_ItemDEU047:
+	.DB "Item000000000047"
+
+STR_ItemDEU048:
+	.DB "Item000000000048"
+
+STR_ItemDEU049:
+	.DB "Item000000000049"
+
+STR_ItemDEU050:
+	.DB "Item000000000050"
+
+STR_ItemDEU051:
+	.DB "Item000000000051"
+
+STR_ItemDEU052:
+	.DB "Item000000000052"
+
+STR_ItemDEU053:
+	.DB "Item000000000053"
+
+STR_ItemDEU054:
+	.DB "Item000000000054"
+
+STR_ItemDEU055:
+	.DB "Item000000000055"
+
+STR_ItemDEU056:
+	.DB "Item000000000056"
+
+STR_ItemDEU057:
+	.DB "Item000000000057"
+
+STR_ItemDEU058:
+	.DB "Item000000000058"
+
+STR_ItemDEU059:
+	.DB "Item000000000059"
+
+STR_ItemDEU060:
+	.DB "Item000000000060"
+
+STR_ItemDEU061:
+	.DB "Item000000000061"
+
+STR_ItemDEU062:
+	.DB "Item000000000062"
+
+STR_ItemDEU063:
+	.DB "Item000000000063"
+
+STR_ItemDEU064:
+	.DB "Item000000000064"
+
+STR_ItemDEU065:
+	.DB "Item000000000065"
+
+STR_ItemDEU066:
+	.DB "Item000000000066"
+
+STR_ItemDEU067:
+	.DB "Item000000000067"
+
+STR_ItemDEU068:
+	.DB "Item000000000068"
+
+STR_ItemDEU069:
+	.DB "Item000000000069"
+
+STR_ItemDEU070:
+	.DB "Item000000000070"
+
+STR_ItemDEU071:
+	.DB "Item000000000071"
+
+STR_ItemDEU072:
+	.DB "Item000000000072"
+
+STR_ItemDEU073:
+	.DB "Item000000000073"
+
+STR_ItemDEU074:
+	.DB "Item000000000074"
+
+STR_ItemDEU075:
+	.DB "Item000000000075"
+
+STR_ItemDEU076:
+	.DB "Item000000000076"
+
+STR_ItemDEU077:
+	.DB "Item000000000077"
+
+STR_ItemDEU078:
+	.DB "Item000000000078"
+
+STR_ItemDEU079:
+	.DB "Item000000000079"
+
+STR_ItemDEU080:
+	.DB "Item000000000080"
+
+STR_ItemDEU081:
+	.DB "Item000000000081"
+
+STR_ItemDEU082:
+	.DB "Item000000000082"
+
+STR_ItemDEU083:
+	.DB "Item000000000083"
+
+STR_ItemDEU084:
+	.DB "Item000000000084"
+
+STR_ItemDEU085:
+	.DB "Item000000000085"
+
+STR_ItemDEU086:
+	.DB "Item000000000086"
+
+STR_ItemDEU087:
+	.DB "Item000000000087"
+
+STR_ItemDEU088:
+	.DB "Item000000000088"
+
+STR_ItemDEU089:
+	.DB "Item000000000089"
+
+STR_ItemDEU090:
+	.DB "Item000000000090"
+
+STR_ItemDEU091:
+	.DB "Item000000000091"
+
+STR_ItemDEU092:
+	.DB "Item000000000092"
+
+STR_ItemDEU093:
+	.DB "Item000000000093"
+
+STR_ItemDEU094:
+	.DB "Item000000000094"
+
+STR_ItemDEU095:
+	.DB "Item000000000095"
+
+STR_ItemDEU096:
+	.DB "Item000000000096"
+
+STR_ItemDEU097:
+	.DB "Item000000000097"
+
+STR_ItemDEU098:
+	.DB "Item000000000098"
+
+STR_ItemDEU099:
+	.DB "Item000000000099"
+
+STR_ItemDEU100:
+	.DB "Item000000000100"
+
+STR_ItemDEU101:
+	.DB "Item000000000101"
+
+STR_ItemDEU102:
+	.DB "Item000000000102"
+
+STR_ItemDEU103:
+	.DB "Item000000000103"
+
+STR_ItemDEU104:
+	.DB "Item000000000104"
+
+STR_ItemDEU105:
+	.DB "Item000000000105"
+
+STR_ItemDEU106:
+	.DB "Item000000000106"
+
+STR_ItemDEU107:
+	.DB "Item000000000107"
+
+STR_ItemDEU108:
+	.DB "Item000000000108"
+
+STR_ItemDEU109:
+	.DB "Item000000000109"
+
+STR_ItemDEU110:
+	.DB "Item000000000110"
+
+STR_ItemDEU111:
+	.DB "Item000000000111"
+
+STR_ItemDEU112:
+	.DB "Item000000000112"
+
+STR_ItemDEU113:
+	.DB "Item000000000113"
+
+STR_ItemDEU114:
+	.DB "Item000000000114"
+
+STR_ItemDEU115:
+	.DB "Item000000000115"
+
+STR_ItemDEU116:
+	.DB "Item000000000116"
+
+STR_ItemDEU117:
+	.DB "Item000000000117"
+
+STR_ItemDEU118:
+	.DB "Item000000000118"
+
+STR_ItemDEU119:
+	.DB "Item000000000119"
+
+STR_ItemDEU120:
+	.DB "Item000000000120"
+
+STR_ItemDEU121:
+	.DB "Item000000000121"
+
+STR_ItemDEU122:
+	.DB "Item000000000122"
+
+STR_ItemDEU123:
+	.DB "Item000000000123"
+
+STR_ItemDEU124:
+	.DB "Item000000000124"
+
+STR_ItemDEU125:
+	.DB "Item000000000125"
+
+STR_ItemDEU126:
+	.DB "Item000000000126"
+
+STR_ItemDEU127:
+	.DB "Item000000000127"
+
+STR_ItemDEU128:
+	.DB "Item000000000128"
+
+STR_ItemDEU129:
+	.DB "Item000000000129"
+
+STR_ItemDEU130:
+	.DB "Item000000000130"
+
+STR_ItemDEU131:
+	.DB "Item000000000131"
+
+STR_ItemDEU132:
+	.DB "Item000000000132"
+
+STR_ItemDEU133:
+	.DB "Item000000000133"
+
+STR_ItemDEU134:
+	.DB "Item000000000134"
+
+STR_ItemDEU135:
+	.DB "Item000000000135"
+
+STR_ItemDEU136:
+	.DB "Item000000000136"
+
+STR_ItemDEU137:
+	.DB "Item000000000137"
+
+STR_ItemDEU138:
+	.DB "Item000000000138"
+
+STR_ItemDEU139:
+	.DB "Item000000000139"
+
+STR_ItemDEU140:
+	.DB "Item000000000140"
+
+STR_ItemDEU141:
+	.DB "Item000000000141"
+
+STR_ItemDEU142:
+	.DB "Item000000000142"
+
+STR_ItemDEU143:
+	.DB "Item000000000143"
+
+STR_ItemDEU144:
+	.DB "Item000000000144"
+
+STR_ItemDEU145:
+	.DB "Item000000000145"
+
+STR_ItemDEU146:
+	.DB "Item000000000146"
+
+STR_ItemDEU147:
+	.DB "Item000000000147"
+
+STR_ItemDEU148:
+	.DB "Item000000000148"
+
+STR_ItemDEU149:
+	.DB "Item000000000149"
+
+STR_ItemDEU150:
+	.DB "Item000000000150"
+
+STR_ItemDEU151:
+	.DB "Item000000000151"
+
+STR_ItemDEU152:
+	.DB "Item000000000152"
+
+STR_ItemDEU153:
+	.DB "Item000000000153"
+
+STR_ItemDEU154:
+	.DB "Item000000000154"
+
+STR_ItemDEU155:
+	.DB "Item000000000155"
+
+STR_ItemDEU156:
+	.DB "Item000000000156"
+
+STR_ItemDEU157:
+	.DB "Item000000000157"
+
+STR_ItemDEU158:
+	.DB "Item000000000158"
+
+STR_ItemDEU159:
+	.DB "Item000000000159"
+
+STR_ItemDEU160:
+	.DB "Item000000000160"
+
+STR_ItemDEU161:
+	.DB "Item000000000161"
+
+STR_ItemDEU162:
+	.DB "Item000000000162"
+
+STR_ItemDEU163:
+	.DB "Item000000000163"
+
+STR_ItemDEU164:
+	.DB "Item000000000164"
+
+STR_ItemDEU165:
+	.DB "Item000000000165"
+
+STR_ItemDEU166:
+	.DB "Item000000000166"
+
+STR_ItemDEU167:
+	.DB "Item000000000167"
+
+STR_ItemDEU168:
+	.DB "Item000000000168"
+
+STR_ItemDEU169:
+	.DB "Item000000000169"
+
+STR_ItemDEU170:
+	.DB "Item000000000170"
+
+STR_ItemDEU171:
+	.DB "Item000000000171"
+
+STR_ItemDEU172:
+	.DB "Item000000000172"
+
+STR_ItemDEU173:
+	.DB "Item000000000173"
+
+STR_ItemDEU174:
+	.DB "Item000000000174"
+
+STR_ItemDEU175:
+	.DB "Item000000000175"
+
+STR_ItemDEU176:
+	.DB "Item000000000176"
+
+STR_ItemDEU177:
+	.DB "Item000000000177"
+
+STR_ItemDEU178:
+	.DB "Item000000000178"
+
+STR_ItemDEU179:
+	.DB "Item000000000179"
+
+STR_ItemDEU180:
+	.DB "Item000000000180"
+
+STR_ItemDEU181:
+	.DB "Item000000000181"
+
+STR_ItemDEU182:
+	.DB "Item000000000182"
+
+STR_ItemDEU183:
+	.DB "Item000000000183"
+
+STR_ItemDEU184:
+	.DB "Item000000000184"
+
+STR_ItemDEU185:
+	.DB "Item000000000185"
+
+STR_ItemDEU186:
+	.DB "Item000000000186"
+
+STR_ItemDEU187:
+	.DB "Item000000000187"
+
+STR_ItemDEU188:
+	.DB "Item000000000188"
+
+STR_ItemDEU189:
+	.DB "Item000000000189"
+
+STR_ItemDEU190:
+	.DB "Item000000000190"
+
+STR_ItemDEU191:
+	.DB "Item000000000191"
+
+STR_ItemDEU192:
+	.DB "Item000000000192"
+
+STR_ItemDEU193:
+	.DB "Item000000000193"
+
+STR_ItemDEU194:
+	.DB "Item000000000194"
+
+STR_ItemDEU195:
+	.DB "Item000000000195"
+
+STR_ItemDEU196:
+	.DB "Item000000000196"
+
+STR_ItemDEU197:
+	.DB "Item000000000197"
+
+STR_ItemDEU198:
+	.DB "Item000000000198"
+
+STR_ItemDEU199:
+	.DB "Item000000000199"
+
+STR_ItemDEU200:
+	.DB "Item000000000200"
+
+STR_ItemDEU201:
+	.DB "Item000000000201"
+
+STR_ItemDEU202:
+	.DB "Item000000000202"
+
+STR_ItemDEU203:
+	.DB "Item000000000203"
+
+STR_ItemDEU204:
+	.DB "Item000000000204"
+
+STR_ItemDEU205:
+	.DB "Item000000000205"
+
+STR_ItemDEU206:
+	.DB "Item000000000206"
+
+STR_ItemDEU207:
+	.DB "Item000000000207"
+
+STR_ItemDEU208:
+	.DB "Item000000000208"
+
+STR_ItemDEU209:
+	.DB "Item000000000209"
+
+STR_ItemDEU210:
+	.DB "Item000000000210"
+
+STR_ItemDEU211:
+	.DB "Item000000000211"
+
+STR_ItemDEU212:
+	.DB "Item000000000212"
+
+STR_ItemDEU213:
+	.DB "Item000000000213"
+
+STR_ItemDEU214:
+	.DB "Item000000000214"
+
+STR_ItemDEU215:
+	.DB "Item000000000215"
+
+STR_ItemDEU216:
+	.DB "Item000000000216"
+
+STR_ItemDEU217:
+	.DB "Item000000000217"
+
+STR_ItemDEU218:
+	.DB "Item000000000218"
+
+STR_ItemDEU219:
+	.DB "Item000000000219"
+
+STR_ItemDEU220:
+	.DB "Item000000000220"
+
+STR_ItemDEU221:
+	.DB "Item000000000221"
+
+STR_ItemDEU222:
+	.DB "Item000000000222"
+
+STR_ItemDEU223:
+	.DB "Item000000000223"
+
+STR_ItemDEU224:
+	.DB "Item000000000224"
+
+STR_ItemDEU225:
+	.DB "Item000000000225"
+
+STR_ItemDEU226:
+	.DB "Item000000000226"
+
+STR_ItemDEU227:
+	.DB "Item000000000227"
+
+STR_ItemDEU228:
+	.DB "Item000000000228"
+
+STR_ItemDEU229:
+	.DB "Item000000000229"
+
+STR_ItemDEU230:
+	.DB "Item000000000230"
+
+STR_ItemDEU231:
+	.DB "Item000000000231"
+
+STR_ItemDEU232:
+	.DB "Item000000000232"
+
+STR_ItemDEU233:
+	.DB "Item000000000233"
+
+STR_ItemDEU234:
+	.DB "Item000000000234"
+
+STR_ItemDEU235:
+	.DB "Item000000000235"
+
+STR_ItemDEU236:
+	.DB "Item000000000236"
+
+STR_ItemDEU237:
+	.DB "Item000000000237"
+
+STR_ItemDEU238:
+	.DB "Item000000000238"
+
+STR_ItemDEU239:
+	.DB "Item000000000239"
+
+STR_ItemDEU240:
+	.DB "Item000000000240"
+
+STR_ItemDEU241:
+	.DB "Item000000000241"
+
+STR_ItemDEU242:
+	.DB "Item000000000242"
+
+STR_ItemDEU243:
+	.DB "Item000000000243"
+
+STR_ItemDEU244:
+	.DB "Item000000000244"
+
+STR_ItemDEU245:
+	.DB "Item000000000245"
+
+STR_ItemDEU246:
+	.DB "Item000000000246"
+
+STR_ItemDEU247:
+	.DB "Item000000000247"
+
+STR_ItemDEU248:
+	.DB "Item000000000248"
+
+STR_ItemDEU249:
+	.DB "Item000000000249"
+
+STR_ItemDEU250:
+	.DB "Item000000000250"
+
+STR_ItemDEU251:
+	.DB "Item000000000251"
+
+STR_ItemDEU252:
+	.DB "Item000000000252"
+
+STR_ItemDEU253:
+	.DB "Item000000000253"
+
+STR_ItemDEU254:
+	.DB "Item000000000254"
+
+STR_ItemDEU255:
+	.DB "Item000000000255"
+
+
+
+; MAIN MENU TEXT POINTERS
+; --------------------------------------------------------------------------------------------------
+
+SRC_RingMenuHeadDEU:
+	.DW STR_RingMenuItemDEU00
+	.DW STR_RingMenuItemDEU20
+	.DW STR_RingMenuItemDEU40
+	.DW STR_RingMenuItemDEU60
+	.DW STR_RingMenuItemDEU80
+	.DW STR_RingMenuItemDEUA0
+	.DW STR_RingMenuItemDEUC0
+	.DW STR_RingMenuItemDEUE0
+
+
+
+SRC_MainMenuTextDEU:
+
+.REPEAT 14 INDEX COUNT
+	.DW STR_MainMenuDEU{%.3d{COUNT}}				; create pointers for German main menu stuff
+.ENDR
+
+
+
+STR_RingMenuItemDEU00:
+	.DB " Einstellungen  ", 0
+
+STR_RingMenuItemDEU20:
+	.DB " Spiel beenden  ", 0
+
+STR_RingMenuItemDEU40:
+	.DB "      ???1      ", 0
+
+STR_RingMenuItemDEU60:
+	.DB "      ???2      ", 0
+
+STR_RingMenuItemDEU80:
+	.DB "    Inventar    ", 0
+
+STR_RingMenuItemDEUA0:
+	.DB "     Talent     ", 0
+
+STR_RingMenuItemDEUC0:
+	.DB "     Gruppe     ", 0
+
+STR_RingMenuItemDEUE0:
+	.DB " Lilys Logbuch  ", 0
+
+STR_MainMenuDEU000:
+	.DB "Inventory", 0						; FIXME add translation
+
+STR_MainMenuDEU001:
+	.DB "Use/Equip", 0
+
+STR_MainMenuDEU002:
+	.DB "Sort By:"
+
+STR_MainMenuDEU003:
+	.DB "Name", 0
+
+STR_MainMenuDEU004:
+	.DB "Type"
+
+STR_MainMenuDEU005:
+	.DB "Order:"
+
+STR_MainMenuDEU006:
+	.DB "Asc."
+
+STR_MainMenuDEU007:
+	.DB "Desc."
+
+STR_MainMenuDEU008:
+	.DB "Item Type:"
+
+STR_MainMenuDEU009:
+	.DB "Food"
+
+STR_MainMenuDEU010:
+	.DB "Weapon"
+
+STR_MainMenuDEU011:
+	.DB "Armor"
+
+STR_MainMenuDEU012:
+	.DB "Accessory"
+
+STR_MainMenuDEU013:
+	.DB "Treasure"
+
+
+
+; SUB-MENU STRINGS
+; --------------------------------------------------------------------------------------------------
+
+STR_SubMenuInventoryDEU000:
+	.DB "Refreshments            "
+
+STR_SubMenuInventoryDEU001:
+	.DB "First-aid supplies      "
+
+STR_SubMenuInventoryDEU002:
+	.DB "Food                    "
+
+STR_SubMenuInventoryDEU003:
+	.DB "Weapons                 "
+
+STR_SubMenuInventoryDEU004:
+	.DB "Short-range             "
+
+STR_SubMenuInventoryDEU005:
+	.DB "Long-range              "
+
+STR_SubMenuInventoryDEU006:
+	.DB "Armor                   "
+
+STR_SubMenuInventoryDEU007:
+	.DB "Accessories             "
+
+STR_SubMenuInventoryDEU008:
+	.DB "Battle Items            "
+
+STR_SubMenuInventoryDEU009:
+	.DB "Attack Items            "
+
+STR_SubMenuInventoryDEU010:
+	.DB "Defense Items           "
+
+STR_SubMenuInventoryDEU011:
+	.DB "Treasure                "
+
+STR_SubMenuInventoryDEU012:
+	.DB "Unappraised             "
+
+STR_SubMenuInventoryDEU013:
+	.DB "Key Items               "
+
+
+
+; MISC TEXT POINTERS
+; --------------------------------------------------------------------------------------------------
+
+SRC_MiscTextPointerDEU:
+
+.REPEAT 10 INDEX COUNT
+	.DW STR_MiscDEU{%.3d{COUNT}}					; create pointers for German misc. text
+.ENDR
+
+
+
+; MISC TEXT STRINGS
+; --------------------------------------------------------------------------------------------------
+
+STR_MiscDEU000:
+	.DB "LP", 0
+
+STR_MiscDEU001:
+	.DB "MP", 0
+
+STR_MiscDEU002:
+	.DB "Rush", 0							; FIXME
+
+STR_MiscDEU003:
+	.DB "Zeit", 0
+
+STR_MiscDEU004:
+	.DB "Ja", 0
+
+STR_MiscDEU005:
+	.DB "Nein", 0
+
+STR_MiscDEU006:
+	.DB "Okay", 0
+
+STR_MiscDEU007:
+	.DB "Fertig", 0
+
+STR_MiscDEU008:
+	.DB "Das geht nicht!", 0
+
+STR_MiscDEU009:
+	.DB "Speichern ...", 0
+
+;STR_MiscDEU010:
+;	.DB "", 0
+
+;STR_MiscDEU011:
+;	.DB "", 0
+
+;STR_MiscDEU012:
+;	.DB "", 0
+
+;STR_MiscDEU013:
+;	.DB "", 0
+
+
+
+; EOF

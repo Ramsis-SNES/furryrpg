@@ -1,18 +1,18 @@
-;==========================================================================================
+; ==================================================================================================
 ;
-;   "FURRY RPG" (WORKING TITLE)
-;   (c) 2023 by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
+;	"FURRY RPG" (WORKING TITLE)
+;	(c) by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
 ;
-;	*** EVENT HANDLER ***
+;	EVENT HANDLER
 ;
-;==========================================================================================
+; ==================================================================================================
 
 
+
+.ACCU 16
+.INDEX 16
 
 LoadEvent:								; expects valid event no. in 16-bit Accu
-	.ACCU 16
-	.INDEX 16
-
 	asl	a
 	tax
 	lda.l	SRC_EventPointer, x					; load start of event code // FIXME, possibly use this as pointer directly instead (and no pointer/Y-indexed addressing required when reading event code)
@@ -38,7 +38,7 @@ ProcessEventLoop:
 	lda	LO8.NMITIMEN						; FIXME, should be temporary
 	sta	NMITIMEN
 
-	WaitFrames	1
+	wait	"frames", 1
 
 	lda	<DP2.EventControl					; check if we need to monitor joypad 1
 	and	#%00000001
@@ -97,7 +97,7 @@ ProcessEventLoop:
 	lda	#k8_Hero1_down
 	bra	@MoveHeroDone
 
-	.ACCU 8
+.ACCU 8
 
 @MoveHeroNextCheck:
 	lda	<DP2.Hero1ScreenPosYX					; check if hero should be moved horizontally
@@ -155,12 +155,12 @@ ProcessEventLoop:
 
 	Accu16
 
-	and	#$00FF							; clear garbage in B
-	asl	a							; use code byte ...
-	tax								; ... as an index ...
-	jsr	(PTR_ProcessEventCode, x)				; ... into our WIP collection of event processing subroutines
+	and	#$00FF							; clear high byte
+	asl	a							; use code byte as index into our WIP collection of event processing subroutines
+	tax
+	jsr	(ProcessEventCode, x)
 
-	.ACCU 8
+.ACCU 8
 
 	jmp	ProcessEventLoop					; continue processing event script
 
@@ -170,9 +170,10 @@ ProcessEventLoop:
 
 
 
-; ********************* Event processing routines **********************
+; EVENT PROCESSING ROUTINES
+; --------------------------------------------------------------------------------------------------
 
-PTR_ProcessEventCode:
+ProcessEventCode:
 	.DW Process_evc_00_END
 	.DW Process_evc_BG3_TEXT
 	.DW Process_evc_DIALOG
@@ -214,8 +215,10 @@ PTR_ProcessEventCode:
 
 
 
+.ACCU 16
+
 ;Process_evc_TEMPLATE:
-;	.ACCU 16 -- or -- Accu8
+;	Accu8
 
 ;	lda	[<DP2.EventCodeAddress], y
 	;use value
@@ -229,9 +232,9 @@ PTR_ProcessEventCode:
 
 
 
-Process_evc_00_END:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_00_END:
 	pla								; clean up the stack as we don't return into ProcessEventLoop
 
 	Accu8
@@ -239,6 +242,8 @@ Process_evc_00_END:
 	rtl								; return from LoadEvent
 
 
+
+.ACCU 16
 
 Process_evc_BG3_TEXT:
 	Accu8
@@ -288,9 +293,9 @@ Process_evc_BG3_TEXT:
 
 
 
-Process_evc_DIALOG:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_DIALOG:
 	lda	[<DP2.EventCodeAddress], y
 	sta	<DP2.TextPointerNo
 	iny
@@ -299,11 +304,13 @@ Process_evc_DIALOG:
 
 	Accu8
 
-	jsr	InitDialogTextBox
+	jsr	InitTextBox
 
 	rts
 
 
+
+.ACCU 16
 
 Process_evc_DISABLE_HDMA_CH:
 	Accu8
@@ -316,6 +323,8 @@ Process_evc_DISABLE_HDMA_CH:
 	rts
 
 
+
+.ACCU 16
 
 Process_evc_DMA_ROM2CGRAM:						; CGRAM target address (8), ROM source address (16), ROM source bank (8), size (16)
 	Accu8
@@ -346,7 +355,7 @@ Process_evc_DMA_ROM2CGRAM:						; CGRAM target address (8), ROM source address (
 
 	Accu8
 
-	lda	#%00000001						; initiate DMA transfer (channel 0)
+	lda	#kDMA_Channel0						; initiate DMA transfer
 	sta.l	MDMAEN
 	iny
 	iny
@@ -355,6 +364,8 @@ Process_evc_DMA_ROM2CGRAM:						; CGRAM target address (8), ROM source address (
 	rts
 
 
+
+.ACCU 16
 
 Process_evc_DMA_ROM2VRAM:						; VRAM target address (16), ROM source address (16), ROM source bank (8), size (16)
 	Accu8
@@ -388,7 +399,7 @@ Process_evc_DMA_ROM2VRAM:						; VRAM target address (16), ROM source address (1
 
 	Accu8
 
-	lda	#%00000001						; initiate DMA transfer (channel 0)
+	lda	#kDMA_Channel0						; initiate DMA transfer
 	sta.l	MDMAEN
 	iny
 	iny
@@ -397,6 +408,8 @@ Process_evc_DMA_ROM2VRAM:						; VRAM target address (16), ROM source address (1
 	rts
 
 
+
+.ACCU 16
 
 Process_evc_DMA_ROM2WRAM:						; WRAM target address (16), WRAM target bank (8), ROM source address (16), ROM source bank (8), size (16)
 	.ACCU 16
@@ -435,7 +448,7 @@ Process_evc_DMA_ROM2WRAM:						; WRAM target address (16), WRAM target bank (8),
 
 	Accu8
 
-	lda	#%00000001						; initiate DMA transfer (channel 0)
+	lda	#kDMA_Channel0						; initiate DMA transfer
 	sta.l	MDMAEN
 	iny
 	iny
@@ -444,6 +457,8 @@ Process_evc_DMA_ROM2WRAM:						; WRAM target address (16), WRAM target bank (8),
 	rts
 
 
+
+.ACCU 16
 
 Process_evc_ENABLE_HDMA_CH:
 	Accu8
@@ -457,9 +472,9 @@ Process_evc_ENABLE_HDMA_CH:
 
 
 
-Process_evc_GSS_COMMAND:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_GSS_COMMAND:
 	lda	[<DP2.EventCodeAddress], y				; load SNESGSS command
 	sta	<DP2.GSS_command
 	iny
@@ -478,9 +493,9 @@ Process_evc_GSS_COMMAND:
 
 
 
-Process_evc_GSS_LOAD_TRACK:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_GSS_LOAD_TRACK:
 	lda	[<DP2.EventCodeAddress], y
 	sta	<DP2.NextTrack
 	iny
@@ -495,9 +510,9 @@ Process_evc_GSS_LOAD_TRACK:
 
 
 
-Process_evc_INIT_GAMEINTRO:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_INIT_GAMEINTRO:
 	sty	<DP2.EventCodePointer
 
 	Accu8
@@ -508,9 +523,9 @@ Process_evc_INIT_GAMEINTRO:
 
 
 
-Process_evc_JSL:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_JSL:
 	lda	[<DP2.EventCodeAddress], y
 	sta	<DP2.DataAddress
 	iny
@@ -532,9 +547,9 @@ Process_evc_JSL:
 
 
 
-Process_evc_JSR:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_JSR:
 	lda	[<DP2.EventCodeAddress], y
 	sta	<DP2.DataAddress
 	iny
@@ -552,9 +567,9 @@ Process_evc_JSR:
 
 
 
-Process_evc_JUMP:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_JUMP:
 	lda	[<DP2.EventCodeAddress], y				; read new event code pointer
 	sta	<DP2.EventCodePointer
 
@@ -564,9 +579,9 @@ Process_evc_JUMP:
 
 
 
-Process_evc_LOAD_AREA:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_LOAD_AREA:
 	lda	[<DP2.EventCodeAddress], y
 	sta	<DP2.AreaCurrent
 	iny
@@ -581,9 +596,9 @@ Process_evc_LOAD_AREA:
 
 
 
-Process_evc_LOAD_PARTY_FORMATION:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_LOAD_PARTY_FORMATION:
 	lda	[<DP2.EventCodeAddress], y
 	;use value
 	iny
@@ -596,9 +611,9 @@ Process_evc_LOAD_PARTY_FORMATION:
 
 
 
-Process_evc_MONITOR_INPUT_JOY1:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_MONITOR_INPUT_JOY1:
 	lda	[<DP2.EventCodeAddress], y				; read buttons to monitor
 	sta	<DP2.EventMonitorJoy1
 	iny
@@ -618,9 +633,9 @@ Process_evc_MONITOR_INPUT_JOY1:
 
 
 
-Process_evc_MOVE_ALLY:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_MOVE_ALLY:
 	lda	[<DP2.EventCodeAddress], y
 	;use value
 	iny
@@ -633,9 +648,9 @@ Process_evc_MOVE_ALLY:
 
 
 
-Process_evc_MOVE_HERO:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_MOVE_HERO:
 	lda	[<DP2.EventCodeAddress], y
 	sta	LO8.Hero1TargetScrPosYX					; target screen position
 	iny
@@ -652,9 +667,9 @@ Process_evc_MOVE_HERO:
 
 
 
-Process_evc_MOVE_NPC:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_MOVE_NPC:
 	lda	[<DP2.EventCodeAddress], y
 	;use value
 	iny
@@ -666,10 +681,10 @@ Process_evc_MOVE_NPC:
 	rts
 
 
+
+.ACCU 16
 
 Process_evc_MOVE_OBJ:
-	.ACCU 16
-
 	lda	[<DP2.EventCodeAddress], y
 	;use value
 	iny
@@ -681,6 +696,8 @@ Process_evc_MOVE_OBJ:
 	rts
 
 
+
+.ACCU 16
 
 Process_evc_MSU_LOAD_TRACK:
 	Accu8
@@ -691,8 +708,9 @@ Process_evc_MSU_LOAD_TRACK:
 	lda	[<DP2.EventCodeAddress], y
 	sta	<DP2.MSU1_NextTrack
 
--	bit	MSU_STATUS						; wait for Audio Busy bit to clear
-	bvs	-
+	wait	"MSU_ready"
+;-	bit	MSU_STATUS						; wait for Audio Busy bit to clear
+;	bvs	-
 
 +	iny
 	sty	<DP2.EventCodePointer
@@ -701,9 +719,9 @@ Process_evc_MSU_LOAD_TRACK:
 
 
 
-Process_evc_MSU_TRACK_FADEIN:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_MSU_TRACK_FADEIN:
 	lda	[<DP2.EventCodeAddress], y
 	;use value
 	iny
@@ -715,10 +733,10 @@ Process_evc_MSU_TRACK_FADEIN:
 	rts
 
 
+
+.ACCU 16
 
 Process_evc_MSU_TRACK_FADEOUT:
-	.ACCU 16
-
 	lda	[<DP2.EventCodeAddress], y
 	;use value
 	iny
@@ -731,9 +749,9 @@ Process_evc_MSU_TRACK_FADEOUT:
 
 
 
-Process_evc_MSU_TRACK_PLAY:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_MSU_TRACK_PLAY:
 	lda	<DP2.GameConfig
 	and	#%0000000000000001					; check for "MSU1 present" flag
 	beq	+
@@ -750,9 +768,9 @@ Process_evc_MSU_TRACK_PLAY:
 
 
 
-Process_evc_MSU_TRACK_STOP:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_MSU_TRACK_STOP:
 	sty	<DP2.EventCodePointer
 
 	Accu8
@@ -766,9 +784,9 @@ Process_evc_MSU_TRACK_STOP:
 
 
 
-Process_evc_SCR_EFFECT:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_SCR_EFFECT:
 	lda	[<DP2.EventCodeAddress], y
 	;use value
 	iny
@@ -781,9 +799,9 @@ Process_evc_SCR_EFFECT:
 
 
 
-Process_evc_SCR_EFFECT_TRANSITION:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_SCR_EFFECT_TRANSITION:
 	lda	[<DP2.EventCodeAddress], y
 	tax
 	iny
@@ -795,15 +813,15 @@ Process_evc_SCR_EFFECT_TRANSITION:
 	sta	<DP2.EffectSpeed
 	iny
 	sty	<DP2.EventCodePointer
-	jsr	(PTR_EffectTypes, x)
+	jsr	(SRC_EffectTypes, x)
 
 	rts
 
 
 
-Process_evc_SCR_SCROLL:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_SCR_SCROLL:
 	lda	[<DP2.EventCodeAddress], y
 	;use value
 	iny
@@ -816,9 +834,9 @@ Process_evc_SCR_SCROLL:
 
 
 
-Process_evc_SET_REGISTER:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_SET_REGISTER:
 	lda	[<DP2.EventCodeAddress], y				; load register to be written to
 	sta	<DP2.RegisterBuffer
 	iny
@@ -835,9 +853,9 @@ Process_evc_SET_REGISTER:
 
 
 
-Process_evc_SIMULATE_INPUT_JOY1:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_SIMULATE_INPUT_JOY1:
 	lda	[<DP2.EventCodeAddress], y
 	sta	<DP2.AutoJoy1
 	iny
@@ -852,9 +870,9 @@ Process_evc_SIMULATE_INPUT_JOY1:
 
 
 
-Process_evc_SIMULATE_INPUT_JOY2:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_SIMULATE_INPUT_JOY2:
 	lda	[<DP2.EventCodeAddress], y
 	sta	<DP2.AutoJoy2
 	iny
@@ -869,9 +887,9 @@ Process_evc_SIMULATE_INPUT_JOY2:
 
 
 
-Process_evc_TOGGLE_AUTO_MODE:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_TOGGLE_AUTO_MODE:
 	sty	<DP2.EventCodePointer
 
 	Accu8
@@ -884,9 +902,9 @@ Process_evc_TOGGLE_AUTO_MODE:
 
 
 
-Process_evc_WAIT_JOY1:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_WAIT_JOY1:
 	lda	[<DP2.EventCodeAddress], y
 	;use value
 	iny
@@ -898,10 +916,10 @@ Process_evc_WAIT_JOY1:
 	rts
 
 
+
+.ACCU 16
 
 Process_evc_WAIT_JOY2:
-	.ACCU 16
-
 	lda	[<DP2.EventCodeAddress], y
 	;use value
 	iny
@@ -914,9 +932,9 @@ Process_evc_WAIT_JOY2:
 
 
 
-Process_evc_WAIT_FRAMES:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_WAIT_FRAMES:
 	lda	[<DP2.EventCodeAddress], y
 	sta	<DP2.EventWaitFrames
 	iny
@@ -929,9 +947,9 @@ Process_evc_WAIT_FRAMES:
 
 
 
-Process_evc_WRITE_RAM_BYTE:
-	.ACCU 16
+.ACCU 16
 
+Process_evc_WRITE_RAM_BYTE:
 	lda	[<DP2.EventCodeAddress], y				; load RAM address
 	sta	WMADDL
 	iny
@@ -952,4 +970,4 @@ Process_evc_WRITE_RAM_BYTE:
 
 
 
-; ******************************** EOF *********************************
+; EOF

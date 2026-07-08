@@ -1,32 +1,33 @@
-;==========================================================================================
+; ==================================================================================================
 ;
-;   "FURRY RPG" (WORKING TITLE)
-;   (c) 2023 by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
+;	"FURRY RPG" (WORKING TITLE)
+;	(c) by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
 ;
-;	*** AREA HANDLER ***
+;	AREA HANDLER
 ;
-;==========================================================================================
+; ==================================================================================================
 
 
+
+.ACCU 8
+.INDEX 16
 
 LoadAreaData:
-	.ACCU 8
-	.INDEX 16
-
-	lda	#$80							; enter forced blank
+	lda	#kForcedBlank
 	sta	RAM_INIDISP
 ;	jsr	SpriteInit						; purge OAM
 	jsr	SpriteDataInit						; purge sprite data buffer
 
 	wai
+	jsl	DisableInterrupts
 
-	DisableIRQs
+.IFNDEF NOMUSIC
 
-	.IFNDEF NOMUSIC
-		SNESGSS_Command kGSS_MUSIC_STOP, 0			; stop music in case it's playing
+	SNESGSS_Command kGSS_MUSIC_STOP, 0				; stop music in case it's playing
 
-		stz	MSU_CONTROL					; stop MSU1 track in case it's playing
-	.ENDIF
+	stz	MSU_CONTROL						; stop MSU1 track in case it's playing
+
+.ENDIF
 
 	stz	<DP2.HDMA_Channels					; disable HDMA
 	stz	HDMAEN
@@ -34,7 +35,7 @@ LoadAreaData:
 	stx	WMADDL
 	stz	WMADDH
 
-	DMA_CH0 $08, SRC_Zeroes, WMDATA, 1024
+	dma_0	$08, SRC_0000, WMDATA, 1024
 
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	VMAIN
@@ -50,7 +51,7 @@ LoadAreaData:
 	lda	<DP2.AreaCurrent
 	asl	a
 	tax
-	lda.l	PTR_AreaProperties, x					; set data offset for selected area
+	lda.l	SRC_AreaProperties, x					; set data offset for selected area
 	tax
 	lda.l	SRC_AreaPropertyTables, x				; read area properties (16 bits of data)
 	sta	<DP2.AreaProperties
@@ -73,7 +74,7 @@ LoadAreaData:
 	sta	RAM_DMA_TransferLength
 	inx
 	inx
-	lda	#$1801							; set DMA mode & B bus register (VMDATAL)
+	lda	#(<VMDATAL << 8) | $01					; set DMA mode & B bus register (VMDATAL)
 	sta	RAM_DMA_ModeBBusReg
 	lda	#VRAM_AreaBG1						; set VRAM address
 	sta	VMADDL
@@ -99,7 +100,7 @@ LoadAreaData:
 	sta	RAM_DMA_TransferLength
 	inx
 	inx
-	lda	#$8000							; set DMA mode & B bus register (WMDATA)
+	lda	#(<WMDATA << 8) | $00					; set DMA mode & B bus register (WMDATA)
 	sta	RAM_DMA_ModeBBusReg
 
 	Accu8
@@ -195,7 +196,7 @@ LoadAreaData:
 	sta	RAM_DMA_TransferLength
 	inx
 	inx
-	lda	#$8000							; set DMA mode & B bus register (WMDATA)
+	lda	#(<WMDATA << 8) | $00					; set DMA mode & B bus register (WMDATA)
 	sta	RAM_DMA_ModeBBusReg
 
 	Accu8
@@ -280,7 +281,7 @@ LoadAreaData:
 	sta	RAM_DMA_TransferLength
 	inx
 	inx
-	lda	#$2202							; set DMA mode & B bus register (CGDATA)
+	lda	#(<CGDATA << 8) | $02					; set DMA mode & B bus register (CGDATA)
 	sta	RAM_DMA_ModeBBusReg
 
 	Accu8
@@ -351,7 +352,7 @@ LoadAreaData:
 	lda	#$90							; set CGRAM address to #288 (word address) for sprites
 	sta	CGADD
 
-	DMA_CH0 $02, SRC_Palette_Spritesheet_Hero1, CGDATA, 32
+	dma_0	$02, SRC_Palette_Spritesheet_Hero1, CGDATA, 32
 
 
 
@@ -371,9 +372,9 @@ LoadAreaData:
 
 
 ; HDMA channel 3: color math
-	lda	#$02							; transfer mode (2 bytes --> $2132)
+	lda	#$02							; transfer mode (2 bytes --> COLDATA register)
 	sta	DMAP3
-	lda	#$32							; PPU register $2132 (color math subscreen backdrop color)
+	lda	#<COLDATA
 	sta	BBAD3
 	ldx	#LO8.HDMA_ColorMath
 	stx	A1T3L
@@ -383,9 +384,9 @@ LoadAreaData:
 
 
 ; HDMA channel 4: BG1 scroll registers
-	lda	#$07							; transfer mode (2 bytes --> $210D, 2 bytes --> $210E)
+	lda	#$07							; transfer mode (2 bytes --> BG1HOFS, 2 bytes --> BG1VOFS)
 	sta	DMAP4
-	lda	#$0D							; PPU reg. $210D
+	lda	#<BG1HOFS
 	sta	BBAD4
 	ldx	#LO8.HDMA_BG_Scroll
 	stx	A1T4L
@@ -395,9 +396,9 @@ LoadAreaData:
 
 
 ; HDMA channel 5: BG2 scroll registers
-	lda	#$07							; transfer mode (2 bytes --> $210F, 2 bytes --> $2110)
+	lda	#$07							; transfer mode (2 bytes --> BG2HOFS, 2 bytes --> BG2VOFS)
 	sta	DMAP5
-	lda	#$0F							; PPU reg. $210F
+	lda	#<BG2HOFS
 	sta	BBAD5
 	ldx	#LO8.HDMA_BG_Scroll
 	stx	A1T5L
@@ -407,7 +408,7 @@ LoadAreaData:
 
 
 ; Set up RAM mirror registers
-	lda	#$01|$08						; set BG Mode 1 for area, BG3 priority
+	lda	#kBGMODE_1|kBG3priority
 	sta	RAM_BGMODE
 	lda	#%00000011						; 8×8 (small) / 16×16 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
 	sta	RAM_OBSEL
@@ -440,16 +441,17 @@ LoadAreaData:
 
 
 ; Misc. settings
-	lda	#%00010111						; turn on BG1/2/3 + sprites on mainscreen and subscreen
+	lda	#kTM_BG1|kTM_BG2|kTM_BG3|kTM_OBJ			; turn on BG1, BG2, BG3 + sprites on mainscreen and subscreen
 	sta	RAM_TM
 	sta	RAM_TM
 
-	SetNMI	kNMI_Area
+	set	"NMI", Vblank_Area
 
 	Accu16
 
-	lda	#228							; dot number for interrupt (256 = too late, 204 = too early)
+	lda	#228		;FIXME readjust				; dot number for interrupt (256 = too late, 204 = too early)
 	sta	HTIMEL
+;	stz	HTIMEL
 	lda	#224							; scanline number for interrupt (last one for now)
 	sta	VTIMEL
 
@@ -457,10 +459,10 @@ LoadAreaData:
 
 	sta	<DP2.TextBoxVIRQ					; save scanline no.
 
-	SetIRQ	kVIRQ_Area
+	set	"IRQ", VIRQ_Area
 
 	lda	RDNMI							; clear NMI flag
-	lda	#$81							; enable Vblank NMI + Auto Joypad Read
+	lda	#kNMITIMEN_Enable|kAutoJoy				; enable interrupts + auto joypad read
 	sta	LO8.NMITIMEN
 	sta	NMITIMEN						; FIXME, needed for EffectHSplitIn, make LO8.NMITIMEN an actual mirror variable (copied to register within some main game loop, but not on Vblank)
 	cli								; re-enable interrupts
@@ -475,7 +477,7 @@ LoadAreaData:
 	stz	WMADDH
 	jsr	ConvertSpriteDataToBuffer
 
-	WaitFrames	4						; give some time for screen refresh
+	wait	"frames", 4						; give some time for screen refresh
 
 	rts
 
@@ -504,14 +506,14 @@ ShowArea:
 	lda	#kEffectSpeed3
 	sta	<DP2.EffectSpeed
 	ldx	#kEffectTypeHSplitIn
-	jsr	(PTR_EffectTypes, x)
+	jsr	(SRC_EffectTypes, x)
 
 
 
-	.ENDASM
+.ENDASM
 
 ; CM EFFECT TEST 1: NIGHT
-	lda	#%00010111						; mainscreen: BG1/2/3 + sprites
+	lda	#kTM_BG1|kTM_BG2|kTM_BG3|kTM_OBJ			; turn on BG1, BG2, BG3 + sprites on mainscreen only
 	sta	RAM_TM
 	stz	RAM_TS							; subscreen: nothing
 	lda	#$72							; subscreen backdrop color to subtract
@@ -525,7 +527,7 @@ ShowArea:
 
 
 ; CM EFFECT TEST 2: NIGHT W/ SPRITES, XORed palette req.
-	lda	#$80							; enter forced blank
+	lda	#kForcedBlank
 	sta	INIDISP
 	lda	#CGRAM_Area						; set CGRAM address for BG1 tiles palette
 	sta	CGADD
@@ -547,9 +549,9 @@ ShowArea:
 	cpx	#32
 	bne	-
 
-	lda	#%00000100						; mainscreen: BG3
+	lda	#kTM_BG3						; mainscreen: BG3
 	sta	RAM_TM
-	lda	#%00010011						; subscreen: BG1/2, sprites
+	lda	#kTS_BG1|kTS_BG2|kTS_OBJ				; subscreen: BG1/2, sprites
 	sta	RAM_TS
 	stz	CGADD							; backdrop color to subtract
 	lda	#$52
@@ -560,7 +562,7 @@ ShowArea:
 	sta	CGWSEL
 	lda	#%10100000						; enable color math on backdrop, subtract color
 	sta	CGADSUB
-	lda	#$0F
+	lda	#kINIDISP_15
 	sta	INIDISP
 
 -	bra	-
@@ -576,56 +578,57 @@ ShowArea:
 	stz	CGDATA							; $6C00 = bright blue
 	lda	#$6C
 	sta	CGDATA
-	lda	#%00000100						; mainscreen: BG3
+	lda	#kTM_BG3						; mainscreen: BG3
 	sta	RAM_TM
-	lda	#%00010011						; subscreen: BG1/2, sprites
+	lda	#kTS_BG1|kTS_BG2|kTS_OBJ				; subscreen: BG1/2, sprites
 	sta	RAM_TS
 
-	.ASM
+.ASM
 
 
 
 ; Play music & ambient sound effect
-	.IFNDEF NOMUSIC
-		lda	<DP2.NextTrack+1
-		cmp	#$FF						; DP2.NextTrack = $FFFF --> don't play any music
-		bne	+
-		lda	<DP2.NextTrack
-		cmp	#$FF
-		beq	@GSSPlayTrackDone
+.IFNDEF NOMUSIC
 
-	+	jsl	PlayTrackGSS
+	lda	<DP2.NextTrack+1
+	cmp	#$FF							; DP2.NextTrack = $FFFF --> don't play any music
+	bne	+
+	lda	<DP2.NextTrack
+	cmp	#$FF
+	beq	@GSSPlayTrackDone
 
-	@GSSPlayTrackDone:
++	jsl	PlayTrackGSS
 
-		lda	<DP2.GameConfig
-		and	#%00000001					; check for "MSU1 present" flag
-		beq	@MSU1TrackDone
+@GSSPlayTrackDone:
 
-		Accu16
+	lda	<DP2.GameConfig
+	and	#kGameConfigMSU1					; check for "MSU1 present" flag
+	beq	@MSU1TrackDone
 
-		lda	<DP2.MSU1_NextTrack				; MSU1 present, set track
-		cmp	#$FFFF						; $FFFF = don't play any MSU1 track
-		beq	+
-		sta	MSU_TRACK
+	Accu16
 
-	-	lda	MSU_STATUS					; wait for Audio Busy bit to clear
-		and	#%0000000001000000
-		bne	-
+	lda	<DP2.MSU1_NextTrack					; MSU1 present, set track
+	cmp	#$FFFF							; $FFFF = don't play any MSU1 track
+	beq	+
+	sta	MSU_TRACK
 
-		lda	#%0000001111111111				; set play, repeat flags, max. volume (16-bit write to MSU_CONTROL, too)
-		sta	MSU_VOLUME
+-	lda	MSU_STATUS						; wait for Audio Busy bit to clear
+	and	#%0000000001000000
+	bne	-
 
-	+	Accu8
+	lda	#%0000001111111111					; set play, repeat flags, max. volume (16-bit write to MSU_CONTROL, too)
+	sta	MSU_VOLUME
 
-	@MSU1TrackDone:
++	Accu8
 
-	.ENDIF
+@MSU1TrackDone:
+
+.ENDIF
 
 
 
 MainAreaLoop:
-	WaitFrames	1						; don't use WAI here as IRQ might be enabled!
+	wait	"frames", 1						; don't use WAI here as IRQ might be enabled!
 
 	lda	LO8.NMITIMEN
 	sta	NMITIMEN
@@ -706,28 +709,30 @@ MainAreaLoop:
 
 
 
-	.IFDEF DEBUG
-;		PrintString	2, 26, kTextBG3, "X="
-;		PrintHexNum	<DP2.Hero1ScreenPosYX
-;		PrintString	3, 26, kTextBG3, "Y="
-;		PrintHexNum	<DP2.Hero1ScreenPosYX+1
+.IFDEF DEBUG
 
-;		PrintString	2, 22, kTextBG3, "ScrX="
-;		PrintHexNum	ARRAY_HDMA_BGScroll+2
-;		PrintHexNum	ARRAY_HDMA_BGScroll+1
+;	PrintString	2, 26, kTextBG3, "X="
+;	PrintHexNum	<DP2.Hero1ScreenPosYX
+;	PrintString	3, 26, kTextBG3, "Y="
+;	PrintHexNum	<DP2.Hero1ScreenPosYX+1
 
-;		PrintString	3, 22, kTextBG3, "ScrY="
-;		PrintHexNum	ARRAY_HDMA_BGScroll+4
-;		PrintHexNum	ARRAY_HDMA_BGScroll+3
+;	PrintString	2, 22, kTextBG3, "ScrX="
+;	PrintHexNum	ARRAY_HDMA_BGScroll+2
+;	PrintHexNum	ARRAY_HDMA_BGScroll+1
 
-;		PrintString	7, 5, kTextBG3, "MapPosX="
-;		PrintHexNum	<DP2.Hero1MapPosX+1
-;		PrintHexNum	<DP2.Hero1MapPosX
+;	PrintString	3, 22, kTextBG3, "ScrY="
+;	PrintHexNum	ARRAY_HDMA_BGScroll+4
+;	PrintHexNum	ARRAY_HDMA_BGScroll+3
 
-;		PrintString	8, 5, kTextBG3, "MapPosY="
-;		PrintHexNum	<DP2.Hero1MapPosY+1
-;		PrintHexNum	<DP2.Hero1MapPosY
-	.ENDIF
+;	PrintString	7, 5, kTextBG3, "MapPosX="
+;	PrintHexNum	<DP2.Hero1MapPosX+1
+;	PrintHexNum	<DP2.Hero1MapPosX
+
+;	PrintString	8, 5, kTextBG3, "MapPosY="
+;	PrintHexNum	<DP2.Hero1MapPosY+1
+;	PrintHexNum	<DP2.Hero1MapPosY
+
+.ENDIF
 
 
 
@@ -861,7 +866,7 @@ MainAreaLoop:
 	Accu16								; take care about "text box" sprites
 
 	lda	<DP2.HUD_TextBoxSize
-	and	#$00FF							; remove garbage in high byte
+	and	#$00FF							; clear high byte
 	inc	a							; +1 for right edge of "text box" frame
 	tay
 
@@ -885,7 +890,7 @@ MainAreaLoop:
 	Accu16								; next, scroll text as well
 
 	lda	<DP2.HUD_StrLength
-	and	#$00FF							; remove garbage in high byte
+	and	#$00FF							; clear high byte
 	tay
 
 	Accu8
@@ -921,7 +926,7 @@ MainAreaLoop:
 	Accu16								; take care about "text box" sprites
 
 	lda	<DP2.HUD_TextBoxSize
-	and	#$00FF							; remove garbage in high byte
+	and	#$00FF							; clear high byte
 	inc	a							; +1 for right edge of "text box" frame
 	tay
 
@@ -949,7 +954,7 @@ MainAreaLoop:
 	Accu16								; next, scroll text as well
 
 	lda	<DP2.HUD_StrLength
-	and	#$00FF							; remove garbage in high byte
+	and	#$00FF							; clear high byte
 	tay
 
 	Accu8
@@ -992,7 +997,8 @@ MainAreaLoop:
 
 
 
-; ************************ Handle player input *************************
+; PLAYER INPUT HANDLER
+; --------------------------------------------------------------------------------------------------
 
 ; A button pressed = do lots of important stuff ;-)
 
@@ -1000,11 +1006,13 @@ AreaJoyButtonA:
 	lda	#$80							; make character idle
 	tsb	<DP2.Hero1SpriteStatus
 
-	; ### TODO: CHECK FOR CHARACTER INTERACTION, TREASURE, POINTS OF INTEREST ETC.
+; ### TODO: CHECK FOR CHARACTER INTERACTION, TREASURE, POINTS OF INTEREST ETC.
 
-	.IFDEF DEBUG
-		jsr	InitDialogTextBox
-	.ENDIF
+.IFDEF DEBUG
+
+	jsr	InitTextBox
+
+.ENDIF
 
 	rts
 
@@ -1229,41 +1237,44 @@ AreaJoyDpadRight:
 
 AreaJoyButtonStart:
 
-	.IFNDEF DEBUG
+.IFNDEF DEBUG
 
-	; ### TODO: Implement Pause function
+; ### TODO: Implement Pause function
 
-		rts
+	rts
 
-	.ELSE
-		pla							; clean up stack from jsr AreaJoyButtonStart
-		pla
-		lda	#kEffectSpeed3
-		sta	<DP2.EffectSpeed
-		ldx	#kEffectTypeHSplitOut2
-		jsr	(PTR_EffectTypes, x)
+.ELSE
+	pla								; clean up stack from jsr AreaJoyButtonStart
+	pla
+	lda	#kEffectSpeed3
+	sta	<DP2.EffectSpeed
+	ldx	#kEffectTypeHSplitOut2
+	jsr	(SRC_EffectTypes, x)
 
-		stz	<DP2.TextBoxStatus				; reset text box status
-		lda	#%00110000					; clear IRQ enable bits
-		trb	LO8.NMITIMEN
-;		lda	#k8_Hero1_down|$80				; make char face the camera (for menu later) // adjust when debug menu is removed
-;		sta	<DP2.Hero1SpriteStatus
-		jsr	ClearHUD
+	stz	<DP2.TextBoxStatus					; reset text box status
+	lda	#kHVIRQ							; clear IRQ enable bits
+	trb	LO8.NMITIMEN
+;	lda	#k8_Hero1_down|$80					; make char face the camera (for menu later) // adjust when debug menu is removed
+;	sta	<DP2.Hero1SpriteStatus
+	jsr	ClearHUD
 
-		WaitFrames	1
+	wait	"frames", 1
 
-		.IFNDEF NOMUSIC
-			SNESGSS_Command kGSS_MUSIC_STOP, 0		; stop music
+.IFNDEF NOMUSIC
 
-			lda	<DP2.GameConfig
-			and	#%00000001				; check for "MSU1 present" flag
-			beq	+
-			stz	MSU_CONTROL				; stop ambient soundtrack
-		+
-		.ENDIF
+	SNESGSS_Command kGSS_MUSIC_STOP, 0				; stop music
 
-		jmp	DebugMenu
-	.ENDIF
+	lda	<DP2.GameConfig
+	and	#kGameConfigMSU1					; check for "MSU1 present" flag
+	beq	+
+	stz	MSU_CONTROL						; stop ambient soundtrack
++
+
+.ENDIF
+
+	jmp	DebugMenu
+
+.ENDIF
 
 
 
@@ -1337,20 +1348,23 @@ UpdateAreaSprites:
 
 
 
-; **************************** HUD contens *****************************
+; HUD CONTENTS
+; --------------------------------------------------------------------------------------------------
 
 PutAreaNameIntoHUD:							; HUD "text box" position (DP2.Temp, DP2.Temp+1) and DP2.TextCursor are expected to contain sane values
-	lda	#:PTR_AreaNames						; caveat: all area names & pointers should be located in the same bank
+	lda	#:SRC_AreaNamesENG					; assume English
+	clc								; add language constant to get the correct area name bank
+	adc	<DP2.GameLanguage
 	sta	<DP2.TextStringBank
 	sta	<DP2.DataBank
 
 	Accu16
 
 	lda	<DP2.GameLanguage					; check for selected language
-	and	#$00FF							; mask off garbage bits
+	and	#$00FF							; clear high byte
 	asl	a
 	tax
-	lda.l	PTR_AreaNames, x					; starting address of area names of a given language into DataAddress
+	lda.l	SRC_AreaNamePointers, x					; starting address of area name pointers of a given language into DataAddress
 	sta	<DP2.DataAddress
 	lda	<DP2.AreaNamePointerNo					; use area name pointer no. ...
 ;	asl	a
@@ -1447,9 +1461,14 @@ PutAreaNameIntoHUD:							; HUD "text box" position (DP2.Temp, DP2.Temp+1) and D
 
 	rts
 
+SRC_AreaNamePointers:
+	.DW SRC_AreaNamesENG
+	.DW SRC_AreaNamesDEU
 
 
-; ************************ Collision detection *************************
+
+; COLLISION DETECTION
+; --------------------------------------------------------------------------------------------------
 
 MakeCollIndexUp:
 
@@ -1721,4 +1740,4 @@ MakeCollIndexRight:
 
 
 
-; ******************************** EOF *********************************
+; EOF

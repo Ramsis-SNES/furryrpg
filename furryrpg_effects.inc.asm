@@ -1,27 +1,31 @@
-;==========================================================================================
+; ==================================================================================================
 ;
-;   "FURRY RPG" (WORKING TITLE)
-;   (c) 2023 by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
+;	"FURRY RPG" (WORKING TITLE)
+;	(c) by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
 ;
-;	*** ON-SCREEN EFFECTS ***
+;	ON-SCREEN EFFECTS
 ;
-;==========================================================================================
+; ==================================================================================================
 
 
 
-PTR_EffectTypes:							; order has to match table of effect types in lib_variables.asm
+SRC_EffectTypes:							; order has to match table of effect types in variables.asm
 	.DW EffectFadeFromBlack
 	.DW EffectFadeToBlack
 
-	.IFNDEF WorkAroundINIDISP
-		.DW EffectHSplitIn
-		.DW EffectHSplitOut
-		.DW EffectHSplitOut2
-	.ELSE
-		.DW EffectHSplitInWA
-		.DW EffectHSplitOutWA
-		.DW EffectHSplitOut2WA
-	.ENDIF
+.IFNDEF WorkAroundINIDISP
+
+	.DW EffectHSplitIn
+	.DW EffectHSplitOut
+	.DW EffectHSplitOut2
+
+.ELSE
+
+	.DW EffectHSplitInWA
+	.DW EffectHSplitOutWA
+	.DW EffectHSplitOut2WA
+
+.ENDIF
 
 	.DW EffectShutterIn
 	.DW EffectShutterOut
@@ -30,12 +34,13 @@ PTR_EffectTypes:							; order has to match table of effect types in lib_variabl
 
 
 
-; ************************* Fade from/to black *************************
+; FADE FROM/TO BLACK
+; --------------------------------------------------------------------------------------------------
+
+.ACCU 8
+.INDEX 16
 
 EffectFadeFromBlack:
-	.ACCU 8
-	.INDEX 16
-
 	lda	<DP2.EffectSpeed
 	bmi	@Delay							; if speed value is negative, insert delay instead
 	lda	#$00							; initial screen brightness
@@ -153,7 +158,8 @@ EffectFadeToBlack:
 
 
 
-; ****************** Split horizontal in (from black) ******************
+; SPLIT HORIZONTAL IN (FROM BLACK)
+; --------------------------------------------------------------------------------------------------
 
 EffectHSplitIn:								; WARNING, garbled sprites may occur on real SNES (1CHIP *and* 3-chip/SCPU-A), most likely related to the INIDISP glitch discovered in 2021
 
@@ -197,7 +203,7 @@ EffectHSplitIn:								; WARNING, garbled sprites may occur on real SNES (1CHIP 
 	dec	<DP2.Temp+6						; only wait for a new frame every Nth iteration (where N = value in DP2.EffectSpeed)
 	bne	+
 
-	WaitFrames	1
+	wait	"frames", 1
 
 	lda	<DP2.EffectSpeed
 	sta	<DP2.Temp+6
@@ -294,7 +300,7 @@ EffectHSplitInWA:							; same effect as above, except we DMA two bytes to $21FF
 	dec	<DP2.Temp+6						; only wait for a new frame every Nth iteration (where N = value in DP2.EffectSpeed)
 	bne	+
 
-	WaitFrames	1
+	wait	"frames", 1
 
 	lda	<DP2.EffectSpeed
 	sta	<DP2.Temp+6
@@ -365,7 +371,8 @@ EffectHSplitInWA:							; same effect as above, except we DMA two bytes to $21FF
 
 
 
-; ****************** Split horizontal out (to black) *******************
+; SPLIT HORIZONTAL OUT (TO BLACK)
+; --------------------------------------------------------------------------------------------------
 
 EffectHSplitOut:							; split out from the middle of the screen // WARNING, cf. EffectHSplitIn
 
@@ -410,7 +417,7 @@ EffectHSplitOut:							; split out from the middle of the screen // WARNING, cf.
 	dec	<DP2.Temp+6
 	bne	+
 
-	WaitFrames	1
+	wait	"frames", 1
 
 	lda	<DP2.EffectSpeed
 	sta	<DP2.Temp+6
@@ -455,7 +462,7 @@ EffectHSplitOut:							; split out from the middle of the screen // WARNING, cf.
 	lda	#%00000010						; deactivate channel 1
 	trb	<DP2.HDMA_Channels
 
-	WaitFrames	1						; wait for HDMA register update
+	wait	"frames", 1						; wait for HDMA register update
 
 ;	jsr	SwitchFromPrevVblank
 
@@ -507,7 +514,7 @@ EffectHSplitOutWA:							; same effect as above, but with INIDISP glitch workaro
 	dec	<DP2.Temp+6
 	bne	+
 
-	WaitFrames	1
+	wait	"frames", 1
 
 	lda	<DP2.EffectSpeed
 	sta	<DP2.Temp+6
@@ -568,7 +575,7 @@ EffectHSplitOutWA:							; same effect as above, but with INIDISP glitch workaro
 	lda	#%00000010						; deactivate channel 1
 	trb	<DP2.HDMA_Channels
 
-	WaitFrames	1						; wait for HDMA register update
+	wait	"frames", 1						; wait for HDMA register update
 
 ;	jsr	SwitchFromPrevVblank
 
@@ -619,7 +626,7 @@ EffectHSplitOut2:							; split out towards the middle of the screen // WARNING,
 	dec	<DP2.Temp+6
 	bne	+
 
-	WaitFrames	1
+	wait	"frames", 1
 
 	lda	<DP2.EffectSpeed
 	sta	<DP2.Temp+6
@@ -664,7 +671,7 @@ EffectHSplitOut2:							; split out towards the middle of the screen // WARNING,
 	lda	#%00000010						; deactivate channel 1
 	trb	<DP2.HDMA_Channels
 
-	WaitFrames	1						; wait for HDMA register update
+	wait	"frames", 1						; wait for HDMA register update
 
 ;	jsr	SwitchFromPrevVblank
 
@@ -716,7 +723,7 @@ EffectHSplitOut2WA:							; same effect as above, but with INIDISP glitch workar
 	dec	<DP2.Temp+6
 	bne	+
 
-	WaitFrames	1
+	wait	"frames", 1
 
 	lda	<DP2.EffectSpeed
 	sta	<DP2.Temp+6
@@ -778,7 +785,7 @@ EffectHSplitOut2WA:							; same effect as above, but with INIDISP glitch workar
 	lda	#%00000010						; deactivate channel 1
 	trb	<DP2.HDMA_Channels
 
-	WaitFrames	1						; wait for HDMA register update
+	wait	"frames", 1						; wait for HDMA register update
 
 ;	jsr	SwitchFromPrevVblank
 
@@ -786,7 +793,8 @@ EffectHSplitOut2WA:							; same effect as above, but with INIDISP glitch workar
 
 
 
-; ****************** "Camera shutter" in (from black) ******************
+; "CAMERA SHUTTER" IN (FROM BLACK)
+; --------------------------------------------------------------------------------------------------
 
 EffectShutterIn:
 
@@ -834,7 +842,7 @@ EffectShutterIn:
 	lda	#%00000010						; activate HDMA channel 1
 	tsb	<DP2.HDMA_Channels
 
-	WaitFrames	1
+	wait	"frames", 1
 
 	lda	#$0F							; turn screen on
 	sta	INIDISP
@@ -848,7 +856,7 @@ EffectShutterIn:
 	sta	<DP2.Temp+5
 
 @Loop1:
-	WaitFrames	1
+	wait	"frames", 1
 
 	ldx	<DP2.Temp						; load current upper vertical boundary
 -	lda	<DP2.Temp+4
@@ -889,7 +897,7 @@ EffectShutterIn:
 	trb	<DP2.HDMA_Channels
 
 @Loop2:
-	WaitFrames	1
+	wait	"frames", 1
 
 	lda	<DP2.Temp+4						; as the SNES screen is 256×224 px, we still need to adjust the window width (16 px missing on either side) to its final value
 	cmp	#$FF
@@ -915,7 +923,8 @@ EffectShutterIn:
 
 
 
-; ****************** "Camera shutter" out (to black) *******************
+; "CAMERA SHUTTER" OUT (TO BLACK)
+; --------------------------------------------------------------------------------------------------
 
 EffectShutterOut:
 
@@ -974,7 +983,7 @@ EffectShutterOut:
 
 
 @Loop1:
-	WaitFrames	1
+	wait	"frames", 1
 
 	lda	<DP2.Temp+4						; as the SNES screen is 256×224 px, we need to adjust the window width first (16 px missing on either side)
 	cmp	#$12
@@ -992,7 +1001,7 @@ EffectShutterOut:
 	tsb	<DP2.HDMA_Channels
 
 @Loop2:
-	WaitFrames	1
+	wait	"frames", 1
 
 	ldx	#0
 -	lda	#$80
@@ -1058,7 +1067,8 @@ EffectShutterOut:
 
 
 
-; ********************* "Diamond" in (from black) **********************
+; "DIAMOND" IN (FROM BLACK)
+; --------------------------------------------------------------------------------------------------
 
 EffectDiamondIn:
 
@@ -1106,7 +1116,7 @@ EffectDiamondIn:
 	lda	#%00000010						; activate HDMA channel 1
 	tsb	<DP2.HDMA_Channels
 
-	WaitFrames	1
+	wait	"frames", 1
 
 	lda	#$0F
 	sta	INIDISP
@@ -1117,7 +1127,7 @@ EffectDiamondIn:
 	stx	<DP2.Temp+2
 
 @Loop1:
-	WaitFrames	1
+	wait	"frames", 1
 
 	ldx	<DP2.Temp
 -	dec	LO8.HDMA_FX_2Bytes, x
@@ -1143,7 +1153,7 @@ EffectDiamondIn:
 	bne	@Loop1
 
 @Loop2:									; up to this point, we created a diamond-shaped window, so repeat manipulating HDMA values for all scanlines until the whole screen is visible
-	WaitFrames	1
+	wait	"frames", 1
 
 	ldx	#0
 -	lda	LO8.HDMA_FX_2Bytes, x
@@ -1174,7 +1184,8 @@ EffectDiamondIn:
 
 
 
-; ********************** "Diamond" out (to black) **********************
+; "DIAMOND" OUT (TO BLACK)
+; --------------------------------------------------------------------------------------------------
 
 EffectDiamondOut:
 
@@ -1232,7 +1243,7 @@ EffectDiamondOut:
 
 
 @Loop1:
-	WaitFrames	1
+	wait	"frames", 1
 
 	ldx	#0
 -	lda	LO8.HDMA_FX_2Bytes, x
@@ -1276,7 +1287,7 @@ EffectDiamondOut:
 	bne	@Loop1
 
 @Loop2:									; repeat the process for all scanlines until the whole screen is black
-	WaitFrames	1
+	wait	"frames", 1
 
 	ldx	#0
 -	lda	LO8.HDMA_FX_2Bytes, x
@@ -1311,21 +1322,20 @@ EffectDiamondOut:
 
 
 
-; ************************* Common subroutines *************************
+; COMMON SUBROUTINES
+; --------------------------------------------------------------------------------------------------
 
 SwitchToMinimalVblank:
-	DisableIRQs
+	jsl	DisableInterrupts
 
 	Accu16
 
-	lda.w	P00.JmpVblank						; preserve original Vblank JMP address // caveat: .w or .l operand hints needed as JmpVblank is not in any Direct Page any more (otherwise, it looks to WLA DX like a DP address)
+	lda	LO8.JumpNMI						; preserve original JumpNMI
 	sta	LO8.Temp
-	lda.w	P00.JmpVblank+2
-	sta	LO8.Temp+2
 
 	Accu8
 
-	SetNMI	kNMI_Minimal
+	set	"NMI", Vblank_Minimal
 
 	lda	RDNMI							; clear NMI flag
 	lda	LO8.NMITIMEN
@@ -1337,14 +1347,12 @@ SwitchToMinimalVblank:
 
 
 SwitchFromPrevVblank:
-	DisableIRQs
+	jsl	DisableInterrupts
 
 	Accu16
 
-	lda	LO8.Temp						; restore original Vblank JMP address // cf. SwitchToMinimalVblank for operand hints
-	sta.w	P00.JmpVblank
-	lda	LO8.Temp+2
-	sta.w	P00.JmpVblank+2
+	lda	LO8.Temp						; restore original JumpNMI
+	sta.w	LO8.JumpNMI
 
 	Accu8
 
@@ -1357,4 +1365,4 @@ SwitchFromPrevVblank:
 
 
 
-; ******************************** EOF *********************************
+; EOF

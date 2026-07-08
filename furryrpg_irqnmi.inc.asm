@@ -1,23 +1,121 @@
-;==========================================================================================
+; ==================================================================================================
 ;
-;   "FURRY RPG" (WORKING TITLE)
-;   (c) 2023 by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
+;	"FURRY RPG" (WORKING TITLE)
+;	(c) by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
 ;
-;	*** IRQ & NMI HANDLERS ***
+;	IRQ & NMI HANDLERS
 ;
-;==========================================================================================
+; ==================================================================================================
 
 
 
-; ************************ Vblank/NMI routines *************************
+; H-/V-IRQ ROUTINES
+; --------------------------------------------------------------------------------------------------
 
-Vblank_Area:
+.ACCU 8
+.INDEX 16
+
+GlobalIRQ:								; IRQ vector points here
+	Accu8								; only use 8-bit accumulator
+
+	pha								; preserve 8-bit accumulator
+
+;	ldx	#$0000							; we can't afford the time/cycles to preserve and use X here
+;	jsr	(LO8.JumpIRQ, x)
+	jmp	(LO8.JumpIRQ)						; LO8.JumpIRQ expected to contain e.g., #VIRQ_Area
+
+; Rest of routine (shown for reference but commented out here) needs to be done in every possible
+; JumpIRQ target routine!
+
+;	lda	TIMEUP							; acknowledge IRQ
+;	pla								; restore 8-bit accumulator
+
+;	rti
+
+
+
+HIRQ_MenuItemsVsplit:
+;	Accu8								; only use 8-bit accumulator
+
+;	pha								; preserve 8-bit accumulator
+
+	lda	#kBGMODE_1|kBG3priority					; switch to BG Mode 1, BG3 priority
+	sta	BGMODE
+	stz	BG12NBA							; reset BG1/2 character data area designation to $0000
+
+	lda	TIMEUP							; acknowledge IRQ
+	pla								; restore 8-bit accumulator
+
+	rti
+
+
+
+VIRQ_Area:
+;	Accu8								; only use 8-bit accumulator
+
+;	pha								; preserve 8-bit accumulator
+
+	lda	#kBGMODE_5						; switch to BG Mode 5 for text box
+	sta	BGMODE
+	lda	#$78							; VRAM address for BG1 tilemap: $7800, size: 32×32 tiles
+	sta	BG1SC
+	lda	#$7C							; VRAM address for BG2 tilemap: $7C00, size: 32×32 tiles
+	sta	BG2SC
+	lda	LO8.TextBox_TSTM					; write Main/Subscreen designation regs
+	sta	TM
+	lda	LO8.TextBox_TSTM+1
+	sta	TS
+	lda	TIMEUP							; acknowledge IRQ
+	pla								; restore 8-bit accumulator
+
+	rti
+
+
+
+VIRQ_Mode7:
+;	Accu8								; only use 8-bit accumulator
+
+;	pha								; preserve 8-bit accumulator
+
+	lda	#kBGMODE_7						; switch to BG Mode 7
+	sta	BGMODE
+	lda	#kTM_BG1|kTM_OBJ					; turn on BG1 and sprites only
+	sta	TM							; on the mainscreen
+	sta	TS							; and on the subscreen
+	lda	TIMEUP							; acknowledge IRQ
+	pla								; restore 8-bit accumulator
+
+	rti
+
+
+
+; VBLANK/NMI ROUTINES
+; --------------------------------------------------------------------------------------------------
+
+GlobalNMI:								; NMI vector points here
 	AccuIndex16
 
-	pha								; preserve 16 bit registers
+	pha								; preserve 16-bit registers
 	phx
 	phy
 
+	ldx	#$0000							; "table" in LO8.JumpNMI only ever consists of a single 16-bit value, so X must always be zero here (a JSR addressing mode workaround)
+	jsr	(LO8.JumpNMI, x)					; LO8.JumpNMI expected to contain e.g., #Vblank_DebugMenu
+;	jmp	(LO8.JumpNMI)
+
+	lda	RDNMI							; acknowledge NMI
+
+	AccuIndex16
+
+	ply								; restore 16-bit registers
+	plx
+	pla
+
+	rti
+
+
+
+Vblank_Area:
 	Accu8
 
 	jsr	UpdateGameTime
@@ -80,7 +178,7 @@ Vblank_Area:
 	sta	A1B0
 	ldx	#2048							; data length
 	stx	DAS0L
-	lda	#%00000001						; initiate DMA transfer (channel 0)
+	lda	#kDMA_Channel0						; initiate DMA transfer
 	sta	MDMAEN
 
 	jsr	RefreshBGs
@@ -91,7 +189,7 @@ Vblank_Area:
 	stz	OAMADDL							; reset OAM address
 	stz	OAMADDH
 
-	DMA_CH0 $00, LO8.ShadowOAM_Lo, OAMDATA, 544
+	dma_0	$00, LO8.ShadowOAM_Lo, OAMDATA, 544
 
 ;	lda	#$80							; set OAM Priority Rotation flag
 ;	sta	OAMADDH
@@ -107,9 +205,6 @@ Vblank_Area:
 
 ; Update registers
 	jsl	RAM.Routines.UpdatePPURegs
-
-;	lda	LO8.NMITIMEN						; moved to active display (beginning of loop) as of build #004XX (it makes no sense to put this into Vblank)
-;	sta	NMITIMEN
 
 
 
@@ -136,27 +231,14 @@ Vblank_Area:
 ;	sta	BG3VOFS
 ;	stz	BG3VOFS
 	lda	<DP2.HDMA_Channels					; initiate HDMA transfers
-	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
+	and	#kDMA_All~kDMA_Channel0					; channel 0 reserved for regular DMA
 	sta	HDMAEN
-	lda	RDNMI							; acknowledge NMI
 
-	AccuIndex16
-
-	ply								; restore 16 bit registers
-	plx
-	pla
-
-	rti
+	rts
 
 
 
 Vblank_DebugMenu:
-	AccuIndex16
-
-	pha								; preserve 16 bit registers
-	phx
-	phy
-
 	Accu8
 
 	jsr	UpdateGameTime
@@ -168,7 +250,7 @@ Vblank_DebugMenu:
 	stz	OAMADDL							; reset OAM address
 	stz	OAMADDH
 
-	DMA_CH0 $00, LO8.ShadowOAM_Lo, OAMDATA, 544
+	dma_0	$00, LO8.ShadowOAM_Lo, OAMDATA, 544
 
 
 
@@ -184,38 +266,23 @@ Vblank_DebugMenu:
 	sta	BG3VOFS
 	stz	BG3VOFS
 	lda	<DP2.HDMA_Channels					; initiate HDMA transfers
-	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
+	and	#kDMA_All~kDMA_Channel0					; channel 0 reserved for regular DMA
 	sta	HDMAEN
-	lda	RDNMI							; acknowledge NMI
 
-	AccuIndex16
-
-	ply								; restore 16 bit registers
-	plx
-	pla
-
-	rti
+	rts
 
 
 
 /*
 Vblank_Error:
-	AccuIndex16
-
-	pha								; preserve 16 bit registers
-	phx
-	phy
-
 	Accu8
-
-
 
 ; Refresh BG3 (low tilemap bytes)
 	stz	VMAIN							; increment VRAM address by 1 after writing to $2118
 	ldx	#VRAM_BG3_Tilemap1					; set VRAM address to BG3 tilemap
 	stx	VMADDL
 
-	DMA_CH0 $00, RAM.BG3Tilemap, VMDATAL, 1024
+	dma_0	$00, RAM.BG3Tilemap, VMDATAL, 1024
 
 
 
@@ -225,7 +292,7 @@ Vblank_Error:
 	ldx	#VRAM_BG3_Tilemap1					; set VRAM address to BG3 tilemap
 	stx	VMADDL
 
-	DMA_CH0 $00, RAM.BG3TilemapHi, VMDATAH, 1024
+	dma_0	$00, RAM.BG3TilemapHi, VMDATAH, 1024
 
 
 
@@ -238,35 +305,20 @@ Vblank_Error:
 	sta	BG3VOFS
 	stz	BG3VOFS
 	stz	HDMAEN							; disable HDMA
-	lda	RDNMI							; acknowledge NMI
 
-	AccuIndex16
-
-	ply								; restore 16 bit registers
-	plx
-	pla
-
-	rti
+	rts
 */
 
 
 
 Vblank_Intro:
-	AccuIndex16
-
-	pha								; preserve 16 bit registers
-	phx
-	phy
-
 	Accu8
-
-
 
 ; Refresh sprites
 ;	stz	OAMADDL							; reset OAM address
 ;	stz	OAMADDH
 
-;	DMA_CH0 $00, LO8.ShadowOAM_Lo, OAMDATA, 544
+;	dma_0	$00, LO8.ShadowOAM_Lo, OAMDATA, 544
 
 
 
@@ -279,54 +331,28 @@ Vblank_Intro:
 	jsr	GetInput
 
 	lda	<DP2.HDMA_Channels					; initiate HDMA transfers
-	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
+	and	#kDMA_All~kDMA_Channel0					; channel 0 reserved for regular DMA
 	sta	HDMAEN
-	lda	RDNMI							; acknowledge NMI
 
-	AccuIndex16
-
-	ply								; restore 16 bit registers
-	plx
-	pla
-
-	rti
+	rts
 
 
 
 Vblank_Minimal:
-	AccuIndex16
-
-	pha								; preserve 16 bit registers
-	phx
-	phy
-
 	Accu8
 
 	jsl	RAM.Routines.UpdatePPURegs
 	jsr	GetInput
 
 	lda	<DP2.HDMA_Channels					; initiate HDMA transfers
-	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
+	and	#kDMA_All~kDMA_Channel0					; channel 0 reserved for regular DMA
 	sta	HDMAEN
-	lda	RDNMI							; acknowledge NMI
 
-	AccuIndex16
-
-	ply								; restore 16 bit registers
-	plx
-	pla
-
-	rti
+	rts
 
 
 
 Vblank_Mode7:
-	AccuIndex16
-
-	pha								; preserve 16 bit registers
-	phx
-	phy
-
 	Accu8
 
 	jsr	UpdateGameTime
@@ -337,7 +363,7 @@ Vblank_Mode7:
 	stz	OAMADDL							; set OAM address to 0
 	stz	OAMADDH
 
-	DMA_CH0 $00, LO8.ShadowOAM_Lo, OAMDATA, 544
+	dma_0	$00, LO8.ShadowOAM_Lo, OAMDATA, 544
 
 
 
@@ -409,23 +435,25 @@ Vblank_Mode7:
 	lda	<DP2.Mode7_Altitude
 	sta	M7B
 
-	.IFDEF PrecalcMode7Tables
-		Accu16
+.IFDEF PrecalcMode7Tables
+	Accu16
 
-		lda	MPYL						; (number of lines * 2) * altitude setting = table offset
-		clc
-		adc	#loword(SRC_Mode7Scaling)
-		sta	<DP2.DataAddress
+	lda	MPYL							; (number of lines * 2) * altitude setting = table offset
+	clc
+	adc	#loword(SRC_Mode7Scaling)
+	sta	<DP2.DataAddress
 
-		Accu8
-	.ELSE
-		ldx	MPYL						; (number of lines * 2) * altitude setting = table offset
-		stx	<DP2.DataAddress
-	.ENDIF
+	Accu8
+.ELSE
+	ldx	MPYL							; (number of lines * 2) * altitude setting = table offset
+	stx	<DP2.DataAddress
+.ENDIF
 
 	lda	<DP2.Mode7_BG2HScroll
 	sta	BG2HOFS
 	stz	BG2HOFS
+
+;	jsr	CalcMode7MatrixPPU					; new routine with PPU multiplication
 
 
 
@@ -438,28 +466,14 @@ Vblank_Mode7:
 	jsr	GetInput
 
 	lda	<DP2.HDMA_Channels					; initiate HDMA transfers
-	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
+	and	#kDMA_All~kDMA_Channel0					; channel 0 reserved for regular DMA
 	sta	HDMAEN
 
-	lda	RDNMI							; acknowledge NMI
-
-	AccuIndex16
-
-	ply								; restore 16 bit registers
-	plx
-	pla
-
-	rti
+	rts
 
 
 
 Vblank_WorldMap:
-	AccuIndex16
-
-	pha								; preserve 16 bit registers
-	phx
-	phy
-
 	Accu8
 
 	jsr	UpdateGameTime
@@ -470,7 +484,7 @@ Vblank_WorldMap:
 	stz	OAMADDL							; reset OAM address
 	stz	OAMADDH
 
-	DMA_CH0 $00, LO8.ShadowOAM_Lo, OAMDATA, 544
+	dma_0	$00, LO8.ShadowOAM_Lo, OAMDATA, 544
 
 
 
@@ -488,9 +502,7 @@ Vblank_WorldMap:
 	lda	#$01							; $01BF = 447 (i.e., 448 bytes are transferred)
 	xba
 	lda	#$BF
-	mvn	$7E, $00						; self-reminder: This also sets the DBR to the destination bank ($00 in this case, otherwise uncomment/change the following). But, why won't mvn $00, $00 work just as well?!
-
-;	SetDBR	$00							; set Data Bank = $00
+	mvn	bankbyte(RAM.ScratchSpace), bankbyte(LO8.HDMA_WorMapVScroll)	; $7E (src), $00 (dest), self-reminder: This also sets the DBR to the destination bank ($00 in this case)
 
 
 
@@ -498,110 +510,18 @@ Vblank_WorldMap:
 	jsr	GetInput
 
 	lda	<DP2.HDMA_Channels					; initiate HDMA transfers
-	and	#%11111110						; make sure channel 0 isn't accidentally used (reserved for normal DMA)
+	and	#kDMA_All~kDMA_Channel0					; channel 0 reserved for regular DMA
 	sta	HDMAEN
-	lda	RDNMI							; acknowledge NMI
 
-	AccuIndex16
-
-	ply								; restore 16 bit registers
-	plx
-	pla
-
-	rti
+	rts
 
 
 
-; *************************** H-IRQ routines ***************************
+; COMMON SUBROUTINES
+; --------------------------------------------------------------------------------------------------
 
-	.ACCU 8
-	.INDEX 16
-
-HIRQ_MenuItemsVsplit:
-	php								; preserve processor status
-
-	Accu8								; only use 8 bit accumulator
-
-	pha								; preserve 8 bit accumulator
-
-	lda	#$01|$08						; switch to BG Mode 1 (BG3 priority)
-	sta	BGMODE
-	stz	BG12NBA							; reset BG1/2 character data area designation to $0000
-
-	lda	TIMEUP							; acknowledge IRQ
-	pla								; restore 8 bit accumulator
-	plp								; restore processor status
-
-	rti
-
-
-
-HIRQ_X:
-	php								; preserve processor status
-
-	Accu8								; only use 8 bit accumulator
-
-	pha								; preserve 8 bit accumulator
-
-	; do something here
-
-	lda	TIMEUP							; acknowledge IRQ
-	pla								; restore 8 bit accumulator
-	plp								; restore processor status
-
-	rti
-
-
-
-; *************************** V-IRQ routines ***************************
-
-VIRQ_Area:
-	php								; preserve processor status
-
-	Accu8								; only use 8 bit accumulator
-
-	pha								; preserve 8 bit accumulator
-	lda	#$05							; switch to BG Mode 5 for text box
-	sta	BGMODE
-	lda	#$78							; VRAM address for BG1 tilemap: $7800, size: 32×32 tiles
-	sta	BG1SC
-	lda	#$7C							; VRAM address for BG2 tilemap: $7C00, size: 32×32 tiles
-	sta	BG2SC
-	lda	LO8.TextBox_TSTM					; write Main/Subscreen designation regs
-	sta	TM
-	lda	LO8.TextBox_TSTM+1
-	sta	TS
-	lda	TIMEUP							; acknowledge IRQ
-	pla								; restore 8 bit accumulator
-	plp								; restore processor status
-
-	rti
-
-
-
-VIRQ_Mode7:
-	php								; preserve processor status
-
-	Accu8								; only use 8 bit accumulator
-
-	pha								; preserve 8 bit accumulator
-	lda	#$07							; switch to BG Mode 7
-	sta	BGMODE
-	lda	#%00010001						; turn on BG1 and sprites only
-	sta	TM							; on the mainscreen
-	sta	TS							; and on the subscreen
-	lda	TIMEUP							; acknowledge IRQ
-	pla								; restore 8 bit accumulator
-	plp								; restore processor status
-
-	rti
-
-
-
-; ************************* Common subroutines *************************
-
-	.ACCU 8
-	.INDEX 16
+.ACCU 8
+.INDEX 16
 
 GetInput:
 	php
@@ -706,7 +626,7 @@ GetInput:
 
 	lda	#:SoftReset						; overwrite bank byte as well, so after rti, the program continues at SoftReset
 	sta	13, s
-	lda	#$80							; turn off the screen
+	lda	#kForcedBlank							; turn off the screen
 	sta	INIDISP
 
 @done:
@@ -716,8 +636,8 @@ GetInput:
 
 
 
-	.ACCU 8
-	.INDEX 16
+.ACCU 8
+.INDEX 16
 
 RefreshBGs:								; refresh BGs according to DP2.DMA_Updates
 	ldy	#4							; DMA counter, do max. 4 DMAs per Vblank
@@ -732,7 +652,7 @@ RefreshBGs:								; refresh BGs according to DP2.DMA_Updates
 	ldx	#VRAM_BG1_Tilemap1					; set VRAM address to BG1 tilemap
 	stx	VMADDL
 
-	DMA_CH0 $00, RAM.BG1Tilemap1, VMDATAL, 1024
+	dma_0	$00, RAM.BG1Tilemap1, VMDATAL, 1024
 
 	lda	#%00000001						; clear respective DMA update bit
 	trb	<DP2.DMA_Updates
@@ -746,7 +666,7 @@ RefreshBGs:								; refresh BGs according to DP2.DMA_Updates
 	ldx	#VRAM_BG1_Tilemap2					; set VRAM address to BG1 tilemap
 	stx	VMADDL
 
-	DMA_CH0 $00, RAM.BG1Tilemap2, VMDATAL, 1024
+	dma_0	$00, RAM.BG1Tilemap2, VMDATAL, 1024
 
 	lda	#%00000010						; clear respective DMA update bit
 	trb	<DP2.DMA_Updates
@@ -763,7 +683,7 @@ RefreshBGs:								; refresh BGs according to DP2.DMA_Updates
 	ldx	#VRAM_BG2_Tilemap1					; set VRAM address to BG2 tilemap
 	stx	VMADDL
 
-	DMA_CH0 $00, RAM.BG2Tilemap1, VMDATAL, 1024
+	dma_0	$00, RAM.BG2Tilemap1, VMDATAL, 1024
 
 	lda	#%00000100						; clear respective DMA update bit
 	trb	<DP2.DMA_Updates
@@ -777,7 +697,7 @@ RefreshBGs:								; refresh BGs according to DP2.DMA_Updates
 	ldx	#VRAM_BG2_Tilemap2					; set VRAM address to BG2 tilemap
 	stx	VMADDL
 
-	DMA_CH0 $00, RAM.BG2Tilemap2, VMDATAL, 1024
+	dma_0	$00, RAM.BG2Tilemap2, VMDATAL, 1024
 
 	lda	#%00001000						; clear respective DMA update bit
 	trb	<DP2.DMA_Updates
@@ -794,7 +714,7 @@ RefreshBGs:								; refresh BGs according to DP2.DMA_Updates
 	ldx	#VRAM_BG3_Tilemap1					; set VRAM address to BG3 tilemap
 	stx	VMADDL
 
-	DMA_CH0 $00, RAM.BG3Tilemap, VMDATAL, 1024
+	dma_0	$00, RAM.BG3Tilemap, VMDATAL, 1024
 
 	lda	#%00010000						; clear respective DMA update bit
 	trb	<DP2.DMA_Updates
@@ -814,7 +734,7 @@ RefreshBGs:								; refresh BGs according to DP2.DMA_Updates
 	ldx	#VRAM_BG1_Tilemap1					; set VRAM address to BG1 tilemap
 	stx	VMADDL
 
-	DMA_CH0 $00, RAM.BG1Tilemap1Hi, VMDATAH, 1024
+	dma_0	$00, RAM.BG1Tilemap1Hi, VMDATAH, 1024
 
 	lda	#%00000001						; clear respective DMA update bit
 	trb	<DP2.DMA_Updates+1
@@ -828,7 +748,7 @@ RefreshBGs:								; refresh BGs according to DP2.DMA_Updates
 	ldx	#VRAM_BG1_Tilemap2					; set VRAM address to BG1 tilemap
 	stx	VMADDL
 
-	DMA_CH0 $00, RAM.BG1Tilemap2Hi, VMDATAH, 1024
+	dma_0	$00, RAM.BG1Tilemap2Hi, VMDATAH, 1024
 
 	lda	#%00000010						; clear respective DMA update bit
 	trb	<DP2.DMA_Updates+1
@@ -845,7 +765,7 @@ RefreshBGs:								; refresh BGs according to DP2.DMA_Updates
 	ldx	#VRAM_BG2_Tilemap1					; set VRAM address to BG2 tilemap
 	stx	VMADDL
 
-	DMA_CH0 $00, RAM.BG2Tilemap1Hi, VMDATAH, 1024
+	dma_0	$00, RAM.BG2Tilemap1Hi, VMDATAH, 1024
 
 	lda	#%00000100						; clear respective DMA update bit
 	trb	<DP2.DMA_Updates+1
@@ -859,7 +779,7 @@ RefreshBGs:								; refresh BGs according to DP2.DMA_Updates
 	ldx	#VRAM_BG2_Tilemap2					; set VRAM address to BG2 tilemap
 	stx	VMADDL
 
-	DMA_CH0 $00, RAM.BG2Tilemap2Hi, VMDATAH, 1024
+	dma_0	$00, RAM.BG2Tilemap2Hi, VMDATAH, 1024
 
 	lda	#%00001000						; clear respective DMA update bit
 	trb	<DP2.DMA_Updates+1
@@ -876,7 +796,7 @@ RefreshBGs:								; refresh BGs according to DP2.DMA_Updates
 	ldx	#VRAM_BG3_Tilemap1					; set VRAM address to BG3 tilemap
 	stx	VMADDL
 
-	DMA_CH0 $00, RAM.BG3TilemapHi, VMDATAH, 1024
+	dma_0	$00, RAM.BG3TilemapHi, VMDATAH, 1024
 
 	lda	#%00010000						; clear respective DMA update bit
 	trb	<DP2.DMA_Updates+1
@@ -887,35 +807,42 @@ RefreshBGs:								; refresh BGs according to DP2.DMA_Updates
 
 
 
-UpdateGameTime:								; FIXME, move to active display
+UpdateGameTime:								; FIXME, move to active display/main game loop
 	sed								; decimal mode on
 
+@UpdateSecond:
+	lda	<DP2.GameTimeSecond					; increment second
 	clc
-	lda	<DP2.GameTimeSeconds
 	adc	#$01
-	sta	<DP2.GameTimeSeconds
-	cmp	#$60							; check if 60 frames = game time seconds have elapsed
-	bcc	@UpdateMinutes
-
-	stz	<DP2.GameTimeSeconds					; carry bit set, reset seconds
-
-@UpdateMinutes:
-	lda	<DP2.GameTimeMinutes					; increment minutes via carry bit
-	adc	#$00
-	sta	<DP2.GameTimeMinutes
-	cmp	#$60							; check if 60 seconds have elapsed
-	bcc	@UpdateHours
-
-	stz	<DP2.GameTimeMinutes					; carry bit set, reset minutes
-
-@UpdateHours:
-	lda	<DP2.GameTimeHours					; increment hours via carry bit
-	adc	#$00
-	sta	<DP2.GameTimeHours
-	cmp	#$24							; check if 24 hours have elapsed
+	sta	<DP2.GameTimeSecond
+	cmp	#$60							; 60 seconds elapsed?
 	bcc	@TimeUpdateDone
 
-	stz	<DP2.GameTimeHours					; carry bit set, reset hours
+	stz	<DP2.GameTimeSecond					; carry bit set, reset second
+
+@UpdateMinute:
+	lda	<DP2.GameTimeMinute					; increment minute via carry bit
+	adc	#$00
+	sta	<DP2.GameTimeMinute
+	cmp	#$60							; 60 minutes elapsed?
+	bcc	@TimeUpdateDone
+
+	stz	<DP2.GameTimeMinute					; carry bit set, reset minute
+
+@UpdateHour:
+	lda	<DP2.GameTimeHour					; increment hour via carry bit
+	adc	#$00
+	sta	<DP2.GameTimeHour
+	cmp	#$24							; 24 hours elapsed?
+	bcc	@TimeUpdateDone
+
+	stz	<DP2.GameTimeHour					; carry bit set, reset hour
+
+@UpdateDay:
+	lda	<DP2.GameTimeDay					; increment day via carry bit
+	adc	#$00
+	sta	<DP2.GameTimeDay
+;	cmp	something
 
 @TimeUpdateDone:
 	cld								; decimal mode off
@@ -924,7 +851,8 @@ UpdateGameTime:								; FIXME, move to active display
 
 
 
-; ************************ Text box subroutines ************************
+; TEXT BOX SUBROUTINES
+; --------------------------------------------------------------------------------------------------
 
 ClearTextBox:
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
@@ -932,30 +860,10 @@ ClearTextBox:
 	ldx	#VRAM_TextBoxL1						; set VRAM address to beginning of line 1
 	stx	VMADDL
 
-	DMA_CH0 $09, SRC_Zeroes, VMDATAL, 184*16			; 184 tiles
-
-
-
-; Clear VWF buffer // FIXME MOVE TO ACT. DISPLAY (cf. lines 466, 555, 855 in text.inc.asm)
-	Accu16
-
-	lda	#0
-	ldy	#0
--	sta	LO8.VWF_TileBuffer, y					; erase buffer
-	iny
-	iny
-	cpy	#64							; 4 tiles, 16 bytes per tile
-	bne	-
-
-	stz	<DP2.DiagTileDataCounter				; reset tile data counter
-	stz	<DP2.VWF_BitsUsed					; reset used bits counter
-	stz	<DP2.VWF_BufferIndex					; reset VWF buffer index
-
-	Accu8
+	dma_0	$09, SRC_0000, VMDATAL, 184*16				; 184 tiles
 
 	lda	#%00000010						; text box is empty now, so clear the "clear text box" flag
 	trb	<DP2.TextBoxStatus
-	stz	<DP2.DiagTextEffect					; clear all text effect bits
 
 	rts
 
@@ -963,21 +871,26 @@ ClearTextBox:
 
 ; "FlushVWFTileBuffer" as a function consists of two parts:
 ; 1. Transfer contents of LO8.VWF_TileBuffer to VRAM (this subroutine)
-; 2. Copy contents of LO8.VWF_TileBuffer2 to LO8.VWF_TileBuffer
-;    (macro), this is done where appropriate (i.e., after the "VWF
-;    buffer full" bit was set and one frame passed to do part 1) during
-;    active display as no more VRAM writing is involved.
+; 2. Copy contents of LO8.VWF_TileBuffer2 to LO8.VWF_TileBuffer,
+;    this is done where appropriate (i.e., after the "VWF buffer full"
+;    bit was set and one frame has elapsed to do part 1) during active
+;    display as no more VRAM writing is involved.
 
 FlushVWFTileBuffer:
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	VMAIN
+	lda	<DP2.DiagTileCounter					; load tile number and convert to VRAM address
 
 	Accu16
 
-	lda	<DP2.DiagTileDataCounter
-	clc								; add VRAM address for BG2 font tiles (+ 32 empty tiles),
-	adc	#VRAM_TextBoxL1						; this is done here once so we can proceed with zero-based counter math
-	sta	VMADDL							; store as new VRAM address
+	and	#$00FF							; clear high byte
+	asl	a							; multiply by 16 (not 32 because of VRAM word addressing) for actual address offset
+	asl	a
+	asl	a
+	asl	a
+	clc								; add base address for BG2 font tiles (+ 32 empty tiles),
+	adc	#VRAM_TextBoxL1						; this is done here because DP2.DiagTileCounter is zero-based
+	sta	VMADDL							; store as VRAM address
 
 	ldy	#0							; transfer VWF tile buffer to VRAM
 -	lda	LO8.VWF_TileBuffer, y					; copy font tiles
@@ -986,8 +899,6 @@ FlushVWFTileBuffer:
 	iny
 	cpy	#32							; 2 tiles, 16 bytes per tile
 	bne	-
-
-;	FlushVWFTileBuffer2						; this is done during active display (used to be part of this subroutine)
 
 	Accu8
 
@@ -1006,34 +917,34 @@ LoadTextBoxBG:
 	stx	WMADDL
 	stz	WMADDH							; array is in bank $7E
 
-	DMA_CH0 $08, SRC_Zeroes, WMDATA, 192				; DP2.TextBoxBG is zero, so make background black
+	dma_0	$08, SRC_0000, WMDATA, 192				; DP2.TextBoxBG is zero, so make background black
 
 	bra	@LoadTextBoxBGDone
 
 +	Accu16								; DP2.TextBoxBG is not zero, calculate DMA parameters for the text box "scrolling" animations to look correctly (obviously not needed with solid black background)
 
-	and	#$00FF							; remove garbage in high byte
+	and	#$00FF							; clear high byte
 	asl	a							; use as index into offset pointer table
 	tax
-	lda.l	PTR_TextBoxGradient, x					; read and set source data offset for upcoming DMA
+	lda.l	SRC_TextBoxGradient, x					; read and set source data offset for upcoming DMA
 	sta	A1T0L
 
 
 
 ; Calculate DMA data length based on current IRQ scanline (e.g. when text box has fully "scrolled in": 224 - 176 = 48; 48 * 4 = 192)
 	lda	<DP2.TextBoxVIRQ					; perform 16-bit subtraction 224-DP2.TextBoxVIRQ (which is an 8-bit variable) by doing -DP2.TextBoxVIRQ+224 instead
-	and	#$00FF							; remove garbage in high byte
+	and	#$00FF							; clear high byte
 	eor	#$FFFF							; make number negative (two's complement)
-	inc	a
+	ina
 	clc								; add 224
 	adc	#224
-	bne	+							; if zero at this point, jump out (otherwise we'd end up with a disastrous transfer of 65536 bytes)
+	bne	+							; if zero at this point, jump out (otherwise we'd end up with a disastrous transfer of 65,536 bytes)
 
 	Accu8
 
 	bra	@LoadTextBoxBGDone
 
-	.ACCU 16
+.ACCU 16
 
 +	asl	a							; scanline difference (i.e., text box height) not zero, continue calculation
 	asl	a
@@ -1043,7 +954,7 @@ LoadTextBoxBG:
 
 ; Next, calculate WRAM address based on value of DP2.TextBoxVIRQ (e.g. 176 * 4 - 704 = 0)
 	lda	<DP2.TextBoxVIRQ
-	and	#$00FF							; remove garbage in high byte once again
+	and	#$00FF							; clear high byte once again
 	asl	a
 	asl	a
 	clc
@@ -1058,7 +969,7 @@ LoadTextBoxBG:
 	sta	BBAD0
 	lda	#:SRC_HDMA_TextBoxGradientBlue				; source data bank
 	sta	A1B0
-	lda	#%00000001						; initiate DMA transfer (channel 0)
+	lda	#kDMA_Channel0						; initiate DMA transfer
 	sta	MDMAEN
 
 @LoadTextBoxBGDone:
@@ -1081,18 +992,18 @@ UpdateCharPortrait:
 	and	#$7F							; mask off "change portrait" bit
 	bne	+
 
-	DMA_CH0 $09, SRC_FFs, VMDATAL, 1920				; no portrait wanted, so put masking tiles over portrait
+	dma_0	$09, SRC_FFFF, VMDATAL, 1920				; no portrait wanted, so put masking tiles over portrait
 
-	DMA_CH0 $0A, SRC_Zeroes, CGDATA, 32				; and zero out palette
+	dma_0	$0A, SRC_0000, CGDATA, 32				; and zero out palette
 
 	bra	@PortraitUpdateDone
 
 +	Accu16								; portrait no. in A
 
-	and	#$00FF							; remove garbage in high byte
+	and	#$00FF							; clear high byte
 	asl	a
 	tax								; make portrait no. = index in GFX pointer table
-	lda.l	PTR_CharPortraitGFX, x
+	lda.l	SRC_CharPortraitGFX, x
 	sta	A1T0L							; data offset
 	ldy	#$1801							; low byte: DMA mode, high byte: B bus register ($2118/VMDATA)
  	sty	DMAP0
@@ -1103,12 +1014,12 @@ UpdateCharPortrait:
 	sta	A1B0
 	ldy	#1920							; data length
 	sty	DAS0L
-	lda	#%00000001						; initiate DMA transfer (channel 0)
+	lda	#kDMA_Channel0						; initiate DMA transfer
 	sta	MDMAEN
 
 	Accu16
 
-	lda.l	PTR_CharPortraitPalette, x				; index is still in X, use that for correct palette
+	lda.l	SRC_CharPortraitPalette, x				; index is still in X, use that for correct palette
 	sta	A1T0L							; data offset
 	ldx	#$2202							; low byte: DMA mode, high byte: B bus register ($2122/CGDATA)
  	stx	DMAP0
@@ -1119,7 +1030,7 @@ UpdateCharPortrait:
 	sta	A1B0
 	ldx	#32							; data length (16 colors)
 	stx	DAS0L
-	lda	#%00000001						; initiate DMA transfer (channel 0)
+	lda	#kDMA_Channel0						; initiate DMA transfer
 	sta	MDMAEN
 
 @PortraitUpdateDone:
@@ -1130,302 +1041,4 @@ UpdateCharPortrait:
 
 
 
-; ************************** Software Errors ***************************
-
-ErrorHandler:
-	php								; preserve CPU status
-
-	AccuIndex16
-
-	pha								; preserve registers
-	phx
-	phy
-
-	SetDP	$0200
-
-	Accu8
-
-	DisableIRQs
-
-	SetDBR	$00
-
-	stz	HDMAEN							; disable HDMA
-	lda	#$80							; enter forced blank
-	sta	INIDISP
-
-@FromBRKorCOP:
-
-
-
-; Clear BG3 tilemap buffer
-	ldx	#loword(RAM.BG3Tilemap)
-	stx	WMADDL
-	stz	WMADDH
-
-	DMA_CH0 $08, SRC_Zeroes, WMDATA, 2048
-
-
-
-; 8x8 font --> VRAM
-	lda	#$80							; increment VRAM address by 1 after writing to $2119
-	sta	VMAIN
-	ldx	#VRAM_BG3_Tiles
-	stx	VMADDL
-
-	DMA_CH0 $01, SRC_Font8x8, VMDATAL, 2048
-
-	ldx	#0
-	lda	#$20							; priority bit
--	sta	RAM.BG3TilemapHi, x					; set priority bit for BG3 tiles
-	inx
-	cpx	#1024
-	bne	-
-
-
-
-; Font palette --> CGRAM
-	stz	CGADD							; reset CGRAM address
-	stz	CGDATA							; set mainscreen bg color: blue
-	lda	#$70
-	sta	CGDATA
-	ldx	#2							; skip original bg color
--	lda.l	SRC_Palettes_Text, x					; copy remaining 3 colors
-	sta	CGDATA
-	inx
-	cpx	#8
-	bne	-
-
-
-
-; Register updates
-	lda	#$01							; set BG mode 1
-	sta	BGMODE
-	lda	#$48							; VRAM address for BG3 tilemap: $4800, size: 32×32 tiles
-	sta	BG3SC
-	lda	#$04							; VRAM address for BG3 character data: $4000 (ignore BG4 bits)
-	sta	BG34NBA
-	lda	#%00000100						; turn on BG3 only
-	sta	TM							; on the mainscreen
-	sta	TS							; and on the subscreen
-
-
-
-; Print error info
-	PrintString	3, 2, kTextBG3, "An error occurred!"
-	PrintString	6, 2, kTextBG3, "Error type:"
-
-	lda	<DP2.ErrorCode
-
-	Accu16
-
-	and	#$00FF							; clear garbage in high byte
-;	asl	a							; never mind (error code table consists of 2-byte entries)
-	tax
-	phx								; preserve error code for later use
-
-	lda.l	PTR_ErrorCode, x					; load pointer to error code name
-	sta	<DP2.DataAddress
-
-	Accu8
-
-	lda	#:PTR_ErrorCode
-	sta	<DP2.DataBank
-
-	PrintString	7, 2, kTextBG3, "%s"				; print error code name
-
-
-
-; print extra info depending on error type
-	plx								; restore error code as jump index
-	jmp	(@PTR_ErrorCodeExtraInfo, x)
-
-@PTR_ErrorCodeExtraInfo:
-	.DW @ErrorBRKorCOP
-	.DW @ErrorBRKorCOP
-	.DW @ErrorCorruptROM
-	.DW @ErrorSPC700
-
-@ErrorBRKorCOP:
-	PrintString	10, 2, kTextBG3, "BRK/COP signature byte: $"
-	PrintHexNum	<DP2.ErrorSignature
-
-	PrintString	12, 2, kTextBG3, "PC: $"
-
-	lda	10, s							; PC bank
-	sta	<DP2.Temp
-
-	PrintHexNum	<DP2.Temp
-
-	lda	9, s							; PC middle byte
-	sta	<DP2.Temp
-
-	PrintHexNum	<DP2.Temp
-
-	lda	8, s							; PC low byte
-	dec	a							; make up for automatic program counter increment
-	dec	a
-	sta	<DP2.Temp
-
-	PrintHexNum	<DP2.Temp
-
-	jmp	@ExtraInfoDone
-
-@ErrorCorruptROM:
-	PrintString	10, 2, kTextBG3, "ROM header checksum:"
-
-	SetTextPos	10, 23
-	PrintHexNum	$40FFDF
-
-	SetTextPos	10, 25
-	PrintHexNum	$40FFDE
-
-	PrintString	12, 2, kTextBG3, "Calculated checksum:"
-
-	SetTextPos	12, 23
-	PrintHexNum	<DP2.Temp+4
-
-	SetTextPos	12, 25
-	PrintHexNum	<DP2.Temp+3
-
-	jmp	@ExtraInfoDone
-
-@ErrorSPC700:
-	; nothing for now
-
-;	jmp	@ExtraInfoDone						; uncomment when adding more error types
-
-@ExtraInfoDone:
-	PrintString	15, 2, kTextBG3, "A: $"
-
-	lda	6, s
-	sta	<DP2.Temp
-
-	PrintHexNum	<DP2.Temp
-
-	lda	5, s
-	sta	<DP2.Temp
-
-	PrintHexNum	<DP2.Temp
-
-	PrintString	16, 2, kTextBG3, "X: $"
-
-	lda	4, s
-	sta	<DP2.Temp
-
-	PrintHexNum	<DP2.Temp
-
-	lda	3, s
-	sta	<DP2.Temp
-
-	PrintHexNum	<DP2.Temp
-
-	PrintString	17, 2, kTextBG3, "Y: $"
-
-	lda	2, s
-	sta	<DP2.Temp
-
-	PrintHexNum	<DP2.Temp
-
-	lda	1, s
-	sta	<DP2.Temp
-
-	PrintHexNum	<DP2.Temp
-
-	PrintString	20, 2, kTextBG3, "CPU status: %%"
-
-	lda	7, s
-	sta	<DP2.Temp
-
-	PrintBinary	<DP2.Temp
-
-
-
-; Update BG3 tilemap
-	stz	VMAIN							; increment VRAM address by 1 after writing to $2118
-	ldx	#VRAM_BG3_Tilemap1					; set VRAM address to BG3 tilemap
-	stx	VMADDL
-
-	DMA_CH0 $00, RAM.BG3Tilemap, VMDATAL, 1024
-
-
-
-; Turn screen back on, put CPU to sleep
-	lda	#$0F
-	sta	INIDISP
-	stp								; halt the CPU
-
-
-
-ErrorHandlerBRK:
-	AccuIndex16
-
-	pha								; preserve registers (processor status already pushed by the BRK instruction)
-	phx
-	phy
-
-	SetDP	$0200
-
-	Accu8
-
-	lda	#$00							; disable NMI (IRQ disable flag already set by the BRK instruction)
-	sta.l	NMITIMEN
-
-	SetDBR	$00
-
-	stz	HDMAEN							; disable HDMA
-	lda	#$80							; enter forced blank
-	sta	INIDISP
-	lda	#kErrorBRK
-	sta	<DP2.ErrorCode
-
-	lda	8, s							; load BRK signature byte address (can't use Stack Relative Indirect Indexed addressing here unfortunately because the program counter already pointed to the next byte when it was pushed onto the stack)
-	dec	a							; decrement low byte of program counter to signature byte address (i.e., make up for automatic PC increment)
-	sta	<DP2.DataAddress
-	lda	9, s
-	sta	<DP2.DataAddress+1
-	lda	10, s
-	sta	<DP2.DataBank
-	lda	[<DP2.DataAddress]					; load BRK signature byte
-	sta	<DP2.ErrorSignature
-
-	jmp	ErrorHandler@FromBRKorCOP
-
-
-
-ErrorHandlerCOP:
-	AccuIndex16
-
-	pha								; preserve registers (processor status already pushed by the COP instruction)
-	phx
-	phy
-
-	SetDP	$0200
-
-	Accu8
-
-	lda	#$00							; disable NMI (IRQ disable flag already set by the COP instruction)
-	sta.l	NMITIMEN
-
-	SetDBR	$00
-
-	stz	HDMAEN							; disable HDMA
-	lda	#$80							; enter forced blank
-	sta	INIDISP
-	lda	#kErrorCOP
-	sta	<DP2.ErrorCode
-
-	lda	8, s							; cf. loading of BRK signature byte address
-	dec	a
-	sta	<DP2.DataAddress
-	lda	9, s
-	sta	<DP2.DataAddress+1
-	lda	10, s
-	sta	<DP2.DataBank
-	lda	[<DP2.DataAddress]					; load COP signature byte
-	sta	<DP2.ErrorSignature
-
-	jmp	ErrorHandler@FromBRKorCOP
-
-
-
-; ******************************** EOF *********************************
+; EOF

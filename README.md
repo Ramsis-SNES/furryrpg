@@ -5,7 +5,7 @@ Welcome to *Furry RPG!,* an all-new Japanese-style role-playing game for the Sup
 ### Implemented features
 
 * Epic storyline spanning over multiple realms, featuring an all-Furry cast.
-* 48 Mbit ROM size (ExHiROM) with SRAM-based game save support (think *Tales of Phantasia*). ROM expansion to 64 or even 96 Mbit may or may not be necessary in the future depending on the need for fitting all game data.
+* 48 Mbit ROM size (ExHiROM) with SRAM-based game save support (think *Tales of Phantasia*). ROM expansion to 64 or even 96 Mbit may or may not be necessary in the future depending on the amount of final game data.
 * Extendable scripting language supporting up to 32,768 commands ("event codes").
 * High resolution, VWF-based multi-language dialogue rendering engine, complete with character portrait, background color gradient, and *Suikoden*-style selection bar support.
 * Fully controllable, Mode-7-based "flying" animation with rotating sky background.
@@ -52,6 +52,16 @@ Note that all graphics is placeholder artwork. Game presentation is subject to c
 ### Download ROM image
 
 [Latest build](https://github.com/Ramsis-SNES/furryrpg/raw/master/furryrpg.sfc)
+
+### Building
+
+(WIP)
+
+Basic requirements:
+
+- WLA DX v10.7 cross assembler, available from https://github.com/vhelin/wla-dx
+- superfamiconv, available from https://github.com/Optiroc/SuperFamiconv
+- Python v2
 
 ### Last but not least
 

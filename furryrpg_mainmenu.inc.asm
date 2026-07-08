@@ -1,224 +1,40 @@
-;==========================================================================================
+; ==================================================================================================
 ;
-;   "FURRY RPG" (WORKING TITLE)
-;   (c) 2023 by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
+;	"FURRY RPG" (WORKING TITLE)
+;	(c) by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
 ;
-;	*** MAIN MENU ***
+;	MAIN MENU
 ;
-;==========================================================================================
+; ==================================================================================================
 
 
 
-	.ENDASM
+; MAIN MENU
+; --------------------------------------------------------------------------------------------------
 
-MainMenu:
-	.ACCU 8
-	.INDEX 16
-
-	DrawFrame	10, 9, 11, 7
-	PrintString	10, 11, kTextBG3, "Inventory"
-	PrintString	11, 11, kTextBG3, "Talent"
-	PrintString	12, 11, kTextBG3, "Formation"
-	PrintString	13, 11, kTextBG3, "Lily's log"
-	PrintString	14, 11, kTextBG3, "Settings"
-	PrintString	15, 11, kTextBG3, "Quit game"
-
-
-
-; Menu "window" color
-	ldx	#$0000
--	lda.l	SRC_HDMA_ColMathMenu, x
-	sta	LO8.HDMA_ColorMath, x
-	inx
-	cpx	#_sizeof_SRC_HDMA_ColMathMenu
-	bne	-
-
-	lda	#%00010000						; set color math enable bits (4-5) to "MathWindow"
-	sta	CGWSEL
-	lda	#%00010111						; enable color math on BG1/2/3 + sprites
-	sta	CGADSUB
-	lda	#86							; color "window" left pos
-	sta	WH0
-	lda	#169							; color "window" right pos
-	sta	WH1
-	lda	#%00100000						; color math window 1 area = outside (why does this work??)
-	sta	WOBJSEL
-	lda	#%00001000						; enable HDMA channel 3 (color math)
-	tsb	<DP2.HDMA_Channels
-
-	Accu16
-
-	lda	#%0001000000000111					; mainscreen : BG1/2/3, subscreen : sprites (i.e., sprites will disappear as $2130.1 is clear)
-	sta	<DP2.Shadow_TSTM
-
-	Accu8
-
-
-
-MainMenuLoop:
-	WaitFrames	1
-
-
-
-; Check for dpad up
-	lda	<DP2.Joy1New+1
-	and	#%00001000
-	beq	++
-	lda	LO8.HDMA_ColorMath+0					; first byte of color math HDMA table = no. of scanlines above color bar
-	cmp	#80
-	beq	+
-	sec
-	sbc	#8
-	sta	LO8.HDMA_ColorMath+0
-	bra	++
-
-+	lda	#120
-	sta	LO8.HDMA_ColorMath+0
-
-++
-
-
-
-; Check for dpad down
-	lda	<DP2.Joy1New+1
-	and	#%00000100
-	beq	++
-	lda	LO8.HDMA_ColorMath+0					; first byte of color math HDMA table = no. of scanlines above color bar
-	cmp	#120
-	beq	+
-	clc
-	adc	#8
-	sta	LO8.HDMA_ColorMath+0
-	bra	++
-
-+	lda	#80
-	sta	LO8.HDMA_ColorMath+0
-
-++
-
-
-
-; Check for A button
-	lda	<DP2.Joy1New
-	and	#%10000000
-	beq	++
-	lda	#%00000100						; mosaic on BG3
--	sta	MOSAIC
-	wai
-	clc
-	adc	#$10
-	cmp	#$64
-	bne	-
-
--	sta	MOSAIC
-	wai
-	sec
-	sbc	#$10
-	cmp	#$04
-	bne	-
-
-	stz	MOSAIC
-/*	lda	LO8.HDMA_ColorMath+0
-	cmp	#80
-	bne	+
-	ldx	#loword(RAM.BG3Tilemap)					; clear text
-	stx	WMADDL
-	stz	WMADDH
-
-	DMA_CH0 $08, SRC_Zeroes, WMDATA, 1024
-
-	jmp	AreaEnter
-
-+	cmp	#88
-	bne	+
-	jmp	PartyMenu
-
-+	cmp	#96
-	bne	+
-	jmp	WorldMode3
-
-+	cmp	#104
-	bne	+
-	jmp	TestMode7
-
-+	jmp	MusicTest						; else, selection bar must be on the bottom
-*/
-
-++
-
-
-
-; Check for B button = back
-	lda	<DP2.Joy1New+1
-	and	#%10000000
-	bne	+
-	jmp	++
-
-+	PrintString	9, 10, kTextBG3, "             "
-	PrintString	10, 10, kTextBG3, "             "
-	PrintString	11, 10, kTextBG3, "             "
-	PrintString	12, 10, kTextBG3, "             "
-	PrintString	13, 10, kTextBG3, "             "
-	PrintString	14, 10, kTextBG3, "             "
-	PrintString	15, 10, kTextBG3, "             "
-	PrintString	16, 10, kTextBG3, "             "
-
-
-	lda	#%00110000						; disable color math
-	sta	CGWSEL
-	stz	WOBJSEL							; disable color math window
-	lda	#%00001000						; disable HDMA channel 3 (color math)
-	trb	<DP2.HDMA_Channels
-
-	Accu16
-
-	lda	#%0001000000010000					; re-enable sprites
-	tsb	<DP2.Shadow_TSTM
-
-	Accu8
-
-	jmp	MainAreaLoop
-
-++
-
-
-
-; Check for Start
-;	lda	<DP2.Joy1New+1
-;	and	#%00010000
-;	beq	+
-
-;	WaitUserInput
-
-;+
-
-	jmp	MainMenuLoop
-
-	.ASM
-
-
-
-; ***************************** Main menu ******************************
+.ACCU 8
+.INDEX 16
 
 InGameMenu:
 
-	.IFNDEF NOMUSIC
-		SNESGSS_Command kGSS_MUSIC_STOP, 0			; stop music // REMOVEME when done with menu
+.IFNDEF NOMUSIC
 
-		lda	<DP2.GameConfig
-		and	#%00000001					; check for "MSU1 present" flag
-		beq	+
-		stz	MSU_CONTROL					; stop MSU1 track
-		stz	MSU_VOLUME
-	+
-	.ENDIF
+	SNESGSS_Command kGSS_MUSIC_STOP, 0				; stop music // REMOVEME when done with menu
 
-	lda	#$80							; enter forced blank
+	lda	<DP2.GameConfig
+	and	#kGameConfigMSU1					; check for "MSU1 present" flag
+	beq	+
+	stz	MSU_CONTROL						; stop MSU1 track
+	stz	MSU_VOLUME
++
+
+.ENDIF
+
+	lda	#kForcedBlank
 	sta	RAM_INIDISP
 	stz	<DP2.HDMA_Channels					; disable HDMA
 	wai								; wait
-
-	DisableIRQs
+	jsl	DisableInterrupts
 
 
 
@@ -227,7 +43,7 @@ InGameMenu:
 	stx	WMADDL
 	stz	WMADDH
 
-	DMA_CH0 $08, SRC_Zeroes, WMDATA, 10240
+	dma_0	$08, SRC_0000, WMDATA, 10240
 
 	lda	#$CC
 	sta	<DP2.EmptySpriteNo
@@ -241,7 +57,7 @@ InGameMenu:
 	stz	VMADDL							; reset VRAM address
 	stz	VMADDH
 
-	DMA_CH0 $09, SRC_Zeroes, VMDATAL, 0				; clear VRAM
+	dma_0	$09, SRC_0000, VMDATAL, 0				; clear VRAM
 
 
 
@@ -249,23 +65,23 @@ InGameMenu:
 	ldx	#VRAM_BG1_Tiles						; set VRAM address for BG1 tiles
 	stx	VMADDL
 
-	DMA_CH0 $01, SRC_Logo, VMDATAL, 8000
+	dma_0	$01, SRC_Logo, VMDATAL, 8000
 
 	ldx	#loword(RAM.BG1Tilemap1)
 	stx	WMADDL
 	stz	WMADDH
 
-	DMA_CH0 $00, SRC_Tilemap_Logo, WMDATA, 1024
+	dma_0	$00, SRC_Tilemap_Logo, WMDATA, 1024
 
 	ldx	#VRAM_Sprites						; set VRAM address for sprite tiles
 	stx	VMADDL
 
-	DMA_CH0 $01, SRC_Sprites_InGameMenu, VMDATAL, 8192
+	dma_0	$01, SRC_Sprites_InGameMenu, VMDATAL, 8192
 
 	ldx	#VRAM_BG3_Tiles
 	stx	VMADDL
 
-	DMA_CH0 $01, SRC_Font8x8, VMDATAL, 2048
+	dma_0	$01, SRC_Font8x8, VMDATAL, 2048
 
 	ldx	#0
 	lda	#$20							; priority bit
@@ -279,12 +95,12 @@ InGameMenu:
 ; Palettes --> CGRAM
 	stz	CGADD							; reset CGRAM address
 
-	DMA_CH0 $02, SRC_Palettes_Text, CGDATA, 40
+	dma_0	$02, SRC_Palettes_Text, CGDATA, 40
 
 	lda	#CGRAM_Area						; set CGRAM address for BG1 tiles palette
 	sta	CGADD
 
-	DMA_CH0 $02, SRC_Palette_Logo, CGDATA, 32
+	dma_0	$02, SRC_Palette_Logo, CGDATA, 32
 
 	lda	#CGRAM_Area						; palette no. = CGRAM address RSH 2
 	lsr	a
@@ -298,27 +114,27 @@ InGameMenu:
 	lda	#$80							; set CGRAM address to #256 (word address) for sprites
 	sta	CGADD
 
-	DMA_CH0 $02, SRC_Palette_Sprites_InGameMenu, CGDATA, 32
+	dma_0	$02, SRC_Palette_Sprites_InGameMenu, CGDATA, 32
 
 	lda	#%00011111						; make sure BG1/2/3 lo/hi tilemaps get updated once NMI is re-enabled
 	tsb	<DP2.DMA_Updates
 	tsb	<DP2.DMA_Updates+1
 
-	SetNMI	kNMI_DebugMenu
+	set	"NMI", Vblank_DebugMenu
 
 	lda	RDNMI							; clear NMI flag
-	lda	#$81							; re-enable NMI & IRQ
+	lda	#kNMITIMEN_Enable|kAutoJoy				; enable interrupts + auto joypad read
 	sta	NMITIMEN
 	cli
 
-	WaitFrames	5						; wait for tilemaps to get updated
+	wait	"frames", 5						; wait for tilemaps to get updated
 
 
 
 ; HDMA channel 3: color math
-	lda	#$02							; transfer mode (2 bytes --> $2132)
+	lda	#$02							; transfer mode (2 bytes --> COLDATA register)
 	sta	DMAP3
-	lda	#$32							; PPU register $2132 (color math subscreen backdrop color)
+	lda	#<COLDATA
 	sta	BBAD3
 	ldx	#LO8.HDMA_ColorMath
 	stx	A1T3L
@@ -335,7 +151,7 @@ InGameMenu:
 	cpx	#_sizeof_SRC_HDMA_ColMathMainMenu
 	bne	-
 
-	lda	#$01|$08						; set BG Mode 1 (BG3 priority)
+	lda	#kBGMODE_1|kBG3priority
 	sta	RAM_BGMODE
 	lda	#%01100011						; 16×16 (small) / 32×32 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
 	sta	RAM_OBSEL
@@ -366,7 +182,7 @@ InGameMenu:
 	sta	RAM_CGWSEL
 	lda	#%00100001						; enable color math on BG1 + backdrop
 	sta	RAM_CGADSUB
-	lda	#%00010111						; turn on BG1/2/3 and sprites on mainscreen and subscreen
+	lda	#kTM_BG1|kTM_BG2|kTM_BG3|kTM_OBJ			; turn on BG1, BG2, BG3 + sprites on mainscreen and subscreen
 	sta	RAM_TM
 	sta	RAM_TS
 	lda	#%00001000						; enable HDMA channel 3 (color math)
@@ -415,10 +231,10 @@ InGameMenu:
 	lda	#%00110000						; attributes (tile num & priority bits only)
 	sta	RAM.SpriteDataMenu.RingItem7+4
 
-	lda	#$0F							; turn on screen
+	lda	#kINIDISP_15						; turn on screen
 	sta	RAM_INIDISP
 
-	lda	#$80							; set angle for 1st item on ring menu ($80 = 12:00 o'clock)
+	lda	#lobyte($80 + 30 * 8)					; set starting angle for 1st item (Inventory) on ring menu ($80 = 12:00 o'clock), plus angle displacement for opening animation, see below
 	sta	<DP2.RingMenuAngle
 	lda	#kRingMenuRadiusMin
 	sta	<DP2.RingMenuRadius
@@ -427,20 +243,19 @@ InGameMenu:
 	jsr	PutRingMenuItems
 
 	wai
-	lda	<DP2.RingMenuAngle
+
+	lda	<DP2.RingMenuAngle					; subtract 8 * 30 (frames) from angle
 	sec
 	sbc	#8
 	sta	<DP2.RingMenuAngle
-	lda	<DP2.RingMenuRadius					; 32 frames for moving sprites from RadiusMin (0) to RadiusMax (60)
+	lda	<DP2.RingMenuRadius					; add 2 * 30 (frames) to radius (RadiusMax = 60)
 	clc
 	adc	#2
 	sta	<DP2.RingMenuRadius
-	cmp	#64
-	bcc	@RingMenuOpenAnimation
+	cmp	#kRingMenuRadiusMax
+	bne	@RingMenuOpenAnimation
 
-	lda	#kRingMenuRadiusMax
-	sta	<DP2.RingMenuRadius
-	jsr	PutRingMenuItems
+	jsr	PutRingMenuItems					; angle should be $80 by now
 
 
 
@@ -469,6 +284,12 @@ InGameMenu:
 
 
 RingMenuLoop:
+
+.IFDEF DEBUG
+	PrintString	26, 22, kTextBG3, "Angle: "
+	PrintHexNum	<DP2.RingMenuAngle
+.ENDIF
+
 	bit	<DP2.RingMenuStatus
 	bmi	@RotateRingMenuLeft					; MSB set --> rotate ring menu counter-clockwise
 	bvs	@RotateRingMenuRight					; bit 6 set --> rotate ring menu clockwise
@@ -477,35 +298,41 @@ RingMenuLoop:
 @RotateRingMenuLeft:
 	lda	<DP2.RingMenuAngle					; check if lower nibble is zero
 	and	#$0F
-	bne	+							; no, do/continue rotation
+	bne	@@Force							; no, do/continue rotation
 	lda	<DP2.RingMenuAngle					; check if upper nibble is even
 	and	#$10
-	bne	+							; no, do/continue rotation
+	bne	@@Force							; no, do/continue rotation
 	lda	#%10000000						; lower nibble zero and upper nibble even --> target angle ($00, $20 ... $E0) reached, clear status MSB (i.e., stop rotation)
 	trb	<DP2.RingMenuStatus
 	jsr	UpdateMenuHeadline					; make sure headline gets updated based on target angle
 
 	bra	@RotateRingMenuDone
 
-+	inc	<DP2.RingMenuAngle					; inc angle --> rotate counter-clockwise
-	inc	<DP2.RingMenuAngle
+@@Force:
+	lda	<DP2.RingMenuAngle					; inc angle --> rotate counter-clockwise
+	ina
+	ina
+	sta	<DP2.RingMenuAngle
 	bra	@RotateRingMenuDone
 
 @RotateRingMenuRight:
 	lda	<DP2.RingMenuAngle
 	and	#$0F
-	bne	+
+	bne	@@Force
 	lda	<DP2.RingMenuAngle
 	and	#$10
-	bne	+
+	bne	@@Force
 	lda	#%01000000						; lower nibble zero and upper nibble even --> target angle ($00, $20 ... $E0) reached, clear status bit 6 (i.e., stop rotation)
 	trb	<DP2.RingMenuStatus
 	jsr	UpdateMenuHeadline					; make sure headline gets updated based on target angle
 
 	bra	@RotateRingMenuDone
 
-+	dec	<DP2.RingMenuAngle					; dec angle --> rotate clockwise
-	dec	<DP2.RingMenuAngle
+@@Force:
+	lda	<DP2.RingMenuAngle					; dec angle --> rotate clockwise
+	dea
+	dea
+	sta	<DP2.RingMenuAngle
 
 @RotateRingMenuDone:
 	jsr	PutRingMenuItems					; put ring menu items based on current angle
@@ -515,20 +342,18 @@ RingMenuLoop:
 
 
 
+; left pressed = counter-clockwise rotation, right pressed = clockwise rotation (like in Secret of Mana)
+
 ; Check for dpad left
 	lda	<DP2.Joy1+1
 	and	#kDpadLeft
 	beq	@DpadLeftDone
-	dec	<DP2.RingMenuAngle					; initiate clockwise rotation, this is required so that angle checks under @RotateRingMenuRight will work properly
-	dec	<DP2.RingMenuAngle
-	jsr	PutRingMenuItems
 
-	wai								; make sure initial rotation makes it onto the screen
-	inc	<DP2.LoopCounter					; increment loop counter to make up for the additional frame
 	lda	<DP2.RingMenuStatus					; set appropriate rotation bit in status variable
-	and	#%00111111						; clear left/right rotation bits
-	ora	#%01000000						; set bit 6 (rotate ring menu right/clockwise)
+	and	#%00111111						; clear rotation bits
+	ora	#%10000000						; set MSB (rotate ring menu left/counter-clockwise)
 	sta	<DP2.RingMenuStatus
+	bra	@RotateRingMenuLeft@Force
 
 @DpadLeftDone:
 
@@ -538,16 +363,12 @@ RingMenuLoop:
 	lda	<DP2.Joy1+1
 	and	#kDpadRight
 	beq	@DpadRightDone
-	inc	<DP2.RingMenuAngle					; initiate counter-clockwise rotation, this is required so that angle checks under @RotateRingMenuLeft will work properly
-	inc	<DP2.RingMenuAngle
-	jsr	PutRingMenuItems
 
-	wai								; make sure initial rotation makes it onto the screen
-	inc	<DP2.LoopCounter					; increment loop counter to make up for the additional frame
 	lda	<DP2.RingMenuStatus					; set appropriate rotation bit in status variable
-	and	#%00111111						; clear left/right rotation bits
-	ora	#%10000000						; set MSB (rotate ring menu left/counter-clockwise)
+	and	#%00111111						; clear rotation bits
+	ora	#%01000000						; set bit 6 (rotate ring menu right/clockwise)
 	sta	<DP2.RingMenuStatus
+	bra	@RotateRingMenuRight@Force
 
 @DpadRightDone:
 
@@ -570,15 +391,15 @@ RingMenuLoop:
 
 	Accu16
 
-	and #$000F							; remove garbage in high byte
+	and #$000F							; clear high byte (& upper nibble, just to be safe)
 	tax
 
 	Accu8
 
 	sta	<DP2.SubMenuNext
-	jmp	(@PTR_MainMenuSelection, x)
+	jmp	(@SRC_MainMenuSelection, x)
 
-@PTR_MainMenuSelection:
+@SRC_MainMenuSelection:
 	.DW GotoSettings
 	.DW GotoQuitGame
 	.DW GotoSecret1
@@ -608,79 +429,72 @@ RingMenuLoop:
 	jsr	ConvertSpriteDataToBuffer				; write changes to sprite buffer
 
 @CursorBlinkingDone:
+
 	jmp	RingMenuLoop
 
 
 
 PutRingMenuItems:
-	lda	<DP2.RingMenuAngle					; take angle for 1st item on ring menu ($80 = 12:00 o'clock)
-	sta	<DP2.RingMenuAngleOffset
 	ldx	#loword(RAM.SpriteDataMenu.RingItem0)			; set WRAM address for 1st item on ring menu
 	stx	WMADDL
 	stz	WMADDH
+	lda	<DP2.RingMenuAngle					; take angle for 1st item on ring menu ($80 = 12:00 o'clock)
 	jsr	CalcRingItemPos
 
-	lda	<DP2.RingMenuAngle					; set angle for 2nd item on ring menu ($60 = 1:30 o'clock)
-	sec
-	sbc	#$20
-	sta	<DP2.RingMenuAngleOffset
 	ldx	#loword(RAM.SpriteDataMenu.RingItem1)			; set WRAM address for 2nd item on ring menu
 	stx	WMADDL
 	stz	WMADDH
+	lda	<DP2.RingMenuAngle					; set angle for 2nd item on ring menu ($60 = 1:30 o'clock)
+	sec
+	sbc	#$20							; $80 - $20
 	jsr	CalcRingItemPos
 
-	lda	<DP2.RingMenuAngle					; set angle for 3rd item on ring menu ($40 = 3:00 o'clock)
-	sec
-	sbc	#$40
-	sta	<DP2.RingMenuAngleOffset
 	ldx	#loword(RAM.SpriteDataMenu.RingItem2)			; set WRAM address for 3rd item on ring menu
 	stx	WMADDL
 	stz	WMADDH
+	lda	<DP2.RingMenuAngle					; set angle for 3rd item on ring menu ($40 = 3:00 o'clock)
+	sec
+	sbc	#$40
 	jsr	CalcRingItemPos
 
-	lda	<DP2.RingMenuAngle					; set angle for 4th item on ring menu ($20 = 4:30 o'clock)
-	sec
-	sbc	#$60
-	sta	<DP2.RingMenuAngleOffset
 	ldx	#loword(RAM.SpriteDataMenu.RingItem3)			; set WRAM address for 4th item on ring menu
 	stx	WMADDL
 	stz	WMADDH
+	lda	<DP2.RingMenuAngle					; set angle for 4th item on ring menu ($20 = 4:30 o'clock)
+	sec
+	sbc	#$60
 	jsr	CalcRingItemPos
 
-	lda	<DP2.RingMenuAngle					; set angle for 5th item on ring menu ($00 = 6:00 o'clock)
-	sec
-	sbc	#$80
-	sta	<DP2.RingMenuAngleOffset
 	ldx	#loword(RAM.SpriteDataMenu.RingItem4)			; set WRAM address for 5th item on ring menu
 	stx	WMADDL
 	stz	WMADDH
+	lda	<DP2.RingMenuAngle					; set angle for 5th item on ring menu ($00 = 6:00 o'clock)
+	sec
+	sbc	#$80
 	jsr	CalcRingItemPos
 
-	lda	<DP2.RingMenuAngle					; set angle for 6th item on ring menu ($E0 = 7:30 o'clock)
-	clc
-	adc	#$60
-	sta	<DP2.RingMenuAngleOffset
 	ldx	#loword(RAM.SpriteDataMenu.RingItem5)			; set WRAM address for 6th item on ring menu
 	stx	WMADDL
 	stz	WMADDH
+	lda	<DP2.RingMenuAngle					; set angle for 6th item on ring menu ($E0 = 7:30 o'clock)
+	clc
+	adc	#$60
 	jsr	CalcRingItemPos
 
-	lda	<DP2.RingMenuAngle					; set angle for 7th item on ring menu ($C0 = 9:00 o'clock)
-	clc
-	adc	#$40
-	sta	<DP2.RingMenuAngleOffset
 	ldx	#loword(RAM.SpriteDataMenu.RingItem6)			; set WRAM address for 7th item on ring menu
 	stx	WMADDL
 	stz	WMADDH
+	lda	<DP2.RingMenuAngle					; set angle for 7th item on ring menu ($C0 = 9:00 o'clock)
+	clc
+	adc	#$40
 	jsr	CalcRingItemPos
 
-	lda	<DP2.RingMenuAngle					; set angle for 8th item on ring menu ($A0 = 10:30 o'clock)
-	clc
-	adc	#$20
-	sta	<DP2.RingMenuAngleOffset
 	ldx	#loword(RAM.SpriteDataMenu.RingItem7)			; set WRAM address for 8th item on ring menu
 	stx	WMADDL
 	stz	WMADDH
+	lda	<DP2.RingMenuAngle					; set angle for 8th item on ring menu ($A0 = 10:30 o'clock)
+	clc
+	adc	#$20
 	jsr	CalcRingItemPos
 
 	ldx	#loword(RAM.SpriteDataMenu)				; set WRAM address for menu sprite data array
@@ -697,30 +511,44 @@ CalcRingItemPos:
 ; X := CenterX + sin(angle)*radius
 ; Y := CenterY + cos(angle)*radius
 
-	ldx	<DP2.RingMenuAngleOffset
-	lda.l	SRC_SineTable, x
-	stz	M7A
+; Calculate X coordinate
+	Accu16
+
+	and	#$00FF							; clear high byte
+	asl	a							; use angle in Accu as index into 16-bit tables
+	tax
+	lda.l	SRC_SineTable16, x					; get sin(angle)
+
+	Accu8
+
+	sta	M7A							; multiply by radius
+	xba
 	sta	M7A
 	lda	<DP2.RingMenuRadius
-	asl 	a							; not sure why this is needed (sin(angle)*radius*2 ??)
 	sta	M7B
-	lda	MPYH
+	lda	MPYM
 	clc
 	adc	#kRingMenuCenterX-16					; add CenterX, subtract half of sprite width (as with the cursor sprite)
-	sta	WMDATA							; save X (lower 8 bits)
+	sta	WMDATA							; save X coordinate (lower 8 bits)
 	lda	#%00000010
-	sta	WMDATA							; save X (upper 1 bit), sprite size (large)
-	ldx	<DP2.RingMenuAngleOffset
-	lda.l	SRC_CosineTable, x
-	stz	M7A
+	sta	WMDATA							; save X coordinate (upper 1 bit), sprite size (large)
+
+; Calculate Y coordinate
+	Accu16
+
+	lda.l	SRC_CosineTable16, x					; get cos(angle) (index register still intact)
+
+	Accu8
+
+	sta	M7A							; multiply by radius
+	xba
 	sta	M7A
 	lda	<DP2.RingMenuRadius
-	asl 	a							; not sure why this is needed (cos(angle)*radius*2 ??)
 	sta	M7B
-	lda	MPYH
+	lda	MPYM
 	clc
 	adc	#kRingMenuCenterY					; add CenterY
-	sta	WMDATA							; save Y
+	sta	WMDATA							; save Y coordinate
 
 	rts
 
@@ -729,25 +557,31 @@ CalcRingItemPos:
 UpdateMenuHeadline:
 	SetTextPos	2, 8
 
-	lda	<DP2.RingMenuAngle					; update headline based on angle ($00, $20 ... $C0, $E0)
-	lsr	a							; shift into lower nibble
-	lsr	a
-	lsr	a
-	lsr	a
-
-	Accu16
-
-	and	#$00FF							; remove garbage in B
-	tax
-	lda.l	PTR_RingMenuHeadEng, x					; x = pointer no.
-	sta	<DP2.TextStringPtr
-
-	Accu8
-
-	lda	#:PTR_RingMenuHeadEng					; assume English
+	lda	#:SRC_RingMenuHeadENG					; assume English
 	clc
 	adc	<DP2.GameLanguage					; add language constant for correct bank/language
 	sta	<DP2.TextStringBank
+	sta	<DP2.DataBank
+
+	Accu16
+
+	lda	<DP2.GameLanguage					; check for selected language
+	and	#$00FF							; clear high byte
+	asl	a
+	tax
+	lda.l	SRC_RingMenuHeadPointers, x				; starting address of headline pointers of a given language into DataAddress
+	sta	<DP2.DataAddress
+	lda	<DP2.RingMenuAngle					; update headline based on angle ($00, $20 ... $C0, $E0)
+	and	#$00FF							; clear high byte
+	lsr	a							; shift angle into lower nibble
+	lsr	a
+	lsr	a
+	lsr	a
+	tay								; y = pointer no.
+	lda	[<DP2.DataAddress], y
+	sta	<DP2.TextStringPtr
+
+	Accu8
 
 ;	ldx	#kTextBG3						; add when needed
 ;	stx	LO8.Routine_FillTextBuffer
@@ -758,9 +592,14 @@ UpdateMenuHeadline:
 
 	rts
 
+SRC_RingMenuHeadPointers:
+	.DW SRC_RingMenuHeadENG
+	.DW SRC_RingMenuHeadDEU
 
 
-; ************************ Sub menu: Inventory *************************
+
+; SUB MENU: INVENTORY
+; --------------------------------------------------------------------------------------------------
 
 GotoQuitGame:
 ;	jsr	RingMenuCloseAnimation
@@ -829,7 +668,7 @@ RingMenuCloseAnimation:
 
 	Accu16
 
-	and	#$00FF							; remove garbage in high byte
+	and	#$00FF							; clear high byte
 	tax
 
 	Accu8
@@ -880,28 +719,28 @@ TestLoop:
 	and	#kDpadUp
 	beq	+
 	lda	RAM.SpriteDataMenu.RingItem0+2, x
-	dec	a
+	dea
 	sta	RAM.SpriteDataMenu.RingItem0+2, x
 
 +	lda	<DP2.Joy1Press+1					; down
 	and	#kDpadDown
 	beq	+
 	lda	RAM.SpriteDataMenu.RingItem0+2, x
-	inc	a
+	ina
 	sta	RAM.SpriteDataMenu.RingItem0+2, x
 
 +	lda	<DP2.Joy1Press+1					; left
 	and	#kDpadLeft
 	beq	+
 	lda	RAM.SpriteDataMenu.RingItem0, x
-	dec	a
+	dea
 	sta	RAM.SpriteDataMenu.RingItem0, x
 
 +	lda	<DP2.Joy1Press+1
 	and	#kDpadRight						; right
 	beq	+
 	lda	RAM.SpriteDataMenu.RingItem0, x
-	inc	a
+	ina
 	sta	RAM.SpriteDataMenu.RingItem0, x
 
 +	lda	<DP2.Joy1New						; A
@@ -935,14 +774,15 @@ SRC_RingItemToKeep:							; DP2.SubMenuNext RSH 1	| RingItemX (each * 5 bytes of
 
 
 
-; ********************* Vertical splitscreen test **********************
+; VERTICAL SPLITSCREEN TEST
+; --------------------------------------------------------------------------------------------------
 
 ; Mode-5-based dynamic item rendering with vertical splitscreen
 
 VSplitscreenTest:
-	DisableIRQs
+	jsl	DisableInterrupts
 
-	lda	#$80							; enter forced blank
+	lda	#kForcedBlank
 	sta	INIDISP
 	stz	HDMAEN							; disable HDMA
 	stz	<DP2.HDMA_Channels
@@ -955,7 +795,7 @@ VSplitscreenTest:
 	stx	WMADDL
 	stz	WMADDH
 
-	DMA_CH0 $08, SRC_Zeroes, <WMDATA, 1024*9			; clear all tilemap buffers (except BG3-hi)
+	dma_0	$08, SRC_0000, <WMDATA, 1024*9				; clear all tilemap buffers (except BG3-hi)
 
 ;	jsr	SpriteInit						; purge OAM
 
@@ -974,12 +814,12 @@ VSplitscreenTest:
 ; Palettes --> CGRAM
 	stz	CGADD							; reset CGRAM address
 
-	DMA_CH0 $02, SRC_Palettes_Text, <CGDATA, 32
+	dma_0	$02, SRC_Palettes_Text, <CGDATA, 32
 
 ;	lda	#$80							; set CGRAM address to #256 (word address) for sprites
 ;	sta	CGADD
 
-;	DMA_CH0 $02, SRC_Palette_Sprites_InGameMenu, <CGDATA, 32
+;	dma_0	$02, SRC_Palette_Sprites_InGameMenu, <CGDATA, 32
 
 
 
@@ -1022,7 +862,7 @@ VSplitscreenTest:
 	sta	RAM_BG34NBA
 ;	lda	#%00100000						; enable color math on backdrop only
 ;	sta	CGADSUB
-	lda	#%00010111						; turn on BG1, BG2, BG3 + sprites on mainscreen and subscreen
+	lda	#kTM_BG1|kTM_BG2|kTM_BG3|kTM_OBJ			; turn on BG1, BG2, BG3 + sprites on mainscreen and subscreen
 	sta	RAM_TM
 	sta	RAM_TS
 ;	lda	#$00
@@ -1030,8 +870,8 @@ VSplitscreenTest:
 ;	sta	RAM_TMW
 ;	sta	RAM_TSW
 
-	SetIRQ	kHIRQ_MenuItemsVsplit
-	SetNMI	kNMI_DebugMenu
+	set	"IRQ", HIRQ_MenuItemsVsplit
+	set	"NMI", Vblank_DebugMenu
 
 	lda	#50							; H-IRQ setup: dot number for interrupt
 	sta	HTIMEL							; set low byte of H-timer
@@ -1039,20 +879,20 @@ VSplitscreenTest:
 	lda	#%11000000						; enable HDMA channels 6 (BG1/2 char data area designation), 7 (BG Mode 5)
 	tsb	<DP2.HDMA_Channels
 
-	lda	#$0F
+	lda	#kINIDISP_15
 ;	sta	INIDISP
 	sta	RAM_INIDISP
 
-	lda	#$91							; enable H-IRQ, NMI, and auto-joypad read
+	lda	#kNMITIMEN_Enable|kHIRQ|kAutoJoy			; enable NMI, H-IRQ, and auto joypad read
 	sta	LO8.NMITIMEN
 	sta	NMITIMEN
 	cli
 
 	SetTextPos	2, 2
 
-	ldx	#STR_ItemEng000
+	ldx	#STR_ItemENG000
 	stx	<DP2.TextStringPtr
-	lda	#:STR_ItemEng000
+	lda	#:STR_ItemENG000
 	sta	<DP2.TextStringBank
 	lda	#24
 	sta	<DP2.Temp+3
@@ -1080,16 +920,16 @@ VSplitscreenTest:
 
 	SetTextPos	2, 16
 
-	ldx	#STR_MainMenuEng000
+	ldx	#STR_MainMenuENG000
 	stx	<DP2.TextStringPtr
-	lda	#:STR_MainMenuEng000
+	lda	#:STR_MainMenuENG000
 	sta	<DP2.TextStringBank
 
 	ldy	#0
 -	lda	[<DP2.TextStringPtr], y
 	beq	+
 	asl	a							; double char no. because font tiles were "expanded" for hi-res mode
-	inc	a							; increment char no. because Mode 5 BG2 font tiles sit on the "right"
+	ina							; increment char no. because Mode 5 BG2 font tiles sit on the "right"
 	jsr	FillTextBufferBG3
 
 	iny
@@ -1118,14 +958,15 @@ VSplitscreenTest:
 
 
 
-; *********************** Static rendering test ************************
+; STATIC RENDERING TEST
+; --------------------------------------------------------------------------------------------------
 
 ; Mode-1-based static item rendering test
 
 StaticRenderingTest:
-	DisableIRQs
+	jsl	DisableInterrupts
 
-	lda	#$80							; enter forced blank
+	lda	#kForcedBlank
 	sta	INIDISP
 	stz	HDMAEN							; disable HDMA
 	stz	<DP2.HDMA_Channels
@@ -1138,7 +979,7 @@ StaticRenderingTest:
 ;	stx	WMADDL
 ;	stz	WMADDH
 
-;	DMA_CH0 $08, SRC_Zeroes, <WMDATA, 1024*9			; clear all tilemap buffers (except BG3-hi)
+;	dma_0	$08, SRC_0000, <WMDATA, 1024*9				; clear all tilemap buffers (except BG3-hi)
 
 ;	jsr	SpriteInit						; purge OAM
 
@@ -1147,15 +988,15 @@ StaticRenderingTest:
 	ldx	#$3000 ;VRAM_BG3_Tiles
 	stx	VMADDL
 
-	DMA_CH0 $01, SRC_Font8x8, <VMDATAL, 2048
-	DMA_CH0 $01, SRC_StaticItemsEng, <VMDATAL, 160*30
+	dma_0	$01, SRC_Font8x8, <VMDATAL, 2048
+	dma_0	$01, SRC_StaticItemsENG, <VMDATAL, 160*30
 
 
 
 ; Palettes --> CGRAM
 	stz	CGADD							; reset CGRAM address
 
-	DMA_CH0 $02, SRC_Palettes_Text, <CGDATA, 32
+	dma_0	$02, SRC_Palettes_Text, <CGDATA, 32
 
 
 
@@ -1177,7 +1018,7 @@ StaticRenderingTest:
 
 	Accu16
 
-	inc	a
+	ina
 
 	Accu8
 
@@ -1198,7 +1039,7 @@ StaticRenderingTest:
 
 	Accu16
 
-	inc	a
+	ina
 
 	Accu8
 
@@ -1229,7 +1070,7 @@ StaticRenderingTest:
 	sta	RAM_BG3SC
 	lda	#$03							; switch BG3 char data area designation to $3000 // FIXME
 	sta	RAM_BG34NBA
-	lda	#$01							; set BG mode 1
+	lda	#kBGMODE_1						; set BG mode 1
 	sta	RAM_BGMODE
 	lda	#%00010100						; turn on BG3 + sprites on mainscreen and subscreen
 	sta	RAM_TM
@@ -1239,32 +1080,33 @@ StaticRenderingTest:
 ;	sta	RAM_TMW
 ;	sta	RAM_TSW
 
-	SetNMI	kNMI_DebugMenu
+	set	"NMI", Vblank_DebugMenu
 
 	lda	#%00010000						; make sure BG3 lo/hi tilemaps get updated
 	tsb	<DP2.DMA_Updates
 	tsb	<DP2.DMA_Updates+1
 
 	lda	RDNMI							; clear NMI flag
-	lda	#$81							; enable NMI and auto-joypad read
+	lda	#kNMITIMEN_Enable|kAutoJoy				; enable interrupts + auto joypad read
 	sta	LO8.NMITIMEN
 	sta	NMITIMEN
 	cli
-	lda	#$0F							; turn screen back on
+	lda	#kINIDISP_15						; turn screen back on
 	sta	RAM_INIDISP
 
 -	bra	-
 
 
 
-; ************************** Mode-5-based FWF **************************
+; MODE-5-BASED FWF
+; --------------------------------------------------------------------------------------------------
 
 ; Mode-5-based dynamic item rendering test
 
 DynamicRenderingTest:
-	DisableIRQs
+	jsl	DisableInterrupts
 
-	lda	#$80							; enter forced blank
+	lda	#kForcedBlank
 	sta	INIDISP
 	stz	HDMAEN							; disable HDMA
 	stz	<DP2.HDMA_Channels
@@ -1277,7 +1119,7 @@ DynamicRenderingTest:
 	stx	WMADDL
 	stz	WMADDH
 
-	DMA_CH0 $08, SRC_Zeroes, WMDATA, 1024*9				; clear all tilemap buffers (except BG3-hi)
+	dma_0	$08, SRC_0000, WMDATA, 1024*9				; clear all tilemap buffers (except BG3-hi)
 
 	jsr	SpriteInit						; purge OAM
 
@@ -1296,12 +1138,12 @@ DynamicRenderingTest:
 ; Palettes --> CGRAM
 	stz	CGADD							; reset CGRAM address
 
-	DMA_CH0 $02, SRC_Palettes_Text, CGDATA, 32
+	dma_0	$02, SRC_Palettes_Text, CGDATA, 32
 
 ;	lda	#$80							; set CGRAM address to #256 (word address) for sprites
 ;	sta	CGADD
 
-;	DMA_CH0 $02, SRC_Palette_Sprites_InGameMenu, CGDATA, 32
+;	dma_0	$02, SRC_Palette_Sprites_InGameMenu, CGDATA, 32
 
 
 
@@ -1322,26 +1164,24 @@ DynamicRenderingTest:
 	sta	RAM_BG1SC
 	lda	#$58 ;|$01						; VRAM address for BG2 tilemap: $5800, size: 64×32 tiles
 	sta	RAM_BG2SC
-
 	lda	#$40							; VRAM address for BG1/BG2 character data: $0000/$4000
 	sta	RAM_BG12NBA
 	lda	#$04							; VRAM address for BG3 character data: $4000 (ignore BG4 bits)
 	sta	RAM_BG34NBA
-	lda	#$05
+	lda	#kBGMODE_5
 	sta	RAM_BGMODE
 ;	lda	#%00100000						; enable color math on backdrop only
 ;	sta	RAM_CGADSUB
-	lda	#%00010111						; turn on BG1, BG2, BG3 + sprites on mainscreen and subscreen
+	lda	#kTM_BG1|kTM_BG2|kTM_BG3|kTM_OBJ			; turn on BG1, BG2, BG3 + sprites on mainscreen and subscreen
 	sta	RAM_TM
 	sta	RAM_TS
-
 ;	lda	#%11000000						; enable HDMA channel 6 (BG1/2 char data area designation), 7 (BG Mode 5)
 ;	tsb	<DP2.HDMA_Channels
 
-	SetNMI	kNMI_DebugMenu
+	set	"NMI", Vblank_DebugMenu
 
 	lda	RDNMI							; clear NMI flag
-	lda	#$81							; enable NMI and auto-joypad read
+	lda	#kNMITIMEN_Enable|kAutoJoy				; enable interrupts + auto joypad read
 	sta	LO8.NMITIMEN
 	sta	NMITIMEN
 	cli
@@ -1352,7 +1192,7 @@ DynamicRenderingTest:
 
 	lda	#$0100							; item qty = 1, start with item #0
 -	sta	RAM.GameDataInventory, x
-	inc	a							; increment item no. #
+	ina								; increment item no. #
 	inx
 	inx
 	cpx	#32							; 16 items for now
@@ -1379,18 +1219,18 @@ DynamicRenderingTest:
 
 	Accu16
 
-	and	#$00FF							; clear garbage in B
+	and	#$00FF							; clear high byte
 	asl	a
 	asl	a
 	asl	a
 	asl	a
 	clc
-	adc	#STR_ItemsEng
+	adc	#STR_ItemsENG
 	sta	<DP2.TextStringPtr
 
 	Accu8
 
-	lda	#:STR_ItemsEng
+	lda	#:STR_ItemsENG
 	sta	<DP2.TextStringBank
 	inx
 	cpx	#512
@@ -1418,16 +1258,16 @@ DynamicRenderingTest:
 
 /*	SetTextPos	2, 16
 
-	ldx	#STR_MainMenuEng000
+	ldx	#STR_MainMenuENG000
 	stx	<DP2.TextStringPtr
-	lda	#:STR_MainMenuEng000
+	lda	#:STR_MainMenuENG000
 	sta	<DP2.TextStringBank
 
 	ldy	#0
 -	lda	[<DP2.TextStringPtr], y
 	beq	+
 	asl	a							; double char no. because font tiles were "expanded" for hi-res mode
-	inc	a							; increment char no. because Mode 5 BG2 font tiles sit on the "right"
+	ina								; increment char no. because Mode 5 BG2 font tiles sit on the "right"
 	jsr	FillTextBufferMode5
 
 	iny
@@ -1441,26 +1281,26 @@ DynamicRenderingTest:
 ;	lda	#%00001000						; enable HDMA channel 3 (color math)
 ;	tsb	<DP2.HDMA_Channels
 
-;	WaitFrames	4
+;	wait	"frames", 4
 
-	lda	#$0F							; turn screen back on
+	lda	#kINIDISP_15						; turn screen back on
 	sta	RAM_INIDISP
 
 -	bra	-							; trap loop
 
 
 
-; **********************************************************************
+; --------------------------------------------------------------------------------------------------
 
-	.ENDASM
+.ENDASM
 
 LoadMenuCharPortraits:
 	ldx	#$01C0
 	lda	#$02
 -	sta	RAM.BG1Tilemap1, x
 	inx
-	inc	a
-	inc	a
+	ina
+	ina
 	cmp	#$0C
 	bne	-
 
@@ -1468,8 +1308,8 @@ LoadMenuCharPortraits:
 	lda	#$12
 -	sta	RAM.BG1Tilemap1, x
 	inx
-	inc	a
-	inc	a
+	ina
+	ina
 	cmp	#$1C
 	bne	-
 
@@ -1477,8 +1317,8 @@ LoadMenuCharPortraits:
 	lda	#$22
 -	sta	RAM.BG1Tilemap1, x
 	inx
-	inc	a
-	inc	a
+	ina
+	ina
 	cmp	#$2C
 	bne	-
 
@@ -1486,8 +1326,8 @@ LoadMenuCharPortraits:
 	lda	#$32
 -	sta	RAM.BG1Tilemap1, x
 	inx
-	inc	a
-	inc	a
+	ina
+	ina
 	cmp	#$3C
 	bne	-
 
@@ -1495,8 +1335,8 @@ LoadMenuCharPortraits:
 	lda	#$42
 -	sta	RAM.BG1Tilemap1, x
 	inx
-	inc	a
-	inc	a
+	ina
+	ina
 	cmp	#$4C
 	bne	-
 
@@ -1504,15 +1344,15 @@ LoadMenuCharPortraits:
 	lda	#$52
 -	sta	RAM.BG1Tilemap1, x
 	inx
-	inc	a
-	inc	a
+	ina
+	ina
 	cmp	#$5C
 	bne	-
 
 	rts
 
-	.ASM
+.ASM
 
 
 
-; ******************************** EOF *********************************
+; EOF

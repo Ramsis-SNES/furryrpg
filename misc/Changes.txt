@@ -1,19 +1,34 @@
-===========================================================================================
+====================================================================================================
   
-    "FURRY RPG" (WORKING TITLE)
-    (c) 2023 by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
+        "FURRY RPG" (WORKING TITLE)
+        (c) by Ramsis a.k.a. ManuLöwe (https://manuloewe.de/)
  
-	*** CHANGES ***
+	CHANGES
  
-===========================================================================================
+====================================================================================================
 
 
 
-******************************** Notes *********************************
+NOTES
+----------------------------------------------------------------------------------------------------
 
-This list contains the most notable features/changes. A more complete
-history of changes since build #00250 (when the project went up on Git-
-Hub) is here: https://github.com/Ramsis-SNES/furryrpg/commits/master
+This list contains the most notable features/changes. A more complete history of changes since
+build #00250 (when the project went up on GitHub) is here:
+
+https://github.com/Ramsis-SNES/furryrpg/commits/master
+
+
+
+CHANGES/BUILD HISTORY
+----------------------------------------------------------------------------------------------------
+
+Build #00558:
+- Simplify IRQ/NMI routine switching
+- Adjust sine/cosine tables, this half-breaks the Mode 7 stuff for now, but who cares (needs rewriting anyway)
+- Reorganize/simplify source file structure (WIP)
+- Use more of WLA DX's advanced .MACRO features (WIP)
+- Keep code up-to-date with the development of WLA DX
+- Bugfixes
 
 
 
@@ -585,4 +600,4 @@ Build #00152:
 
 
 
-********************************* EOF **********************************
+EOF
