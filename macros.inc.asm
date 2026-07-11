@@ -619,12 +619,7 @@ STR_Start\@:
 	sta	LO8.TimeoutCounter
 	cmp	#kWaitSPC700
 	bcc	+
-
-	Accu8
-
-	lda	#kErrorSPC700
-	sta	<DP2.ErrorCode
-	jml	ErrorHandler
+	brk	kErrorSPC700
 
 +	Accu8
 
@@ -642,14 +637,7 @@ STR_Start\@:
 	sta	LO8.TimeoutCounter
 	cmp	#kWaitSPC700
 	bcc	+
-
-	Accu8
-
-	lda	#kErrorSPC700
-	sta	<DP2.ErrorCode
-	jml	ErrorHandler
-
-	.ACCU 16
+	brk	kErrorSPC700
 
 +	pla								; restore 16-bit Accu
 .ENDM

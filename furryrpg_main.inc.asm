@@ -731,11 +731,7 @@ CheckROMIntegrity:
 	rts
 
 @CorruptROM:
-	Accu8
-
-	lda	#kErrorCorruptROM
-	sta	<DP2.ErrorCode
-	jml	ErrorHandler
+	brk	kErrorCorruptROM
 
 
 
@@ -2461,87 +2457,18 @@ WriteDataToSRAM:
 
 
 
-; SOFTWARE ERRORS
+; SOFTWARE ERROR HANDLER
 ; --------------------------------------------------------------------------------------------------
 
-ErrorHandlerBRK:
-	AccuIndex16
-
-	pha								; preserve registers (processor status already pushed by the BRK instruction)
-	phx
-	phy
-
-	set	"Direct_Page", DP2
-
-	Accu8
-
-	lda	#$00							; disable NMI (IRQ disable flag already set by the BRK instruction)
-	sta.l	NMITIMEN
-
-	set	"Data_Bank", $00
-
-	stz	HDMAEN							; disable HDMA
-	lda	#kForcedBlank
-	sta	INIDISP
-	lda	#kErrorBRK
-	sta	<DP2.ErrorCode
-
-	lda	8, s							; load BRK signature byte address (can't use Stack Relative Indirect Indexed addressing here unfortunately because the program counter already pointed to the next byte when it was pushed onto the stack)
-	dec	a							; decrement low byte of program counter to signature byte address (i.e., make up for automatic PC increment)
-	sta	<DP2.DataAddress
-	lda	9, s
-	sta	<DP2.DataAddress+1
-	lda	10, s
-	sta	<DP2.DataBank
-	lda	[<DP2.DataAddress]					; load BRK signature byte
-	sta	<DP2.ErrorSignature
-
-	jmp	ErrorHandler@FromBRKorCOP
-
-
-
-ErrorHandlerCOP:
-	AccuIndex16
-
-	pha								; preserve registers (processor status already pushed by the COP instruction)
-	phx
-	phy
-
-	set	"Direct_Page", DP2
-
-	Accu8
-
-	lda	#$00							; disable NMI (IRQ disable flag already set by the COP instruction)
-	sta.l	NMITIMEN
-
-	set	"Data_Bank", $00
-
-	stz	HDMAEN							; disable HDMA
-	lda	#kForcedBlank
-	sta	INIDISP
-	lda	#kErrorCOP
-	sta	<DP2.ErrorCode
-
-	lda	8, s							; cf. loading of BRK signature byte address
-	dec	a
-	sta	<DP2.DataAddress
-	lda	9, s
-	sta	<DP2.DataAddress+1
-	lda	10, s
-	sta	<DP2.DataBank
-	lda	[<DP2.DataAddress]					; load COP signature byte
-	sta	<DP2.ErrorSignature
-
-	jmp	ErrorHandler@FromBRKorCOP
-
-
+; For software errors, we actively use the BRK instruction along with a known error code as the
+; signature byte (error code list in variables.inc.asm).
+; Caveat: Unintended BRK/COP (e.g. when crashing due to wrong Accu size) may falsely yield defined
+; error codes, depending on the next byte after the instruction (should be obvious when it happens).
 
 ErrorHandler:
-	php								; preserve CPU status
-
 	AccuIndex16
 
-	pha								; preserve registers
+	pha								; preserve registers (processor status already pushed by BRK/COP)
 	phx
 	phy
 
@@ -2549,7 +2476,8 @@ ErrorHandler:
 
 	Accu8
 
-	jsl	DisableInterrupts
+	lda	#$00							; disable NMI (IRQ disable flag already set by BRK/COP)
+	sta.l	NMITIMEN
 
 	set	"Data_Bank", $00
 
@@ -2557,7 +2485,15 @@ ErrorHandler:
 	lda	#kForcedBlank
 	sta	INIDISP
 
-@FromBRKorCOP:
+	lda	8, s							; load BRK/COP signature byte address (can't use Stack Relative Indirect Indexed addressing here unfortunately because the program counter already pointed to the next byte when it was pushed onto the stack)
+	dea								; decrement low byte of program counter to signature byte address (i.e., make up for automatic PC increment)
+	sta	<DP2.DataAddress
+	lda	9, s
+	sta	<DP2.DataAddress+1
+	lda	10, s
+	sta	<DP2.DataBank
+	lda	[<DP2.DataAddress]					; read and save BRK/COP signature byte
+	sta	<DP2.ErrorCode
 
 
 
@@ -2608,14 +2544,14 @@ ErrorHandler:
 	sta	BG3SC
 	lda	#$04							; VRAM address for BG3 character data: $4000 (ignore BG4 bits)
 	sta	BG34NBA
-	lda	#%00000100						; turn on BG3 only
+	lda	#kTM_BG3						; turn on BG3 only
 	sta	TM							; on the mainscreen
 	sta	TS							; and on the subscreen
 
 
 
 ; Print error info
-	PrintString	3, 2, kTextBG3, "An error occurred!"
+	PrintString	3, 2, kTextBG3, "Software error!"
 	PrintString	6, 2, kTextBG3, "Error type:"
 
 	lda	<DP2.ErrorCode
@@ -2623,8 +2559,9 @@ ErrorHandler:
 	Accu16
 
 	and	#$00FF							; clear high byte
-	tax								; self-reminder: error code table consists of 2-byte entries
-	phx								; preserve error code for later use
+	asl	a							; SRC_ErrorCode has 2-byte entries
+	tax
+	phx								; preserve error code index while printing
 	lda.l	SRC_ErrorCode, x					; load pointer to error code name
 	sta	<DP2.DataAddress
 
@@ -2637,40 +2574,17 @@ ErrorHandler:
 
 
 
-; print extra info depending on error type
-	plx								; restore error code as jump index
-	jmp	(@SRC_ErrorCodeExtraInfo, x)
+; Print extra info depending on error type
+	plx								; restore error code index
+	jmp	(@SRC_ErrorCodeInfo, x)
 
-@SRC_ErrorCodeExtraInfo:
-	.DW @ErrorBRKorCOP
-	.DW @ErrorBRKorCOP
+@SRC_ErrorCodeInfo:
 	.DW @ErrorCorruptROM
 	.DW @ErrorSPC700
 
-@ErrorBRKorCOP:
-	PrintString	10, 2, kTextBG3, "BRK/COP signature byte: $"
-	PrintHexNum	<DP2.ErrorSignature
-
-	PrintString	12, 2, kTextBG3, "PC: $"
-
-	lda	10, s							; PC bank
-	sta	<DP2.Temp
-
-	PrintHexNum	<DP2.Temp
-
-	lda	9, s							; PC middle byte
-	sta	<DP2.Temp
-
-	PrintHexNum	<DP2.Temp
-
-	lda	8, s							; PC low byte
-	dec	a							; make up for automatic program counter increment
-	dec	a
-	sta	<DP2.Temp
-
-	PrintHexNum	<DP2.Temp
-
-	jmp	@ExtraInfoDone
+.REPEAT 254
+	.DW @ErrorUnknown
+.ENDR
 
 @ErrorCorruptROM:
 	PrintString	10, 2, kTextBG3, "ROM header checksum:"
@@ -2693,6 +2607,31 @@ ErrorHandler:
 
 @ErrorSPC700:
 	; nothing for now
+
+	jmp	@ExtraInfoDone
+
+@ErrorUnknown:
+	PrintString	10, 2, kTextBG3, "BRK/COP signature byte: $"
+	PrintHexNum	<DP2.ErrorCode
+
+	PrintString	12, 2, kTextBG3, "PC: $"
+
+	lda	10, s							; PC bank
+	sta	<DP2.Temp
+
+	PrintHexNum	<DP2.Temp
+
+	lda	9, s							; PC middle byte
+	sta	<DP2.Temp
+
+	PrintHexNum	<DP2.Temp
+
+	lda	8, s							; PC low byte
+	dea								; make up for automatic program counter increment
+	dea
+	sta	<DP2.Temp
+
+	PrintHexNum	<DP2.Temp
 
 ;	jmp	@ExtraInfoDone						; uncomment when adding more error types
 

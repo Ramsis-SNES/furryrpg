@@ -60,8 +60,8 @@
 .ENDSNES
 
 .SNESNATIVEVECTOR							; all in ROM bank $40 (ExHiROM mapping)
-	COP		JumpCOP
-	BRK		JumpBRK
+	COP		JumpBRKorCOP
+	BRK		JumpBRKorCOP
 	ABORT		EmptyHandler
 	NMI		GlobalNMI
 	UNUSED		$0000
@@ -1161,7 +1161,7 @@ PrintTest:
 
 .ORG ResetVector
 
-.SECTION "ExHiROM Reset/BRK/COP/dummy vectors" FORCE
+.SECTION "ExHiROM Reset/BRK/COP/dummy vector targets" FORCE
 
 Reset:
 	sei								; disable interrupts
@@ -1169,11 +1169,12 @@ Reset:
 	xce								; switch to 65816 native mode
 	jml	Startup
 
-JumpBRK:
-	jml	ErrorHandlerBRK
+JumpBRKorCOP:
+;JumpBRK:
+	jml	ErrorHandler
 
-JumpCOP:
-	jml	ErrorHandlerCOP
+;JumpCOP:
+;	jml	Somewhere
 
 EmptyHandler:
 	rti

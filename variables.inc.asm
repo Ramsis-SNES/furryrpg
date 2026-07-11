@@ -374,9 +374,7 @@
 ; ERROR CODES
 ; --------------------------------------------------------------------------------------------------
 
-.ENUMID 0 STEP 2							; 128 possible error codes, order has to match both SRC_ErrorCode and SRC_ErrorCodeExtraInfo tables
-.ENUMID kErrorBRK
-.ENUMID kErrorCOP
+.ENUMID 0								; 256 possible error codes, order has to match both SRC_ErrorCode and SRC_ErrorCodeInfo tables
 .ENUMID kErrorCorruptROM
 .ENUMID kErrorSPC700
 
@@ -670,7 +668,6 @@
 	DMA_Updates			dw				; rrrcbbaarrr32211 [123 = BG no. that needs to have its tilemap(s) updated on next Vblank (low bytes), abc = same thing for high bytes, r = reserved. The lower bit of each BG represents the first half of a 64×32/32×64 tilemap, the higher one represents the second half.]
 	EffectSpeed			dw
 	ErrorCode			db
-	ErrorSignature			db
 	EmptySpriteNo			db				; holds no. of empty sprite in current spritesheet (usually 0), this is acknowledged in the sprite initialization routine
 	EventCodeAddress		dsb 2
 	EventCodeBank			db

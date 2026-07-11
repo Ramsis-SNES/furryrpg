@@ -99,8 +99,12 @@ STR_CharacterName005:
 
 SRC_ErrorCode:
 
-.REPEAT 4 INDEX COUNT
+.REPEAT 2 INDEX COUNT
 	.DW STR_ErrorCode{%.2d{COUNT}}					; create pointers for error codes
+.ENDR
+
+.REPEAT 254
+	.DW STR_ErrorCode02
 .ENDR
 
 
@@ -109,16 +113,15 @@ SRC_ErrorCode:
 ; --------------------------------------------------------------------------------------------------
 
 STR_ErrorCode00:
-	.DB "Illegal BRK instruction", 0
-
-STR_ErrorCode01:
-	.DB "Illegal COP instruction", 0
-
-STR_ErrorCode02:
 	.DB "Corrupt ROM data", 0
 
-STR_ErrorCode03:
+STR_ErrorCode01:
 	.DB "SPC700 communication timeout", 0
+
+STR_ErrorCode02:
+	.DB "Unknown", 0
+
+; add more as needed, adjust pointer table 
 
 
 
