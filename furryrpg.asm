@@ -380,48 +380,20 @@ SRC_Palette_Clouds:
 ;SRC_Tilemap_Clouds:
 ;	.INCBIN "gfx/cloud.map"
 
-; Logo data
+
+
+; Logo data (b/w background image for menu)
 
 SRC_Logo:
-	.INCBIN "gfx/logo-gr.pic"					; XXX bytes
+	.INCBIN "gfx/logo-gr.pic"					; 7968 bytes
 
 SRC_Palette_Logo:
-	.INCBIN "gfx/logo-gr.pal"					; 512 bytes
+	.INCBIN "gfx/logo-gr.pal"					; 32 bytes
 
 SRC_Tilemap_Logo:
-;	.INCBIN "gfx/logo-gr.map"					; 2048 bytes
+	.INCBIN "gfx/logo-gr.map"					; 1792 bytes
 
-.FOPEN "gfx/logo-gr.map" logo_gr					; "deinterleave" gfx2snes tilemaps 
-.FSEEK logo_gr 0 START
 
-.REPEAT 1024
-	.FREAD logo_gr TilemapLoByte					; copy even (low) bytes of tilemap
-	.DB TilemapLoByte
-	.FREAD logo_gr TilemapHiByte					; read & discard odd (high) bytes of tilemap
-.ENDR
-
-.UNDEFINE TilemapLoByte
-.UNDEFINE TilemapHiByte
-
-.FCLOSE logo_gr
-
-/*
-SRC_Tilemap_LogoHi:
-
-.FOPEN "gfx/logo-gr.map" logo_gr					; "deinterleave" gfx2snes tilemaps
-.FSEEK logo_gr 0 START
-
-.REPEAT 1024
-	.FREAD logo_gr TilemapLoByte					; read & discard even (low) bytes of tilemap
-	.FREAD logo_gr TilemapHiByte					; copy odd (high) bytes of tilemap
-	.DB TilemapHiByte
-.ENDR
-
-.UNDEFINE TilemapLoByte
-.UNDEFINE TilemapHiByte
-
-.FCLOSE logo_gr
-*/
 
 ; Area data
 
@@ -452,34 +424,7 @@ SRC_Palette_Area002:
 SRC_TileMapBG1_Area002:
 	.INCBIN "gfx/area-002-green.map"
 
-/*
-.FOPEN "gfx/area-002-green.map" area_002_green				; "deinterleave" gfx2snes tilemaps
-.FSEEK area_002_green 0 START
 
-.REPEAT 1024
-	.FREAD area_002_green TilemapLoByte				; copy even (low) bytes of tilemap
-	.DB TilemapLoByte
-	.FREAD area_002_green TilemapHiByte				; read & discard odd (high) bytes of tilemap
-.ENDR
-
-;.UNDEFINE TilemapLoByte
-;.UNDEFINE TilemapHiByte
-
-;.FCLOSE area_002_green
-
-;.FOPEN "gfx/area-002-green.map" area_002_green				; "deinterleave" gfx2snes tilemaps
-.FSEEK area_002_green 0 START
-
-.REPEAT 1024
-	.FREAD area_002_green TilemapLoByte				; read & discard even (low) bytes of tilemap
-	.FREAD area_002_green TilemapHiByte				; copy odd (high) bytes of tilemap
-	.DB TilemapHiByte
-.ENDR
-
-.UNDEFINE TilemapLoByte
-.UNDEFINE TilemapHiByte
-.FCLOSE area_002_green
-*/
 
 ; GFX pointer tables
 

@@ -286,7 +286,7 @@ Process_evc_BG3_TEXT:
 	stx	LO8.Routine_FillTextBuffer
 	jsr	SimplePrintF
 
-	lda	#%00010000						; make sure BG3 lo tilemap gets updated
+	lda	#kBG3Tilemap						; update BG3 tilemap
 	tsb	<DP2.DMA_Updates
 
 	rts

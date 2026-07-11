@@ -65,13 +65,13 @@ InGameMenu:
 	ldx	#VRAM_BG1_Tiles						; set VRAM address for BG1 tiles
 	stx	VMADDL
 
-	dma_0	$01, SRC_Logo, VMDATAL, 8000
+	dma_0	$01, SRC_Logo, VMDATAL, _sizeof_SRC_Logo
 
 	ldx	#loword(RAM.BG1Tilemap1)
 	stx	WMADDL
 	stz	WMADDH
 
-	dma_0	$00, SRC_Tilemap_Logo, WMDATA, 1024
+	dma_0	$00, SRC_Tilemap_Logo, WMDATA, _sizeof_SRC_Tilemap_Logo
 
 	ldx	#VRAM_Sprites						; set VRAM address for sprite tiles
 	stx	VMADDL
@@ -85,9 +85,10 @@ InGameMenu:
 
 	ldx	#0
 	lda	#$20							; priority bit
--	sta	RAM.BG3TilemapHi, x					; set priority bit for BG3 tiles
+-	inx
+	sta	RAM.BG3Tilemap, x					; set priority bit for BG3 tiles
 	inx
-	cpx	#1024
+	cpx	#2048
 	bne	-
 
 
@@ -105,9 +106,10 @@ InGameMenu:
 	lda	#CGRAM_Area						; palette no. = CGRAM address RSH 2
 	rsh	2
 	ldx	#0
--	sta	RAM.BG1Tilemap1Hi, x					; store palette no.
+-	inx
+	sta	RAM.BG1Tilemap1, x					; store palette no.
 	inx
-	cpx	#1024
+	cpx	#2048
 	bne	-
 
 	lda	#$80							; set CGRAM address to #256 (word address) for sprites
@@ -115,9 +117,8 @@ InGameMenu:
 
 	dma_0	$02, SRC_Palette_Sprites_InGameMenu, CGDATA, 32
 
-	lda	#%00011111						; make sure BG1/2/3 lo/hi tilemaps get updated once NMI is re-enabled
+	lda	#kBG1Tilemap1|kBG2Tilemap1|kBG3Tilemap			; update BG1/2/3 tilemaps once NMI is re-enabled
 	tsb	<DP2.DMA_Updates
-	tsb	<DP2.DMA_Updates+1
 
 	set	"NMI", Vblank_DebugMenu
 
@@ -126,7 +127,7 @@ InGameMenu:
 	sta	NMITIMEN
 	cli
 
-	wait	"frames", 5						; wait for tilemaps to get updated
+	wait	"frames", 3						; wait for tilemaps to get updated
 
 
 
@@ -583,7 +584,7 @@ UpdateMenuHeadline:
 ;	stx	LO8.Routine_FillTextBuffer
 	jsr	SimplePrintF
 
-	lda	#%00010000						; make sure BG3 lo tilemap gets updated
+	lda	#kBG3Tilemap						; update BG3 tilemap
 	tsb	<DP2.DMA_Updates
 
 	rts
@@ -906,7 +907,7 @@ VSplitscreenTest:
 	sta	<DP2.TextStringPtr
 	lda	<DP2.TextCursor
 	clc
-	adc	#24
+	adc	#24 * 2
 	sta	<DP2.TextCursor
 
 	Accu8
@@ -932,23 +933,22 @@ VSplitscreenTest:
 	bra	-
 +
 
-;	PrintString	2, 16, kTextBG3, "TESTESTESTESTESTETSET"
+;	PrintString	2, 16, kTextBG3, "TESTESTESTESTESTEST"
 
-;	ldx	#loword(RAM.BG3Tilemap)
-;	stx	WMADDL
-;	stz	WMADDH
+	ldx	#loword(RAM.BG3Tilemap)
+	stx	WMADDL
+	stz	WMADDH
 
-;	ldx	#0
-;	lda	#$83
-;-	sta	WMDATA							; fill the whole BG3 tilemap (for testing)
-;	inx
-;	cpx	#1024
-;	bne	-
+	ldx	#1024							; fill the whole tilemap for testing
+-	lda	#$83
+	sta	WMDATA							; write tile
+	lda	#$20
+	sta	WMDATA							; set priority bit
+	dex
+	bne	-
 
-	lda	#%00011111						; make sure BG1-3 lo and BG1/2 hi tilemaps get updated
+	lda	#kBG1Tilemap1|kBG2Tilemap1|kBG3Tilemap			; update BG1/2/3 tilemaps
 	tsb	<DP2.DMA_Updates
-	and	#%00001111
-	tsb	<DP2.DMA_Updates+1
 
 -	bra	-
 
@@ -997,65 +997,49 @@ StaticRenderingTest:
 
 
 ; Build BG3 tilemap for item list area
-;	lda	#$30							; palette no. 4 | priority bit
-	lda	#$20							; palette no. 0 | priority bit
-	xba
+	Accu16
+
 	lda	#15							; no. of item rows
 	sta	<DP2.Temp
-	lda	#$80							; first tile of item list
-	ldx	#228							; start of item list area in tilemap
+
+	lda	#$2080							; high byte: palette no. 0 | priority bit, low byte: first tile of item list
+	ldx	#228*2							; start of item list area in tilemap
 
 @MakeBG3ItemTilemap:
 	ldy	#10							; max. no. of tiles for an item name
 -	sta	RAM.BG3Tilemap, x
-	xba
-	sta	RAM.BG3TilemapHi, x
-	xba
-
-	Accu16
-
-	ina
-
-	Accu8
-
+	ina								; increment tile no.
+	inx								; increment index
 	inx
 	dey
 	bne	-
 
-	inx								; space between column 1 and 2: 5 tiles
-	inx
-	inx
-	inx
-	inx
+	pha								; preserve tile data
+	txa
+	clc
+	adc	#5 * 2							; space between column 1 and 2: 5 tiles
+	tax
+	pla								; restore tile data
+
 	ldy	#10							; max. no. of tiles for an item name
 -	sta	RAM.BG3Tilemap, x
-	xba
-	sta	RAM.BG3TilemapHi, x
-	xba
-
-	Accu16
-
 	ina
-
-	Accu8
-
+	inx
 	inx
 	dey
 	bne	-
-
-	Accu16
 
 	pha
 	txa
 	clc
-	adc	#7							; go to next line in item list
+	adc	#7 * 2							; go to next line in item list
 	tax
 	pla
 
-	Accu8
-
 	dec	<DP2.Temp
 	bne	@MakeBG3ItemTilemap
+
+	Accu8
 
 	DrawFrame	1, 5, 29, 18
 
@@ -1078,9 +1062,8 @@ StaticRenderingTest:
 
 	set	"NMI", Vblank_DebugMenu
 
-	lda	#%00010000						; make sure BG3 lo/hi tilemaps get updated
+	lda	#kBG3Tilemap						; update BG3 tilemap
 	tsb	<DP2.DMA_Updates
-	tsb	<DP2.DMA_Updates+1
 
 	lda	RDNMI							; clear NMI flag
 	lda	#kNMITIMEN_Enable|kAutoJoy				; enable interrupts + auto joypad read
@@ -1115,7 +1098,7 @@ DynamicRenderingTest:
 	stx	WMADDL
 	stz	WMADDH
 
-	dma_0	$08, SRC_0000, WMDATA, 1024*9				; clear all tilemap buffers (except BG3-hi)
+	dma_0	$08, SRC_0000, WMDATA, 2048 * 5				; clear all tilemap buffers
 
 	jsr	SpriteInit						; purge OAM
 
@@ -1182,6 +1165,9 @@ DynamicRenderingTest:
 	sta	NMITIMEN
 	cli
 
+
+
+; Fill inventory list with some items
 	ldx	#0
 
 	Accu16
@@ -1200,17 +1186,17 @@ DynamicRenderingTest:
 	ldx	#0
 
 @ReadItemFromInventory:
-	lda	RAM.GameDataInventory, x
+	lda	RAM.GameDataInventory, x				; read item no.
 	xba
 	inx
-	lda	RAM.GameDataInventory, x
+	lda	RAM.GameDataInventory, x				; read quantity
 	bne	+
-	inx
+	inx								; if zero, read next item (256 max.)
 	cpx	#512
 	beq	@ReadItemFromInventoryDone
 	bra	@ReadItemFromInventory
 
-+	sta	LO8.GameDataItemQty
++	sta	LO8.GameDataItemQty					; (unnecessary, but whatever)
 	xba
 
 	Accu16
@@ -1218,17 +1204,14 @@ DynamicRenderingTest:
 	and	#$00FF							; clear high byte
 	lsh	4							; item no. × 16 (16 characters per item name)
 	clc
-	adc	#STR_ItemsENG
+	adc	#STR_ItemsENG						; add offset of item names table
 	sta	<DP2.TextStringPtr
 
 	Accu8
 
 	lda	#:STR_ItemsENG
 	sta	<DP2.TextStringBank
-	inx
-	cpx	#512
-	beq	@ReadItemFromInventoryDone
-	phx
+	phx								; preserve item index
 
 @RenderItem:
 	lda	#16
@@ -1239,13 +1222,15 @@ DynamicRenderingTest:
 
 	lda	<DP2.TextCursor
 	clc
-	adc	#24
+	adc	#24 * 2
 	sta	<DP2.TextCursor
 
 	Accu8
 
-	plx
-	bra	@ReadItemFromInventory
+	plx								; restore item index
+	inx
+	cpx	#512							; read next item (256 max.)
+	bne	@ReadItemFromInventory
 
 @ReadItemFromInventoryDone:
 
@@ -1267,10 +1252,8 @@ DynamicRenderingTest:
 	bra	-
 +
 */
-	lda	#%00001111						; make sure BG1 and BG2 lo/hi tilemaps get updated
+	lda	#kBG1Tilemap1|kBG2Tilemap1				; update BG1/2 tilemaps
 	tsb	<DP2.DMA_Updates
-	and	#%00001111
-	tsb	<DP2.DMA_Updates+1
 ;	lda	#%00001000						; enable HDMA channel 3 (color math)
 ;	tsb	<DP2.HDMA_Channels
 

@@ -438,16 +438,17 @@ ShowAlphaIntro:
 
 	PrintString	6, 2, kTextMode5, "%s"
 
-	stz	VMAIN							; increment VRAM address by one word after writing to $2118
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	VMAIN
 	ldx	#VRAM_BG1_Tilemap1					; set VRAM address for BG1 tilemap
 	stx	VMADDL
 
-	dma_0	$00, RAM.BG1Tilemap1, VMDATAL, 1024
+	dma_0	$01, RAM.BG1Tilemap1, VMDATAL, 2048
 
 	ldx	#VRAM_BG2_Tilemap1					; set VRAM address for BG2 tilemap
 	stx	VMADDL
 
-	dma_0	$00, RAM.BG2Tilemap1, VMDATAL, 1024
+	dma_0	$01, RAM.BG2Tilemap1, VMDATAL, 2048
 
 	set	"NMI", Vblank_Intro
 
@@ -624,7 +625,7 @@ CheckROMIntegrity:
 
 .ENDIF
 
-	lda	#%00010000						; make sure BG3 low tilemap bytes are updated
+	lda	#kBG3Tilemap						; update BG3 tilemap
 	tsb	<DP2.DMA_Updates
 
 
@@ -638,7 +639,7 @@ CheckROMIntegrity:
 	SetTextPos	9, 17
 	PrintHexNum	<DP2.DataBank
 
-	lda	#%00010000						; make sure BG3 low tilemap bytes are updated
+	lda	#kBG3Tilemap						; update BG3 tilemap
 	tsb	<DP2.DMA_Updates
 
 .ENDIF
@@ -682,7 +683,7 @@ CheckROMIntegrity:
 	SetTextPos	9, 17
 	PrintHexNum	<DP2.DataBank
 
-	lda	#%00010000						; make sure BG3 low tilemap bytes are updated
+	lda	#kBG3Tilemap						; update BG3 tilemap
 	tsb	<DP2.DMA_Updates
 
 .ENDIF
@@ -746,7 +747,7 @@ ReadBanks40thru5F:
 	SetTextPos	9, 17
 	PrintHexNum	<DP2.DataBank
 
-	lda	#%00010000						; make sure BG3 low tilemap bytes are updated
+	lda	#kBG3Tilemap						; update BG3 tilemap
 	tsb	<DP2.DMA_Updates
 
 .ENDIF
@@ -788,7 +789,7 @@ ReadBanks40thru5F:
 	SetTextPos	9, 17
 	PrintHexNum	<DP2.DataBank
 
-	lda	#%00010000						; make sure BG3 low tilemap bytes are updated
+	lda	#kBG3Tilemap						; update BG3 tilemap
 	tsb	<DP2.DMA_Updates
 
 .ENDIF
@@ -1292,7 +1293,7 @@ DebugMenu:
 	stx	WMADDL
 	stz	WMADDH
 
-	dma_0	$08, SRC_0000, WMDATA, 1024				; clear it (low bytes only, high bytes are set up in SetupDebugRegsGFX)
+	dma_0	$08, SRC_0000, WMDATA, 2048				; clear it
 
 
 
@@ -1450,9 +1451,8 @@ DebugMenuLoop:
 
 ;	jsr	ShowCPUload
 
-	lda	#%00010000						; make sure ONLY BG3 lo/hi tilemaps get updated
-	sta	<DP2.DMA_Updates
-	sta	<DP2.DMA_Updates+1					; hi tilemap update is actually only needed once (to clean up if Mode 1 world map was used), but who cares :p
+	lda	#kBG3Tilemap						; make sure ONLY BG3 tilemap gets updated
+	sta	<DP2.DMA_Updates					; hi tilemap update is actually only needed once (to clean up if Mode 1 world map was used), but who cares :p
 
 	ldx	#loword(RAM.SpriteDataArea)				; set WRAM address for area sprite data array
 	stx	WMADDL
@@ -1667,7 +1667,7 @@ Debug_SetRTC:
 
 	dma_0	$08, SRC_0000, WMDATA, 2048				; clear BG3 tilemap
 
-	lda	#%00010000						; make sure BG3 low tilemap bytes are updated once NMI is re-enabled
+	lda	#kBG3Tilemap						; update BG3 tilemap once NMI is re-enabled
 	tsb	<DP2.DMA_Updates
 
 	jsr	ResetSprites
@@ -1699,7 +1699,7 @@ Debug_SetRTC:
 
 	PrintString	2, 2, kTextBG3, "No real-time clock hardware\\n  found!"
 
-	lda	#%00010000						; make sure BG3 low tilemap bytes are updated
+	lda	#kBG3Tilemap						; update BG3 tilemap
 	tsb	<DP2.DMA_Updates
 
 	wait	"user_input"
@@ -1748,7 +1748,7 @@ Debug_SetRTC:
 	PrintString	7, 18, kTextBG3, ":"
 	PrintHexNum	LO8.Time_Second
 
-	lda	#%00010000						; make sure BG3 low tilemap bytes are updated
+	lda	#kBG3Tilemap						; update BG3 tilemap
 	tsb	<DP2.DMA_Updates
 	stz	<DP2.Temp						; reset increment/decrement variables
 	stz	<DP2.Temp+1
@@ -2105,9 +2105,8 @@ SNESGSS_ControlLoop:
 
 	PrintString	6, 1, kTextMode5, "Global vol.:  %x"
 
-	lda	#%00000101						; make sure BG1 and BG2 lo tilemaps get updated
+	lda	#kBG1Tilemap1|kBG2Tilemap1				; update BG1/2 tilemaps
 	sta	<DP2.DMA_Updates
-	stz	<DP2.DMA_Updates+1
 
 	wai
 
@@ -2236,9 +2235,10 @@ SetupDebugRegsGFX:							; Load gfx & palettes and set up PPU registers for debu
 
 	ldx	#0
 	lda	#$20							; priority bit
--	sta	RAM.BG3TilemapHi, x					; set priority bit for BG3 tiles
+-	inx
+	sta	RAM.BG3Tilemap, x					; set priority bit for BG3 tiles
 	inx
-	cpx	#1024
+	cpx	#2048
 	bne	-
 
 	stz	CGADD							; reset CGRAM address
@@ -2496,9 +2496,10 @@ ErrorHandler:
 
 	ldx	#0
 	lda	#$20							; priority bit
--	sta	RAM.BG3TilemapHi, x					; set priority bit for BG3 tiles
+-	inx
+	sta	RAM.BG3Tilemap, x					; set priority bit for BG3 tiles
 	inx
-	cpx	#1024
+	cpx	#2048
 	bne	-
 
 

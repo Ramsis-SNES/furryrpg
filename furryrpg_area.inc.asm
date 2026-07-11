@@ -35,7 +35,7 @@ LoadAreaData:
 	stx	WMADDL
 	stz	WMADDH
 
-	dma_0	$08, SRC_0000, WMDATA, 1024
+	dma_0	$08, SRC_0000, WMDATA, 2048
 
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	VMAIN
@@ -112,7 +112,7 @@ LoadAreaData:
 
 
 
-; "Deinterleave" BG1 tilemap, add tile no. offset
+; Process BG1 tilemap, add tile no. offset // FIXME, add this (and palette no.) when doing GFX conversion
 	phx								; preserve area data pointer
 	ldx	#loword(RAM.ScratchSpace)				; set DP2.DataAddress to scratch space for postindexed long addressing
 	stx	<DP2.DataAddress
@@ -131,12 +131,13 @@ LoadAreaData:
 
 	Accu8
 
-	sta	RAM.BG1Tilemap1, x					; store new data
+	sta	RAM.BG1Tilemap1, x					; store new data (low byte)
+	inx
 	xba
 	ora	#$08							; set palette #2
-	sta	RAM.BG1Tilemap1Hi, x
+	sta	RAM.BG1Tilemap1, x					; high byte
 	inx
-	cpx	#1024
+	cpx	#2048
 	bne	-
 
 	ldx	#0
@@ -151,12 +152,13 @@ LoadAreaData:
 
 	Accu8
 
-	sta	RAM.BG1Tilemap2, x					; store new data
+	sta	RAM.BG1Tilemap2, x					; store new data (low byte)
+	inx
 	xba
 	ora	#$08							; set palette #2
-	sta	RAM.BG1Tilemap2Hi, x
+	sta	RAM.BG1Tilemap2, x					; high byte
 	inx
-	cpx	#1024
+	cpx	#2048
 	bne	-
 
 	plx								; restore area data pointer
@@ -208,7 +210,7 @@ LoadAreaData:
 
 
 
-; "Deinterleave" BG2 tilemap, add tile no. offset
+; Process BG2 tilemap, add tile no. offset // FIXME as with BG1 stuff
 	phx								; preserve area data pointer
 	ldx	#loword(RAM.ScratchSpace)				; set DP2.DataAddress to scratch space for postindexed long addressing
 	stx	<DP2.DataAddress
@@ -228,11 +230,12 @@ LoadAreaData:
 	Accu8
 
 	sta	RAM.BG2Tilemap1, x					; store new data
+	inx
 	xba
 	ora	#$08							; set palette #2
-	sta	RAM.BG2Tilemap1Hi, x
+	sta	RAM.BG2Tilemap1, x
 	inx
-	cpx	#1024
+	cpx	#2048
 	bne	-
 
 	ldx	#0
@@ -248,11 +251,12 @@ LoadAreaData:
 	Accu8
 
 	sta	RAM.BG2Tilemap2, x					; store new data
+	inx
 	xba
 	ora	#$08							; set palette #2
-	sta	RAM.BG2Tilemap2Hi, x
+	sta	RAM.BG2Tilemap2, x
 	inx
-	cpx	#1024
+	cpx	#2048
 	bne	-
 
 	plx								; restore area data pointer
@@ -467,9 +471,8 @@ LoadAreaData:
 	sta	NMITIMEN						; FIXME, needed for EffectHSplitIn, make LO8.NMITIMEN an actual mirror variable (copied to register within some main game loop, but not on Vblank)
 	cli								; re-enable interrupts
 
-	lda	#%00011111						; make sure BG1/2/3 lo/hi tilemaps get updated
+	lda	#%00011111						; make sure (all) BG1/2/3 tilemaps get updated
 	tsb	<DP2.DMA_Updates
-	tsb	<DP2.DMA_Updates+1
 	jsr	UpdateAreaSprites					; put characters on initial positions
 
 	ldx	#loword(RAM.SpriteDataArea)				; set WRAM address for area sprite data array

@@ -277,22 +277,13 @@ Vblank_DebugMenu:
 Vblank_Error:
 	Accu8
 
-; Refresh BG3 (low tilemap bytes)
-	stz	VMAIN							; increment VRAM address by 1 after writing to $2118
-	ldx	#VRAM_BG3_Tilemap1					; set VRAM address to BG3 tilemap
-	stx	VMADDL
-
-	dma_0	$00, RAM.BG3Tilemap, VMDATAL, 1024
-
-
-
-; Refresh BG3 (high tilemap bytes)
+; Refresh BG3
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	VMAIN
 	ldx	#VRAM_BG3_Tilemap1					; set VRAM address to BG3 tilemap
 	stx	VMADDL
 
-	dma_0	$00, RAM.BG3TilemapHi, VMDATAH, 1024
+	dma_0	$01, RAM.BG3Tilemap, VMDATAL, 2048
 
 
 
@@ -632,35 +623,36 @@ GetInput:
 .INDEX 16
 
 RefreshBGs:								; refresh BGs according to DP2.DMA_Updates
-	ldy	#4							; DMA counter, do max. 4 DMAs per Vblank
-	stz	VMAIN							; increment VRAM address by 1 after writing to $2118
+	ldy	#2							; DMA counter, do max. 2 DMAs per Vblank
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	VMAIN
 
 
 
-; Check/refresh BG1 (low tilemap bytes)
+; Check/refresh BG1
 	lda	<DP2.DMA_Updates
-	and	#%00000001						; check for 1st BG1 tilemap (low bytes)
+	and	#kBG1Tilemap1						; check for 1st BG1 tilemap
 	beq	+
 	ldx	#VRAM_BG1_Tilemap1					; set VRAM address to BG1 tilemap
 	stx	VMADDL
 
-	dma_0	$00, RAM.BG1Tilemap1, VMDATAL, 1024
+	dma_0	$01, RAM.BG1Tilemap1, VMDATAL, 2048
 
-	lda	#%00000001						; clear respective DMA update bit
+	lda	#kBG1Tilemap1						; clear respective DMA update bit
 	trb	<DP2.DMA_Updates
 	dey								; decrement DMA counter
 	bne	+
 	jmp	@DMAUpdatesDone
 
 +	lda	<DP2.DMA_Updates
-	and	#%00000010						; check for 2nd BG1 tilemap (low bytes)
+	and	#kBG1Tilemap2						; check for 2nd BG1 tilemap
 	beq	+
 	ldx	#VRAM_BG1_Tilemap2					; set VRAM address to BG1 tilemap
 	stx	VMADDL
 
-	dma_0	$00, RAM.BG1Tilemap2, VMDATAL, 1024
+	dma_0	$01, RAM.BG1Tilemap2, VMDATAL, 2048
 
-	lda	#%00000010						; clear respective DMA update bit
+	lda	#kBG1Tilemap2						; clear respective DMA update bit
 	trb	<DP2.DMA_Updates
 	dey								; decrement DMA counter
 	bne	+
@@ -668,30 +660,30 @@ RefreshBGs:								; refresh BGs according to DP2.DMA_Updates
 
 
 
-; Check/refresh BG2 (low tilemap bytes)
+; Check/refresh BG2
 +	lda	<DP2.DMA_Updates
-	and	#%00000100						; check for 1st BG2 tilemap (low bytes)
+	and	#kBG2Tilemap1						; check for 1st BG2 tilemap
 	beq	+
 	ldx	#VRAM_BG2_Tilemap1					; set VRAM address to BG2 tilemap
 	stx	VMADDL
 
-	dma_0	$00, RAM.BG2Tilemap1, VMDATAL, 1024
+	dma_0	$01, RAM.BG2Tilemap1, VMDATAL, 2048
 
-	lda	#%00000100						; clear respective DMA update bit
+	lda	#kBG2Tilemap1						; clear respective DMA update bit
 	trb	<DP2.DMA_Updates
 	dey								; decrement DMA counter
 	bne	+
 	jmp	@DMAUpdatesDone
 
 +	lda	<DP2.DMA_Updates
-	and	#%00001000						; check for 2nd BG2 tilemap (low bytes)
+	and	#kBG2Tilemap2						; check for 2nd BG2 tilemap
 	beq	+
 	ldx	#VRAM_BG2_Tilemap2					; set VRAM address to BG2 tilemap
 	stx	VMADDL
 
-	dma_0	$00, RAM.BG2Tilemap2, VMDATAL, 1024
+	dma_0	$01, RAM.BG2Tilemap2, VMDATAL, 2048
 
-	lda	#%00001000						; clear respective DMA update bit
+	lda	#kBG2Tilemap2						; clear respective DMA update bit
 	trb	<DP2.DMA_Updates
 	dey								; decrement DMA counter
 	bne	+
@@ -699,99 +691,23 @@ RefreshBGs:								; refresh BGs according to DP2.DMA_Updates
 
 
 
-; Check/refresh BG3 (low tilemap bytes)
+; Check/refresh BG3
 +	lda	<DP2.DMA_Updates
-	and	#%00010000						; check for BG3 tilemap (low bytes)
+	and	#kBG3Tilemap						; check for BG3 tilemap
 	beq	+
 	ldx	#VRAM_BG3_Tilemap1					; set VRAM address to BG3 tilemap
 	stx	VMADDL
 
-	dma_0	$00, RAM.BG3Tilemap, VMDATAL, 1024
+	dma_0	$01, RAM.BG3Tilemap, VMDATAL, 2048
 
-	lda	#%00010000						; clear respective DMA update bit
+	lda	#kBG3Tilemap						; clear respective DMA update bit
 	trb	<DP2.DMA_Updates
 	dey
 	bne	+
 	jmp	@DMAUpdatesDone
 
-+	lda	#$80							; increment VRAM address by 1 after writing to $2119
-	sta	VMAIN
-
-
-
-; Check/refresh BG1 (high tilemap bytes)
-	lda	<DP2.DMA_Updates+1
-	and	#%00000001						; check for 1st BG1 tilemap (high bytes)
-	beq	+
-	ldx	#VRAM_BG1_Tilemap1					; set VRAM address to BG1 tilemap
-	stx	VMADDL
-
-	dma_0	$00, RAM.BG1Tilemap1Hi, VMDATAH, 1024
-
-	lda	#%00000001						; clear respective DMA update bit
-	trb	<DP2.DMA_Updates+1
-	dey								; decrement DMA counter
-	bne	+
-	jmp	@DMAUpdatesDone
-
-+	lda	<DP2.DMA_Updates+1
-	and	#%00000010						; check for 2nd BG1 tilemap (high bytes)
-	beq	+
-	ldx	#VRAM_BG1_Tilemap2					; set VRAM address to BG1 tilemap
-	stx	VMADDL
-
-	dma_0	$00, RAM.BG1Tilemap2Hi, VMDATAH, 1024
-
-	lda	#%00000010						; clear respective DMA update bit
-	trb	<DP2.DMA_Updates+1
-	dey								; decrement DMA counter
-	bne	+
-	jmp	@DMAUpdatesDone
-
-
-
-; Check/refresh BG2 (high tilemap bytes)
-+	lda	<DP2.DMA_Updates+1
-	and	#%00000100						; check for 1st BG2 tilemap (high bytes)
-	beq	+
-	ldx	#VRAM_BG2_Tilemap1					; set VRAM address to BG2 tilemap
-	stx	VMADDL
-
-	dma_0	$00, RAM.BG2Tilemap1Hi, VMDATAH, 1024
-
-	lda	#%00000100						; clear respective DMA update bit
-	trb	<DP2.DMA_Updates+1
-	dey								; decrement DMA counter
-	bne	+
-	jmp	@DMAUpdatesDone
-
-+	lda	<DP2.DMA_Updates+1
-	and	#%00001000						; check for 2nd BG2 tilemap (high bytes)
-	beq	+
-	ldx	#VRAM_BG2_Tilemap2					; set VRAM address to BG2 tilemap
-	stx	VMADDL
-
-	dma_0	$00, RAM.BG2Tilemap2Hi, VMDATAH, 1024
-
-	lda	#%00001000						; clear respective DMA update bit
-	trb	<DP2.DMA_Updates+1
-	dey								; decrement DMA counter
-	beq	@DMAUpdatesDone
-
-
-
-; Check/refresh BG3 (high tilemap bytes)
-+	lda	<DP2.DMA_Updates+1
-	and	#%00010000						; check for BG3 tilemap (high bytes)
-	beq	@DMAUpdatesDone
-
-	ldx	#VRAM_BG3_Tilemap1					; set VRAM address to BG3 tilemap
-	stx	VMADDL
-
-	dma_0	$00, RAM.BG3TilemapHi, VMDATAH, 1024
-
-	lda	#%00010000						; clear respective DMA update bit
-	trb	<DP2.DMA_Updates+1
+; Check/refresh something else
++
 
 @DMAUpdatesDone:
 

@@ -38,7 +38,7 @@ DialogueTest:
 	stx	WMADDL
 	stz	WMADDH
 
-	dma_0	$08, SRC_0000, WMDATA, 1024
+	dma_0	$08, SRC_0000, WMDATA, 2048
 
 	ldx	#loword(RAM.HDMA_BackgrPlayfield)			; set WRAM address to playfield HDMA background
 	stx	WMADDL
@@ -162,9 +162,8 @@ DialogueTest:
 	PrintString	7, 2, kTextBG3, "R/L: +/-50 strings"
 	PrintString	8, 2, kTextBG3, "A: cont./make selection"
 
-	lda	#%00011111						; make sure BG1/2/3 lo/hi tilemaps get updated
+	lda	#kBG1Tilemap1|kBG2Tilemap1|kBG3Tilemap			; update BG1/2/3 tilemaps
 	tsb	<DP2.DMA_Updates
-	tsb	<DP2.DMA_Updates+1
 
 	wait	"frames", 4						; give some time for screen refresh
 
@@ -180,9 +179,8 @@ DialogueTest:
 	PrintHexNum	<DP2.TextPointerNo+1
 	PrintHexNum	<DP2.TextPointerNo
 
-	lda	#%00010000						; make sure BG3 lo/hi tilemaps get updated
+	lda	#kBG3Tilemap						; update BG3 tilemap
 	tsb	<DP2.DMA_Updates
-	tsb	<DP2.DMA_Updates+1
 
 	wait	"frames", 1
 
@@ -2043,8 +2041,10 @@ PrintFControl:
 
 	lda	<DP2.TextCursor						; get current position
 	clc
-	adc	#$0020							; move to the next line
-	and	#$FFE0
+;	adc	#$0020							; move to the next line (8-bit tilemaps)
+;	and	#$FFE0
+	adc	#$0040							; move to the next line (16-bit tilemaps)
+	and	#$FFC0
 	sta	<DP2.TextCursor						; save new position
 
 	Accu8
@@ -2060,12 +2060,12 @@ PrintFControl:
 
 	lda	<DP2.TextCursor						; get current position
 	clc
-;	adc	#$0008							; move to the next tab
-;	and	#$FFF8
-	adc	#$0004							; smaller tab size (4 tiles = 8 hi-res characters)
-	and	#$fffc
+	adc	#$0008							; move to the next tab
+	and	#$FFF8
+;	adc	#$0004							; smaller tab size (4 tiles = 8 hi-res characters)
+;	and	#$FFFC
 ;	adc	#$0002							; use this instead for even smaller tabs
-;	and	#$fffe
+;	and	#$FFFE
 	sta	<DP2.TextCursor						; save new position
 
 	Accu8
@@ -2164,6 +2164,7 @@ FillTextBufferBG3:							; expectations: A = 8 bit, X/Y = 16 bit
 	ldx	<DP2.TextCursor
 	sta	RAM.BG3Tilemap, x					; write character to the BG3 text buffer
 	inx								; advance text cursor position
+	inx
 	stx	<DP2.TextCursor
 
 	rts
@@ -2226,6 +2227,7 @@ FillTextBufferMode5:							; expectations: A = 8 bit, X/Y = 16 bit
 	xba								; restore character code
 	sta	RAM.BG2Tilemap1, x					; write it to the BG2 text buffer
 	inx								; ... and advance text cursor position
+	inx
 	stx	<DP2.TextCursor
 
 @Done:

@@ -549,6 +549,13 @@
 .ENUMID kEffectDelay11
 .ENUMID kEffectDelay12
 
+; DMA updates
+.DEFINE kBG1Tilemap1	%00000001
+.DEFINE kBG1Tilemap2	%00000010
+.DEFINE kBG2Tilemap1	%00000100
+.DEFINE kBG2Tilemap2	%00001000
+.DEFINE kBG3Tilemap	%00010000
+
 ; Game config & state
 .DEFINE kGameConfigMSU1	%00000001
 .DEFINE kGameConfigRTC	%00000010
@@ -665,7 +672,7 @@
 	DiagStringPos			dw				; holds current dialogue string position (= index to current character)
 	DiagTextEffect			db				; bsrrrrrr [b = toggle bold font, s = sub-string active, r = reserved]
 	DiagTileCounter			db				; holds no. of current 16×8 dialogue VWF tile (max. 4 * 23 = 92), to be converted to a VRAM address offset during Vblank
-	DMA_Updates			dw				; rrrcbbaarrr32211 [123 = BG no. that needs to have its tilemap(s) updated on next Vblank (low bytes), abc = same thing for high bytes, r = reserved. The lower bit of each BG represents the first half of a 64×32/32×64 tilemap, the higher one represents the second half.]
+	DMA_Updates			dw				; rrrrrrrrrrr32211 [123 = BG no. that needs to have its tilemap(s) updated on next Vblank, r = reserved. The lower bit of each BG represents the first half of a 64×32/32×64 tilemap, the higher one represents the second half.]
 	EffectSpeed			dw
 	ErrorCode			db
 	EmptySpriteNo			db				; holds no. of empty sprite in current spritesheet (usually 0), this is acknowledged in the sprite initialization routine
@@ -826,17 +833,13 @@
 .ENDST
 
 .STRUCT struct_BG12Tilemap
-	Beginning			dsb 704
-	TextBox				dsb 192				; 6 lines, 32 tiles each
-	Reserved			dsb 128
+	Beginning			dsb 704 * 2
+	TextBox				dsb 192 * 2			; 6 lines, 32 tiles each
+	Reserved			dsb 128 * 2
 .ENDST
 
 .STRUCT struct_BG3Tilemap
-	AllTiles			dsb 1024
-.ENDST
-
-.STRUCT struct_BG3TilemapHi
-	AllTiles			dsb 1024
+	AllTiles			dsb 2048
 .ENDST
 
 .STRUCT struct_RAM_Routines
@@ -908,16 +911,11 @@
 ;.ENDST
 
 .STRUCT struct_RAM_7E2000 SIZE $E000
-	BG1Tilemap1			INSTANCEOF struct_BG12Tilemap	; each tilemap is 1024 bytes in size (32×32 tiles)
-	BG1Tilemap2			dsb 1024
-	BG1Tilemap1Hi			INSTANCEOF struct_BG12Tilemap
-	BG1Tilemap2Hi			dsb 1024
+	BG1Tilemap1			INSTANCEOF struct_BG12Tilemap	; each tilemap is 2048 bytes in size (32×32 tiles, 16-bit entries)
+	BG1Tilemap2			dsb 2048
 	BG2Tilemap1			INSTANCEOF struct_BG12Tilemap
-	BG2Tilemap2			dsb 1024
-	BG2Tilemap1Hi			INSTANCEOF struct_BG12Tilemap
-	BG2Tilemap2Hi			dsb 1024
+	BG2Tilemap2			dsb 2048
 	BG3Tilemap			INSTANCEOF struct_BG3Tilemap
-	BG3TilemapHi			INSTANCEOF struct_BG3TilemapHi
 	GameDataInventory		dsb 512				; two-byte array for 256 items. Low byte = item no., high byte = quantity
 	HDMA_BackgrPlayfield		dsb 704				; 16-bit palette index & 16-bit color entry for 176 scanlines
 	HDMA_BackgrTextBox		dsb 192				; ditto for 48 scanlines

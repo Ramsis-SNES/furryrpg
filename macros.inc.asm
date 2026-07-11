@@ -224,15 +224,16 @@ ReturnAdress\@:
 .MACRO DrawFrame ISOLATED
 
 ; Draw upper border
-	ldx	#32*\2 + \1
+	ldx	#(32*\2 + \1) * 2
 	lda	#$10							; upper left corner
 	sta	RAM.BG3Tilemap, x
 	lda	#$11							; horizontal line
 
 DrawUpperBorder\@:
 	inx
+	inx
 	sta	RAM.BG3Tilemap, x
-	cpx	#32*\2 + \1 + \3
+	cpx	#(32*\2 + \1 + \3) * 2
 	bne	DrawUpperBorder\@
 
 	lda	#$12							; upper right corner
@@ -250,7 +251,7 @@ DrawLRBorder\@:
 
 	txa
 	clc
-	adc	#\3							; go to right border
+	adc	#\3 * 2							; go to right border
 	tax
 
 	Accu8
@@ -263,12 +264,12 @@ GoToNextLine\@:
 
 	txa
 	clc
-	adc	#32 - \3						; go to next line
+	adc	#(32 - \3) * 2						; go to next line
 	tax
 
 	Accu8
 
-	cpx	#32*(\2+\4) + \1
+	cpx	#(32*(\2+\4) + \1) * 2
 	bne	DrawLRBorder\@
 
 
@@ -277,12 +278,14 @@ GoToNextLine\@:
 	lda	#$15							; lower left corner
 	sta	RAM.BG3Tilemap, x
 	inx
+	inx
 	lda	#$16							; horizontal line
 
 DrawLowerBorder\@:
 	sta	RAM.BG3Tilemap, x
 	inx
-	cpx	#32*(\2+\4) + \1 + \3
+	inx
+	cpx	#(32*(\2+\4) + \1 + \3) * 2
 	bne	DrawLowerBorder\@
 
 	lda	#$17							; lower right corner
@@ -599,7 +602,7 @@ STR_SpriteText_End\@:
 
 
 .MACRO PrintString ISOLATED						; modified by Ramsis: PrintString y, x, kTextBuffer*, "String"
-	ldx	#32*\1 + \2
+	ldx	#(32*\1 + \2) * 2
 	stx	<DP2.TextCursor
 	stz	<DP2.HiResPrintMon					; reset BG monitor value
 	ldx	#\3
@@ -617,7 +620,7 @@ STR_Start\@:
 
 
 .MACRO SetTextPos
-	ldx	#32*\1 + \2
+	ldx	#(32*\1 + \2) * 2
 	stx	<DP2.TextCursor
 	stz	<DP2.HiResPrintMon					; reset BG monitor value
 .ENDM
