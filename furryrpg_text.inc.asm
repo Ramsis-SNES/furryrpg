@@ -651,9 +651,7 @@ TextBoxHandleSelection:
 	inc	<DP2.TextBoxSelMax
 +	lda	<DP2.TextBoxSelMax					; DP2.TextBoxSelMax = (no. of options - 1) * 8 + DP2.TextBoxSelMin
 	dec	a
-	asl	a
-	asl	a
-	asl	a
+	lsh	3
 	clc
 	adc	<DP2.TextBoxSelMin
 	sta	<DP2.TextBoxSelMax
@@ -705,9 +703,7 @@ TextBoxHandleSelection:
 	lda	LO8.HDMA_ColorMath+3					; determine selection made by checking position of selection bar
 	sec
 	sbc	#kTextBoxColMath1st					; subtract start of 1st line
-	lsr	a							; divide by 8 as each line is 8 pixels high
-	lsr	a
-	lsr	a
+	rsh	3							; divide by 8 as each line is 8 pixels high
 
 	Accu16								; Accu A contains a value of $00, $01, $02, or $03 at this point
 
@@ -1069,10 +1065,7 @@ Process_CC_SUBHEX:
 ; Process actual hex byte, i.e. make it into a WRAM sub-string
 	lda	[<DP2.DataAddress]					; load byte to print in hex
 	pha
-	lsr	a							; do upper nibble first
-	lsr	a
-	lsr	a
-	lsr	a
+	rsh	4							; do upper nibble first
 	ldx	#0
 
 	HexNibbleToTempString
@@ -1636,10 +1629,7 @@ MakeMode5FontBG2:							; Expects VRAM address set to BG2 tile base
 
 ProcessVWFTiles:
 	lda	<DP2.DiagASCIIChar					; ASCII char no. --> font tile no.
-	asl	a							; value * 16 as 1 font tile = 16 bytes
-	asl	a
-	asl	a
-	asl	a
+	lsh	4							; value * 16 as 1 font tile = 16 bytes
 	tax
 
 	Accu8
@@ -1698,11 +1688,7 @@ ProcessVWFTiles:
 
 ProcessVWFTilesBold:
 	lda	<DP2.DiagASCIIChar					; ASCII char no. --> font tile no.
-	asl	a							; value * 32 as 1 font tile = 16 bytes, and each character uses 2 tiles
-	asl	a
-	asl	a
-	asl	a
-	asl	a
+	lsh	5							; value * 32 as 1 font tile = 16 bytes, and each character uses 2 tiles
 	tax
 
 	Accu8
@@ -1775,10 +1761,7 @@ ProcessVWFTilesBold:
 +	Accu16
 
 	lda	<DP2.VWF_BufferIndex					; we need to do a second half, check if 2 buffer tiles full first
-	lsr	a							; buffer index / 16 = tile no.
-	lsr	a
-	lsr	a
-	lsr	a
+	rsh	4							; buffer index / 16 = tile no.
 	cmp	#2
 	bcc	+
 
@@ -1796,11 +1779,7 @@ ProcessVWFTilesBold:
 +	Accu16								; finally, process right half of char graphics
 
 	lda	<DP2.DiagASCIIChar					; ASCII char no. --> font tile no.
-	asl	a							; value * 32 as 1 font tile = 16 bytes, and each character uses 2 tiles
-	asl	a
-	asl	a
-	asl	a
-	asl	a
+	lsh	5							; value * 32 as 1 font tile = 16 bytes, and each character uses 2 tiles
 	clc								; add 16 bytes (one 8×8 tile) for right half of char graphics
 	adc	#16
 	tax
@@ -2395,10 +2374,7 @@ PrintInt8:								; assumes 8b mem, 16b index
 
 PrintHex8:								; assumes 8b mem, 16b index
 	pha
-	lsr	a
-	lsr	a
-	lsr	a
-	lsr	a
+	rsh	4
 	jsr	PrintHexNibble
 
 	pla
@@ -2432,10 +2408,7 @@ PrintHexNibble:								; assumes 8b mem, 16b index
 
 PrintSpriteHex8:
 	pha
-	lsr	a
-	lsr	a
-	lsr	a
-	lsr	a
+	rsh	4
 	jsr	PrintSpriteHexNibble
 
 	pla

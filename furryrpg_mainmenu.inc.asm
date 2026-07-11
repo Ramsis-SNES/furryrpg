@@ -103,8 +103,7 @@ InGameMenu:
 	dma_0	$02, SRC_Palette_Logo, CGDATA, 32
 
 	lda	#CGRAM_Area						; palette no. = CGRAM address RSH 2
-	lsr	a
-	lsr	a
+	rsh	2
 	ldx	#0
 -	sta	RAM.BG1Tilemap1Hi, x					; store palette no.
 	inx
@@ -573,10 +572,7 @@ UpdateMenuHeadline:
 	sta	<DP2.DataAddress
 	lda	<DP2.RingMenuAngle					; update headline based on angle ($00, $20 ... $C0, $E0)
 	and	#$00FF							; clear high byte
-	lsr	a							; shift angle into lower nibble
-	lsr	a
-	lsr	a
-	lsr	a
+	rsh	4							; shift angle into lower nibble
 	tay								; y = pointer no.
 	lda	[<DP2.DataAddress], y
 	sta	<DP2.TextStringPtr
@@ -1220,10 +1216,7 @@ DynamicRenderingTest:
 	Accu16
 
 	and	#$00FF							; clear high byte
-	asl	a
-	asl	a
-	asl	a
-	asl	a
+	lsh	4							; item no. × 16 (16 characters per item name)
 	clc
 	adc	#STR_ItemsENG
 	sta	<DP2.TextStringPtr

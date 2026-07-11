@@ -80,6 +80,42 @@ ReturnAdress\@:
 
 
 
+.MACRO lsh ARGS Parameter
+
+.IF NARGS == 0
+
+	asl	a
+
+.ELSE
+
+.REPEAT Parameter
+	asl	a
+.ENDR
+
+.ENDIF
+
+.ENDM
+
+
+
+.MACRO rsh ARGS Parameter
+
+.IF NARGS == 0
+
+	lsr	a
+
+.ELSE
+
+.REPEAT Parameter
+	lsr	a
+.ENDR
+
+.ENDIF
+
+.ENDM
+
+
+
 .MACRO sev
 	sep	#$40							; set overflow flag
 .ENDM

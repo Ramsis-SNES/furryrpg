@@ -185,6 +185,12 @@ UnusedCode:
 	lda	P00.Test						; A5 00
 	lda	P01.Reserved						; AD 00 01
 
+@BitManipulation:
+	lsh
+	rsh
+	lsh	3
+	rsh	3
+
 @ProgramCounter:
 ;	bsr	UnusedCode2
 	brl	UnusedCode2						; 82 XX XX

@@ -869,8 +869,7 @@ ConvertSpriteDataToBuffer:						; routine expects source data address set in WMA
 	lda	#%00000011						; keep track of bit pair position, assume bits 0-1 for now
 	sta	<DP2.SprDataHiOAMBits
 	lda	<DP2.SprDataObjNo					; next, prepare index for LO8.ShadowOAM_Hi
-	lsr	a							; object no. RSH 2 = byte in high OAM containing bit pair of current object
-	lsr	a
+	rsh	2							; object no. RSH 2 = byte in high OAM containing bit pair of current object
 
 	Accu16
 
@@ -1380,10 +1379,7 @@ DebugMenuLoop:
 	sta	<DP2.Temp
 	lda	SRTC_READ						; read seconds (upper 4 bits)
 	and	#$0F
-	asl	a							; shift to upper nibble
-	asl	a
-	asl	a
-	asl	a
+	lsh	4							; shift into upper nibble
 	ora	<DP2.Temp						; combine nibbles
 	sta	LO8.Time_Second
 	lda	SRTC_READ						; minutes.lo
@@ -1391,10 +1387,7 @@ DebugMenuLoop:
 	sta	<DP2.Temp
 	lda	SRTC_READ						; minutes.hi
 	and	#$0F
-	asl	a
-	asl	a
-	asl	a
-	asl	a
+	lsh	4
 	ora	<DP2.Temp
 	sta	LO8.Time_Minute
 	lda	SRTC_READ						; hours.lo
@@ -1402,10 +1395,7 @@ DebugMenuLoop:
 	sta	<DP2.Temp
 	lda	SRTC_READ						; hours.hi
 	and	#$0F
-	asl	a
-	asl	a
-	asl	a
-	asl	a
+	lsh	4
 	ora	<DP2.Temp
 	sta	LO8.Time_Hour
 	lda	SRTC_READ						; day.lo
@@ -1413,10 +1403,7 @@ DebugMenuLoop:
 	sta	<DP2.Temp
 	lda	SRTC_READ						; day.hi
 	and	#$0F
-	asl	a
-	asl	a
-	asl	a
-	asl	a
+	lsh	4
 	ora	<DP2.Temp
 	sta	LO8.Time_Day
 	lda	SRTC_READ						; month
@@ -1427,10 +1414,7 @@ DebugMenuLoop:
 	sta	<DP2.Temp
 	lda	SRTC_READ						; year.hi
 	and	#$0F
-	asl	a
-	asl	a
-	asl	a
-	asl	a
+	lsh	4
 	ora	<DP2.Temp
 	sta	LO8.Time_Year
 	lda	SRTC_READ						; century
@@ -2103,11 +2087,7 @@ SNESGSS_ControlLoop:
 
 	lda	<DP2.NextTrack
 	and	#$00FF							; clear high byte
-	asl	a							; value in DP2.NextTrack * 32 for corresponding song name
-	asl	a
-	asl	a
-	asl	a
-	asl	a
+	lsh	5							; value in DP2.NextTrack * 32 for corresponding song name
 	clc
 	adc	#STR_GSS_Tracks						; add track list offset to address for song name to print
 	sta	<DP2.DataAddress

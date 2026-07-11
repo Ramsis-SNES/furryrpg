@@ -371,9 +371,7 @@ Vblank_Mode7:
 	Accu16
 
 	lda	<DP2.Mode7_ScrollOffsetX
-	lsr	a							; shift right for 13-bit value
-	lsr	a
-	lsr	a
+	rsh	3							; shift right for 13-bit value
 
 	Accu8
 
@@ -384,9 +382,7 @@ Vblank_Mode7:
 	Accu16
 
 	lda	<DP2.Mode7_ScrollOffsetY
-	lsr	a
-	lsr	a
-	lsr	a
+	rsh	3
 
 	Accu8
 
@@ -397,9 +393,7 @@ Vblank_Mode7:
 	Accu16
 
 	lda	<DP2.Mode7_CenterCoordX
-	lsr	a
-	lsr	a
-	lsr	a
+	rsh	3
 
 	Accu8
 
@@ -410,9 +404,7 @@ Vblank_Mode7:
 	Accu16
 
 	lda	<DP2.Mode7_CenterCoordY
-	lsr	a
-	lsr	a
-	lsr	a
+	rsh	3
 
 	Accu8
 
@@ -884,10 +876,7 @@ FlushVWFTileBuffer:
 	Accu16
 
 	and	#$00FF							; clear high byte
-	asl	a							; multiply by 16 (not 32 because of VRAM word addressing) for actual address offset
-	asl	a
-	asl	a
-	asl	a
+	lsh	4							; multiply by 16 (not 32 because of VRAM word addressing) for actual address offset
 	clc								; add base address for BG2 font tiles (+ 32 empty tiles),
 	adc	#VRAM_TextBoxL1						; this is done here because DP2.DiagTileCounter is zero-based
 	sta	VMADDL							; store as VRAM address
@@ -946,8 +935,7 @@ LoadTextBoxBG:
 
 .ACCU 16
 
-+	asl	a							; scanline difference (i.e., text box height) not zero, continue calculation
-	asl	a
++	lsh	2							; scanline difference (i.e., text box height) not zero, continue calculation
 	sta	DAS0L							; set calculated data length
 
 
@@ -955,8 +943,7 @@ LoadTextBoxBG:
 ; Next, calculate WRAM address based on value of DP2.TextBoxVIRQ (e.g. 176 * 4 - 704 = 0)
 	lda	<DP2.TextBoxVIRQ
 	and	#$00FF							; clear high byte once again
-	asl	a
-	asl	a
+	lsh	2
 	clc
 	adc	#loword(RAM.HDMA_BackgrPlayfield)			; use playfield background as a base to save the subtraction of 704
 	sta	WMADDL

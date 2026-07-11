@@ -657,10 +657,7 @@ MainAreaLoop:
 
 ; Screen saver (darken screen every $1000 frames = 70-82 seconds when player is idle)
 	lda	<DP2.PlayerIdleCounter+1
-	lsr	a							; shift highest nibble of DP2.PlayerIdleCounter (16 bit) to lower nibble of Accu
-	lsr	a
-	lsr	a
-	lsr	a
+	rsh	4							; shift highest nibble of DP2.PlayerIdleCounter (16 bit) to lower nibble of Accu
 	eor	#$0F							; convert to brightness level value ($00 --> $0F, $01 --> $0E ... $0F --> $00)
 	sta	RAM_INIDISP
 
@@ -1392,10 +1389,7 @@ PutAreaNameIntoHUD:							; HUD "text box" position (DP2.Temp, DP2.Temp+1) and D
 	lda	#6							; HUD_StrLength × 6 (average width of font chars)
 	sta	M7B
 	lda	MPYL
-	lsr	a							; divide result by 16 for loop index as each text box frame tile is 16 px wide
-	lsr	a
-	lsr	a
-	lsr	a
+	rsh	4							; divide result by 16 for loop index as each text box frame tile is 16 px wide
 	tay
 	sta	<DP2.HUD_TextBoxSize					; save value (reused later for scrolling)
 	ldx	#0
