@@ -344,6 +344,8 @@ SRC_Palette_Spritesheet_Hero1:
 SRC_Palette_Sprites_InGameMenu:
 	.INCBIN "gfx/menu-sprites.pal"					; 32 bytes
 
+
+
 ; Font character data
 
 SRC_FontMode5:
@@ -352,13 +354,17 @@ SRC_FontMode5:
 SRC_Font8x8:
 	.INCBIN "gfx/font_8x8.pic"					; 2bpp font for BG3 (2048 bytes)
 
-; Character portraits
+
+
+; Hero portraits
 
 SRC_Portrait_Hero1:
 	.INCBIN "gfx/portrait_gengen.pic" READ 1920
 
 SRC_Portrait_Hero2:
 	.INCBIN "gfx/portrait_kimahri.pic" READ 1920
+
+
 
 ; Sprite character data
 
@@ -407,13 +413,13 @@ SRC_TileMapBG1_Area000:
 	.INCBIN "gfx/area-000-chessbd.map"
 
 SRC_TilesBG1_Area001:
-	.INCBIN "gfx/area-001-sandbox2.pic"
+	.INCBIN "gfx/area-001-sandbox.pic"
 
 SRC_Palette_Area001:
-	.INCBIN "gfx/area-001-sandbox2.pal"
+	.INCBIN "gfx/area-001-sandbox.pal"
 
 SRC_TileMapBG1_Area001:
-	.INCBIN "gfx/area-001-sandbox2.map"
+	.INCBIN "gfx/area-001-sandbox.map"
 
 SRC_TilesBG1_Area002:
 	.INCBIN "gfx/area-002-green.pic"

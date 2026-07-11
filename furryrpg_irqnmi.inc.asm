@@ -118,8 +118,6 @@ GlobalNMI:								; NMI vector points here
 Vblank_Area:
 	Accu8
 
-	jsr	UpdateGameTime
-
 
 
 ; Update text box
@@ -172,7 +170,7 @@ Vblank_Area:
 
 	lda	#$01							; DMA mode
  	sta	DMAP0
-	lda	#$18							; B bus register ($2118)
+	lda	#<VMDATAL						; B bus register
 	sta	BBAD0
 	lda	#:SRC_Spritesheet_Hero1					; data bank
 	sta	A1B0
@@ -241,7 +239,6 @@ Vblank_Area:
 Vblank_DebugMenu:
 	Accu8
 
-	jsr	UpdateGameTime
 	jsr	RefreshBGs
 
 
@@ -346,8 +343,6 @@ Vblank_Minimal:
 Vblank_Mode7:
 	Accu8
 
-	jsr	UpdateGameTime
-
 
 
 ; Refresh sprites
@@ -436,7 +431,7 @@ Vblank_Mode7:
 	sta	BG2HOFS
 	stz	BG2HOFS
 
-;	jsr	CalcMode7MatrixPPU					; new routine with PPU multiplication
+;	jsl	CalcMode7MatrixPPU					; new routine with PPU multiplication
 
 
 
@@ -458,8 +453,6 @@ Vblank_Mode7:
 
 Vblank_WorldMap:
 	Accu8
-
-	jsr	UpdateGameTime
 
 
 
@@ -609,7 +602,7 @@ GetInput:
 
 	lda	#:SoftReset						; overwrite bank byte as well, so after rti, the program continues at SoftReset
 	sta	13, s
-	lda	#kForcedBlank							; turn off the screen
+	lda	#kForcedBlank						; turn off the screen
 	sta	INIDISP
 
 @done:
@@ -710,50 +703,6 @@ RefreshBGs:								; refresh BGs according to DP2.DMA_Updates
 +
 
 @DMAUpdatesDone:
-
-	rts
-
-
-
-UpdateGameTime:								; FIXME, move to active display/main game loop
-	sed								; decimal mode on
-
-@UpdateSecond:
-	lda	<DP2.GameTimeSecond					; increment second
-	clc
-	adc	#$01
-	sta	<DP2.GameTimeSecond
-	cmp	#$60							; 60 seconds elapsed?
-	bcc	@TimeUpdateDone
-
-	stz	<DP2.GameTimeSecond					; carry bit set, reset second
-
-@UpdateMinute:
-	lda	<DP2.GameTimeMinute					; increment minute via carry bit
-	adc	#$00
-	sta	<DP2.GameTimeMinute
-	cmp	#$60							; 60 minutes elapsed?
-	bcc	@TimeUpdateDone
-
-	stz	<DP2.GameTimeMinute					; carry bit set, reset minute
-
-@UpdateHour:
-	lda	<DP2.GameTimeHour					; increment hour via carry bit
-	adc	#$00
-	sta	<DP2.GameTimeHour
-	cmp	#$24							; 24 hours elapsed?
-	bcc	@TimeUpdateDone
-
-	stz	<DP2.GameTimeHour					; carry bit set, reset hour
-
-@UpdateDay:
-	lda	<DP2.GameTimeDay					; increment day via carry bit
-	adc	#$00
-	sta	<DP2.GameTimeDay
-;	cmp	something
-
-@TimeUpdateDone:
-	cld								; decimal mode off
 
 	rts
 
@@ -868,7 +817,7 @@ LoadTextBoxBG:
 
 	stz	WMADDH							; array is in bank $7E
  	stz	DMAP0							; DMA mode $00
-	lda	#<WMDATA						; B bus register ($2180)
+	lda	#<WMDATA						; B bus register
 	sta	BBAD0
 	lda	#:SRC_HDMA_TextBoxGradientBlue				; source data bank
 	sta	A1B0
@@ -896,7 +845,6 @@ UpdateCharPortrait:
 	bne	+
 
 	dma_0	$09, SRC_FFFF, VMDATAL, 1920				; no portrait wanted, so put masking tiles over portrait
-
 	dma_0	$0A, SRC_0000, CGDATA, 32				; and zero out palette
 
 	bra	@PortraitUpdateDone
@@ -908,7 +856,7 @@ UpdateCharPortrait:
 	tax								; make portrait no. = index in GFX pointer table
 	lda.l	SRC_CharPortraitGFX, x
 	sta	A1T0L							; data offset
-	ldy	#$1801							; low byte: DMA mode, high byte: B bus register ($2118/VMDATA)
+	ldy	#<VMDATAL<<8|$01					; B bus register (high byte), DMA mode (low byte)
  	sty	DMAP0
 
 	Accu8
@@ -924,8 +872,8 @@ UpdateCharPortrait:
 
 	lda.l	SRC_CharPortraitPalette, x				; index is still in X, use that for correct palette
 	sta	A1T0L							; data offset
-	ldx	#$2202							; low byte: DMA mode, high byte: B bus register ($2122/CGDATA)
- 	stx	DMAP0
+ 	ldx	#<CGDATA<<8|$02						; B bus register (high byte), DMA mode (low byte)
+	stx	DMAP0
 
 	Accu8
 

@@ -31,7 +31,7 @@
 
 ; ROM address label prefixes:
 ; SRC_		= binary data (code, data/pointer table, GFX ...)
-; STR_		= ASCII string
+; STR_		= ASCII or table-mapped text string
 
 ; Other label prefixes:
 ; MSU_		= MSU1 hardware register
@@ -694,7 +694,7 @@
 	GSS_GlobalVol			db				; GlobalVol (lo) and FadeSpeed (hi) are addressed as a word!
 	GSS_FadeSpeed			db
 	GSS_param			dsb 2				; SNESGSS
-	HDMA_Channels			db				; variable is copied to $420C (HDMAEN) during Vblank
+	HDMA_Channels			db				; copied to HDMAEN during Vblank
 	HiResPrintLen			db				; holds length of menu hi-res string to print
 	HiResPrintMon			db				; keep track of BG we're printing on: $00 = BG1 (start), $01 = BG2
 	HUD_DispCounter			dw				; holds frame count since HUD appeared

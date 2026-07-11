@@ -2,7 +2,7 @@
 
 Welcome to *Furry RPG!,* an all-new Japanese-style role-playing game for the Super Nintendo Entertainment System (SNES). The game is currently in development (on and off, see down below).
 
-### Implemented features
+### Implemented features (subject to change)
 
 * Epic storyline spanning over multiple realms, featuring an all-Furry cast.
 * 48 Mbit ROM size (ExHiROM) with SRAM-based game save support (think *Tales of Phantasia*). ROM expansion to 64 or even 96 Mbit may or may not be necessary in the future depending on the amount of final game data.
@@ -13,11 +13,11 @@ Welcome to *Furry RPG!,* an all-new Japanese-style role-playing game for the Sup
 * Extendable area loading engine (four/eight-directional scrolling is WIP) with fully working sprite-to-BG collision detection support.
 * Full-fledged and easily extendable sprite animation engine (WIP).
 * High-quality, SNESGSS-based soundtrack engine with audio streaming support (WIP).
-* Optional ambient sound effects featuring real recordings thanks to MSU-1 support (only available on certain emulators and advanced flashcarts like SD2SNES/FXPAK PRO).
+* Optional ambient sound effects featuring real recordings thanks to MSU1 support (only available on certain emulators and advanced flashcarts like SD2SNES/FXPAK PRO).
 * Optional real-time clock support (only available on certain emulators and advanced flashcarts like SD2SNES/FXPAK PRO).
 * ... and more!
 
-### Planned features
+### Planned features (subject to change)
 
 * More or less open world (story-related restrictions apply).
 * Several endings, each requiring the player to make specific choices during the course of the game.
@@ -26,7 +26,7 @@ Welcome to *Furry RPG!,* an all-new Japanese-style role-playing game for the Sup
 * Day/night cycle (even when no RTC available).
 * Daytime-related special events.
 * Semi-realtime battle system with different "special gauges" for each character.
-* Full-screen cutscenes, maybe even FMV (only when MSU-1 is available).
+* Full-screen cutscenes, maybe even FMV (only when MSU1 is available).
 * Character sympathy/affection score system impacting game events and/or endings.
 * Log/notebook providing hints (once acquired) on what to do next.
 * Unlockable character and cut scene galleries/sound test/mini games/special features/you name it.

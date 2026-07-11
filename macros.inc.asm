@@ -630,7 +630,7 @@ STR_Start\@:
 ; SNESGSS/SPC700 MACROS
 ; --------------------------------------------------------------------------------------------------
 
-.MACRO SNESGSS_Command ARGS Command, Parameter							; \1 = kGSS_* (16 bit), \2 = parameter(s) (16 bit)
+.MACRO SNESGSS_Command ARGS Command, Parameter				; \1 = kGSS_* (16 bit), \2 = parameter(s) (16 bit)
 	Accu16
 
 	lda	#Command
@@ -668,7 +668,8 @@ STR_Start\@:
 
 
 .MACRO SPC700_WaitAB ISOLATED
-	.ACCU 16
+
+.ACCU 16
 
 	pha								; preserve 16-bit Accu
 	lda	LO8.TimeoutCounter

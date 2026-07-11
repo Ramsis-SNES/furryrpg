@@ -54,13 +54,13 @@ DialogueTest:
 
 	Accu16
 
-;	lda	#0							; make text box background black in case it was used before
-;	ldx	#0
-;-	sta	RAM.HDMA_BackgrTextBox, x
-;	inx
-;	inx
-;	cpx	#192
-;	bne	-
+	lda	#0							; make text box background black in case it was used in area before
+	ldx	#0
+-	sta	RAM.HDMA_BackgrTextBox, x
+	inx
+	inx
+	cpx	#192
+	bne	-
 
 	ldx	#0							; put HDMA table into WRAM
 -	lda.l	SRC_HDMA_ResetBGScroll, x
@@ -732,7 +732,7 @@ ProcessNextText:
 @NextStringByte:
 	lda	<DP2.DiagStringPos
 	tay								; transfer string position to Y index
-	ina							; increment to next ASCII string character
+	ina								; increment to next ASCII string character
 	sta	<DP2.DiagStringPos					; (N.B.: inc a, sta dp is 1 cycle faster than inc dp)
 
 	Accu8
@@ -1424,7 +1424,7 @@ MakeTextBoxTilemapBG2:
 	inx
 	lda	#$20							; $20 = no. of 1st text string tile in VRAM, $22 = second tile etc.
 -	sta	VMDATAL
-	ina							; tile no. += 2 (Mode 5 always shows two 8×8 tiles at once, resulting in a single 16×8 tile)
+	ina								; tile no. += 2 (Mode 5 always shows two 8×8 tiles at once, resulting in a single 16×8 tile)
 	ina
 	inx
 	cpx	#kTextBoxLine1+kTextBoxWidth-1
@@ -1455,7 +1455,7 @@ MakeTextBoxTilemapBG2:
 
 	pla								; restore no. of text string tile
 -	sta	VMDATAL
-	ina							; tile no. += 2
+	ina								; tile no. += 2
 	ina
 	inx								; position in tilemap += 1
 	cpx	#kTextBoxLine2+kTextBoxWidth-1
@@ -1488,7 +1488,7 @@ MakeTextBoxTilemapBG2:
 
 	pla								; restore no. of text string tile
 -	sta	VMDATAL
-	ina							; tile no. += 2
+	ina								; tile no. += 2
 	ina
 	inx								; position in tilemap += 1
 	cpx	#kTextBoxLine3+kTextBoxWidth-1
@@ -1519,7 +1519,7 @@ MakeTextBoxTilemapBG2:
 
 	pla								; restore no. of text string tile
 -	sta	VMDATAL
-	ina							; tile no. += 2
+	ina								; tile no. += 2
 	ina
 	inx								; position in tilemap += 1
 	cpx	#kTextBoxLine4+kTextBoxWidth-1

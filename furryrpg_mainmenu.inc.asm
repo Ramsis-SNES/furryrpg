@@ -926,7 +926,7 @@ VSplitscreenTest:
 -	lda	[<DP2.TextStringPtr], y
 	beq	+
 	asl	a							; double char no. because font tiles were "expanded" for hi-res mode
-	ina							; increment char no. because Mode 5 BG2 font tiles sit on the "right"
+	ina								; increment char no. because Mode 5 BG2 font tiles sit on the "right"
 	jsr	FillTextBufferBG3
 
 	iny
@@ -1052,7 +1052,7 @@ StaticRenderingTest:
 	sta	RAM_BG34NBA
 	lda	#kBGMODE_1						; set BG mode 1
 	sta	RAM_BGMODE
-	lda	#%00010100						; turn on BG3 + sprites on mainscreen and subscreen
+	lda	#kTM_BG3|kTM_OBJ					; turn on BG3 + sprites on mainscreen and subscreen
 	sta	RAM_TM
 	sta	RAM_TS
 ;	lda	#$00
@@ -1077,7 +1077,7 @@ StaticRenderingTest:
 
 
 
-; MODE-5-BASED FWF
+; DYNAMIC RENDERING TEST
 ; --------------------------------------------------------------------------------------------------
 
 ; Mode-5-based dynamic item rendering test

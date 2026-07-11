@@ -953,7 +953,7 @@ CalcMode7MatrixPPU:
 	cpx	#448-(kMode7SkyLines*2)
 	bne	-
 
-	rts
+	rtl
 
 .ELSE
 

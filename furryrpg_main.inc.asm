@@ -832,6 +832,50 @@ DisableInterrupts:
 
 
 
+UpdateGameTime:
+	sed								; decimal mode on
+
+@UpdateSecond:
+	lda	<DP2.GameTimeSecond					; increment second // CHANGEME, one second per frame is probably too fast
+	clc
+	adc	#$01
+	sta	<DP2.GameTimeSecond
+	cmp	#$60							; 60 seconds elapsed?
+	bcc	@TimeUpdateDone
+
+	stz	<DP2.GameTimeSecond					; carry bit set, reset second
+
+@UpdateMinute:
+	lda	<DP2.GameTimeMinute					; increment minute via carry bit
+	adc	#$00
+	sta	<DP2.GameTimeMinute
+	cmp	#$60							; 60 minutes elapsed?
+	bcc	@TimeUpdateDone
+
+	stz	<DP2.GameTimeMinute					; carry bit set, reset minute
+
+@UpdateHour:
+	lda	<DP2.GameTimeHour					; increment hour via carry bit
+	adc	#$00
+	sta	<DP2.GameTimeHour
+	cmp	#$24							; 24 hours elapsed?
+	bcc	@TimeUpdateDone
+
+	stz	<DP2.GameTimeHour					; carry bit set, reset hour
+
+@UpdateDay:
+	lda	<DP2.GameTimeDay					; increment day via carry bit
+	adc	#$00
+	sta	<DP2.GameTimeDay
+;	cmp	something
+
+@TimeUpdateDone:
+	cld								; decimal mode off
+
+	rts
+
+
+
 ; SPRITE SUBROUTINES
 ; --------------------------------------------------------------------------------------------------
 
@@ -2097,7 +2141,7 @@ SNESGSS_ControlLoop:
 	lda	#:STR_GSS_Tracks
 	sta	<DP2.DataBank
 
-	PrintString	4, 10, kTextMode5, "-  %s"				; song name
+	PrintString	4, 10, kTextMode5, "-  %s"			; song name
 
 	ldx	#DP2.GSS_GlobalVol
 	stx	<DP2.DataAddress
