@@ -25,10 +25,7 @@ Startup:
 
 
 ; copy RAM routines to WRAM
-	ldx	#loword(RAM.Routines)					; set WRAM address to RAM routines section
-	stx	WMADDL
-	stz	WMADDH
-
+	set	"WRAM_port", RAM.Routines
 	dma_0	$00, SRC_RAM_Routines, WMDATA, _sizeof_SRC_RAM_Routines
 
 
@@ -80,6 +77,10 @@ Startup:
 ;	jmp	VSplitscreenTest
 ;	jmp	StaticRenderingTest
 ;	jmp	DynamicRenderingTest
+;	jml	UnusedCode@ProvokeError
+
+	jsl	FastMultInit
+	jsr	InitVariables
 
 .IFDEF	DEBUG
 
@@ -89,11 +90,7 @@ Startup:
 
 	set	"NMI", Vblank_Intro
 
-	lda	RDNMI							; clear NMI flag
-	lda	#kNMITIMEN_Enable|kAutoJoy				; enable interrupts + auto joypad read
-	sta	NMITIMEN
-	sta	LO8.NMITIMEN
-	cli
+	jsl	EnableNMI
 
 	jsl	ShowAlphaIntro
 
@@ -106,7 +103,10 @@ Startup:
 MainGameLoop:
 	; do stuff before next Vblank here
 
-	wait	"frames", 1
+;	wait	"frames", 1
+	wait	"Vblank"
+
+	; do stuff while still on Vblank (but after NMI) here
 
 	Accu16
 
@@ -278,6 +278,28 @@ InitRegisters:
 
 
 
+InitVariables:								; fill game variables with sane values
+	lda	#$FF
+	sta	<DP2.GSS_FadeSpeed
+	lda	#$7F
+	sta	<DP2.GSS_GlobalVol
+	lda	#$01
+	sta	<DP2.GSS_Stereo
+	stz	<DP2.GSS_Stereo+1
+
+	set	"WRAM_port", RAM.CharacterNames				; character names --> WRAM
+	dma_0	$00, SRC_CharacterNames, WMDATA, _sizeof_SRC_CharacterNames
+
+;	jsr	CreateRandomNr
+
+;	lda	LO8.RandomNumbers
+
+	; add more as needed
+
+	rts
+
+
+
 InitAllRAM:
 
 ; check for 128K VRAM expansion, VMAIN and VMADDL/H are already set up correctly
@@ -343,18 +365,15 @@ InitAllRAM:
 ; intro / title screen
 
 ShowAlphaIntro:
+	GSS_cmd	kGSS_MUSIC_STOP, #0					; stop music in case it's playing
+
 	jsl	DisableInterrupts
 
 	lda	#kForcedBlank
 	sta	INIDISP
 
-	SNESGSS_Command kGSS_MUSIC_STOP, 0				; stop music in case it's playing
-
-	ldx	#loword(RAM.BG1Tilemap1)				; clear BG1/2 tilemap buffers
-	stx	WMADDL
-	stz	WMADDH
-
-	dma_0	$08, SRC_0000, WMDATA, 8192
+	set	"WRAM_port", RAM.BG1Tilemap1				; clear BG1/2 tilemap buffers
+	dma_0	$08, SRC_0000, WMDATA, _sizeof_RAM.BG1Tilemap1*4
 
 	lda	#$80							; increment VRAM address by one word after writing to $2119
 	sta	VMAIN
@@ -365,9 +384,9 @@ ShowAlphaIntro:
 
 	lda	#kBGMODE_5						; set BG Mode 5
 	sta	RAM_BGMODE
-	lda	#$50							; VRAM address for BG1 tilemap: $5000, size: 32×32 tiles
+	lda	#hibyte(kVRAM_BG1_Tilemap1)				; VRAM address for BG1 tilemap, size: 32×32 tiles
 	sta	RAM_BG1SC
-	lda	#$58							; VRAM address for BG2 tilemap: $5800, size: 32×32 tiles
+	lda	#hibyte(kVRAM_BG2_Tilemap1)				; VRAM address for BG2 tilemap, size: 32×32 tiles
 	sta	RAM_BG2SC
 	lda	#$20							; VRAM address for BG1 character data: $0000, BG2 character data: $2000
 	sta	RAM_BG12NBA
@@ -440,22 +459,19 @@ ShowAlphaIntro:
 
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	VMAIN
-	ldx	#VRAM_BG1_Tilemap1					; set VRAM address for BG1 tilemap
+	ldx	#kVRAM_BG1_Tilemap1					; set VRAM address for BG1 tilemap
 	stx	VMADDL
 
 	dma_0	$01, RAM.BG1Tilemap1, VMDATAL, 2048
 
-	ldx	#VRAM_BG2_Tilemap1					; set VRAM address for BG2 tilemap
+	ldx	#kVRAM_BG2_Tilemap1					; set VRAM address for BG2 tilemap
 	stx	VMADDL
 
 	dma_0	$01, RAM.BG2Tilemap1, VMDATAL, 2048
 
 	set	"NMI", Vblank_Intro
 
-	lda	RDNMI							; clear NMI flag
-	lda	LO8.NMITIMEN						; re-enable interrupts
-	sta	NMITIMEN
-	cli
+	jsl	ReenableNMI
 
 	Accu16
 
@@ -467,28 +483,25 @@ ShowAlphaIntro:
 	lda	#kForcedBlank
 	sta	RAM_INIDISP
 	wai
-	jsl	DisableInterrupts
-
-	set	"NMI", Vblank_DebugMenu
 
 .IFNDEF NOMUSIC
 
-	SNESGSS_Command kGSS_GLOBAL_VOLUME, $1000			; fade-out intro song (fade speed: 16, global volume: 00)
-
-	Accu8
+	GSS_cmd	kGSS_GLOBAL_VOLUME, #$1000				; fade-out intro song (fade speed: 16, global volume: 00)
 
 .ENDIF
+
+	jsl	DisableInterrupts
 
 	ldx	#$0000
 	stx	VMADDL
 
 	dma_0	$09, SRC_0000, VMDATAL, 0				; clear VRAM
+	set	"NMI", Vblank_DebugMenu
 
-	lda	RDNMI							; clear NMI flag
-	lda	#kNMITIMEN_Enable|kAutoJoy				; enable interrupts + auto joypad read
-	sta	NMITIMEN
-	sta	LO8.NMITIMEN
-	cli
+;	jsl	ReenableNMI
+
+	wait	"frames", 50						; give some time for music fade-out
+	GSS_cmd	kGSS_MUSIC_STOP, #0
 
 	rtl
 
@@ -577,22 +590,22 @@ CheckHardware:
 
 
 ; check if console is Ultra16
-	lda	#$AA							; attempt to unlock U16 registers
+	lda	#kULTRA16_Unlock					; attempt to unlock U16 registers
 	sta	ULTRA16_LOCK
 
 	lda	ULTRA16_DATA
-	ora	#$40							; attempt to toggle LED (?)
+	ora	#$40							; attempt to toggle LED (? cf. tracelog)
 	sta	ULTRA16_DATA
 
 	lda	ULTRA16_LOCK
-	cmp	#$55
+	cmp	#kULTRA16_Lock
 	bne	@Ultra16Done
 
 @Ultra16Present:
 	lda	#kGameConfigU16
 	tsb	<DP2.GameConfig						; set "Ultra16 present" flag
 
-;	lda	ULTRA16_SNUM						; copy U16 serial number, maybe use this for some Easter egg?
+;	lda	ULTRA16_SERIAL						; copy U16 serial number, maybe use this for some Easter egg?
 ;	sta	somewhere
 
 @Ultra16Done:
@@ -822,13 +835,55 @@ ReadBanks40thru5F:
 
 .ACCU 8
 
-DisableInterrupts:
-	sei
-	lda	#$00
-	sta.l	NMITIMEN						; use 24-bit addressing
-	; FIXME add mirror var here?
+; Self-reminder: In the enable/disable NMI routines, always use 24-bit addressing
+
+EnableNMI:
+	lda.l	RDNMI							; clear NMI flag
+	lda	#kNMITIMEN_Enable|kAutoJoy				; enable NMI + auto joypad read
+	sta.l	NMITIMEN
+	sta.l	LO8.NMITIMEN						; copy to RAM mirror variable
+	cli
+	wai								; wait for NMI to fill joypad variables and PPU registers with valid data
 
 	rtl
+
+
+
+DisableInterrupts:
+	sei
+	lda	#kNMITIMEN_Disable
+	sta.l	NMITIMEN
+
+	rtl
+
+
+
+ReenableNMI:
+	lda.l	RDNMI							; clear NMI flag
+	lda.l	LO8.NMITIMEN						; use RAM mirror variable to determine NMI status
+	cmp	#kNMITIMEN_Disable
+	beq	@Done							; if disabled (normally $00), don't do anything
+	sta.l	NMITIMEN
+	cli
+;	wai								; wait for NMI to fill joypad variables and PPU registers with valid data
+
+@Done:
+	rtl
+
+
+
+SetBG3TilesPriority:
+	ldx	#0
+
+-	inx								; move index to high byte
+	lda	#$20							; set priority bit
+	ora	RAM.BG3Tilemap, x
+	sta	RAM.BG3Tilemap, x
+	inx								; next tilemap entry
+	cpx	#_sizeof_RAM.BG3Tilemap
+	bne	-
+
+	rts
 
 
 
@@ -914,7 +969,7 @@ ConvertSpriteDataToBuffer:						; routine expects source data address set in WMA
 	lda	#%00000011						; keep track of bit pair position, assume bits 0-1 for now
 	sta	<DP2.SprDataHiOAMBits
 	lda	<DP2.SprDataObjNo					; next, prepare index for LO8.ShadowOAM_Hi
-	rsh	2							; object no. RSH 2 = byte in high OAM containing bit pair of current object
+	shr	2							; object no. >> 2 = byte in high OAM containing bit pair of current object
 
 	Accu16
 
@@ -966,9 +1021,8 @@ ConvertSpriteDataToBuffer:						; routine expects source data address set in WMA
 ResetSprites:
 	jsr	SpriteDataInit						; purge sprite data buffer
 
-	ldx	#loword(RAM.SpriteDataArea)				; set WRAM address for area sprite data array
-	stx	WMADDL
-	stz	WMADDH
+	set	"WRAM_port", RAM.SpriteDataArea
+
 	jsr	ConvertSpriteDataToBuffer
 
 
@@ -1276,6 +1330,8 @@ SoftReset:								; FIXME, move SoftReset entry point to actual game booting rou
 	Accu8
 	Index16
 
+	lda	#kForcedBlank						; turn off the screen
+	sta	INIDISP
 	jsl	DisableInterrupts
 
 	lda	#$00							; turn off DMA & HDMA
@@ -1284,9 +1340,10 @@ SoftReset:								; FIXME, move SoftReset entry point to actual game booting rou
 
 .IFNDEF NOMUSIC
 
-	SNESGSS_Command kGSS_STOP_ALL_SOUNDS, 0				; stop all SPC700 sounds
+	GSS_cmd	kGSS_STOP_ALL_SOUNDS, #0				; stop all SPC700 sounds
 
 	stz	MSU_CONTROL						; stop MSU1 track in case it's playing
+	stz	MSU_VOLUME
 
 .ENDIF
 
@@ -1320,7 +1377,6 @@ DebugMenu:
 	sta	HDMAEN
 	stz	<DP2.HDMA_Channels
 	stz	<DP2.DMA_Updates					; disable DMA updates for now
-
 	stz	<DP2.EmptySpriteNo					; set empty sprite = 0
 
 	jsr	ResetSprites
@@ -1333,19 +1389,17 @@ DebugMenu:
 
 	Accu8
 
-	ldx	#loword(RAM.BG3Tilemap)					; set WRAM address to BG3 tilemap buffer
-	stx	WMADDL
-	stz	WMADDH
+	set	"WRAM_port", RAM.BG3Tilemap				; clear BG3 text
+	dma_0	$08, SRC_0000, WMDATA, _sizeof_RAM.BG3Tilemap
 
-	dma_0	$08, SRC_0000, WMDATA, 2048				; clear it
+;	jsr	SetBG3TilesPriority					; not needed for now
 
 
 
 ; Load GFX data, set up screen and NMI
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	VMAIN
-
-	ldx	#VRAM_Sprites						; set VRAM address for sprite tiles
+	ldx	#kVRAM_Sprites						; set VRAM address for sprite tiles
 	stx	VMADDL
 
 	dma_0	$01, SRC_Sprites_HUDfont, VMDATAL, 4096			; load HUD font (only cursor is used in debug menu)
@@ -1424,7 +1478,7 @@ DebugMenuLoop:
 	sta	<DP2.Temp
 	lda	SRTC_READ						; read seconds (upper 4 bits)
 	and	#$0F
-	lsh	4							; shift into upper nibble
+	shl	4							; shift into upper nibble
 	ora	<DP2.Temp						; combine nibbles
 	sta	LO8.Time_Second
 	lda	SRTC_READ						; minutes.lo
@@ -1432,7 +1486,7 @@ DebugMenuLoop:
 	sta	<DP2.Temp
 	lda	SRTC_READ						; minutes.hi
 	and	#$0F
-	lsh	4
+	shl	4
 	ora	<DP2.Temp
 	sta	LO8.Time_Minute
 	lda	SRTC_READ						; hours.lo
@@ -1440,7 +1494,7 @@ DebugMenuLoop:
 	sta	<DP2.Temp
 	lda	SRTC_READ						; hours.hi
 	and	#$0F
-	lsh	4
+	shl	4
 	ora	<DP2.Temp
 	sta	LO8.Time_Hour
 	lda	SRTC_READ						; day.lo
@@ -1448,7 +1502,7 @@ DebugMenuLoop:
 	sta	<DP2.Temp
 	lda	SRTC_READ						; day.hi
 	and	#$0F
-	lsh	4
+	shl	4
 	ora	<DP2.Temp
 	sta	LO8.Time_Day
 	lda	SRTC_READ						; month
@@ -1459,7 +1513,7 @@ DebugMenuLoop:
 	sta	<DP2.Temp
 	lda	SRTC_READ						; year.hi
 	and	#$0F
-	lsh	4
+	shl	4
 	ora	<DP2.Temp
 	sta	LO8.Time_Year
 	lda	SRTC_READ						; century
@@ -1498,9 +1552,8 @@ DebugMenuLoop:
 	lda	#kBG3Tilemap						; make sure ONLY BG3 tilemap gets updated
 	sta	<DP2.DMA_Updates					; hi tilemap update is actually only needed once (to clean up if Mode 1 world map was used), but who cares :p
 
-	ldx	#loword(RAM.SpriteDataArea)				; set WRAM address for area sprite data array
-	stx	WMADDL
-	stz	WMADDH
+	set	"WRAM_port", RAM.SpriteDataArea
+
 	jsr	ConvertSpriteDataToBuffer
 
 	wai
@@ -1595,8 +1648,7 @@ DebugMenuLoop:
 	and	#$00FF							; clear high byte
 	sec								; subtract Y value of first debug menu line
 	sbc	#kDebugMenu1stLine
-	lsr	a							; line height is 8 px, so we just need to divide by 4 to get the correct index
-	lsr	a
+	shr	2							; line height is 8 px, so we just need to divide by 4 to get the correct index
 	tax
 
 	Accu8
@@ -1703,39 +1755,27 @@ Debug_PrintRandomNumber:
 Debug_SetRTC:
 	jsl	DisableInterrupts
 
-	lda	#kForcedBlank						; enter forced blank, register shadow variable still contains "screen on" + brightness setting
+	lda	#kForcedBlank						; enter forced blank, RAM mirror variable still contains "screen on" + brightness setting
 	sta	INIDISP
-	ldx	#loword(RAM.BG3Tilemap)
-	stx	WMADDL
-	stz	WMADDH
 
-	dma_0	$08, SRC_0000, WMDATA, 2048				; clear BG3 tilemap
+	set	"WRAM_port", RAM.BG3Tilemap				; clear BG3 text
+	dma_0	$08, SRC_0000, WMDATA, _sizeof_RAM.BG3Tilemap
 
 	lda	#kBG3Tilemap						; update BG3 tilemap once NMI is re-enabled
 	tsb	<DP2.DMA_Updates
 
 	jsr	ResetSprites
 
-	lda	RDNMI							; clear NMI flag
-	lda	#kNMITIMEN_Enable|kAutoJoy				; enable interrupts + auto joypad read
-	sta	NMITIMEN
-	cli
-	wai
+	jsl	ReenableNMI
 
 	Accu16								; wait for no button presses
-
-;-	lda	<DP2.Joy1
-;	bne	-
-
-;-	lda	<DP2.Joy1New
-;	bne	-
 
 -	lda	<DP2.Joy1Press
 	bne	-
 
 	Accu8
 
-;	lda	#kINIDISP_15						; turn screen back on // never mind, this is done via register shadow variable
+;	lda	#kINIDISP_15						; turn screen back on // never mind, this is done via RAM mirror variable
 ;	sta	INIDISP
 	lda	<DP2.GameConfig						; check if S-RTC is present at all
 	and	#kGameConfigRTC
@@ -1977,37 +2017,25 @@ Debug_SetRTC:
 	and	#$0F
 	sta	SRTC_WRITE						; write seconds (lower 4 bits)
 	lda	LO8.Time_Second
-	lsr	a
-	lsr	a
-	lsr	a
-	lsr	a
+	shr	4
 	sta	SRTC_WRITE						; write seconds (upper 4 bits)
 	lda	LO8.Time_Minute
 	and	#$0F
 	sta	SRTC_WRITE						; minutes.lo
 	lda	LO8.Time_Minute
-	lsr	a
-	lsr	a
-	lsr	a
-	lsr	a
+	shr	4
 	sta	SRTC_WRITE						; minutes.hi
 	lda	LO8.Time_Hour
 	and	#$0F
 	sta	SRTC_WRITE						; hours.lo
 	lda	LO8.Time_Hour
-	lsr	a
-	lsr	a
-	lsr	a
-	lsr	a
+	shr	4
 	sta	SRTC_WRITE						; hours.hi
 	lda	LO8.Time_Day
 	and	#$0F
 	sta	SRTC_WRITE						; day.lo
 	lda	LO8.Time_Day
-	lsr	a
-	lsr	a
-	lsr	a
-	lsr	a
+	shr	4
 	sta	SRTC_WRITE						; day.hi
 	lda	LO8.Time_Month
 	sta	SRTC_WRITE						; month
@@ -2015,10 +2043,7 @@ Debug_SetRTC:
 	and	#$0F
 	sta	SRTC_WRITE						; year.lo
 	lda	LO8.Time_Year
-	lsr	a
-	lsr	a
-	lsr	a
-	lsr	a
+	shr	4
 	sta	SRTC_WRITE						; year.hi
 	lda	LO8.Time_Century
 	sec								; subtract 10 for correct format (9h/Ah)
@@ -2037,18 +2062,15 @@ Debug_SetRTC:
 
 
 Debug_SNESGSS_Control:
+;	GSS_cmd	kGSS_MUSIC_STOP, #0					; stop music in case it's playing
+
 	jsl	DisableInterrupts
 
 	lda	#kForcedBlank
 	sta	INIDISP
 
-	SNESGSS_Command kGSS_MUSIC_STOP, 0				; stop music in case it's playing
-
-	ldx	#loword(RAM.BG1Tilemap1)				; clear BG1/2 tilemap buffers
-	stx	WMADDL
-	stz	WMADDH
-
-	dma_0	$08, SRC_0000, WMDATA, 8192
+	set	"WRAM_port", RAM.BG1Tilemap1				; clear BG1/2 tilemap buffers
+	dma_0	$08, SRC_0000, WMDATA, _sizeof_RAM.BG1Tilemap1*4
 
 	lda	#$80							; increment VRAM address by one word after writing to $2119
 	sta	VMAIN
@@ -2056,6 +2078,24 @@ Debug_SNESGSS_Control:
 	stx	VMADDL
 
 	dma_0	$09, SRC_0000, VMDATAL, 0				; clear VRAM
+
+
+
+; HDMA channel 3: color math
+	lda	#$02							; transfer mode (2 bytes --> COLDATA register)
+	sta	DMAP3
+	lda	#<COLDATA
+	sta	BBAD3
+	ldx	#loword(RAM.HDMA_ColorMath)
+	stx	A1T3L
+	lda	#bankbyte(RAM.HDMA_ColorMath)				; table in WRAM expected
+	sta	A1B3
+
+
+
+; Set up menu BG color & misc. RAM mirror registers
+	set	"WRAM_port", RAM.HDMA_ColorMath				; copy color math table to WRAM array
+	dma_0	$00, SRC_HDMA_ColMathMainMenu, WMDATA, _sizeof_SRC_HDMA_ColMathMainMenu
 
 	lda	#kBGMODE_5						; BG Mode 5
 	sta	RAM_BGMODE
@@ -2075,17 +2115,18 @@ Debug_SNESGSS_Control:
 ;	lda	#$FF							; scroll BG2 down by 1 px
 	sta	BG2VOFS
 	stz	BG2VOFS
+	lda	#$00							; clear color math disable bits
+	sta	RAM_CGWSEL
+	lda	#%00100000						; enable color math on backdrop // FIXME investigate (works on real hardware, bsnes, and MAME but not on some FPGA recreations of the SNES)
+	sta	RAM_CGADSUB
 	lda	#kTM_BG1|kTM_BG2					; turn on BG1 and 2 only on mainscreen and subscreen
 	sta	RAM_TM
 	sta	RAM_TS
 	lda	#kPseudoH512
 	sta	RAM_SETINI
 	stz	CGADD							; reset CGRAM address
-	stz	CGDATA							; $3C00 = blue background color
-	lda	#$3C
-	sta	CGDATA							; next DMA skips background color (2 bytes)
 
-	dma_0	$02, SRC_Palettes_Text+2, CGDATA, 30
+	dma_0	$02, SRC_Palettes_Text, CGDATA, 32
 
 	lda	#$80							; increment VRAM address by one word after writing to $2119
 	sta	VMAIN
@@ -2097,6 +2138,9 @@ Debug_SNESGSS_Control:
 	stx	VMADDL
 	jsr	MakeMode5FontBG2
 
+	lda	#%00001000						; enable HDMA channel 3 (color math)
+	tsb	<DP2.HDMA_Channels
+
 	Accu16
 
 	lda	DP2.NextTrack						; make NextTrack a sane value (could be $FFFF depending on area visited, which would break string printing)
@@ -2107,19 +2151,17 @@ Debug_SNESGSS_Control:
 
 +	Accu8
 
-	PrintString	1, 1, kTextMode5, "SNESGSS control panel\\n  ---------------------"
+	PrintString	1, 11, kTextMode5, "SNESGSS control panel"
+	PrintString	2, 11, kTextMode5, "---------------------"
 
-	lda	RDNMI							; clear NMI flag
-	lda	LO8.NMITIMEN						; re-enable interrupts
-	sta	NMITIMEN
-	cli
+	jsl	ReenableNMI
 
 SNESGSS_ControlLoop:
 	ldx	#DP2.NextTrack+1
 	stx	<DP2.DataAddress
 	stz	<DP2.DataBank
 
-	PrintString	4, 1, kTextMode5, "Play track: %x"	; %x = track no. (high byte)
+	PrintString	4, 1, kTextMode5, "Play track: %x"		; %x = track no. (high byte)
 
 	ldx	#DP2.NextTrack
 	stx	<DP2.DataAddress
@@ -2131,7 +2173,7 @@ SNESGSS_ControlLoop:
 
 	lda	<DP2.NextTrack
 	and	#$00FF							; clear high byte
-	lsh	5							; value in DP2.NextTrack * 32 for corresponding song name
+	shl	5							; value in DP2.NextTrack * 32 for corresponding song name
 	clc
 	adc	#STR_GSS_Tracks						; add track list offset to address for song name to print
 	sta	<DP2.DataAddress
@@ -2142,13 +2184,40 @@ SNESGSS_ControlLoop:
 	sta	<DP2.DataBank
 
 	PrintString	4, 10, kTextMode5, "-  %s"			; song name
+	PrintString	6, 1, kTextMode5, "Track info:"
+
+	Accu16
+
+	lda	<DP2.NextTrack-1					; load track no. into high byte (to avoid an 8-bit shift left operation)
+	and	#$FF00							; clear low byte
+	clc
+	adc	#STR_GSS_TrackInfo					; add track info offset to address for printing
+	sta	<DP2.DataAddress
+
+	Accu8
+
+	lda	#:STR_GSS_TrackInfo
+	sta	<DP2.DataBank
+
+	PrintString	7, 1, kTextMode5, "%s"				; song info
 
 	ldx	#DP2.GSS_GlobalVol
 	stx	<DP2.DataAddress
 	stz	<DP2.DataBank
 
-	PrintString	6, 1, kTextMode5, "Global vol.:  %x"
+	PrintString	12, 1, kTextMode5, "Global vol.: %x"
+	PrintString	14, 1, kTextMode5, "Stereo mode:"
 
+	lda	<DP2.GSS_Stereo
+	beq	+
+
+	PrintString	14, 7, kTextMode5, " on "
+
+	bra	@StereoDone
+
++	PrintString	14, 7, kTextMode5, " off"
+
+@StereoDone:
 	lda	#kBG1Tilemap1|kBG2Tilemap1				; update BG1/2 tilemaps
 	sta	<DP2.DMA_Updates
 
@@ -2156,23 +2225,86 @@ SNESGSS_ControlLoop:
 
 
 
+; Check for dpad up
+	lda	<DP2.Joy1New+1
+	and	#kDpadUp
+	beq	@DpadUpDone
+
+	lda	#1
+	sta	<DP2.GSS_Stereo
+	stz	<DP2.GSS_Stereo+1
+
+	GSS_cmd	kGSS_STEREO, <DP2.GSS_Stereo
+
+@DpadUpDone:
+
+
+
+; Check for dpad down
+	lda	<DP2.Joy1New+1
+	and	#kDpadDown
+	beq	@DpadDownDone
+
+	stz	<DP2.GSS_Stereo
+	stz	<DP2.GSS_Stereo+1
+
+	GSS_cmd	kGSS_STEREO, <DP2.GSS_Stereo
+
+@DpadDownDone:
+
+
+
+; Check for dpad left
+	lda	<DP2.Joy1New+1
+	and	#kDpadLeft
+	beq	@DpadLeftDone
+
+	Accu16
+
+	lda	DP2.NextTrack						; decrement NextTrack
+	dea
+	cmp	#$FFFF							; previous value was zero?
+	bne	+
+	lda	#_sizeof_STR_GSS_Tracks/32-1				; yes, load no. of last track
++	sta	DP2.NextTrack
+
+	Accu8
+
+@DpadLeftDone:
+
+
+
+; Check for dpad right
+	lda	<DP2.Joy1New+1
+	and	#kDpadRight
+	beq	@DpadRightDone
+
+	Accu16
+
+	lda	DP2.NextTrack						; increment NextTrack
+	ina
+	cmp	#_sizeof_STR_GSS_Tracks/32				; value higher than no. of last track in list?
+	bcc	+
+	lda	#$0000							; yes, wrap around to first track ($0000)
++	sta	DP2.NextTrack
+
+	Accu8
+
+@DpadRightDone:
+
+
+
 ; Check for A button
 	bit	<DP2.Joy1New
 	bpl	@AButtonDone
 
-;	SNESGSS_Command kGSS_MUSIC_STOP, 0				; stop musc in case it's playing (doesn't seem to be needed as music stops as soon as the load command is sent)
+;	GSS_cmd	kGSS_MUSIC_STOP, #0					; stop musc in case it's playing (not necessary as music stops as soon as the load command is sent)
 
-	jsl	LoadTrackGSS						; this also re-enables stereo (when using original sound driver)
+	jsl	LoadTrackGSS
+	jsl	ReenableNMI
 
-	jsl	DisableInterrupts
-
-;	SNESGSS_Command kGSS_GLOBAL_VOLUME, $FF7F			; fade speed: 255, global volume: 127)
-	SNESGSS_Command kGSS_MUSIC_PLAY, 0
-
-	lda	RDNMI							; clear NMI flag
-	lda	LO8.NMITIMEN						; re-enable interrupts
-	sta	NMITIMEN
-	cli
+	GSS_cmd	kGSS_GLOBAL_VOLUME, <DP2.GSS_GlobalVol			; necessary every time before a play command (otherwise, it'll play at full blast)
+	GSS_cmd	kGSS_MUSIC_PLAY, #0
 
 @AButtonDone:
 
@@ -2182,14 +2314,7 @@ SNESGSS_ControlLoop:
 	bit	<DP2.Joy1New+1
 	bpl	@BButtonDone
 
-	jsl	DisableInterrupts
-
-	SNESGSS_Command kGSS_MUSIC_STOP, 0
-
-	lda	RDNMI							; clear NMI flag
-	lda	LO8.NMITIMEN						; re-enable interrupts
-	sta	NMITIMEN
-	cli
+	GSS_cmd	kGSS_MUSIC_STOP, #0
 
 @BButtonDone:
 
@@ -2215,41 +2340,40 @@ SNESGSS_ControlLoop:
 
 
 
-; Check for L button
-	lda	<DP2.Joy1New
+; Check for L button (decrease volume)
+	lda	<DP2.Joy1Press
 	and	#kButtonL
 	beq	@LButtonDone
 
-	Accu16
+	lda	#$FF
+	sta	<DP2.GSS_FadeSpeed
+	lda	<DP2.GSS_GlobalVol
+	dea
+	bpl	+
+	lda	#$00
++	sta	<DP2.GSS_GlobalVol
 
-	lda	DP2.NextTrack						; decrement NextTrack, make sure it won't wrap around to $FFFF
-	dec	a
-	cmp	#$FFFF							; previous value was zero?
-	bne	+
-	lda	#_sizeof_STR_GSS_Tracks/32-1				; yes, load no. of last track
-+	sta	DP2.NextTrack
-
-	Accu8
+	GSS_cmd	kGSS_GLOBAL_VOLUME, <DP2.GSS_GlobalVol
 
 @LButtonDone:
 
 
 
-; Check for R button
-	lda	<DP2.Joy1New
+; Check for R button (increase volume)
+	lda	<DP2.Joy1Press
 	and	#kButtonR
 	beq	@RButtonDone
 
-	Accu16
-
-	lda	DP2.NextTrack						; increment NextTrack, make sure it won't go higher than total no. of tracks
+	lda	#$FF
+	sta	<DP2.GSS_FadeSpeed
+	lda	<DP2.GSS_GlobalVol
 	ina
-	cmp	#_sizeof_STR_GSS_Tracks/32				; value higher than no. of last track in list?
+	cmp	#$7F
 	bcc	+
-	lda	#$0000							; yes, wrap around to first track ($0000)
-+	sta	DP2.NextTrack
+	lda	#$7F
++	sta	<DP2.GSS_GlobalVol
 
-	Accu8
+	GSS_cmd	kGSS_GLOBAL_VOLUME, <DP2.GSS_GlobalVol
 
 @RButtonDone:
 
@@ -2272,18 +2396,10 @@ SetupDebugRegsGFX:							; Load gfx & palettes and set up PPU registers for debu
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	VMAIN
 
-	ldx	#VRAM_BG3_Tiles						; set VRAM address for BG3 tiles
+	ldx	#kVRAM_BG3_Tiles					; set VRAM address for BG3 tiles
 	stx	VMADDL
 
 	dma_0	$01, SRC_Font8x8, VMDATAL, 2048				; load debug menu font
-
-	ldx	#0
-	lda	#$20							; priority bit
--	inx
-	sta	RAM.BG3Tilemap, x					; set priority bit for BG3 tiles
-	inx
-	cpx	#2048
-	bne	-
 
 	stz	CGADD							; reset CGRAM address
 
@@ -2294,9 +2410,9 @@ SetupDebugRegsGFX:							; Load gfx & palettes and set up PPU registers for debu
 ; Set up RAM mirror registers
 	lda	#%00000011						; 8×8 (small) / 16×16 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
 	sta	RAM_OBSEL
-	lda	#$48|$01						; VRAM address for BG3 tilemap: $4800, size: 64×32 tiles
+	lda	#hibyte(kVRAM_BG3_Tilemap1)|$01				; VRAM address for BG3 tilemap, size: 64×32 tiles
 	sta	RAM_BG3SC
-	lda	#$04							; VRAM address for BG3 character data: $4000 (ignore BG4 bits)
+	lda	#hibyte(kVRAM_BG3_Tiles)>>4				; VRAM address for BG3 character data (in 4K-word steps, ignore BG4 bits)
 	sta	RAM_BG34NBA
 	lda	#kBGMODE_1						; set BG mode 1
 	sta	RAM_BGMODE
@@ -2313,12 +2429,7 @@ SetupDebugRegsGFX:							; Load gfx & palettes and set up PPU registers for debu
 
 	set	"NMI", Vblank_DebugMenu
 
-	lda	RDNMI							; clear NMI flag
-	lda	#kNMITIMEN_Enable|kAutoJoy				; enable interrupts + auto joypad read
-	sta	NMITIMEN
-	sta	LO8.NMITIMEN
-	cli
-	wai								; wait for NMI to fill joypad variables and PPU registers with valid data (first time upon cold boot)
+	jsl	EnableNMI
 
 	rts
 
@@ -2478,247 +2589,6 @@ WriteDataToSRAM:
 	jsr	FixSRAMChecksum
 
 	rtl
-
-
-
-; SOFTWARE ERROR HANDLER
-; --------------------------------------------------------------------------------------------------
-
-; For software errors, we actively use the BRK instruction along with a known error code as the
-; signature byte (error code list in variables.inc.asm).
-; Caveat: Unintended BRK/COP (e.g. when crashing due to wrong Accu size) may falsely yield defined
-; error codes, depending on the next byte after the instruction (should be obvious when it happens).
-
-ErrorHandler:
-	AccuIndex16
-
-	pha								; preserve registers (processor status already pushed by BRK/COP)
-	phx
-	phy
-
-	set	"Direct_Page", DP2
-
-	Accu8
-
-	lda	#$00							; disable NMI (IRQ disable flag already set by BRK/COP)
-	sta.l	NMITIMEN
-
-	set	"Data_Bank", $00
-
-	stz	HDMAEN							; disable HDMA
-	lda	#kForcedBlank
-	sta	INIDISP
-
-	lda	8, s							; load BRK/COP signature byte address (can't use Stack Relative Indirect Indexed addressing here unfortunately because the program counter already pointed to the next byte when it was pushed onto the stack)
-	dea								; decrement low byte of program counter to signature byte address (i.e., make up for automatic PC increment)
-	sta	<DP2.DataAddress
-	lda	9, s
-	sta	<DP2.DataAddress+1
-	lda	10, s
-	sta	<DP2.DataBank
-	lda	[<DP2.DataAddress]					; read and save BRK/COP signature byte
-	sta	<DP2.ErrorCode
-
-
-
-; Clear BG3 tilemap buffer
-	ldx	#loword(RAM.BG3Tilemap)
-	stx	WMADDL
-	stz	WMADDH
-
-	dma_0	$08, SRC_0000, WMDATA, 2048
-
-
-
-; 8x8 font --> VRAM
-	lda	#$80							; increment VRAM address by 1 after writing to $2119
-	sta	VMAIN
-	ldx	#VRAM_BG3_Tiles
-	stx	VMADDL
-
-	dma_0	$01, SRC_Font8x8, VMDATAL, 2048
-
-	ldx	#0
-	lda	#$20							; priority bit
--	inx
-	sta	RAM.BG3Tilemap, x					; set priority bit for BG3 tiles
-	inx
-	cpx	#2048
-	bne	-
-
-
-
-; Font palette --> CGRAM
-	stz	CGADD							; reset CGRAM address
-	stz	CGDATA							; set mainscreen bg color: blue
-	lda	#$70
-	sta	CGDATA
-	ldx	#2							; skip original bg color
--	lda.l	SRC_Palettes_Text, x					; copy remaining 3 colors
-	sta	CGDATA
-	inx
-	cpx	#8
-	bne	-
-
-
-
-; Register updates
-	lda	#kBGMODE_1						; set BG mode 1
-	sta	BGMODE
-	lda	#$48							; VRAM address for BG3 tilemap: $4800, size: 32×32 tiles
-	sta	BG3SC
-	lda	#$04							; VRAM address for BG3 character data: $4000 (ignore BG4 bits)
-	sta	BG34NBA
-	lda	#kTM_BG3						; turn on BG3 only
-	sta	TM							; on the mainscreen
-	sta	TS							; and on the subscreen
-
-
-
-; Print error info
-	PrintString	3, 2, kTextBG3, "Software error!"
-	PrintString	6, 2, kTextBG3, "Error type:"
-
-	lda	<DP2.ErrorCode
-
-	Accu16
-
-	and	#$00FF							; clear high byte
-	asl	a							; SRC_ErrorCode has 2-byte entries
-	tax
-	phx								; preserve error code index while printing
-	lda.l	SRC_ErrorCode, x					; load pointer to error code name
-	sta	<DP2.DataAddress
-
-	Accu8
-
-	lda	#:SRC_ErrorCode
-	sta	<DP2.DataBank
-
-	PrintString	7, 2, kTextBG3, "%s"				; print error code name
-
-
-
-; Print extra info depending on error type
-	plx								; restore error code index
-	jmp	(@SRC_ErrorCodeInfo, x)
-
-@SRC_ErrorCodeInfo:
-	.DW @ErrorCorruptROM
-	.DW @ErrorSPC700
-
-.REPEAT 254
-	.DW @ErrorUnknown
-.ENDR
-
-@ErrorCorruptROM:
-	PrintString	10, 2, kTextBG3, "ROM header checksum:"
-
-	SetTextPos	10, 23
-	PrintHexNum	$40FFDF
-
-	SetTextPos	10, 25
-	PrintHexNum	$40FFDE
-
-	PrintString	12, 2, kTextBG3, "Calculated checksum:"
-
-	SetTextPos	12, 23
-	PrintHexNum	<DP2.Temp+4
-
-	SetTextPos	12, 25
-	PrintHexNum	<DP2.Temp+3
-
-	jmp	@ExtraInfoDone
-
-@ErrorSPC700:
-	; nothing for now
-
-	jmp	@ExtraInfoDone
-
-@ErrorUnknown:
-	PrintString	10, 2, kTextBG3, "BRK/COP signature byte: $"
-	PrintHexNum	<DP2.ErrorCode
-
-	PrintString	12, 2, kTextBG3, "PC: $"
-
-	lda	10, s							; PC bank
-	sta	<DP2.Temp
-
-	PrintHexNum	<DP2.Temp
-
-	lda	9, s							; PC middle byte
-	sta	<DP2.Temp
-
-	PrintHexNum	<DP2.Temp
-
-	lda	8, s							; PC low byte
-	dea								; make up for automatic program counter increment
-	dea
-	sta	<DP2.Temp
-
-	PrintHexNum	<DP2.Temp
-
-;	jmp	@ExtraInfoDone						; uncomment when adding more error types
-
-@ExtraInfoDone:
-	PrintString	15, 2, kTextBG3, "A: $"
-
-	lda	6, s
-	sta	<DP2.Temp
-
-	PrintHexNum	<DP2.Temp
-
-	lda	5, s
-	sta	<DP2.Temp
-
-	PrintHexNum	<DP2.Temp
-
-	PrintString	16, 2, kTextBG3, "X: $"
-
-	lda	4, s
-	sta	<DP2.Temp
-
-	PrintHexNum	<DP2.Temp
-
-	lda	3, s
-	sta	<DP2.Temp
-
-	PrintHexNum	<DP2.Temp
-
-	PrintString	17, 2, kTextBG3, "Y: $"
-
-	lda	2, s
-	sta	<DP2.Temp
-
-	PrintHexNum	<DP2.Temp
-
-	lda	1, s
-	sta	<DP2.Temp
-
-	PrintHexNum	<DP2.Temp
-
-	PrintString	20, 2, kTextBG3, "CPU status: %%"
-
-	lda	7, s
-	sta	<DP2.Temp
-
-	PrintBinary	<DP2.Temp
-
-
-
-; Update BG3 tilemap
-	stz	VMAIN							; increment VRAM address by 1 after writing to $2118
-	ldx	#VRAM_BG3_Tilemap1					; set VRAM address to BG3 tilemap
-	stx	VMADDL
-
-	dma_0	$00, RAM.BG3Tilemap, VMDATAL, 1024
-
-
-
-; Turn screen back on, put CPU to sleep
-	lda	#kINIDISP_15
-	sta	INIDISP
-	stp								; halt the CPU
 
 
 

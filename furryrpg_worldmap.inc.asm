@@ -29,42 +29,21 @@ LoadWorldMap:
 	ldx	#$0000							; reset VRAM address
 	stx	VMADDL
 
-	dma_0	$01, SRC_WorldMap, VMDATAL, 29696
-	dma_0	$09, SRC_0000, VMDATAL, 3072				; clear area $3C00-$4000 (BG2 tilemap) in case it was used (like by Mode 7 map) // FIXME, use for BG2 tilemap data or disable BG2 completely
-
-;	ldx	#$4000							; set VRAM address of new BG1 tilemap
-;	stx	VMADDL
-
-	dma_0	$01, SRC_Tilemap_WorldMap, VMDATAL, 8192
-
-
-
-; Load sky data
-;	ldx	#$5000							; set VRAM address $5000
-;	stx	VMADDL
-
-;	dma_0	$01, SRC_Mode7_Sky, VMDATAL, 4368			; only load upper half of sky gfx
-
-;	ldx	#$3C00							; set VRAM address $3C00
-;	stx	VMADDL
-
-;	dma_0	$01, SRC_TileMap_Mode7_Sky, VMDATAL, _sizeof_SRC_TileMap_Mode7_Sky
+	dma_0	$01, SRC_WorldMap, VMDATAL, _sizeof_SRC_WorldMap	; 29,696 bytes (up to VRAM $39FF)
+	dma_0	$09, SRC_0000, VMDATAL, 3072				; clear VRAM $3A00-$3FFF in case it was used (like by Mode 7 map) // FIXME, use for BG2 tilemap data or disable BG2 entirely
+	dma_0	$01, SRC_Tilemap_WorldMap, VMDATAL, _sizeof_SRC_Tilemap_WorldMap	; VRAM $4000-$4FFF
 
 
 
 ; Load horizon-blurring sprite
-	ldx	#VRAM_Sprites						; set VRAM address for sprite tiles
+	ldx	#kVRAM_Sprites						; set VRAM address for sprite tiles
 	stx	VMADDL
 
-	dma_0	$01, SRC_Sprites_SkyBlur, VMDATAL, 576
+	dma_0	$01, SRC_Sprites_SkyBlur, VMDATAL, _sizeof_SRC_Sprites_SkyBlur
 
 
 
 ; Load palettes
-;	stz	CGADD							; reset CGRAM address
-
-;	dma_0	$02, SRC_Palette_Mode7_Sky, CGDATA, 32
-
 	lda	#$10
 	sta	CGADD
 
@@ -82,14 +61,14 @@ LoadWorldMap:
 
 	ldx	#$0000
 -	lda.l	SRC_HDMA_WorldMapSky, x
-	sta	RAM.HDMA_BackgrPlayfield, x
+	sta	RAM.HDMA_BG_Playfield, x
 	inx
 	inx
 	cpx	#_sizeof_SRC_HDMA_WorldMapSky
 	bne	-
 
 	lda	#$0000
--	sta	RAM.HDMA_BackgrPlayfield, x				; fill the rest with zeroes
+-	sta	RAM.HDMA_BG_Playfield, x				; fill the rest with zeroes
 	inx
 	inx
 	cpx	#896
@@ -318,12 +297,12 @@ LoadWorldMap:
 
 
 
-; Set up NMI and shadow PPU regs /misc. parameters
+; Set up NMI and RAM mirror registers /misc. parameters
 	set	"NMI", Vblank_WorldMap
 
 	lda	#%01111000						; enable HDMA ch. 3 (sky color gradient), 4 (BG1 scroll), 5 (layer control) & 6 (window mask)
 	tsb	<DP2.HDMA_Channels
-	lda	#%00010001						; BG Mode 1, tile size = 16×16 (layer control is done via HDMA)
+	lda	#kBGMODE_1|kBG1TileSize					; BG Mode 1, tile size = 16×16 (layer control is done via HDMA)
 	sta	RAM_BGMODE
 	lda	#$43							; VRAM address for BG1 tilemap: $4000, size: 64×64 tiles
 	sta	RAM_BG1SC
@@ -490,26 +469,27 @@ WorldMapLoop:
 CalcVScrollDisplacement:
 	ldx	#loword(RAM.ScratchSpace)				; set data address for upcoming loop
 	stx	<DP2.DataAddress
-	lda	#$7E
+	lda	#bankbyte(RAM.ScratchSpace)
 	sta	<DP2.DataBank
+	phb								; preserve DBR
 
+	set	"Data_Bank", :SRC_HDMA_WorMapVScrollDisplacement
 	Accu16
 
-	ldx	#0
 	ldy	#0
 -	lda	<DP2.WorldMapBG1VScroll
 	sec
-	sbc.l	SRC_HDMA_WorMapVScrollDisplacement, x			; subtract displacement value for each scanline
+	sbc	SRC_HDMA_WorMapVScrollDisplacement, y			; subtract displacement value for each scanline
 	and	#$3FFF
-	sta	[<DP2.DataAddress], y					; save to HDMA array
-	inx
-	inx
+	sta	[<DP2.DataAddress], y					; save to scratch space
 	iny
 	iny
 	cpy	#448							; 224 scanlines done?
 	bne	-
 
 	Accu8
+
+	plb								; restore DBR
 
 	rts
 

@@ -16,20 +16,6 @@
 .INDEX 16
 
 InGameMenu:
-
-.IFNDEF NOMUSIC
-
-	SNESGSS_Command kGSS_MUSIC_STOP, 0				; stop music // REMOVEME when done with menu
-
-	lda	<DP2.GameConfig
-	and	#kGameConfigMSU1					; check for "MSU1 present" flag
-	beq	+
-	stz	MSU_CONTROL						; stop MSU1 track
-	stz	MSU_VOLUME
-+
-
-.ENDIF
-
 	lda	#kForcedBlank
 	sta	RAM_INIDISP
 	stz	<DP2.HDMA_Channels					; disable HDMA
@@ -39,10 +25,7 @@ InGameMenu:
 
 
 ; Clear tilemap buffers, init sprites
-	ldx	#loword(RAM.BG1Tilemap1)
-	stx	WMADDL
-	stz	WMADDH
-
+	set	"WRAM_port", RAM.BG1Tilemap1
 	dma_0	$08, SRC_0000, WMDATA, 10240
 
 	lda	#$CC
@@ -62,60 +45,51 @@ InGameMenu:
 
 
 ; Load menu GFX
-	ldx	#VRAM_BG1_Tiles						; set VRAM address for BG1 tiles
+	ldx	#kVRAM_BG1_Tiles					; set VRAM address for BG1 tiles
 	stx	VMADDL
 
 	dma_0	$01, SRC_Logo, VMDATAL, _sizeof_SRC_Logo
 
-	ldx	#loword(RAM.BG1Tilemap1)
-	stx	WMADDL
-	stz	WMADDH
-
+	set	"WRAM_port", RAM.BG1Tilemap1
 	dma_0	$00, SRC_Tilemap_Logo, WMDATA, _sizeof_SRC_Tilemap_Logo
 
-	ldx	#VRAM_Sprites						; set VRAM address for sprite tiles
+	ldx	#kVRAM_Sprites						; set VRAM address for sprite tiles
 	stx	VMADDL
 
-	dma_0	$01, SRC_Sprites_InGameMenu, VMDATAL, 8192
+	dma_0	$01, SRC_Sprites_InGameMenu, VMDATAL, _sizeof_SRC_Sprites_InGameMenu
 
-	ldx	#VRAM_BG3_Tiles
+	ldx	#kVRAM_BG3_Tiles
 	stx	VMADDL
 
-	dma_0	$01, SRC_Font8x8, VMDATAL, 2048
+	dma_0	$01, SRC_Font8x8, VMDATAL, _sizeof_SRC_Font8x8
 
-	ldx	#0
-	lda	#$20							; priority bit
--	inx
-	sta	RAM.BG3Tilemap, x					; set priority bit for BG3 tiles
-	inx
-	cpx	#2048
-	bne	-
+	jsr	SetBG3TilesPriority
 
 
 
 ; Palettes --> CGRAM
 	stz	CGADD							; reset CGRAM address
 
-	dma_0	$02, SRC_Palettes_Text, CGDATA, 40
+	dma_0	$02, SRC_Palettes_Text, CGDATA, _sizeof_SRC_Palettes_Text
 
-	lda	#CGRAM_Area						; set CGRAM address for BG1 tiles palette
+	lda	#kCGRAM_Area						; set CGRAM address for BG1 tiles palette
 	sta	CGADD
 
-	dma_0	$02, SRC_Palette_Logo, CGDATA, 32
+	dma_0	$02, SRC_Palette_Logo, CGDATA, _sizeof_SRC_Palette_Logo
 
-	lda	#CGRAM_Area						; palette no. = CGRAM address RSH 2
-	rsh	2
+	lda	#kCGRAM_Area						; palette no. = CGRAM address >> 2 // FIXME do via gfx conversion
+	shr	2
 	ldx	#0
 -	inx
 	sta	RAM.BG1Tilemap1, x					; store palette no.
 	inx
-	cpx	#2048
+	cpx	#_sizeof_RAM.BG1Tilemap1
 	bne	-
 
 	lda	#$80							; set CGRAM address to #256 (word address) for sprites
 	sta	CGADD
 
-	dma_0	$02, SRC_Palette_Sprites_InGameMenu, CGDATA, 32
+	dma_0	$02, SRC_Palette_Sprites_InGameMenu, CGDATA, _sizeof_SRC_Palette_Sprites_InGameMenu
 
 	lda	#kBG1Tilemap1|kBG2Tilemap1|kBG3Tilemap			; update BG1/2/3 tilemaps once NMI is re-enabled
 	tsb	<DP2.DMA_Updates
@@ -136,17 +110,17 @@ InGameMenu:
 	sta	DMAP3
 	lda	#<COLDATA
 	sta	BBAD3
-	ldx	#LO8.HDMA_ColorMath
+	ldx	#loword(RAM.HDMA_ColorMath)
 	stx	A1T3L
-	lda	#$7E							; table in WRAM expected
+	lda	#bankbyte(RAM.HDMA_ColorMath)				; table in WRAM expected
 	sta	A1B3
 
 
 
-; Set up menu BG color & misc. PPU (shadow) registers
+; Set up menu BG color & misc. RAM mirror registers
 	ldx	#0
--	lda.l	SRC_HDMA_ColMathMainMenu, x
-	sta	LO8.HDMA_ColorMath, x
+-	lda.l	SRC_HDMA_ColMathMainMenu, x				; FIXME too slow
+	sta	RAM.HDMA_ColorMath, x
 	inx
 	cpx	#_sizeof_SRC_HDMA_ColMathMainMenu
 	bne	-
@@ -155,16 +129,10 @@ InGameMenu:
 	sta	RAM_BGMODE
 	lda	#%01100011						; 16×16 (small) / 32×32 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
 	sta	RAM_OBSEL
-	lda	#$50|$01						; VRAM address for BG1 tilemap: $5000, size: 64×32 tiles
-	sta	RAM_BG1SC
-	lda	#$58|$01						; VRAM address for BG2 tilemap: $5800, size: 64×32 tiles
-	sta	RAM_BG2SC
-	lda	#$48|$01						; VRAM address for BG3 tilemap: $4800, size: 64×32 tiles
-	sta	RAM_BG3SC
-	lda	#$00							; VRAM address for BG1 and BG2 character data: $0000
-	sta	RAM_BG12NBA
-	lda	#$04							; VRAM address for BG3 character data: $4000 (ignore BG4 bits)
-	sta	RAM_BG34NBA
+
+	set	"VRAM_tiles", kVRAM_BG1_Tiles, kVRAM_BG2_Tiles, kVRAM_BG3_Tiles, $00
+	set	"VRAM_tilemaps", kVRAM_BG1_Tilemap1, $01, kVRAM_BG2_Tilemap1, $01, kVRAM_BG3_Tilemap1, $01, $00, $00
+
 	stz	BG1HOFS							; reset BG1 horizontal scroll
 	stz	BG1HOFS
 	lda	#$FF							; set BG1 vertical scroll = -1
@@ -270,9 +238,9 @@ InGameMenu:
 	sta	RAM.SpriteDataMenu.RingCursor+3
 	lda	#%00110000						; attributes (tile num & priority bits only)
 	sta	RAM.SpriteDataMenu.RingCursor+4
-	ldx	#loword(RAM.SpriteDataMenu)				; set WRAM address for menu sprite data array
-	stx	WMADDL
-	stz	WMADDH
+
+	set	"WRAM_port", RAM.SpriteDataMenu
+
 	jsr	ConvertSpriteDataToBuffer				; write changes to sprite buffer
 
 	DrawFrame	7, 1, 17, 2
@@ -384,10 +352,7 @@ RingMenuLoop:
 	and	#$10
 	bne	@AButtonDone						; still rotating, jump out
 	lda	<DP2.RingMenuAngle					; target angle is valid, shift into lower nibble
-	lsr	a
-	lsr	a
-	lsr	a
-	lsr	a
+	shr	4
 
 	Accu16
 
@@ -423,9 +388,9 @@ RingMenuLoop:
 +	lda	#$80
 ++	sta	RAM.SpriteDataMenu.RingCursor+3
 	stz	<DP2.LoopCounter
-	ldx	#loword(RAM.SpriteDataMenu)				; set WRAM address for menu sprite data array
-	stx	WMADDL
-	stz	WMADDH
+
+	set	"WRAM_port", RAM.SpriteDataMenu
+
 	jsr	ConvertSpriteDataToBuffer				; write changes to sprite buffer
 
 @CursorBlinkingDone:
@@ -435,71 +400,62 @@ RingMenuLoop:
 
 
 PutRingMenuItems:
-	ldx	#loword(RAM.SpriteDataMenu.RingItem0)			; set WRAM address for 1st item on ring menu
-	stx	WMADDL
-	stz	WMADDH
+	set	"WRAM_port", RAM.SpriteDataMenu.RingItem0
+
 	lda	<DP2.RingMenuAngle					; take angle for 1st item on ring menu ($80 = 12:00 o'clock)
 	jsr	CalcRingItemPos
 
-	ldx	#loword(RAM.SpriteDataMenu.RingItem1)			; set WRAM address for 2nd item on ring menu
-	stx	WMADDL
-	stz	WMADDH
+	set	"WRAM_port", RAM.SpriteDataMenu.RingItem1
+
 	lda	<DP2.RingMenuAngle					; set angle for 2nd item on ring menu ($60 = 1:30 o'clock)
 	sec
 	sbc	#$20							; $80 - $20
 	jsr	CalcRingItemPos
 
-	ldx	#loword(RAM.SpriteDataMenu.RingItem2)			; set WRAM address for 3rd item on ring menu
-	stx	WMADDL
-	stz	WMADDH
+	set	"WRAM_port", RAM.SpriteDataMenu.RingItem2
+
 	lda	<DP2.RingMenuAngle					; set angle for 3rd item on ring menu ($40 = 3:00 o'clock)
 	sec
 	sbc	#$40
 	jsr	CalcRingItemPos
 
-	ldx	#loword(RAM.SpriteDataMenu.RingItem3)			; set WRAM address for 4th item on ring menu
-	stx	WMADDL
-	stz	WMADDH
+	set	"WRAM_port", RAM.SpriteDataMenu.RingItem3
+
 	lda	<DP2.RingMenuAngle					; set angle for 4th item on ring menu ($20 = 4:30 o'clock)
 	sec
 	sbc	#$60
 	jsr	CalcRingItemPos
 
-	ldx	#loword(RAM.SpriteDataMenu.RingItem4)			; set WRAM address for 5th item on ring menu
-	stx	WMADDL
-	stz	WMADDH
+	set	"WRAM_port", RAM.SpriteDataMenu.RingItem4
+
 	lda	<DP2.RingMenuAngle					; set angle for 5th item on ring menu ($00 = 6:00 o'clock)
 	sec
 	sbc	#$80
 	jsr	CalcRingItemPos
 
-	ldx	#loword(RAM.SpriteDataMenu.RingItem5)			; set WRAM address for 6th item on ring menu
-	stx	WMADDL
-	stz	WMADDH
+	set	"WRAM_port", RAM.SpriteDataMenu.RingItem5
+
 	lda	<DP2.RingMenuAngle					; set angle for 6th item on ring menu ($E0 = 7:30 o'clock)
 	clc
 	adc	#$60
 	jsr	CalcRingItemPos
 
-	ldx	#loword(RAM.SpriteDataMenu.RingItem6)			; set WRAM address for 7th item on ring menu
-	stx	WMADDL
-	stz	WMADDH
+	set	"WRAM_port", RAM.SpriteDataMenu.RingItem6
+
 	lda	<DP2.RingMenuAngle					; set angle for 7th item on ring menu ($C0 = 9:00 o'clock)
 	clc
 	adc	#$40
 	jsr	CalcRingItemPos
 
-	ldx	#loword(RAM.SpriteDataMenu.RingItem7)			; set WRAM address for 8th item on ring menu
-	stx	WMADDL
-	stz	WMADDH
+	set	"WRAM_port", RAM.SpriteDataMenu.RingItem7
+
 	lda	<DP2.RingMenuAngle					; set angle for 8th item on ring menu ($A0 = 10:30 o'clock)
 	clc
 	adc	#$20
 	jsr	CalcRingItemPos
 
-	ldx	#loword(RAM.SpriteDataMenu)				; set WRAM address for menu sprite data array
-	stx	WMADDL
-	stz	WMADDH
+	set	"WRAM_port", RAM.SpriteDataMenu
+
 	jsr	ConvertSpriteDataToBuffer				; write changes to sprite buffer
 
 	rts
@@ -573,7 +529,7 @@ UpdateMenuHeadline:
 	sta	<DP2.DataAddress
 	lda	<DP2.RingMenuAngle					; update headline based on angle ($00, $20 ... $C0, $E0)
 	and	#$00FF							; clear high byte
-	rsh	4							; shift angle into lower nibble
+	shr	4							; shift angle into lower nibble
 	tay								; y = pointer no.
 	lda	[<DP2.DataAddress], y
 	sta	<DP2.TextStringPtr
@@ -750,16 +706,15 @@ TestLoop:
 	lda	#2
 	sta	RAM.SpriteDataMenu.RingItem0+1, x			; big spr
 
-+	ldx	#loword(RAM.SpriteDataMenu)				; set WRAM address for menu sprite data array
-	stx	WMADDL
-	stz	WMADDH
++	set	"WRAM_port", RAM.SpriteDataMenu
+
 	jsr	ConvertSpriteDataToBuffer				; write changes to sprite buffer
 
 	bra	TestLoop
 
 	rts
 
-SRC_RingItemToKeep:							; DP2.SubMenuNext RSH 1	| RingItemX (each * 5 bytes of sprite attributes)
+SRC_RingItemToKeep:							; DP2.SubMenuNext >> 1	| RingItemX (each * 5 bytes of sprite attributes)
 	.DB 4*5								; 0			| 4
 	.DB 5*5								; 1			| 5
 	.DB 6*5								; 2			| 6
@@ -788,21 +743,20 @@ VSplitscreenTest:
 
 
 ; Clear tilemap buffers, init sprites, load new font/GFX data
-	ldx	#loword(RAM.BG1Tilemap1)
-	stx	WMADDL
-	stz	WMADDH
+	set	"WRAM_port", RAM.BG1Tilemap1
+	dma_0	$08, SRC_0000, WMDATA, 10240
 
-	dma_0	$08, SRC_0000, <WMDATA, 1024*9				; clear all tilemap buffers (except BG3-hi)
+;	jsr	SetBG3TilesPriority					; not needed for now
 
 ;	jsr	SpriteInit						; purge OAM
 
 	lda	#$80							; increment VRAM address by one word after writing to $2119
 	sta	VMAIN
-	ldx	#VRAM_BG1_Tiles						; set VRAM address for BG1 font tiles
+	ldx	#kVRAM_BG1_Tiles					; set VRAM address for BG1 font tiles
 	stx	VMADDL
 	jsr	MakeMode5FontBG1
 
-	ldx	#VRAM_BG3_Tiles						; set VRAM address for BG2 font tiles (Mode 5 BG2 uses the same char data as Mode 1 BG3)
+	ldx	#kVRAM_BG3_Tiles					; set VRAM address for BG2 font tiles (Mode 5 BG2 uses the same char data as Mode 1 BG3)
 	stx	VMADDL
 	jsr	MakeMode5FontBG2
 
@@ -811,12 +765,12 @@ VSplitscreenTest:
 ; Palettes --> CGRAM
 	stz	CGADD							; reset CGRAM address
 
-	dma_0	$02, SRC_Palettes_Text, <CGDATA, 32
+	dma_0	$02, SRC_Palettes_Text, CGDATA, 32
 
 ;	lda	#$80							; set CGRAM address to #256 (word address) for sprites
 ;	sta	CGADD
 
-;	dma_0	$02, SRC_Palette_Sprites_InGameMenu, <CGDATA, 32
+;	dma_0	$02, SRC_Palette_Sprites_InGameMenu, CGDATA, 32
 
 
 
@@ -845,17 +799,15 @@ VSplitscreenTest:
 
 
 ; Screen regs, additional parameters
-	lda	#$48 ;|$01						; VRAM address for BG3 tilemap: $4800, size: 64×32 tiles
+	lda	#hibyte(kVRAM_BG3_Tilemap1)				; VRAM address for BG3 tilemap, size: 32×32 tiles
 	sta	RAM_BG3SC
-
-	lda	#$50 ;|$01						; VRAM address for BG1 tilemap: $5000, size: 64×32 tiles
+	lda	#hibyte(kVRAM_BG1_Tilemap1)				; VRAM address for BG1 tilemap, size: 32×32 tiles
 	sta	RAM_BG1SC
-	lda	#$58 ;|$01						; VRAM address for BG2 tilemap: $5800, size: 64×32 tiles
+	lda	#hibyte(kVRAM_BG2_Tilemap1)				; VRAM address for BG2 tilemap, size: 32×32 tiles
 	sta	RAM_BG2SC
-
 ;	lda	#$40							; VRAM address for BG1/BG2 character data: $0000/$4000 // never mind, HDMA does this
 ;	sta	BG12NBA
-	lda	#$04							; VRAM address for BG3 character data: $4000 (ignore BG4 bits)
+	lda	#hibyte(kVRAM_BG3_Tiles)>>4				; VRAM address for BG3 character data (in 4K-word steps, ignore BG4 bits)
 	sta	RAM_BG34NBA
 ;	lda	#%00100000						; enable color math on backdrop only
 ;	sta	CGADSUB
@@ -887,9 +839,9 @@ VSplitscreenTest:
 
 	SetTextPos	2, 2
 
-	ldx	#STR_ItemENG000
+	ldx	#STR_ItemsENG
 	stx	<DP2.TextStringPtr
-	lda	#:STR_ItemENG000
+	lda	#:STR_ItemsENG
 	sta	<DP2.TextStringBank
 	lda	#24
 	sta	<DP2.Temp+3
@@ -935,11 +887,9 @@ VSplitscreenTest:
 
 ;	PrintString	2, 16, kTextBG3, "TESTESTESTESTESTEST"
 
-	ldx	#loword(RAM.BG3Tilemap)
-	stx	WMADDL
-	stz	WMADDH
+	set	"WRAM_port", RAM.BG3Tilemap
 
-	ldx	#1024							; fill the whole tilemap for testing
+	ldx	#_sizeof_RAM.BG3Tilemap/2				; fill the whole tilemap for testing, write 2 bytes per iteration
 -	lda	#$83
 	sta	WMDATA							; write tile
 	lda	#$20
@@ -971,28 +921,27 @@ StaticRenderingTest:
 
 
 ; Clear tilemap buffers, init sprites, load new font/GFX data
-;	ldx	#loword(RAM.BG1Tilemap1)
-;	stx	WMADDL
-;	stz	WMADDH
+;	set	"WRAM_port", RAM.BG1Tilemap1
+;	dma_0	$08, SRC_0000, WMDATA, 10240
 
-;	dma_0	$08, SRC_0000, <WMDATA, 1024*9				; clear all tilemap buffers (except BG3-hi)
+;	jsr	SetBG3TilesPriority					; not needed for now
 
 ;	jsr	SpriteInit						; purge OAM
 
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	VMAIN
-	ldx	#$3000 ;VRAM_BG3_Tiles
+	ldx	#$3000 ;kVRAM_BG3_Tiles
 	stx	VMADDL
 
-	dma_0	$01, SRC_Font8x8, <VMDATAL, 2048
-	dma_0	$01, SRC_StaticItemsENG, <VMDATAL, 160*30
+	dma_0	$01, SRC_Font8x8, VMDATAL, 2048
+	dma_0	$01, SRC_StaticItemsENG, VMDATAL, 160*30
 
 
 
 ; Palettes --> CGRAM
 	stz	CGADD							; reset CGRAM address
 
-	dma_0	$02, SRC_Palettes_Text, <CGDATA, 32
+	dma_0	$02, SRC_Palettes_Text, CGDATA, 32
 
 
 
@@ -1046,7 +995,7 @@ StaticRenderingTest:
 
 
 ; Screen registers/misc. parameters
-	lda	#$48|$01						; VRAM address for BG3 tilemap: $4800, size: 64×32 tiles
+	lda	#hibyte(kVRAM_BG3_Tilemap1)|$01				; VRAM address for BG3 tilemap, size: 64×32 tiles
 	sta	RAM_BG3SC
 	lda	#$03							; switch BG3 char data area designation to $3000 // FIXME
 	sta	RAM_BG34NBA
@@ -1094,21 +1043,20 @@ DynamicRenderingTest:
 
 
 ; Clear tilemap buffers, init sprites, load new font/GFX data
-	ldx	#loword(RAM.BG1Tilemap1)
-	stx	WMADDL
-	stz	WMADDH
+	set	"WRAM_port", RAM.BG1Tilemap1
+	dma_0	$08, SRC_0000, WMDATA, 10240
 
-	dma_0	$08, SRC_0000, WMDATA, 2048 * 5				; clear all tilemap buffers
+;	jsr	SetBG3TilesPriority					; not needed for now
 
 	jsr	SpriteInit						; purge OAM
 
 	lda	#$80							; increment VRAM address by one word after writing to $2119
 	sta	VMAIN
-	ldx	#VRAM_BG1_Tiles						; set VRAM address for BG1 font tiles
+	ldx	#kVRAM_BG1_Tiles					; set VRAM address for BG1 font tiles
 	stx	VMADDL
 	jsr	MakeMode5FontBG1
 
-	ldx	#VRAM_BG3_Tiles						; set VRAM address for BG2 font tiles (Mode 5 BG2 uses the same char data as Mode 1 BG3)
+	ldx	#kVRAM_BG3_Tiles					; set VRAM address for BG2 font tiles (Mode 5 BG2 uses the same char data as Mode 1 BG3)
 	stx	VMADDL
 	jsr	MakeMode5FontBG2
 
@@ -1139,13 +1087,13 @@ DynamicRenderingTest:
 
 
 ; Screen regs, additional parameters
-	lda	#$50 ;|$01						; VRAM address for BG1 tilemap: $5000, size: 64×32 tiles
+	lda	#hibyte(kVRAM_BG1_Tilemap1)				; VRAM address for BG1 tilemap, size: 32×32 tiles
 	sta	RAM_BG1SC
-	lda	#$58 ;|$01						; VRAM address for BG2 tilemap: $5800, size: 64×32 tiles
+	lda	#hibyte(kVRAM_BG2_Tilemap1)				; VRAM address for BG2 tilemap, size: 32×32 tiles
 	sta	RAM_BG2SC
-	lda	#$40							; VRAM address for BG1/BG2 character data: $0000/$4000
+	lda	#$40							; VRAM address for BG1/BG2 character data (in 4K-word steps): $0000/$4000
 	sta	RAM_BG12NBA
-	lda	#$04							; VRAM address for BG3 character data: $4000 (ignore BG4 bits)
+	lda	#hibyte(kVRAM_BG3_Tiles)>>4				; VRAM address for BG3 character data (in 4K-word steps, ignore BG4 bits)
 	sta	RAM_BG34NBA
 	lda	#kBGMODE_5
 	sta	RAM_BGMODE
@@ -1202,7 +1150,7 @@ DynamicRenderingTest:
 	Accu16
 
 	and	#$00FF							; clear high byte
-	lsh	4							; item no. × 16 (16 characters per item name)
+	shl	4							; item no. × 16 (16 characters per item name)
 	clc
 	adc	#STR_ItemsENG						; add offset of item names table
 	sta	<DP2.TextStringPtr

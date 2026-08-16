@@ -22,24 +22,14 @@ TestMode7:
 
 .IFNDEF PrecalcMode7Tables
 
-	stz	WMADDL							; set WRAM address to $7F0000
-	stz	WMADDM
-	lda	#$01
-	sta	WMADDH
+	set	"WRAM_port", $7F0000
 
-;old:
-; generate tables for 128 altitude settings, 152 scanlines each:
-; altitude 0: $800 / $20, $24, $28 ... $280
-; altitude 1: $1000 / $20, $24, $28 ... $280
-; altitude 2: $1800 / $20, $24, $28 ... $280
-; ...
-
-;new:
 ; generate tables for 112 altitude settings, 152 scanlines each:
-; altitude 0: $8800 / $20, $24, $28 ... $280
-; altitude 1: $9000 / $20, $24, $28 ... $280
-; altitude 2: $9800 / $20, $24, $28 ... $280
+; altitude 0  :  $8800 / $20, $24, $28 ... $27C
+; altitude 1  :  $9000 / $20, $24, $28 ... $27C
+; altitude 2  :  $9800 / $20, $24, $28 ... $27C
 ; ...
+; altitude 111: $40000 / $20, $24, $28 ... $27C
 
 	Accu16
 
@@ -112,9 +102,9 @@ TestMode7:
 	sta	DMAP3
 	lda	#<COLDATA						; PPU register $2132 (color math subscreen backdrop color)
 	sta	BBAD3
-	ldx	#LO8.HDMA_ColorMath
+	ldx	#loword(RAM.HDMA_ColorMath)
 	stx	A1T3L
-	lda	#$7E							; table in WRAM expected
+	lda	#bankbyte(RAM.HDMA_ColorMath)				; table in WRAM expected
 	sta	A1B3
 
 
@@ -236,7 +226,7 @@ TestMode7:
 
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	VMAIN
-	ldx	#VRAM_Sprites						; set VRAM address for sprite tiles
+	ldx	#kVRAM_Sprites						; set VRAM address for sprite tiles
 	stx	VMADDL
 
 	dma_0	$01, SRC_Sprites_HUDfont, VMDATAL, 4096
@@ -323,16 +313,13 @@ TestMode7:
 
 
 ; Load sky backdrop gradient
-	ldx	#loword(RAM.HDMA_BackgrPlayfield)			; set WRAM address to playfield HDMA background
-	stx	WMADDL
-	stz	WMADDH
-
+	set	"WRAM_port", RAM.HDMA_BG_Playfield
 	dma_0	$00, SRC_HDMA_Mode7Sky72, WMDATA, _sizeof_SRC_HDMA_Mode7Sky72
 
 
 
-; Set (PPU shadow) registers
-	lda	#$58							; VRAM address for BG2 tilemap: $5800, size: 32×32 tiles
+; Set RAM mirror registers
+	lda	#hibyte(kVRAM_BG2_Tilemap1)				; VRAM address for BG2 tilemap, size: 32×32 tiles
 	sta	RAM_BG2SC
 	lda	#$40							; VRAM address for BG2 character data: $4000 (ignore BG1 bits)
 	sta	RAM_BG12NBA
@@ -350,8 +337,8 @@ TestMode7:
 
 ; Load horizon blur
 	ldx	#$0000
--	lda.l	SRC_HDMA_ColMathMode7, x
-	sta	LO8.HDMA_ColorMath, x
+-	lda.l	SRC_HDMA_ColMathMode7, x				; FIXME too slow
+	sta	RAM.HDMA_ColorMath, x
 	inx
 	cpx	#_sizeof_SRC_HDMA_ColMathMode7
 	bne	-
@@ -687,7 +674,7 @@ Mode7Loop:
 	lda	<DP2.Joy1New+1
 	and	#kButtonStart
 	beq	@StartButtonDone
-	lda	#kEffectSpeed3
+	lda	#kEffectSpeed3						; Start pressed, return to Debug menu
 	sta	<DP2.EffectSpeed
 	ldx	#kEffectTypeHSplitOut2
 	jsr	(SRC_EffectTypes, x)
@@ -695,14 +682,14 @@ Mode7Loop:
 	lda	#kHVIRQ							; clear IRQ enable bits
 	trb	LO8.NMITIMEN
 
-;	jsr	SpriteInit						; purge OAM
+	jsl	DisableInterrupts					; FIXME, Debug menu disables them as well, find a more efficient solution
 
-;	lda	#$80							; increment VRAM address by 1 after writing to $2119
-;	sta	VMAIN
-;	stz	VMADDL							; reset VRAM address
-;	stz	VMADDH
+	lda	#$80							; increment VRAM address by 1 after writing to $2119
+	sta	VMAIN
+	stz	VMADDL							; reset VRAM address
+	stz	VMADDH
 
-;	dma_0	$09, SRC_0000, VMDATAL, 0				; clear VRAM // no, not with NMI enabled
+	dma_0	$09, SRC_0000, VMDATAL, 0				; clear VRAM (to prevent glitches in other sections, like dialogue test)
 
 	jml	DebugMenu
 
@@ -725,9 +712,8 @@ Mode7Loop:
 
 
 ; Misc. tasks, end loop
-	ldx	#loword(RAM.SpriteDataArea)				; set WRAM address for area sprite data array
-	stx	WMADDL
-	stz	WMADDH
+	set	"WRAM_port", RAM.SpriteDataArea
+
 	jsr	ConvertSpriteDataToBuffer
 
 	jmp	Mode7Loop
@@ -1085,72 +1071,6 @@ CalcMode7Matrix:
 	inx
 	cpx	#448-(kMode7SkyLines*2)
 	bne	-
-
-	rts
-
-
-
-.ACCU 16
-
-;-----------------------------
-; 32 by 16 bit division (c) by Garth Wilson
-; http://6502.org/source/integers/ummodfix/ummodfix.htm
-;
-                        ; +-----|-----+-----|-----+-----|-----+-----|------+
-                        ; |  DIVISOR  |    D I V I D E N D    |temp storage|
-                        ; |           |  hi cell     lo cell  |of carry bit|
-                        ; |  N    N+1 | N+2   N+3 | N+4   N+5 | N+6   N+7  |
-                        ; +-----|-----+-----|-----+-----|-----+-----|------+
-;
-Div32by16:
-	lda	7, s							; high word of 32-bit dividend
-	sta	<DP2.Temp+2
-	lda	5, s							; low word of 32-bit dividend
-	sta	<DP2.Temp+4
-	lda	3, s							; 16-bit divisor
-	sta	<DP2.Temp
-	stz	<DP2.Temp+6						; clear 16-bit of temp storage
-
-        SEC								; Detect overflow or /0 condition.  To find out, sub-
-        LDA     DP2.Temp+2						; tract divisor from hi cell of dividend; if C flag
-        SBC     DP2.Temp						; remains set, divisor was not big enough to avoid
-        BCS     @uoflo							; overflow.  This also takes care of any /0 conditions.
-									; If branch not taken, C flag is left clear for 1st ROL.
-									; We will loop 16x; but since we shift the dividend
-        LDX     #17							; over at the same time as shifting the answer in, the
-									; operation must start AND finish with a shift of the
-									; lo cell of the dividend (which ends up holding the
-;       INDEX_16							; quotient), so we start with 17 in X.  We will use Y
-									; for temporary storage too, so set index reg.s 16-bit.
-@ushftl:
-	ROL     DP2.Temp+4						; Move lo cell of dividend left one bit, also shifting
-									; answer in.  The 1st rotation brings in a 0, which
-        DEX								; later gets pushed off the other end in the last
-        BEQ     @umend							; rotation.     Branch to the end if finished.
-
-        ROL     DP2.Temp+2						; Shift hi cell of dividend left one bit, also shifting
-        LDA     #0							; next bit in from high bit of lo cell.
-        ROL     A
-        STA     DP2.Temp+6						; Store old hi bit of dividend in N+6.
-
-        SEC								; See if divisor will fit into hi 17 bits of dividend
-        LDA     DP2.Temp+2						; by subtracting and then looking at carry flag.
-        SBC     DP2.Temp						; If carry got cleared, divisor did not fit.
-        TAY								; Save the difference in Y until we know if we need it.
-
-        LDA     DP2.Temp+6						; Bit 0 of N+6 serves as 17th bit.
-        SBC     #0							; Complete the subtraction by doing the 17th bit before
-        BCC     @ushftl							; determining if the divisor fit into the hi 17 bits of
-									; the dividend.  If so, the C flag remains set.
-        STY     DP2.Temp+2						; If divisor fit into hi 17 bits, update dividend hi
-        BRA     @ushftl							; cell to what it would be after subtraction.    Branch.
-
- @uoflo:
- 	LDA     #$FFFF							; If an overflow or /0 condition occurs, put FFFF in
-        STA     DP2.Temp+4						; both the quotient
-        STA     DP2.Temp+2						; and the remainder.
-
- @umend:
 
 	rts
 

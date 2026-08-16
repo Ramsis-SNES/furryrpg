@@ -12,24 +12,8 @@
 ; TABLE
 ; --------------------------------------------------------------------------------------------------
 
-; $00-$0F are standard hex values, represented in angle brackets
-; $00 also serves as a NUL terminator for strings
-00=<00>
-01=<01>
-02=<02>
-03=<03>
-04=<04>
-05=<05>
-06=<06>
-07=<07>
-08=<08>
-09=<09>
-0A=<0A>
-0B=<0B>
-0C=<0C>
-0D=<0D>
-0E=<0E>
-0F=<0F>
+; $00 is NUL terminator for strings
+00=<END>
 ; $20-$7E are standard ASCII characters
 ; $20 is space
 20= 
@@ -141,15 +125,149 @@
 88=ö
 89=ü
 8A=ß
-; $A0A1 is heart symbol (UTF-8 hex code $2665)
+;
+; $A0 with A1 (two tiles) is heart symbol (UTF-8 hex code $2665)
 A0A1=♥
-; $A2A3 is beamed eighth notes (UTF-8 hex code $266B)
+; $A2 with A3 (two tiles) is beamed eighth notes (UTF-8 hex code $266B)
 A2A3=♫
 ;
-;F0=ff
+; (True) 16-bit entries from here (cf. Dialogue string special characters in variables.inc.asm)
 ;
-; The order of the following text box control codes has to match the order of entries in the ProcessDialogueCC jump table.
-; 
+; In-line character names, order has to match SRC_CharacterNames table
+FD00=<Alec>
+FD01=<Lily>
+FD02=<Primus>
+FD03=<Mickey>
+FD04=<Reinhold>
+FD05=<Tara>
+FD06=<Kilian>
+FD07=<Greg>
+FD08=<Kit>
+FD09=<Fluffy>
+FD0A=<Ruby>
+FD0B=<Temba>
+FD0C=<Fribolin>
+FD0D=<Vivian>
+FD0E=<Qumar>
+FD0F=<Danielle>
+FD10=<Mauras>
+FD11=<Imken>
+FD12=<Teddy>
+FD13=<Shasta>
+FD14=<Jay>
+FD15=<Gustav>
+FD16=<Goetz>
+FD17=<Ramouna>
+FD18=<Lissy>
+FD19=<Karla>
+FD1A=<Paolo>
+FD1B=<Fabio>
+FD1C=<Tenzin>
+FD1D=<Mingbo>
+FD1E=<Etienne>
+FD1F=<Rachel>
+FD20=<Xavier>
+FD21=<Sandro>
+FD22=<Eisfell>
+FD23=<Eismael>
+FD24=<Traugot>
+FD25=<Sunny>
+FD26=<Hiroshi>
+FD27=<Delaney>
+FD28=<Fatima>
+FD29=<Bruce>
+FD2A=<Yveta>
+FD2B=<Charlie>
+FD2C=<Simon>
+FD2D=<Vyktor>
+FD2E=<Philipp>
+FD2F=<Estella>
+FD30=<Schoula>
+FD31=<Armin>
+FD32=<Cato>
+FD33=<Kyril>
+FD34=<Justin>
+FD35=<Phyllis>
+FD36=<Colin>
+FD37=<Nikita>
+FD38=<Emerald>
+FD39=<Ulff>
+FD3A=<Antonio>
+FD3B=<Katrin>
+FD3C=<Virgil>
+FD3D=<Orizon>
+FD3E=<Luna>
+FD3F=<Wallenwyn>
+;FD..=<>
+;
+; Speaker character names, order has to match SRC_CharacterNames table
+FE00=<ALEC>
+FE01=<LILY>
+FE02=<PRIMUS>
+FE03=<MICKEY>
+FE04=<REINHOLD>
+FE05=<TARA>
+FE06=<KILIAN>
+FE07=<GREG>
+FE08=<KIT>
+FE09=<FLUFFY>
+FE0A=<RUBY>
+FE0B=<TEMBA>
+FE0C=<FRIBOLIN>
+FE0D=<VIVIAN>
+FE0E=<QUMAR>
+FE0F=<DANIELLE>
+FE10=<MAURAS>
+FE11=<IMKEN>
+FE12=<TEDDY>
+FE13=<SHASTA>
+FE14=<JAY>
+FE15=<GUSTAV>
+FE16=<GOETZ>
+FE17=<RAMOUNA>
+FE18=<LISSY>
+FE19=<KARLA>
+FE1A=<PAOLO>
+FE1B=<FABIO>
+FE1C=<TENZIN>
+FE1D=<MINGBO>
+FE1E=<ETIENNE>
+FE1F=<RACHEL>
+FE20=<XAVIER>
+FE21=<SANDRO>
+FE22=<EISFELL>
+FE23=<EISMAEL>
+FE24=<TRAUGOT>
+FE25=<SUNNY>
+FE26=<HIROSHI>
+FE27=<DELANEY>
+FE28=<FATIMA>
+FE29=<BRUCE>
+FE2A=<YVETA>
+FE2B=<CHARLIE>
+FE2C=<SIMON>
+FE2D=<VYKTOR>
+FE2E=<PHILIPP>
+FE2F=<ESTELLA>
+FE30=<SCHOULA>
+FE31=<ARMIN>
+FE32=<CATO>
+FE33=<KYRIL>
+FE34=<JUSTIN>
+FE35=<PHYLLIS>
+FE36=<COLIN>
+FE37=<NIKITA>
+FE38=<EMERALD>
+FE39=<ULFF>
+FE3A=<ANTONIO>
+FE3B=<KATRIN>
+FE3C=<VIRGIL>
+FE3D=<ORIZON>
+FE3E=<LUNA>
+FE3F=<WALLENWYN>
+;FE..=<>
+;
+; Text box control codes, order has to match ProcessDialogueCC jump table
 FF00=<BG>
 FF01=<CLR>
 FF02=<IND>
@@ -162,7 +280,7 @@ FF08=<SUBINT8>
 FF09=<SUBINT16>
 FF0A=<SUBSTR>
 FF0B=<B>
-FF0C=<NAME>
+;FF..=<>
 
 
 

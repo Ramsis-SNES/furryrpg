@@ -150,7 +150,7 @@ SRC_AreaProperties001:
 	.DW _sizeof_SRC_Palette_Area001
 	.DL SRC_AreaMetaMap001
 	.DW 12								; SNESGSS music track: "Furlorn Village"
-	.DW $FF								; no MSU1 ambient track
+	.DW $FFFF							; no MSU1 ambient track
 	.DW NextAreaNamePtr
 	.DW $5078							; hero screen position (low byte = X, high byte = Y, numbers refer to top left of sprite)
 	.DW $0078							; hero map position (X)

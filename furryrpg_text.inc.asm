@@ -29,22 +29,20 @@ DialogueTest:
 ;	jsl	music_stop						; stop music in case it's playing
 
 ;	stz	MSU_CONTROL						; stop MSU1 track in case it's playing
+;	stz	MSU_VOLUME
 
 ;.ENDIF
 
 	stz	<DP2.HDMA_Channels					; disable HDMA
 	stz	HDMAEN
-	ldx	#loword(RAM.BG3Tilemap)					; clear BG3 text
-	stx	WMADDL
-	stz	WMADDH
 
-	dma_0	$08, SRC_0000, WMDATA, 2048
+	set	"WRAM_port", RAM.BG3Tilemap				; clear BG3 text
+	dma_0	$08, SRC_0000, WMDATA, _sizeof_RAM.BG3Tilemap
 
-	ldx	#loword(RAM.HDMA_BackgrPlayfield)			; set WRAM address to playfield HDMA background
-	stx	WMADDL
-	stz	WMADDH							; array is in bank $7E
+;	jsr	SetBG3TilesPriority					; not needed for now
 
-	dma_0	$08, SRC_0000, WMDATA, 704				; clear HDMA table in case it was used before
+	set	"WRAM_port", RAM.HDMA_BG_Playfield			; clear HDMA table in case it was used before
+	dma_0	$08, SRC_0000, WMDATA, _sizeof_RAM.HDMA_BG_Playfield
 
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	VMAIN
@@ -55,11 +53,10 @@ DialogueTest:
 	Accu16
 
 	lda	#0							; make text box background black in case it was used in area before
-	ldx	#0
--	sta	RAM.HDMA_BackgrTextBox, x
-	inx
-	inx
-	cpx	#192
+	ldx	#_sizeof_RAM.HDMA_BG_TextBox
+-	dex
+	dex
+	sta	RAM.HDMA_BG_TextBox, x					; zero flag not affected (nor any other)
 	bne	-
 
 	ldx	#0							; put HDMA table into WRAM
@@ -79,9 +76,9 @@ DialogueTest:
 	sta	DMAP3
 	lda	#<COLDATA
 	sta	BBAD3
-	ldx	#LO8.HDMA_ColorMath
+	ldx	#loword(RAM.HDMA_ColorMath)
 	stx	A1T3L
-	lda	#$7E							; table in WRAM expected
+	lda	#bankbyte(RAM.HDMA_ColorMath)				; table in WRAM expected
 	sta	A1B3
 
 
@@ -115,16 +112,9 @@ DialogueTest:
 	sta	RAM_BGMODE
 	lda	#%00000011						; 8×8 (small) / 16×16 (large) sprites, character data at $6000 (multiply address bits [0-2] by $2000)
 	sta	RAM_OBSEL
-	lda	#$50							; VRAM address for BG1 tilemap: $5000, size: 32×32 tiles
-	sta	RAM_BG1SC
-	lda	#$58							; VRAM address for BG2 tilemap: $5800, size: 32×32 tiles
-	sta	RAM_BG2SC
-	lda	#$48							; VRAM address for BG3 tilemap: $4800
-	sta	RAM_BG3SC
-	lda	#$00							; VRAM address for BG1 and BG2 character data: $0000
-	sta	RAM_BG12NBA
-	lda	#$04							; VRAM address for BG3 character data: $4000 (ignore BG4 bits)
-	sta	RAM_BG34NBA
+
+	set	"VRAM_tiles", kVRAM_BG1_Tiles, kVRAM_BG2_Tiles, kVRAM_BG3_Tiles, $00
+	set	"VRAM_tilemaps", kVRAM_BG1_Tilemap1, $00, kVRAM_BG2_Tilemap1, $00, kVRAM_BG3_Tilemap1, $00, $00, $00
 
 
 
@@ -139,8 +129,7 @@ DialogueTest:
 
 	lda	#228		;FIXME readjust				; dot number for interrupt (256 = too late, 204 = too early)
 	sta	HTIMEL
-;	stz	HTIMEL
-	lda	#224							; scanline number for interrupt (last scanline for now)
+	lda	#kTextBoxVIRQScanlineMax				; scanline number for interrupt
 	sta	VTIMEL
 
 	Accu8
@@ -149,11 +138,7 @@ DialogueTest:
 
 	set	"IRQ", VIRQ_Area					; use area IRQ handler
 
-	lda	RDNMI							; clear NMI flag
-	lda	#kNMITIMEN_Enable|kAutoJoy				; enable interrupts + auto joypad read
-	sta	LO8.NMITIMEN
-	sta	NMITIMEN
-	cli
+	jsl	ReenableNMI
 
 	PrintString	2, 2, kTextBG3, "DIALOGUE TEST"			; print some on-screen help
 	PrintString	4, 2, kTextBG3, "Dpad r/l: next/prev string"
@@ -179,12 +164,15 @@ DialogueTest:
 	PrintHexNum	<DP2.TextPointerNo+1
 	PrintHexNum	<DP2.TextPointerNo
 
+	PrintString	12, 2, kTextBG3, "TextBoxSelection = %%"
+	PrintBinary	<DP2.TextBoxSelection
+
 	lda	#kBG3Tilemap						; update BG3 tilemap
 	tsb	<DP2.DMA_Updates
 
 	wait	"frames", 1
 
-	lda	LO8.NMITIMEN
+	lda	LO8.NMITIMEN						; copy interrupt variable to register
 	sta	NMITIMEN
 
 	bit	<DP2.TextBoxStatus					; check if text box is active (MSB set)
@@ -374,46 +362,73 @@ DialogueTest:
 .INDEX 16
 
 LoadTextBoxBorderTiles:
-	ldx	#VRAM_BG2_Tiles + $80					; set VRAM address for BG2 font tiles (+ 16 empty tiles)
+	ldx	#kVRAM_BG2_Tiles + $80					; set VRAM address for BG2 font tiles (+ 16 empty tiles)
 	stx	VMADDL
-	ldx	#$0010							; upper left corner (1) (see font GFX for tile numbers, whereby 1 tile = $10 bytes)
-	jsr	WriteFontTileToVRAM
 
-	ldx	#$0020							; upper left corner (2) / upper border (1)
-	jsr	WriteFontTileToVRAM
+	dma_0	$01, SRC_FontMode5+$0010, VMDATAL, 16			; upper left corner (1) (see font GFX for tile numbers, whereby 1 tile = $10 bytes)
 
-	ldx	#$0020							; upper border (2) / upper right corner (1)
-	jsr	WriteFontTileToVRAM
-
-	ldx	#$0030							; upper right corner (2)
-	jsr	WriteFontTileToVRAM
-
-	ldx	#$0040							; left border (1)
-	jsr	WriteFontTileToVRAM
-
-	ldx	#$0200							; left border (2) / right border (1) (can be any empty tile, using space tile for now)
-	jsr	WriteFontTileToVRAM
-
-	ldx	#$0050							; right border (2)
-	jsr	WriteFontTileToVRAM
-
-	ldx	#$0060							; lower left corner (1)
-	jsr	WriteFontTileToVRAM
-
-	ldx	#$0070							; lower left corner (2) / lower border (1)
-	jsr	WriteFontTileToVRAM
-
-	ldx	#$0070							; lower border (2) / lower right corner (1)
-	jsr	WriteFontTileToVRAM
-
-	ldx	#$0080							; lower right corner (2)
-	jsr	WriteFontTileToVRAM
-
-	ldx	#$0000							; black tile (1) (for left and right screen edges)
-	jsr	WriteFontTileToVRAM
-
-	ldx	#$0000							; black tile (2)
-	jsr	WriteFontTileToVRAM
+; DMA parameters except source address (A1T0L) & data length (DAS0L) remain set, this adds up to be
+; more than 8 scanlines faster than the previous method (jsr & manually copying each tile)
+	ldx	#loword(SRC_FontMode5+$0020)				; upper left corner (2) / upper border (1)
+	stx	A1T0L
+	ldx	#16
+	stx	DAS0L
+	sta	MDMAEN
+	ldx	#loword(SRC_FontMode5+$0020)				; upper border (2) / upper right corner (1)
+	stx	A1T0L
+	ldx	#16
+	stx	DAS0L
+	sta	MDMAEN
+	ldx	#loword(SRC_FontMode5+$0030)				; upper right corner (2)
+	stx	A1T0L
+	ldx	#16
+	stx	DAS0L
+	sta	MDMAEN
+	ldx	#loword(SRC_FontMode5+$0040)				; left border (1)
+	stx	A1T0L
+	ldx	#16
+	stx	DAS0L
+	sta	MDMAEN
+	ldx	#loword(SRC_FontMode5+$0200)				; left border (2) / right border (1) (can be any empty tile, using space tile for now)
+	stx	A1T0L
+	ldx	#16
+	stx	DAS0L
+	sta	MDMAEN
+	ldx	#loword(SRC_FontMode5+$0050)				; right border (2)
+	stx	A1T0L
+	ldx	#16
+	stx	DAS0L
+	sta	MDMAEN
+	ldx	#loword(SRC_FontMode5+$0060)				; lower left corner (1)
+	stx	A1T0L
+	ldx	#16
+	stx	DAS0L
+	sta	MDMAEN
+	ldx	#loword(SRC_FontMode5+$0070)				; lower left corner (2) / lower border (1)
+	stx	A1T0L
+	ldx	#16
+	stx	DAS0L
+	sta	MDMAEN
+	ldx	#loword(SRC_FontMode5+$0070)				; lower border (2) / lower right corner (1)
+	stx	A1T0L
+	ldx	#16
+	stx	DAS0L
+	sta	MDMAEN
+	ldx	#loword(SRC_FontMode5+$0080)				; lower right corner (2)
+	stx	A1T0L
+	ldx	#16
+	stx	DAS0L
+	sta	MDMAEN
+	ldx	#loword(SRC_FontMode5+$0000)				; black tile (1) (for left and right screen edges)
+	stx	A1T0L
+	ldx	#16
+	stx	DAS0L
+	sta	MDMAEN
+	ldx	#loword(SRC_FontMode5+$0000)				; black tile (2)
+	stx	A1T0L
+	ldx	#16
+	stx	DAS0L
+	sta	MDMAEN
 
 	rts
 
@@ -424,7 +439,7 @@ InitTextBox:
 ; Prepare selection bar & set up RAM mirror regs/misc. parameters
 	ldx	#$0000
 -	lda.l	SRC_HDMA_ColMathDialogSel, x
-	sta	LO8.HDMA_ColorMath, x
+	sta	RAM.HDMA_ColorMath, x
 	inx
 	cpx	#_sizeof_SRC_HDMA_ColMathDialogSel
 	bne	-
@@ -454,9 +469,13 @@ InitTextBox:
 
 	Accu8
 
-	lda	#97							; set initial size of playfield BG to fill the whole screen (127 + 97 = 224)
+;	lda	#97							; set initial size of playfield BG to fill the whole screen (127 + 97 = 224)
+;	sta	LO8.HDMA_BG_Scroll+5
+;	stz	LO8.HDMA_BG_Scroll+10
+	lda	#224-127-kTextBoxAnimSpd				; 94 // reduce playfield by 3 scanlines when text box is about to appear (127 + 94 + 3 = 224)
 	sta	LO8.HDMA_BG_Scroll+5
-	stz	LO8.HDMA_BG_Scroll+10
+	lda	#kTextBoxAnimSpd					; 3
+	sta	LO8.HDMA_BG_Scroll+10
 
 @NextDialogue:
 ;	lda	#%00110100						; (re)activate HDMA ch. 2 (backdrop color), 4, 5 (BG scrolling regs)
@@ -467,7 +486,7 @@ InitTextBox:
 	sta	<DP2.HDMA_Channels
 	lda	#kHVIRQ							; (re)enable IRQ at H=HTIMEL and V=VTIMEL
 	tsb	LO8.NMITIMEN
-	lda	#%00000010						; set "clear text box" flag in case it was used before
+	lda	#kTextBoxStatusClear					; clear text box in case it was used before
 	sta	<DP2.TextBoxStatus
 
 	wait	"frames", 1
@@ -514,7 +533,7 @@ InitTextBox:
 
 	Accu8
 
-	lda	#%10000000						; set "text box active" flag
+	lda	#kTextBoxStatusActive					; make text box active, no other bits set
 	sta	<DP2.TextBoxStatus
 
 	rts
@@ -522,10 +541,14 @@ InitTextBox:
 
 
 ProcDialogTextBox:							; if the text box is active, then this routine must be called once per frame
+;	lda	<DP2.TextBoxVIRQ
+;	sta	VTIMEL
+;	stz	VTIMEH
+
 	bit	<DP2.TextBoxStatus					; check status
-	bvs	@Wait							; "wait" flag set or not?
+	bvs	@Wait							; "wait" flag set?
 	lda	<DP2.TextBoxStatus					; check status again
-	bit	#%00000100						; "kill text box" flag set?
+	bit	#kTextBoxStatusKill					; "kill text box" flag set?
 	bne	@KillTextBox
 
 @CurrentString:
@@ -535,7 +558,7 @@ ProcDialogTextBox:							; if the text box is active, then this routine must be 
 	cmp	#6							; string pointer variable (16-bit) must be >=6
 	bcc	+
 	lda	<DP2.TextBoxVIRQ					; before printing the string, make sure the opening animation has completed
-	cmp	#176
+	cmp	#kTextBoxVIRQScanline
 	beq	+
 	jsr	TextBoxAnimationOpen
 	bra	@TextBoxDone						; if text box wasn't fully visible, jump out
@@ -554,13 +577,13 @@ ProcDialogTextBox:							; if the text box is active, then this routine must be 
 @WaitForButtonA:							; usual wait condition: wait for player confirmation
 	bit	<DP2.Joy1New						; wait for player to press the A button (MSB)
 	bpl	@TextBoxDone
-	lda	#%01000000						; A pressed, clear "wait" flag
+	lda	#kTextBoxStatusWait					; A pressed, clear flag
 	trb	<DP2.TextBoxStatus
 	bra	@TextBoxDone
 
 @KillTextBox:
 	lda	<DP2.TextBoxVIRQ
-	cmp	#224
+	cmp	#kTextBoxVIRQScanlineMax
 	beq	+
 	jsr	TextBoxAnimationClose
 	bra	@TextBoxDone
@@ -569,7 +592,7 @@ ProcDialogTextBox:							; if the text box is active, then this routine must be 
 	trb	LO8.NMITIMEN
 	lda	#%00110100						; deactivate used HDMA channels
 	trb	<DP2.HDMA_Channels
-	lda	#%00000010						; set "clear text box" flag only
+	lda	#kTextBoxStatusClear					; set "clear text box" flag only
 	sta	<DP2.TextBoxStatus
 
 ;	Accu16
@@ -581,6 +604,11 @@ ProcDialogTextBox:							; if the text box is active, then this routine must be 
 
 ;	Accu8
 
+; potential fix for when leaving ch. 4/5 enabled all the time:
+;	lda	#224-127						; reset playfield to fill the whole screen (127 + 97 = 224)
+;	sta	LO8.HDMA_BG_Scroll+5
+;	stz	LO8.HDMA_BG_Scroll+10					; end HDMA table
+
 @TextBoxDone:
 
 	rts
@@ -590,7 +618,7 @@ ProcDialogTextBox:							; if the text box is active, then this routine must be 
 ResetTextBox:
 	Accu16
 
-	lda	#0
+	lda	#0							; FIXME use DMA instead (ch. 1?)
 	ldy	#0
 -	sta	LO8.VWF_TileBuffer, y					; clear VWF tile buffer
 	iny
@@ -603,7 +631,8 @@ ResetTextBox:
 
 	Accu8
 
-	stz	<DP2.DiagTileCounter					; reset half-tile counter
+	lda	#kTextBoxTileLine1					; reset tile counter
+	sta	<DP2.VWF_TileCounter
 	stz	<DP2.DiagTextEffect					; clear text effect bits
 	stz	<DP2.TextBoxSelection					; clear selection bits
 
@@ -618,41 +647,38 @@ TextBoxHandleSelection:
 
 
 
-; Determine text box line the selection starts on, and pre-load Accu with appropriate multiple of 8, i.e. Accu = (sel_start_line - 1) * 8, using a bit-manipulating loop
-	lda	#0							; pre-load Accu with 0, use RSH to find the line the selection starts on
+; Determine text box line the selection starts on, and pre-load Accu with appropriate multiple
+; of 8, i.e. Accu = (sel_start_line - 1) * 8, using a bit-manipulating loop
+	lda	#kTextBoxColMath1st					; load value of first possible colored scanline, use bit shifting to find the actual start value for the color bar
 	xba								; preserve inital value
 	lda	<DP2.TextBoxSelection
 -	lsr	a							; test DP2.TextBoxSelection bits from LSB onwards
 	xba								; switch back to target Accu value
 	bcs	+							; jump out as soon as first set bit found
-	adc	#8							; bit was clear, add 8 to target Accu value // carry always clear at this point, so no need for clc before the adc
+	adc	#8							; bit was clear --> no selection on this line, so add 8 to target Accu value // carry always clear at this point, so no need for clc before the adc
 	xba								; switch back to next-higher selection bit
 	bra	-							; rinse and repeat until first set bit found
 
-+	clc
-	adc	#kTextBoxColMath1st
-	sta	LO8.HDMA_ColorMath+3
-	sta	<DP2.TextBoxSelMin
-	stz	<DP2.TextBoxSelMax
-	lda	<DP2.TextBoxSelection
-	lsr	a							; count no. of selection options available (4 max.)
-	bcc	+
-	inc	<DP2.TextBoxSelMax
-+	lsr	a
-	bcc	+
-	inc	<DP2.TextBoxSelMax
-+	lsr	a
-	bcc	+
-	inc	<DP2.TextBoxSelMax
-+	lsr	a
-	bcc	+
-	inc	<DP2.TextBoxSelMax
-+	lda	<DP2.TextBoxSelMax					; DP2.TextBoxSelMax = (no. of options - 1) * 8 + DP2.TextBoxSelMin
-	dec	a
-	lsh	3
++	sta	RAM.HDMA_ColorMath+3					; save target value in RAM table
+	sta	<DP2.TextBoxSelMin					; and in variable for user control
+	lda	<DP2.TextBoxSelection					; preserve selection variable (destroyed in upcoming calculation)
+	pha
+	lda	#$00							; count no. of selection options available (max. 4, i.e. the lower nibble bits of <DP2.TextBoxSelection)
+	lsr	<DP2.TextBoxSelection					; add 'em up via carry bit
+	adc	#$00
+	lsr	<DP2.TextBoxSelection
+	adc	#$00
+	lsr	<DP2.TextBoxSelection
+	adc	#$00
+	lsr	<DP2.TextBoxSelection
+	adc	#$00							; no. of selection options in Accu now
+	dea								; (no. of options - 1) * 8 + DP2.TextBoxSelMin = DP2.TextBoxSelMax
+	shl	3
 	clc
 	adc	<DP2.TextBoxSelMin
 	sta	<DP2.TextBoxSelMax
+	pla								; restore selection variable
+	sta	<DP2.TextBoxSelection
 	lda	#%00001000						; enable HDMA channel 3 (color math)
 	tsb	<DP2.HDMA_Channels
 	bra	@JumpOut						; wait for selection bar to appear before checking buttons on next iteration
@@ -666,13 +692,13 @@ TextBoxHandleSelection:
 	and	#%00001000
 	beq	@DpadUpDone
 
-	lda	LO8.HDMA_ColorMath+3					; move selection bar 8 scanlines up
+	lda	RAM.HDMA_ColorMath+3					; move selection bar 8 scanlines up
 	sec
 	sbc	#8
 	cmp	<DP2.TextBoxSelMin
 	bcs	+
 	lda	<DP2.TextBoxSelMin
-+	sta	LO8.HDMA_ColorMath+3
++	sta	RAM.HDMA_ColorMath+3
 
 @DpadUpDone:
 
@@ -683,13 +709,13 @@ TextBoxHandleSelection:
 	and	#%00000100
 	beq	@DpadDownDone
 
-	lda	LO8.HDMA_ColorMath+3					; move selection bar 8 scanlines down
+	lda	RAM.HDMA_ColorMath+3					; move selection bar 8 scanlines down
 	clc
 	adc	#8
 	cmp	<DP2.TextBoxSelMax
 	bcc	+
 	lda	<DP2.TextBoxSelMax
-+	sta	LO8.HDMA_ColorMath+3
++	sta	RAM.HDMA_ColorMath+3
 
 @DpadDownDone:
 
@@ -698,25 +724,30 @@ TextBoxHandleSelection:
 ; Check for A button = make selection
 	lda	<DP2.Joy1New
 	bpl	@JumpOut
-	lda	LO8.HDMA_ColorMath+3					; determine selection made by checking position of selection bar
+	lda	RAM.HDMA_ColorMath+3					; determine selection made by checking position of selection bar
 	sec
 	sbc	#kTextBoxColMath1st					; subtract start of 1st line
-	rsh	3							; divide by 8 as each line is 8 pixels high
 
-	Accu16								; Accu A contains a value of $00, $01, $02, or $03 at this point
+; now in Accu	| make bit in <DP2.TextBoxSelection
+; -------------------------------------------------
+; $00 (line 1)	| $10
+; $08 (line 2)	| $20 (value << 2)
+; $10 (line 3)	| $40 (value << 2)
+; $18 (line 4)	| $80
 
-	and	#$00FF							; clear high byte
-	tax								; and use as a counter
+	bne	+
+	lda	#$10							; $00 (line 1) --> $10
+	bra	@SelectionMade
 
-	Accu8
++	cmp	#$18
+	bne	+
+	lda	#$80							; $18 (line 4) --> $80
+	bra	@SelectionMade
 
-	lda	#%00010000						; assume selection made on line 1 for now = set bit 4 (a)
--	dex								; decrement counter
-	bmi	+							; counter was zero --> don't shift bit (any more)
-	asl	a							; shift selection bit as many times as needed
-	bra	-
++	shl	2							; line 2 or 3
 
-+	sta	<DP2.TextBoxSelection					; store user selection bit in upper nibble (bits 0-3 clear)
+@SelectionMade:
+	sta	<DP2.TextBoxSelection					; store user selection (bits 0-3 clear)
 	lda	#%00001000						; disable HDMA channel 3 (color math) // FIXME for CM on playfield!!
 	trb	<DP2.HDMA_Channels
 
@@ -732,15 +763,102 @@ ProcessNextText:
 @NextStringByte:
 	lda	<DP2.DiagStringPos
 	tay								; transfer string position to Y index
-	ina								; increment to next ASCII string character
+	ina								; increment string position index
 	sta	<DP2.DiagStringPos					; (N.B.: inc a, sta dp is 1 cycle faster than inc dp)
 
 	Accu8
 
 	lda	[<DP2.DiagStringAddress], y				; read current byte of string
-	beq	@EndOfString						; NUL terminator, stop processing string
-	cmp	#$FF							; check for control code, this hex value has to match the upper byte of the two-byte entries starting from $FF00 in tbl_dialogue.tbl
-	beq	@ControlCode
+	bne	@CheckCC
+	jmp	@EndOfString						; if zero (NUL terminator), end of string reached
+
+@CheckCC:
+	cmp	#kDiagControlCode					; check for control code
+	bne	@CheckSpeakerName
+
+	ldy	<DP2.DiagStringPos
+	lda	[<DP2.DiagStringAddress], y				; read control code
+	iny								; increment string position index
+
+	Accu16
+
+	and	#$00FF							; clear high byte
+	asl	a							; use control code as jump index
+	tax
+	jmp	(ProcessDialogueCC, x)					; control codes do rts, where applicable
+
+.ACCU 8
+
+@CheckSpeakerName:
+	cmp	#kDiagSpeakerName					; check for speaker character name
+	bne	@CheckInlineName
+
+; Get speaker name from WRAM array and make it a sub-string
+	ldy	<DP2.DiagStringPos
+	lda	[<DP2.DiagStringAddress], y				; read character name byte
+	iny								; increment string position index
+	sty	LO8.DiagStringPos					; save current string position index
+
+	Accu16
+
+	and	#$00FF							; clear high byte
+	jsl	MULT10							; byte value * 10 for corresponding name in array
+
+	clc								; add array start address
+	adc	#loword(RAM.CharacterNames)
+	pha								; treat as sub-string, push address
+
+	Accu8
+
+	lda	#bankbyte(RAM.CharacterNames)
+	pha								; push sub-string bank
+	jmp	Process_CC_SUBSTR@JumpIn
+
+@CheckInlineName:
+	cmp	#kDiagInlineName					; check for in-line character name
+	bne	@NormalText
+
+; Get speaker name from WRAM array, convert to lowercase (e.g., "ALEC" --> "Alec") into TempString,
+; and make that a sub-string
+	ldy	<DP2.DiagStringPos
+	lda	[<DP2.DiagStringAddress], y				; read character name byte
+	iny								; increment string position index
+	sty	LO8.DiagStringPos					; save current string position index
+
+	Accu16
+
+	and	#$00FF							; clear high byte
+	jsl	MULT10							; byte value * 10 for corresponding name in array
+
+	clc								; add array start address
+	adc	#loword(RAM.CharacterNames)
+	sta	WMADDL							; set WRAM port for character name
+
+	Accu8
+
+	lda	#bankbyte(RAM.CharacterNames) & $01
+	sta	WMADDH
+
+	ldx	#$0000
+	lda	WMDATA							; load first character, leave it alone
+;	beq	+							; not needed, shouldn't ever be zero
+	sta	LO8.TempString, x
+	inx
+-	lda	WMDATA							; load remaining characters
+	beq	@@Done
+	clc								; add offset for lowercase
+	adc	#$20
+	sta	LO8.TempString, x
+	inx
+	bra	-
+
+@@Done:
+	sta	LO8.TempString, x					; store NUL terminator
+	ldx	#loword(LO8.TempString)					; make TempString a sub-string
+	phx								; push address
+	lda	#bankbyte(LO8.TempString)
+	pha								; push bank
+	jmp	Process_CC_SUBSTR@JumpIn
 
 @NormalText:								; process normal text
 	Accu16
@@ -754,39 +872,14 @@ ProcessNextText:
 
 +	jsr	ProcessVWFTilesBold
 
-++	Accu16
+++
+
+.ACCU 8
 
 	lda	<DP2.VWF_BufferIndex					; check if 2 buffer tiles full
 	cmp	#32							; 2 tiles × 16 = buffer index
-	bcc	@NextStringByte						; buffer not full yet, continue reading string // ADDME/ADDFEATURE @JumpOut instead for slower text speed
-
-	Accu8
-
-	lda	#%00000001						; set "VWF buffer full" bit
-	tsb	<DP2.TextBoxStatus
-
-	wait	"frames", 1
-
-	jsr	FlushVWFTileBuffer2
-
-	inc	<DP2.DiagTileCounter					; increment half-tile counter to next 16×8 tile
-	bra	@JumpOut
-
-@ControlCode:
-	Accu16
-
-	lda	<DP2.DiagStringPos					; increment string position to actual control code byte
-	tay
-	ina
-	sta	<DP2.DiagStringPos
-	lda	[<DP2.DiagStringAddress], y				; read control code
-	and	#$00FF							; clear high byte
-	asl	a							; use control code as jump index
-	tax
-
-	Accu8
-
-	jmp	(ProcessDialogueCC, x)					; control codes do rts, where applicable
+	bcs	@JumpOut
+	jmp	ProcessNextText 					; buffer not full yet, continue reading string // ADDME/ADDFEATURE @JumpOut instead for slower text speed
 
 @EndOfString:
 	bit	<DP2.DiagTextEffect					; check sub-string flag
@@ -808,11 +901,13 @@ ProcessNextText:
 	bra	@JumpOut
 
 @StringFinished:							; string completely finished
-	jsr	CleanUpVWFTileBuffer
-
-	lda	#%01000100						; set "wait" and "kill text box" status flags
+	lda	#kTextBoxStatusWait|kTextBoxStatusFlush|kTextBoxStatusKill	; set status flags
 	tsb	<DP2.TextBoxStatus
-	stz	<DP2.DiagTileCounter					; reset tile counter
+
+	wait	"frames", 1						; wait for last tile to write
+
+	lda	#kTextBoxTileLine1					; reset tile counter
+	sta	<DP2.VWF_TileCounter
 
 @JumpOut:
 
@@ -820,57 +915,11 @@ ProcessNextText:
 
 
 
-CleanUpVWFTileBuffer:
-	Accu16								; flush buffer and reset status parameters
+; Self-reminder: Order of table entries has to match lower byte of the two-byte entries starting
+; from $FF00 in tbl_dialogue.tbl. Some control codes expect argument bytes as outlined in the
+; comments below.
 
-	lda	<DP2.VWF_BitsUsed					; check two variables for a non-zero value
-	ora	<DP2.VWF_BufferIndex
-	beq	+
-
-	Accu8								; if either (bit counter <> 0) or (VWF buffer index <> 0) ...
-
-@NoCheck:
-	lda	#%00000001						; ... set "VWF buffer full" bit
-	tsb	<DP2.TextBoxStatus
-
-	wait	"frames", 1
-
-	jsr	FlushVWFTileBuffer2
-	bra	++
-
-+	Accu8
-
-++	rts
-
-
-
-FlushVWFTileBuffer2:							; cf. notes on FlushVWFTileBuffer in furryrpg_irqnmi.asm
-	Accu16
-
-	ldy	#0
--	lda	LO8.VWF_TileBuffer2, y					; copy font tiles from upper buffer to lower buffer
-	sta	LO8.VWF_TileBuffer, y
-	iny
-	iny
-	cpy	#32							; 2 tiles
-	bne	-
-
-	lda	#0
--	sta	LO8.VWF_TileBuffer, y					; clear upper buffer (sic, as Y index wasn't reset to zero)
-	iny
-	iny
-	cpy	#64
-	bne	-
-
-	stz	<DP2.VWF_BufferIndex					; reset buffer index
-
-	Accu8
-
-	rts
-
-
-
-ProcessDialogueCC:							; self-reminder: Order of table entries has to match lower byte of the two-byte entries starting from $FF00 in tbl_dialogue.tbl. Some control codes expect argument bytes as outlined in the comments below.
+ProcessDialogueCC:
 	.DW Process_CC_BG						; <BG> set text box background + no. of color gradient (8-bit, though bit 7 must always be clear; 0 = black/narration, 1 = blue/normal mood, 2 = red/enemy mood, 3 = pink/love/affection, 4 = evil mood, 5 = alert)
 	.DW Process_CC_CLR						; <CLR> clear the text box
 	.DW Process_CC_IND						; <IND> indent text
@@ -883,35 +932,57 @@ ProcessDialogueCC:							; self-reminder: Order of table entries has to match lo
 	.DW Process_CC_SUBINT16						; <SUBINT16> print a byte in decimal (0-65535) + 24-bit address
 	.DW Process_CC_SUBSTR						; <SUBSTR> print a sub-string + 24-bit address
 	.DW Process_CC_B						; <B> toggle bold text
-	.DW Process_CC_NAME						; <NAME> + some CHAR_NAME_* definition
 
 
+
+.ACCU 16
 
 Process_CC_BG:
-	Accu16
-
-	lda	<DP2.DiagStringPos					; increment string position to number of BG color gradient
-	tay
-	ina
-	sta	<DP2.DiagStringPos
-
 	Accu8
 
-	lda	[<DP2.DiagStringAddress], y				; read BG color gradient number
-	ora	#$80							; set "change text box background" bit
+	lda	[<DP2.DiagStringAddress], y				; read BG color gradient number (with "change text box background" bit set)
 	sta	<DP2.TextBoxBG
+	iny								; increment string position index
+	sty	<DP2.DiagStringPos
+
+; Pre-calculate DMA data length and destination address (for next Vblank) based on current IRQ
+; scanline (e.g. when text box has fully "scrolled in": 224 - 176 = 48; 48 * 4 = 192 bytes)
+@PrecalcParamsDMA:
+	lda	#224							; get max. number of scanlines for text box
+	sec
+	sbc	<DP2.TextBoxVIRQ
+
+	Accu16								; text box "height" not zero, continue calculation
+
+	and	#$00FF							; clear high byte
+	shl	2							; 4 bytes per scanline in table
+	sta	LO8.TextBoxBG_DMA_Len					; save as data length
+
+; Next, calculate destination address (e.g. 176 * 4 = 704 with RAM.HDMA_BG_Playfield as base)
+	lda	<DP2.TextBoxVIRQ
+	and	#$00FF							; clear high byte
+	shl	2
+	clc
+	adc	#loword(RAM.HDMA_BG_Playfield)				; add base offset
+	sta	LO8.TextBoxBG_DMA_Dest
+
+	Accu8
 
 	rts								; aka bra/jmp ProcessNextText@JumpOut
 
 
 
-Process_CC_CLR:
-	jsr	CleanUpVWFTileBuffer
+.ACCU 16
 
-	lda	#%01000010						; set "wait", "clear text box" status flags
+Process_CC_CLR:
+	sty	<DP2.DiagStringPos					; store string position index
+
+	Accu8
+
+	lda	#kTextBoxStatusWait|kTextBoxStatusFlush|kTextBoxStatusClear	; set status flags
 	tsb	<DP2.TextBoxStatus
 
-; CHECKME better wait for Vblank here?
+	wait	"frames", 1						; wait for text box status update
 
 	jsr	ResetTextBox
 
@@ -919,81 +990,76 @@ Process_CC_CLR:
 
 
 
+.ACCU 16
+
 Process_CC_IND:
-	inc	<DP2.DiagTileCounter					; skip one 16×8 tile
+	sty	<DP2.DiagStringPos					; store string position index
+
+	Accu8
+
+	inc	<DP2.VWF_TileCounter					; skip one 16×8 tile
 
 	rts
 
 
 
+.ACCU 16
+
 Process_CC_JMP:
-	iny								; increment string pointer to address of new string
-
-	Accu16
-
-	lda	[<DP2.DiagStringAddress], y				; read 16-bit address
+	lda	[<DP2.DiagStringAddress], y				; read 16-bit jump address
 	tax								; store temporarily in X (we still need to read the bank byte from [DiagStringAddress] so we can't overwrite it just yet)
 
 	Accu8
 
-	iny								; increment string pointer to bank of new string
+	iny								; increment index to bank of new string
 	iny
 	lda	[<DP2.DiagStringAddress], y				; read bank
 	sta	<DP2.DiagStringBank					; store bank
 	stx	<DP2.DiagStringAddress					; store address
-
-	stz	<DP2.DiagStringPos					; reset string position/index
+	stz	<DP2.DiagStringPos					; reset string position index
 	stz	<DP2.DiagStringPos+1
 
 	rts
 
 
 
+.ACCU 16
+
 Process_CC_NL:								; 23 16×8 tiles = 46 8×8 characters per line
 
-; First, check VWF status variables, we do this now to avoid very short strings that fit within
-; a single 16×8 tile getting overwritten because DP2.DiagTileCounter hasn't been incremented yet
-; (in order to make subsequent checks involving the counter less convoluted).
+; Caveat: Edge case "23 full 16×8 tiles written on a line + <NL> wanted" cannot easily be accounted
+; for, but would a) be very rare/stupid and b) cause visible glitching anyway ...
+	sty	<DP2.DiagStringPos					; store string position index
 
-	Accu16
-
-	lda	<DP2.VWF_BitsUsed
-	ora	<DP2.VWF_BufferIndex
-	bne	@UnfinishedVWFTile					; if either (bit counter <> 0) or (VWF buffer index <> 0), we need to clean up VWF stuff first
-
-@VWFTileFinished:							; VWF tile buffer clean and DP2.DiagTileCounter already pointing to the next tile
 	Accu8
 
-	lda	<DP2.DiagTileCounter					; check for edge cases: A string may fill a whole text box line with exactly 23 16×8 tiles, if so, jump out (text will resume on next line anyway)
-	cmp	#kTextBoxTileLine4
-	beq	@JumpOut
-	cmp	#kTextBoxTileLine3
-	beq	@JumpOut
-	cmp	#kTextBoxTileLine2
-	beq	@JumpOut
-	bra	+
+;@UnfinishedVWFTile:
+	lda	#kTextBoxStatusFlush					; force-flush VWF buffer (very short strings like "!" should still appear on current line)
+	tsb	<DP2.TextBoxStatus
 
-@UnfinishedVWFTile:
-	Accu8
+	wait	"frames", 1						; wait for last tile on current line to write
 
-	jsr	CleanUpVWFTileBuffer@NoCheck				; most common case: String is neither shorter than one 16×8 tile nor fills an exact multiple of them
+;@VWFTileFinished:							; VWF tile buffer clean and DP2.DiagTileCounter already pointing to the next tile
+	lda	<DP2.VWF_TileCounter					; check what line we're on
+	cmp	#kTextBoxTileLine4					; line 4?
+	bcs	@Done							; always stay on line 4 (might still cause a tab-like whitespace, depending on content of previous tile)
 
-+	lda	<DP2.DiagTileCounter
-	ina								; increment tile counter to next 16×8 tile
-;	cmp	#kTextBoxTileLine4					; check for current line
-;	bcs	@Done							; <NL> on line 4 requested, skip // unnecessary, as this would produce a visible glitch anyway
-	cmp	#kTextBoxTileLine3
+	cmp	#kTextBoxTileLine3					; line 3?
+	beq	@Done							; (edge case: We're already at the start of a line because a string has filled the previous line with more than 22 but less than exactly 23 16×8 tiles)
 	bcc	+
-	lda	#kTextBoxTileLine4					; line 3 (or later), go (back) to line 4
+	lda	#kTextBoxTileLine4					; yes, go to line 4
 	bra	@Done
-+	cmp	#kTextBoxTileLine2
+
++	cmp	#kTextBoxTileLine2					; line 2?
+	beq	@Done							; (edge case)
 	bcc	+
-	lda	#kTextBoxTileLine3					; line 2, go to line 3
+	lda	#kTextBoxTileLine3					; yes, go to line 3
 	bra	@Done
+
 +	lda	#kTextBoxTileLine2					; else, go to line 2
 
 @Done:
-	sta	<DP2.DiagTileCounter					; store new line counter value
+	sta	<DP2.VWF_TileCounter					; store new line counter value
 	stz	<DP2.VWF_BitsUsed					; reset VWF bit counter
 	stz	<DP2.VWF_BitsUsed+1
 
@@ -1003,15 +1069,14 @@ Process_CC_NL:								; 23 16×8 tiles = 46 8×8 characters per line
 
 
 
+.ACCU 16
+
 Process_CC_PORTRAIT:
-	iny								; increment string pointer to portrait no.
-	lda	[<DP2.DiagStringAddress], y				; read portrait no. (0-127)
-	ora	#$80							; set "change portrait" bit
-	sta	<DP2.TextBoxCharPortrait				; save to "change portrait" request variable
-
-	Accu16
-
-	inc	<DP2.DiagStringPos					; advance ASCII string position/index
+	lda	[<DP2.DiagStringAddress], y				; read portrait no. (with "change portrait" bit set)
+	sta	<DP2.TextBoxPortrait					; save to "change portrait" request variable
+	iny								; advance string position index
+	iny
+	sty	<DP2.DiagStringPos
 
 	Accu8
 
@@ -1019,8 +1084,14 @@ Process_CC_PORTRAIT:
 
 
 
+.ACCU 16
+
 Process_CC_SEL:
-	lda	<DP2.DiagTileCounter					; selection required, check current line
+	sty	<DP2.DiagStringPos					; store string position index
+
+	Accu8
+
+	lda	<DP2.VWF_TileCounter					; selection wanted, check current line
 	cmp	#kTextBoxTileLine2
 	bcs	+
 	lda	#kTextBoxSelLine1
@@ -1045,25 +1116,27 @@ Process_CC_SEL:
 
 
 
+.ACCU 16
+
 Process_CC_SUBHEX:
-	iny								; increment string pointer to address of byte to print in hex
-	lda	[<DP2.DiagStringAddress], y				; read address (low byte)
+	lda	[<DP2.DiagStringAddress], y				; read address
 	sta	<DP2.DataAddress
 	iny
-	lda	[<DP2.DiagStringAddress], y				; high byte
-	sta	<DP2.DataAddress+1
 	iny
+
+	Accu8
+
 	lda	[<DP2.DiagStringAddress], y				; bank
 	sta	<DP2.DataBank
-	iny								; advance string pointer to byte after address
-	sty	LO8.DiagStringPos					; save current string pointer
+	iny								; increment string position index
+	sty	LO8.DiagStringPos					; save current string position index
 
 
 
 ; Process actual hex byte, i.e. make it into a WRAM sub-string
 	lda	[<DP2.DataAddress]					; load byte to print in hex
 	pha
-	rsh	4							; do upper nibble first
+	shr	4							; do upper nibble first
 	ldx	#0
 
 	HexNibbleToTempString
@@ -1098,18 +1171,20 @@ Process_CC_SUBHEX:
 
 
 
+.ACCU 16
+
 Process_CC_SUBINT8:
-	iny								; increment string pointer to address of byte to print in hex
-	lda	[<DP2.DiagStringAddress], y				; read address (low byte)
+	lda	[<DP2.DiagStringAddress], y				; read address
 	sta	<DP2.DataAddress
 	iny
-	lda	[<DP2.DiagStringAddress], y				; high byte
-	sta	<DP2.DataAddress+1
 	iny
+
+	Accu8
+
 	lda	[<DP2.DiagStringAddress], y				; bank
 	sta	<DP2.DataBank
-	iny								; advance string pointer to byte after address
-	sty	LO8.DiagStringPos					; save current string pointer
+	iny								; increment string position index
+	sty	LO8.DiagStringPos					; save current string position index
 
 
 
@@ -1124,18 +1199,20 @@ Process_CC_SUBINT8:
 
 
 
+.ACCU 16
+
 Process_CC_SUBINT16:
-	iny								; increment string pointer to starting address of bytes to print as 16-bit integer
-	lda	[<DP2.DiagStringAddress], y				; read address (low byte)
+	lda	[<DP2.DiagStringAddress], y				; read address
 	sta	<DP2.DataAddress
 	iny
-	lda	[<DP2.DiagStringAddress], y				; high byte
-	sta	<DP2.DataAddress+1
 	iny
+
+	Accu8
+
 	lda	[<DP2.DiagStringAddress], y				; bank
 	sta	<DP2.DataBank
-	iny								; advance string pointer to byte after address
-	sty	LO8.DiagStringPos					; save current string pointer
+	iny								; increment string position index
+	sty	LO8.DiagStringPos					; save current string position index
 
 
 
@@ -1206,33 +1283,37 @@ Process_CC_SUBINT16:
 
 
 
+.ACCU 16
+
 Process_CC_SUBSTR:
-	iny								; increment string pointer to sub-string address
-	lda	[<DP2.DiagStringAddress], y				; read sub-string address (low byte)
-	sta	LO8.DiagSubStrAddress
+	lda	[<DP2.DiagStringAddress], y				; read and push sub-string address
+	pha
 	iny
-	lda	[<DP2.DiagStringAddress], y				; high byte
-	sta	LO8.DiagSubStrAddress+1
 	iny
-	lda	[<DP2.DiagStringAddress], y				; bank
-	sta	LO8.DiagSubStrBank
-	iny								; advance string pointer to byte after sub-string address
-	sty	LO8.DiagStringPos					; save current string pointer
-
-	Accu16
-
-	stz	<DP2.DiagStringPos					; reset string offset so it starts reading the sub-string from the beginning
-	lda	<DP2.DiagStringAddress					; save current string address
-	sta	LO8.DiagStringAddress
-	lda	LO8.DiagSubStrAddress					; load sub-string address
-	sta	<DP2.DiagStringAddress
 
 	Accu8
 
+	lda	[<DP2.DiagStringAddress], y				; same for sub-string bank
+	pha
+	iny								; increment string position index
+	sty	LO8.DiagStringPos					; save current string position index
+
+@JumpIn:
 	lda	<DP2.DiagStringBank					; save current string bank
 	sta	LO8.DiagStringBank
-	lda	LO8.DiagSubStrBank					; load sub-string bank
+	pla								; pull and store sub-string bank
 	sta	<DP2.DiagStringBank
+
+	Accu16
+
+	lda	<DP2.DiagStringAddress					; save current string address
+	sta	LO8.DiagStringAddress
+	pla								; pull and store sub-string address
+	sta	<DP2.DiagStringAddress
+	stz	<DP2.DiagStringPos					; reset string index position for sub-string
+
+	Accu8
+
 	lda	#%01000000						; set sub-string flag
 	tsb	<DP2.DiagTextEffect
 
@@ -1240,22 +1321,34 @@ Process_CC_SUBSTR:
 
 
 
+.ACCU 16
+
 Process_CC_B:
+	Accu8
+
 	lda	<DP2.DiagTextEffect
 	eor	#%10000000						; toggle "bold text" bit
 	sta	<DP2.DiagTextEffect
+	sty	<DP2.DiagStringPos					; store string position index
 
 	rts
 
 
 
-Process_CC_NAME:
-	rts
-
-
+; For the text box, we use fixed tilemaps and generate Mode 5-compatible tile data based on any
+; given text string on-the-fly in VRAM.
 
 MakeTextBoxTilemapBG1:
-	ldx	#VRAM_BG1_Tilemap3+kTextBox				; set VRAM address within new BG1 tilemap
+	ldx	#kVRAM_BG1_Tilemap3+kTextBox				; set VRAM address within new BG1 tilemap
+	stx	VMADDL
+
+	dma_0	$01, SRC_TextBoxTilemapBG1, VMDATAL, _sizeof_SRC_TextBoxTilemapBG1
+
+	rts
+
+; The above DMA just sends the raw result of below clumsy calculations to VRAM (faster for now).
+
+	ldx	#kVRAM_BG1_Tilemap3+kTextBox				; set VRAM address within new BG1 tilemap
 	stx	VMADDL
 
 	Accu16
@@ -1266,11 +1359,11 @@ MakeTextBoxTilemapBG1:
 	lda	#0|$400							; patch up first tile ($00 = blank tile), palette no. 1
 	sta	VMDATAL
 
-	lda	#VRAM_Portrait/16|$400					; get tile no. for start of portrait
+	lda	#kVRAM_Portrait/16|$400					; get tile no. for start of portrait
 -	sta	VMDATAL
 	ina
 	ina
-	cmp	#VRAM_Portrait/16+10|$400				; 5 (double) tiles done?
+	cmp	#kVRAM_Portrait/16+10|$400				; 5 (double) tiles done?
 	bne	-
 
 	ldx	#kTextBox+6
@@ -1283,11 +1376,11 @@ MakeTextBoxTilemapBG1:
 
 
 ; Line 2 of text box area
-	lda	#VRAM_Portrait/16+10|$400				; get next tile no.
+	lda	#kVRAM_Portrait/16+10|$400				; get next tile no.
 -	sta	VMDATAL
 	ina
 	ina
-	cmp	#VRAM_Portrait/16+20|$400				; 5 (double) tiles done?
+	cmp	#kVRAM_Portrait/16+20|$400				; 5 (double) tiles done?
 	bne	-
 
 	ldx	#kTextBox+32+6
@@ -1300,11 +1393,11 @@ MakeTextBoxTilemapBG1:
 
 
 ; Line 3 of text box area
-	lda	#VRAM_Portrait/16+20|$400				; get next tile no.
+	lda	#kVRAM_Portrait/16+20|$400				; get next tile no.
 -	sta	VMDATAL
 	ina
 	ina
-	cmp	#VRAM_Portrait/16+30|$400				; 5 (double) tiles done?
+	cmp	#kVRAM_Portrait/16+30|$400				; 5 (double) tiles done?
 	bne	-
 
 	ldx	#kTextBox+64+6
@@ -1317,11 +1410,11 @@ MakeTextBoxTilemapBG1:
 
 
 ; Line 4 of text box area
-	lda	#VRAM_Portrait/16+30|$400				; get next tile no.
+	lda	#kVRAM_Portrait/16+30|$400				; get next tile no.
 -	sta	VMDATAL
 	ina
 	ina
-	cmp	#VRAM_Portrait/16+40|$400				; 5 (double) tiles done?
+	cmp	#kVRAM_Portrait/16+40|$400				; 5 (double) tiles done?
 	bne	-
 
 	ldx	#kTextBox+96+6
@@ -1334,11 +1427,11 @@ MakeTextBoxTilemapBG1:
 
 
 ; Line 5 of text box area
-	lda	#VRAM_Portrait/16+40|$400				; get next tile no.
+	lda	#kVRAM_Portrait/16+40|$400				; get next tile no.
 -	sta	VMDATAL
 	ina
 	ina
-	cmp	#VRAM_Portrait/16+50|$400				; 5 (double) tiles done?
+	cmp	#kVRAM_Portrait/16+50|$400				; 5 (double) tiles done?
 	bne	-
 
 	ldx	#kTextBox+128+6
@@ -1351,11 +1444,11 @@ MakeTextBoxTilemapBG1:
 
 
 ; Line 6 of text box area
-	lda	#VRAM_Portrait/16+50|$400				; get next tile no.
+	lda	#kVRAM_Portrait/16+50|$400				; get next tile no.
 -	sta	VMDATAL
 	ina
 	ina
-	cmp	#VRAM_Portrait/16+60|$400				; 5 (double) tiles done?
+	cmp	#kVRAM_Portrait/16+60|$400				; 5 (double) tiles done?
 	bne	-
 
 	ldx	#kTextBox+160+6
@@ -1372,9 +1465,16 @@ MakeTextBoxTilemapBG1:
 
 
 MakeTextBoxTilemapBG2:
-; We use a fixed tilemap and generate Mode 5 compatible tile data based on the given text string on-the-fly in VRAM.
+	ldx	#kVRAM_BG2_Tilemap3+kTextBox				; set VRAM address within new BG2 tilemap
+	stx	VMADDL
 
-	ldx	#VRAM_BG2_Tilemap3+kTextBox				; set VRAM address within new BG2 tilemap
+	dma_0	$01, SRC_TextBoxTilemapBG2, VMDATAL, _sizeof_SRC_TextBoxTilemapBG2
+
+	rts
+
+; The above DMA just sends the raw result of below clumsy calculations to VRAM (faster for now).
+
+	ldx	#kVRAM_BG2_Tilemap3+kTextBox				; set VRAM address within new BG2 tilemap
 	stx	VMADDL
 
 	Accu16
@@ -1569,22 +1669,20 @@ MakeMode5FontBG1:							; Expects VRAM address set to BG1 tile base
 	ldx	#0
 
 @BuildFontBG1:
-	ldy	#0
--	lda.l	SRC_Font8x8, x						; first, copy font tile (font tiles sit on the "left")
+	ldy	#8							; 8 iterations = 16 bytes per tile
+-	lda.l	SRC_Font8x8, x						; copy font tile (BG1 8×8 font tiles sit on the "left side" of forced-16×8 Mode 5 tiles)
 	sta	VMDATAL
 	inx
 	inx
-	iny
-	cpy	#8							; 16 bytes (8 double bytes) per tile
+	dey
 	bne	-
 
-	ldy	#0
--	stz	VMDATAL							; next, add 3 blank tiles (1 blank tile because Mode 5 forces 16×8 tiles
-	iny								; and 2 blank tiles because BG1 is 4bpp)
-	cpy	#24							; 16 bytes (8 double bytes) per tile
+	ldy	#24							; 24 iterations = 3 blank tiles (when viewed in 2bpp mode, though in reality, BG1 is 4bpp)
+-	stz	VMDATAL
+	dey
 	bne	-
 
-	cpx	#2048							; 2 KiB font done?
+	cpx	#_sizeof_SRC_Font8x8					; 2 KiB font done?
 	bne	@BuildFontBG1
 
 	Accu8
@@ -1599,22 +1697,20 @@ MakeMode5FontBG2:							; Expects VRAM address set to BG2 tile base
 	ldx	#0
 
 @BuildFontBG2:
-	ldy	#0
--	stz	VMDATAL							; first, add 1 blank tile (Mode 5 forces 16×8 tiles,
-	iny								; no more blank tiles because BG2 is 2bpp)
-	cpy	#8							; 16 bytes (8 double bytes) per tile
+	ldy	#8							; 8 iterations = 1 blank tile (this is enough as BG2 is 2bpp anyway)
+-	stz	VMDATAL
+	dey
 	bne	-
 
-	ldy	#0
--	lda.l	SRC_Font8x8, x						; next, copy 8×8 font tile (font tiles sit on the "right")
+	ldy	#8							; 8 iterations = 16 bytes per tile
+-	lda.l	SRC_Font8x8, x						; copy font tile (BG2 8×8 font tiles sit on the "right side" of forced-16×8 Mode 5 tiles)
 	sta	VMDATAL
 	inx
 	inx
-	iny
-	cpy	#8							; 16 bytes (8 double bytes) per tile
+	dey
 	bne	-
 
-	cpx	#2048							; 2 KiB font done?
+	cpx	#_sizeof_SRC_Font8x8					; 2 KiB font done?
 	bne	@BuildFontBG2
 
 	Accu8
@@ -1627,7 +1723,7 @@ MakeMode5FontBG2:							; Expects VRAM address set to BG2 tile base
 
 ProcessVWFTiles:
 	lda	<DP2.DiagASCIIChar					; ASCII char no. --> font tile no.
-	lsh	4							; value * 16 as 1 font tile = 16 bytes
+	shl	4							; value * 16 as 1 font tile = 16 bytes
 	tax
 
 	Accu8
@@ -1684,9 +1780,9 @@ ProcessVWFTiles:
 
 .ACCU 16
 
-ProcessVWFTilesBold:
+ProcessVWFTilesBold:							; FIXME this whole mess
 	lda	<DP2.DiagASCIIChar					; ASCII char no. --> font tile no.
-	lsh	5							; value * 32 as 1 font tile = 16 bytes, and each character uses 2 tiles
+	shl	5							; value * 32 as 1 font tile = 16 bytes, and each character uses 2 tiles
 	tax
 
 	Accu8
@@ -1756,28 +1852,16 @@ ProcessVWFTilesBold:
 	bne	+
 	jmp	@VWFTilesDone2						; if entry is zero, jump out
 
-+	Accu16
-
-	lda	<DP2.VWF_BufferIndex					; we need to do a second half, check if 2 buffer tiles full first
-	rsh	4							; buffer index / 16 = tile no.
-	cmp	#2
++	lda	<DP2.VWF_BufferIndex					; second half exists, check if 2 buffer tiles full
+	cmp	#32							; 2 tiles × 16 = buffer index
 	bcc	+
 
-	Accu8
+	wait	"frames", 1						; yes, wait for first half to write
 
-	lda	#%00000001						; set "VWF buffer full" bit
-	tsb	<DP2.TextBoxStatus
-
-	wait	"frames", 1
-
-	jsr	FlushVWFTileBuffer2
-
-	inc	<DP2.DiagTileCounter
-
-+	Accu16								; finally, process right half of char graphics
++	Accu16								; process right half of char graphics
 
 	lda	<DP2.DiagASCIIChar					; ASCII char no. --> font tile no.
-	lsh	5							; value * 32 as 1 font tile = 16 bytes, and each character uses 2 tiles
+	shl	5							; value * 32 as 1 font tile = 16 bytes, and each character uses 2 tiles
 	clc								; add 16 bytes (one 8×8 tile) for right half of char graphics
 	adc	#16
 	tax
@@ -1892,25 +1976,8 @@ VWFShiftBits:
 
 
 
-WriteFontTileToVRAM:
-	Accu16
-
-	ldy	#8							; 16 bytes (8 double bytes) per tile
-
--	lda.l	SRC_FontMode5, x					; copy font tile
-	sta	VMDATAL
-	inx
-	inx
-	dey
-	bne	-
-
-	Accu8
-
-	rts
-
-
-
 ; FIXME Bug: When opening/closing the text box, the HDMA background is one frame behind gfx data
+; (timing issue, might re-implement scrollable HDMA backgrounds)
 TextBoxAnimationClose:							; closing animation (scroll text box content out vertically below the screen)
 	lda	<DP2.TextBoxVIRQ
 	clc								; increase value to create the illusion that the text box "scrolls out" below the screen
@@ -1918,6 +1985,8 @@ TextBoxAnimationClose:							; closing animation (scroll text box content out ve
 	sta	<DP2.TextBoxVIRQ					; write new scanline for IRQ to fire
 	sta	VTIMEL
 	stz	VTIMEH
+
+	jsr	Process_CC_BG@PrecalcParamsDMA
 
 	Accu16
 
@@ -1951,6 +2020,8 @@ TextBoxAnimationOpen:							; opening animation (scroll text box content in vert
 	sta	<DP2.TextBoxVIRQ
 	sta	VTIMEL
 	stz	VTIMEH
+
+	jsr	Process_CC_BG@PrecalcParamsDMA
 
 	Accu16
 
@@ -2104,7 +2175,7 @@ PrintFFormat:
 @df:
 	cmp	#'d'
 	bne	@bf
-	jsr	PrintInt16						; print 16-bit integer
+	jsl	PrintInt16						; print 16-bit integer
 
 	ply								; restore original string pointer
 	bra	PrintFLoop
@@ -2114,7 +2185,7 @@ PrintFFormat:
 	bne	@xf
 	ldy	#0
 	lda	[<DP2.DataAddress], y					; read byte to print
-	jsr	PrintInt8						; print 8-bit integer
+	jsl	PrintInt8						; print 8-bit integer
 
 	ply								; restore original string pointer
 	jmp	PrintFLoop
@@ -2124,7 +2195,7 @@ PrintFFormat:
 	bne	@defaultF
 	ldy	#0
 	lda	[<DP2.DataAddress], y					; read hex byte to print
-	jsr	PrintHex8						; print 8-bit hex integer
+	jsl	PrintHex8						; print 8-bit hex integer
 
 	ply								; restore original string pointer
 	jmp	PrintFLoop
@@ -2245,12 +2316,13 @@ FillTextBuffer:
 ; SPRITE-BASED PRINTING
 ; --------------------------------------------------------------------------------------------------
 
-; A very basic sprite-based VWF renderer by Ramsis.
+; Sprite-based "VWF" text printing by Ramsis.
 ; Caveat #1: Max. length of message(s) is 32 characters at a time.
 ; Caveat #2: No support for control characters.
 
 PrintSpriteText:
-	ldy	#0
+	ply								; pull string start address (minus one) from stack
+	iny								; make y = start of string
 	php
 
 	Accu8
@@ -2302,13 +2374,58 @@ PrintSpriteText:
 
 @PrintSpriteTextDone:
 	plp
+	phy								; push return address (-1) onto stack
+
+	rtl
+
+
+
+; NUMBER PRINTING FUNCTIONS
+; --------------------------------------------------------------------------------------------------
+
+;PrintHex8 -- Read an 8-bit value from Accu and print it in hex on the screen
+
+PrintHex8:								; assumes 8b mem, 16b index
+	pha
+	shr	4
+	jsr	PrintHexNibble
+
+	pla
+	and	#$0F
+	jsr	PrintHexNibble
+
+	rtl	
+
+PrintHexNibble:								; assumes 8b mem, 16b index
+	cmp	#$0A
+	bcs	@nletter
+	clc
+	adc	#'0'
+	ldx	LO8.Routine_FillTextBuffer
+	jsr	(FillTextBuffer, x)					; write it to the text buffer
+
+	rts
+
+@nletter:
+	clc
+	adc	#'A'-10		
+	ldx	LO8.Routine_FillTextBuffer
+	jsr	(FillTextBuffer, x)					; write it to the text buffer
 
 	rts
 
 
 
-; NUMBER PROCESSING FUNCTIONS
-; --------------------------------------------------------------------------------------------------
+;PrintInt8 -- Read an 8-bit value from Accu and print it in decimal on the screen
+
+PrintInt8:								; assumes 8b mem, 16b index
+	sta	WRDIVL
+	lda	#$00
+	sta	WRDIVH
+	PHA
+	BRA	DivLoop							; within PrintInt16
+
+
 
 ;PrintInt16 -- Read a 16-bit value in DP2.DataAddress and print it to the screen
 
@@ -2357,51 +2474,7 @@ IntPrintLoop:								; until we get to the end of the string...
 
 _EndOfInt:
 
-	RTS
-
-
-
-;PrintHex8 -- Read an 8-bit value from Accu and print it in decimal on the screen
-
-PrintInt8:								; assumes 8b mem, 16b index
-	sta	WRDIVL
-	lda	#$00
-	sta	WRDIVH
-	PHA
-	BRA	DivLoop
-
-
-
-;PrintHex8 -- Read an 8-bit value from Accu and print it in hex on the screen
-
-PrintHex8:								; assumes 8b mem, 16b index
-	pha
-	rsh	4
-	jsr	PrintHexNibble
-
-	pla
-	and	#$0F
-	jsr	PrintHexNibble
-
-	rts	
-
-PrintHexNibble:								; assumes 8b mem, 16b index
-	cmp	#$0A
-	bcs	@nletter
-	clc
-	adc	#'0'
-	ldx	LO8.Routine_FillTextBuffer
-	jsr	(FillTextBuffer, x)					; write it to the text buffer
-
-	rts
-
-@nletter:
-	clc
-	adc	#'A'-10		
-	ldx	LO8.Routine_FillTextBuffer
-	jsr	(FillTextBuffer, x)					; write it to the text buffer
-
-	rts
+	rtl
 
 
 
@@ -2410,14 +2483,14 @@ PrintHexNibble:								; assumes 8b mem, 16b index
 
 PrintSpriteHex8:
 	pha
-	rsh	4
+	shr	4
 	jsr	PrintSpriteHexNibble
 
 	pla
 	and	#$0F
 	jsr	PrintSpriteHexNibble
 
-	rts	
+	rtl
 
 
 

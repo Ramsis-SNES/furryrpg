@@ -9,7 +9,10 @@
 
 
 
-SRC_EffectTypes:							; order has to match table of effect types in variables.asm
+; EFFECT TYPE POINTERS
+; --------------------------------------------------------------------------------------------------
+
+SRC_EffectTypes:							; order has to match Effect types table in variables.inc.asm
 	.DW EffectFadeFromBlack
 	.DW EffectFadeToBlack
 
@@ -43,13 +46,13 @@ SRC_EffectTypes:							; order has to match table of effect types in variables.a
 EffectFadeFromBlack:
 	lda	<DP2.EffectSpeed
 	bmi	@Delay							; if speed value is negative, insert delay instead
-	lda	#$00							; initial screen brightness
+	lda	#kINIDISP_00						; initial screen brightness
 
 @SpeedLoop:
 	sta	RAM_INIDISP
 	ldx	<DP2.EffectSpeed					; use speed value to skip brightness values
 -	inc	a
-	cmp	#$0F							; prevent glitches due to speed values in event script that aren't divisors of 15, or completely pointless
+	cmp	#kINIDISP_15						; prevent glitches due to speed values in event script that aren't divisors of 15, or completely pointless
 	bcs	+
 	dex
 	bne	-
@@ -63,7 +66,7 @@ EffectFadeFromBlack:
 	bmi	-
 
 	xba
-	cmp	#$0F
+	cmp	#kINIDISP_15
 	bne	@SpeedLoop
 
 	bra	@Done
@@ -72,7 +75,7 @@ EffectFadeFromBlack:
 	eor	#$FF							; make speed value positive and use as delay value
 	inc	a
 	sta	<DP2.EffectSpeed
-	lda	#$00							; initial screen brightness
+	lda	#kINIDISP_00						; initial screen brightness
 
 @DelayLoop1:
 	sta	RAM_INIDISP
@@ -103,7 +106,7 @@ EffectFadeFromBlack:
 EffectFadeToBlack:
 	lda	<DP2.EffectSpeed
 	bmi	@FadeDelayToBlack					; if speed value is negative, insert delay instead
-	lda	#$0F							; initial screen brightness
+	lda	#kINIDISP_15						; initial screen brightness
 
 @SpeedLoop:
 	sta	RAM_INIDISP
@@ -130,7 +133,7 @@ EffectFadeToBlack:
 	eor	#$FF							; make speed value positive and use as delay value
 	inc	a
 	sta	<DP2.EffectSpeed
-	lda	#$0F							; initial screen brightness
+	lda	#kINIDISP_15						; initial screen brightness
 
 @DelayLoop1:
 	sta	RAM_INIDISP
@@ -171,23 +174,30 @@ EffectHSplitIn:								; WARNING, garbled sprites may occur on real SNES (1CHIP 
 	stx	A1T1L
 	lda	#:SRC_HDMA_FX_1Byte
 	sta	A1B1
-	lda	#$7E							; indirect HDMA CPU bus data address bank
+	lda	#:RAM.HDMA_FX_1Byte					; indirect HDMA CPU bus data address bank
 	sta	DASB1
 
 
 
-; Start with black screen, so zero out table
-	ldx	#0
--	stz	LO8.HDMA_FX_1Byte, x
-	inx
-	cpx	#224
+; Start with black screen (zero out table)
+	lda	#kINIDISP_00
+	xba
+	lda	#kINIDISP_00
+	sta	RAM_INIDISP
+
+	Accu16
+
+	ldx	#_sizeof_RAM.HDMA_FX_1Byte
+-	dex
+	dex
+	sta	RAM.HDMA_FX_1Byte, x					; $0000
 	bne	-
 
-	lda	#$00
-	sta	RAM_INIDISP
+	Accu8
+
 ;	jsr	SwitchToMinimalVblank
 
-	lda	#%00000010						; activate HDMA channel 1
+	lda	#kDMA_Channel1						; enable HDMA channel 1
 	tsb	<DP2.HDMA_Channels
 
 
@@ -212,11 +222,11 @@ EffectHSplitIn:								; WARNING, garbled sprites may occur on real SNES (1CHIP 
 	ldy	#0
 
 @SubLoop1:								; loop 1: go towards end of table
-	lda	LO8.HDMA_FX_1Byte, x
-	cmp	#$0F							; don't increment value if it's already reached #$0F
+	lda	RAM.HDMA_FX_1Byte, x
+	cmp	#kINIDISP_15						; don't increment value if it's already reached #$0F
 	bcs	+
 	inc	a
-	sta	LO8.HDMA_FX_1Byte, x
+	sta	RAM.HDMA_FX_1Byte, x
 +	inx
 	iny
 	cpy	<DP2.Temp+4						; max. no. of scanlines done?
@@ -227,11 +237,11 @@ EffectHSplitIn:								; WARNING, garbled sprites may occur on real SNES (1CHIP 
 
 @SubLoop2:								; loop 2: go towards start of table
 	dex
-	lda	LO8.HDMA_FX_1Byte, x
-	cmp	#$0F
+	lda	RAM.HDMA_FX_1Byte, x
+	cmp	#kINIDISP_15
 	bcs	+
 	inc	a
-	sta	LO8.HDMA_FX_1Byte, x
+	sta	RAM.HDMA_FX_1Byte, x
 +	iny
 	cpy	<DP2.Temp+4
 	bne	@SubLoop2
@@ -242,15 +252,15 @@ EffectHSplitIn:								; WARNING, garbled sprites may occur on real SNES (1CHIP 
 	inc	<DP2.Temp+4						; no, scanline counter max. += 2
 	inc	<DP2.Temp+4
 
-+	lda	LO8.HDMA_FX_1Byte					; yes, repeat a few more times until first byte of table is #$0F
-	cmp	#$0F
++	lda	RAM.HDMA_FX_1Byte					; yes, repeat a few more times until first byte of table is #$0F
+	cmp	#kINIDISP_15
 	bne	@MainLoop
 
-	lda	#$0F
+	lda	#kINIDISP_15
 	sta	RAM_INIDISP
 ;	jsr	SwitchFromPrevVblank
 
-	lda	#%00000010						; deactivate channel 1
+	lda	#kDMA_Channel1						; disable HDMA channel 1
 	trb	<DP2.HDMA_Channels
 
 	rts
@@ -268,23 +278,30 @@ EffectHSplitInWA:							; same effect as above, except we DMA two bytes to $21FF
 	stx	A1T1L
 	lda	#:SRC_HDMA_FX_2Bytes
 	sta	A1B1
-	lda	#$7E							; indirect HDMA CPU bus data address bank
+	lda	#:RAM.HDMA_FX_2Bytes					; indirect HDMA CPU bus data address bank
 	sta	DASB1
 
 
 
-; Start with black screen, so zero out table
-	ldx	#0
--	stz	LO8.HDMA_FX_2Bytes, x
-	inx
-	cpx	#448
+; Start with black screen (zero out table)
+	lda	#kINIDISP_00
+	xba
+	lda	#kINIDISP_00
+	sta	RAM_INIDISP
+
+	Accu16
+
+	ldx	#_sizeof_RAM.HDMA_FX_2Bytes
+-	dex
+	dex
+	sta	RAM.HDMA_FX_2Bytes, x					; $0000
 	bne	-
 
-	lda	#$00
-	sta	RAM_INIDISP
+	Accu8
+
 ;	jsr	SwitchToMinimalVblank
 
-	lda	#%00000010						; activate HDMA channel 1
+	lda	#kDMA_Channel1						; enable HDMA channel 1
 	tsb	<DP2.HDMA_Channels
 
 
@@ -311,12 +328,12 @@ EffectHSplitInWA:							; same effect as above, except we DMA two bytes to $21FF
 	Accu16
 
 @SubLoop1:								; loop 1: go towards end of table
-	lda	LO8.HDMA_FX_2Bytes, x
+	lda	RAM.HDMA_FX_2Bytes, x
 	cmp	#$0F0F							; don't increment value if it's already reached #$0F
 	bcs	+
 	clc
 	adc	#$0101							; add 1 to two bytes at once
-	sta	LO8.HDMA_FX_2Bytes, x
+	sta	RAM.HDMA_FX_2Bytes, x
 +	inx
 	inx
 	iny
@@ -329,12 +346,12 @@ EffectHSplitInWA:							; same effect as above, except we DMA two bytes to $21FF
 @SubLoop2:								; loop 2: go towards start of table
 	dex
 	dex
-	lda	LO8.HDMA_FX_2Bytes, x
+	lda	RAM.HDMA_FX_2Bytes, x
 	cmp	#$0F0F
 	bcs	+
 	clc
 	adc	#$0101
-	sta	LO8.HDMA_FX_2Bytes, x
+	sta	RAM.HDMA_FX_2Bytes, x
 +	iny
 	cpy	<DP2.Temp+4
 	bne	@SubLoop2
@@ -349,7 +366,7 @@ EffectHSplitInWA:							; same effect as above, except we DMA two bytes to $21FF
 
 +	Accu16
 
-	lda	LO8.HDMA_FX_2Bytes					; yes, repeat a few more times until first byte of table is #$0F
+	lda	RAM.HDMA_FX_2Bytes					; yes, repeat a few more times until first byte of table is #$0F
 	cmp	#$0F0F
 	beq	@Done
 
@@ -360,11 +377,11 @@ EffectHSplitInWA:							; same effect as above, except we DMA two bytes to $21FF
 @Done:
 	Accu8
 
-	lda	#$0F
+	lda	#kINIDISP_15
 	sta	RAM_INIDISP
 ;	jsr	SwitchFromPrevVblank
 
-	lda	#%00000010						; deactivate channel 1
+	lda	#kDMA_Channel1						; disable HDMA channel 1
 	trb	<DP2.HDMA_Channels
 
 	rts
@@ -384,24 +401,30 @@ EffectHSplitOut:							; split out from the middle of the screen // WARNING, cf.
 	stx	A1T1L
 	lda	#:SRC_HDMA_FX_1Byte
 	sta	A1B1
-	lda	#$7E							; indirect HDMA CPU bus data address bank
+	lda	#:RAM.HDMA_FX_1Byte					; indirect HDMA CPU bus data address bank
 	sta	DASB1
 
 
 
-; Start with full brightness
-	lda	#$0F
+; Start with full brightness (fill table with $0F)
+	lda	#kINIDISP_15
+	xba
+	lda	#kINIDISP_15
 	sta	RAM_INIDISP
-	ldx	#0
 
--	sta	LO8.HDMA_FX_1Byte, x
-	inx
-	cpx	#224
+	Accu16
+
+	ldx	#_sizeof_RAM.HDMA_FX_1Byte
+-	dex
+	dex
+	sta	RAM.HDMA_FX_1Byte, x					; $0F0F
 	bne	-
+
+	Accu8
 
 ;	jsr	SwitchToMinimalVblank
 
-	lda	#%00000010						; activate HDMA channel 1
+	lda	#kDMA_Channel1						; enable HDMA channel 1
 	tsb	<DP2.HDMA_Channels
 
 
@@ -426,10 +449,10 @@ EffectHSplitOut:							; split out from the middle of the screen // WARNING, cf.
 	ldy	#0
 
 @SubLoop1:								; loop 1: go towards end of table
-	lda	LO8.HDMA_FX_1Byte, x
+	lda	RAM.HDMA_FX_1Byte, x
 	beq	+							; don't decrement value if it's already reached #$00
 	dec	a
-	sta	LO8.HDMA_FX_1Byte, x
+	sta	RAM.HDMA_FX_1Byte, x
 +	inx
 	iny
 	cpy	<DP2.Temp+4						; max. no. of scanlines done?
@@ -440,10 +463,10 @@ EffectHSplitOut:							; split out from the middle of the screen // WARNING, cf.
 
 @SubLoop2:								; loop 2: go towards start of table
 	dex
-	lda	LO8.HDMA_FX_1Byte, x
+	lda	RAM.HDMA_FX_1Byte, x
 	beq	+
 	dec	a
-	sta	LO8.HDMA_FX_1Byte, x
+	sta	RAM.HDMA_FX_1Byte, x
 +	iny
 	cpy	<DP2.Temp+4
 	bne	@SubLoop2
@@ -454,12 +477,12 @@ EffectHSplitOut:							; split out from the middle of the screen // WARNING, cf.
 	inc	<DP2.Temp+4						; no, scanline counter max. += 2
 	inc	<DP2.Temp+4
 
-+	lda	LO8.HDMA_FX_1Byte					; yes, repeat a few more times until first byte of table is #$00
++	lda	RAM.HDMA_FX_1Byte					; yes, repeat a few more times until first byte of table is #$00
 	bne	@MainLoop
 
-	lda	#$80
+	lda	#kForcedBlank
 	sta	RAM_INIDISP
-	lda	#%00000010						; deactivate channel 1
+	lda	#kDMA_Channel1						; disable HDMA channel 1
 	trb	<DP2.HDMA_Channels
 
 	wait	"frames", 1						; wait for HDMA register update
@@ -481,24 +504,30 @@ EffectHSplitOutWA:							; same effect as above, but with INIDISP glitch workaro
 	stx	A1T1L
 	lda	#:SRC_HDMA_FX_2Bytes
 	sta	A1B1
-	lda	#$7E							; indirect HDMA CPU bus data address bank
+	lda	#:RAM.HDMA_FX_2Bytes					; indirect HDMA CPU bus data address bank
 	sta	DASB1
 
 
 
-; Start with full brightness
-	lda	#$0F
+; Start with full brightness (fill table with $0F)
+	lda	#kINIDISP_15
+	xba
+	lda	#kINIDISP_15
 	sta	RAM_INIDISP
-	ldx	#0
 
--	sta	LO8.HDMA_FX_2Bytes, x
-	inx
-	cpx	#448
+	Accu16
+
+	ldx	#_sizeof_RAM.HDMA_FX_2Bytes
+-	dex
+	dex
+	sta	RAM.HDMA_FX_2Bytes, x					; $0F0F
 	bne	-
+
+	Accu8
 
 ;	jsr	SwitchToMinimalVblank
 
-	lda	#%00000010						; activate HDMA channel 1
+	lda	#kDMA_Channel1						; enable HDMA channel 1
 	tsb	<DP2.HDMA_Channels
 
 
@@ -525,11 +554,11 @@ EffectHSplitOutWA:							; same effect as above, but with INIDISP glitch workaro
 	Accu16
 
 @SubLoop1:								; loop 1: go towards end of table
-	lda	LO8.HDMA_FX_2Bytes, x
+	lda	RAM.HDMA_FX_2Bytes, x
 	beq	+							; don't decrement value if it's already reached #$00
 	sec
 	sbc	#$0101							; subtract 1 from two bytes at once
-	sta	LO8.HDMA_FX_2Bytes, x
+	sta	RAM.HDMA_FX_2Bytes, x
 +	inx
 	inx
 	iny
@@ -542,11 +571,11 @@ EffectHSplitOutWA:							; same effect as above, but with INIDISP glitch workaro
 @SubLoop2:								; loop 2: go towards start of table
 	dex
 	dex
-	lda	LO8.HDMA_FX_2Bytes, x
+	lda	RAM.HDMA_FX_2Bytes, x
 	beq	+
 	sec
 	sbc	#$0101
-	sta	LO8.HDMA_FX_2Bytes, x
+	sta	RAM.HDMA_FX_2Bytes, x
 +	iny
 	cpy	<DP2.Temp+4
 	bne	@SubLoop2
@@ -561,7 +590,7 @@ EffectHSplitOutWA:							; same effect as above, but with INIDISP glitch workaro
 
 +	Accu16
 
-	lda	LO8.HDMA_FX_2Bytes					; yes, repeat a few more times until first byte of table is #$00
+	lda	RAM.HDMA_FX_2Bytes					; yes, repeat a few more times until first byte of table is #$00
 	beq	+
 
 	Accu8
@@ -570,9 +599,9 @@ EffectHSplitOutWA:							; same effect as above, but with INIDISP glitch workaro
 
 +	Accu8
 
-	lda	#$80
+	lda	#kForcedBlank
 	sta	RAM_INIDISP
-	lda	#%00000010						; deactivate channel 1
+	lda	#kDMA_Channel1						; disable HDMA channel 1
 	trb	<DP2.HDMA_Channels
 
 	wait	"frames", 1						; wait for HDMA register update
@@ -593,24 +622,30 @@ EffectHSplitOut2:							; split out towards the middle of the screen // WARNING,
 	stx	A1T1L
 	lda	#:SRC_HDMA_FX_1Byte
 	sta	A1B1
-	lda	#$7E							; indirect HDMA CPU bus data address bank
+	lda	#:RAM.HDMA_FX_1Byte					; indirect HDMA CPU bus data address bank
 	sta	DASB1
 
 
 
-; Start with full brightness
-	lda	#$0F
+; Start with full brightness (fill table with $0F)
+	lda	#kINIDISP_15
+	xba
+	lda	#kINIDISP_15
 	sta	RAM_INIDISP
-	ldx	#0
 
--	sta	LO8.HDMA_FX_1Byte, x
-	inx
-	cpx	#224
+	Accu16
+
+	ldx	#_sizeof_RAM.HDMA_FX_1Byte
+-	dex
+	dex
+	sta	RAM.HDMA_FX_1Byte, x					; $0F0F
 	bne	-
+
+	Accu8
 
 ;	jsr	SwitchToMinimalVblank
 
-	lda	#%00000010						; activate HDMA channel 1
+	lda	#kDMA_Channel1						; enable HDMA channel 1
 	tsb	<DP2.HDMA_Channels
 
 
@@ -636,10 +671,10 @@ EffectHSplitOut2:							; split out towards the middle of the screen // WARNING,
 
 @SubLoop1:
 	dex
-	lda	LO8.HDMA_FX_1Byte, x
+	lda	RAM.HDMA_FX_1Byte, x
 	beq	+							; don't decrement value if it's already reached #$00
 	dec	a
-	sta	LO8.HDMA_FX_1Byte, x
+	sta	RAM.HDMA_FX_1Byte, x
 +	iny
 	cpy	<DP2.Temp+4						; max. no. of scanlines done?
 	bne	@SubLoop1
@@ -648,10 +683,10 @@ EffectHSplitOut2:							; split out towards the middle of the screen // WARNING,
 	ldy	#0
 
 @SubLoop2:
-	lda	LO8.HDMA_FX_1Byte, x
+	lda	RAM.HDMA_FX_1Byte, x
 	beq	+
 	dec	a
-	sta	LO8.HDMA_FX_1Byte, x
+	sta	RAM.HDMA_FX_1Byte, x
 +	inx
 	iny
 	cpy	<DP2.Temp+4
@@ -663,12 +698,12 @@ EffectHSplitOut2:							; split out towards the middle of the screen // WARNING,
 	inc	<DP2.Temp+4						; no, scanline counter max. += 2
 	inc	<DP2.Temp+4
 
-+	lda	LO8.HDMA_FX_1Byte+112					; yes, repeat a few more times until the byte in the middle of the table is #$00
++	lda	RAM.HDMA_FX_1Byte+112					; yes, repeat a few more times until the byte in the middle of the table is #$00
 	bne	@MainLoop
 
-	lda	#$80
+	lda	#kForcedBlank
 	sta	RAM_INIDISP
-	lda	#%00000010						; deactivate channel 1
+	lda	#kDMA_Channel1						; disable HDMA channel 1
 	trb	<DP2.HDMA_Channels
 
 	wait	"frames", 1						; wait for HDMA register update
@@ -690,24 +725,30 @@ EffectHSplitOut2WA:							; same effect as above, but with INIDISP glitch workar
 	stx	A1T1L
 	lda	#:SRC_HDMA_FX_2Bytes
 	sta	A1B1
-	lda	#$7E							; indirect HDMA CPU bus data address bank
+	lda	#:RAM.HDMA_FX_2Bytes					; indirect HDMA CPU bus data address bank
 	sta	DASB1
 
 
 
-; Start with full brightness
-	lda	#$0F
+; Start with full brightness (fill table with $0F)
+	lda	#kINIDISP_15
+	xba
+	lda	#kINIDISP_15
 	sta	RAM_INIDISP
-	ldx	#0
 
--	sta	LO8.HDMA_FX_2Bytes, x
-	inx
-	cpx	#224
+	Accu16
+
+	ldx	#_sizeof_RAM.HDMA_FX_2Bytes
+-	dex
+	dex
+	sta	RAM.HDMA_FX_2Bytes, x					; $0F0F
 	bne	-
+
+	Accu8
 
 ;	jsr	SwitchToMinimalVblank
 
-	lda	#%00000010						; activate HDMA channel 1
+	lda	#kDMA_Channel1						; enable HDMA channel 1
 	tsb	<DP2.HDMA_Channels
 
 
@@ -736,11 +777,11 @@ EffectHSplitOut2WA:							; same effect as above, but with INIDISP glitch workar
 @SubLoop1:
 	dex
 	dex
-	lda	LO8.HDMA_FX_2Bytes, x
+	lda	RAM.HDMA_FX_2Bytes, x
 	beq	+							; don't decrement value if it's already reached #$00
 	sec
 	sbc	#$0101							; subtract 1 from two bytes at once
-	sta	LO8.HDMA_FX_2Bytes, x
+	sta	RAM.HDMA_FX_2Bytes, x
 +	iny
 	cpy	<DP2.Temp+4						; max. no. of scanlines done?
 	bne	@SubLoop1
@@ -749,11 +790,11 @@ EffectHSplitOut2WA:							; same effect as above, but with INIDISP glitch workar
 	ldy	#0
 
 @SubLoop2:
-	lda	LO8.HDMA_FX_2Bytes, x
+	lda	RAM.HDMA_FX_2Bytes, x
 	beq	+
 	sec
 	sbc	#$0101
-	sta	LO8.HDMA_FX_2Bytes, x
+	sta	RAM.HDMA_FX_2Bytes, x
 +	inx
 	inx
 	iny
@@ -770,7 +811,7 @@ EffectHSplitOut2WA:							; same effect as above, but with INIDISP glitch workar
 
 +	Accu16
 
-	lda	LO8.HDMA_FX_2Bytes+224					; yes, repeat a few more times until the byte in the middle of the table is #$00
+	lda	RAM.HDMA_FX_2Bytes+224					; yes, repeat a few more times until the byte in the middle of the table is #$00
 	beq	@Done
 
 	Accu8
@@ -780,9 +821,9 @@ EffectHSplitOut2WA:							; same effect as above, but with INIDISP glitch workar
 @Done:
 	Accu8
 
-	lda	#$80
+	lda	#kForcedBlank
 	sta	RAM_INIDISP
-	lda	#%00000010						; deactivate channel 1
+	lda	#kDMA_Channel1						; disable HDMA channel 1
 	trb	<DP2.HDMA_Channels
 
 	wait	"frames", 1						; wait for HDMA register update
@@ -807,7 +848,7 @@ EffectShutterIn:
 	stx	A1T1L
 	lda	#:SRC_HDMA_FX_2Bytes
 	sta	A1B1
-	lda	#$7E							; indirect HDMA CPU bus data address bank
+	lda	#:RAM.HDMA_FX_2Bytes					; indirect HDMA CPU bus data address bank
 	sta	DASB1
 
 
@@ -829,7 +870,7 @@ EffectShutterIn:
 
 	lda	#$7F80							; initial horizontal boundaries (lo = X1, hi = X2 --> window area is negative, i.e. all content is disabled for now)
 	ldx	#0
--	sta	LO8.HDMA_FX_2Bytes, x
+-	sta	RAM.HDMA_FX_2Bytes, x
 	inx
 	inx
 	cpx	#448
@@ -839,7 +880,7 @@ EffectShutterIn:
 
 	jsr	SwitchToMinimalVblank
 
-	lda	#%00000010						; activate HDMA channel 1
+	lda	#kDMA_Channel1						; enable HDMA channel 1
 	tsb	<DP2.HDMA_Channels
 
 	wait	"frames", 1
@@ -860,10 +901,10 @@ EffectShutterIn:
 
 	ldx	<DP2.Temp						; load current upper vertical boundary
 -	lda	<DP2.Temp+4
-	sta	LO8.HDMA_FX_2Bytes, x					; store new X1 value
+	sta	RAM.HDMA_FX_2Bytes, x					; store new X1 value
 	inx
 	lda	<DP2.Temp+5
-	sta	LO8.HDMA_FX_2Bytes, x					; store new X2 value
+	sta	RAM.HDMA_FX_2Bytes, x					; store new X2 value
 	inx
 	cpx	<DP2.Temp+2						; do this again for next scanlines until lower vertical boundary reached
 	bne	-
@@ -937,7 +978,7 @@ EffectShutterOut:
 	stx	A1T1L
 	lda	#:SRC_HDMA_FX_2Bytes
 	sta	A1B1
-	lda	#$7E							; indirect HDMA CPU bus data address bank
+	lda	#:RAM.HDMA_FX_2Bytes					; indirect HDMA CPU bus data address bank
 	sta	DASB1
 
 
@@ -947,7 +988,7 @@ EffectShutterOut:
 
 	lda	#$EE11							; initial horizontal boundaries (lo = X1, hi = X2)
 	ldx	#0
--	sta	LO8.HDMA_FX_2Bytes, x
+-	sta	RAM.HDMA_FX_2Bytes, x
 	inx
 	inx
 	cpx	#448
@@ -997,7 +1038,7 @@ EffectShutterOut:
 	dec	<DP2.Temp+5
 	bra	@Loop1
 
-+	lda	#%00000010						; activate HDMA channel 1
++	lda	#kDMA_Channel1						; enable HDMA channel 1
 	tsb	<DP2.HDMA_Channels
 
 @Loop2:
@@ -1005,28 +1046,28 @@ EffectShutterOut:
 
 	ldx	#0
 -	lda	#$80
-	sta	LO8.HDMA_FX_2Bytes, x					; above upper window boundary, store negative values (i.e., disable all content)
+	sta	RAM.HDMA_FX_2Bytes, x					; above upper window boundary, store negative values (i.e., disable all content)
 	inx
 	lda	#$7F
-	sta	LO8.HDMA_FX_2Bytes, x
+	sta	RAM.HDMA_FX_2Bytes, x
 	inx
 	cpx	<DP2.Temp
 	bne	-
 
 -	lda	<DP2.Temp+4
-	sta	LO8.HDMA_FX_2Bytes, x					; within window, store current X1 value
+	sta	RAM.HDMA_FX_2Bytes, x					; within window, store current X1 value
 	inx
 	lda	<DP2.Temp+5
-	sta	LO8.HDMA_FX_2Bytes, x					; store current X2 value
+	sta	RAM.HDMA_FX_2Bytes, x					; store current X2 value
 	inx
 	cpx	<DP2.Temp+2						; do this again for all scanlines until lower horizontal boundary reached
 	bne	-
 
 -	lda	#$80
-	sta	LO8.HDMA_FX_2Bytes, x					; below lower window boundary, store negative values (i.e., disable all content)
+	sta	RAM.HDMA_FX_2Bytes, x					; below lower window boundary, store negative values (i.e., disable all content)
 	inx
 	lda	#$7F
-	sta	LO8.HDMA_FX_2Bytes, x
+	sta	RAM.HDMA_FX_2Bytes, x
 	inx
 	cpx	#448
 	bne	-
@@ -1081,7 +1122,7 @@ EffectDiamondIn:
 	stx	A1T1L
 	lda	#:SRC_HDMA_FX_2Bytes
 	sta	A1B1
-	lda	#$7E							; indirect HDMA CPU bus data address bank
+	lda	#:RAM.HDMA_FX_2Bytes					; indirect HDMA CPU bus data address bank
 	sta	DASB1
 
 
@@ -1103,7 +1144,7 @@ EffectDiamondIn:
 
 	lda	#$7F80							; initial horizontal boundaries (caveat: lo = X1, hi = X2, i.e. window area is intentionally negative --> all content is disabled)
 	ldx	#0
--	sta	LO8.HDMA_FX_2Bytes, x
+-	sta	RAM.HDMA_FX_2Bytes, x
 	inx
 	inx
 	cpx	#448
@@ -1113,7 +1154,7 @@ EffectDiamondIn:
 
 	jsr	SwitchToMinimalVblank
 
-	lda	#%00000010						; activate HDMA channel 1
+	lda	#kDMA_Channel1						; enable HDMA channel 1
 	tsb	<DP2.HDMA_Channels
 
 	wait	"frames", 1
@@ -1130,9 +1171,13 @@ EffectDiamondIn:
 	wait	"frames", 1
 
 	ldx	<DP2.Temp
--	dec	LO8.HDMA_FX_2Bytes, x
+-	lda	RAM.HDMA_FX_2Bytes, x
+	dea
+	sta	RAM.HDMA_FX_2Bytes, x
 	inx
-	inc	LO8.HDMA_FX_2Bytes, x
+	lda	RAM.HDMA_FX_2Bytes, x
+	ina
+	sta	RAM.HDMA_FX_2Bytes, x
 	inx
 	cpx	<DP2.Temp+2
 	bne	-
@@ -1156,19 +1201,21 @@ EffectDiamondIn:
 	wait	"frames", 1
 
 	ldx	#0
--	lda	LO8.HDMA_FX_2Bytes, x
+-	lda	RAM.HDMA_FX_2Bytes, x
 	beq	+
-	dec	LO8.HDMA_FX_2Bytes, x
+	dea
+	sta	RAM.HDMA_FX_2Bytes, x
 +	inx
-	lda	LO8.HDMA_FX_2Bytes, x
+	lda	RAM.HDMA_FX_2Bytes, x
 	cmp	#$FF
 	beq	+
-	inc	LO8.HDMA_FX_2Bytes, x
+	ina
+	sta	RAM.HDMA_FX_2Bytes, x
 +	inx
 	cpx	#448
 	bne	-
 
-	lda	LO8.HDMA_FX_2Bytes
+	lda	RAM.HDMA_FX_2Bytes
 	bne	@Loop2
 
 	lda	#%00000010						; deactivate HDMA channel 1
@@ -1198,7 +1245,7 @@ EffectDiamondOut:
 	stx	A1T1L
 	lda	#:SRC_HDMA_FX_2Bytes
 	sta	A1B1
-	lda	#$7E							; indirect HDMA CPU bus data address bank
+	lda	#:RAM.HDMA_FX_2Bytes					; indirect HDMA CPU bus data address bank
 	sta	DASB1
 
 
@@ -1208,7 +1255,7 @@ EffectDiamondOut:
 
 	lda	#$FF00							; initial horizontal boundaries (caveat: lo = X1, hi = X2 --> all content is enabled for now)
 	ldx	#0
--	sta	LO8.HDMA_FX_2Bytes, x
+-	sta	RAM.HDMA_FX_2Bytes, x
 	inx
 	inx
 	cpx	#448
@@ -1237,7 +1284,7 @@ EffectDiamondOut:
 	lda	#%00011111						; enable window masking on BG1 thru BG4 and sprites
 	sta	TMW							; on mainscreen
 	sta	TSW							; and subscreen
-	lda	#%00000010						; activate HDMA channel 1
+	lda	#kDMA_Channel1						; enable HDMA channel 1
 	tsb	<DP2.HDMA_Channels
 
 
@@ -1246,29 +1293,33 @@ EffectDiamondOut:
 	wait	"frames", 1
 
 	ldx	#0
--	lda	LO8.HDMA_FX_2Bytes, x
+-	lda	RAM.HDMA_FX_2Bytes, x
 	cmp	#$80
 	beq	+
-	inc	LO8.HDMA_FX_2Bytes, x
+	ina
+	sta	RAM.HDMA_FX_2Bytes, x
 +	inx
-	lda	LO8.HDMA_FX_2Bytes, x
+	lda	RAM.HDMA_FX_2Bytes, x
 	cmp	#$7F
 	beq	+
-	dec	LO8.HDMA_FX_2Bytes, x
+	dea
+	sta	RAM.HDMA_FX_2Bytes, x
 +	inx
 	cpx	<DP2.Temp
 	bne	-
 
 	ldx	<DP2.Temp+2
--	lda	LO8.HDMA_FX_2Bytes, x
+-	lda	RAM.HDMA_FX_2Bytes, x
 	cmp	#$80
 	beq	+
-	inc	LO8.HDMA_FX_2Bytes, x
+	ina
+	sta	RAM.HDMA_FX_2Bytes, x
 +	inx
-	lda	LO8.HDMA_FX_2Bytes, x
+	lda	RAM.HDMA_FX_2Bytes, x
 	cmp	#$7F
 	beq	+
-	dec	LO8.HDMA_FX_2Bytes, x
+	dea
+	sta	RAM.HDMA_FX_2Bytes, x
 +	inx
 	cpx	#448
 	bne	-
@@ -1290,26 +1341,28 @@ EffectDiamondOut:
 	wait	"frames", 1
 
 	ldx	#0
--	lda	LO8.HDMA_FX_2Bytes, x
+-	lda	RAM.HDMA_FX_2Bytes, x
 	cmp	#$80
 	beq	+
-	inc	LO8.HDMA_FX_2Bytes, x
+	ina
+	sta	RAM.HDMA_FX_2Bytes, x
 +	inx
-	lda	LO8.HDMA_FX_2Bytes, x
+	lda	RAM.HDMA_FX_2Bytes, x
 	cmp	#$7F
 	beq	+
-	dec	LO8.HDMA_FX_2Bytes, x
+	dea
+	sta	RAM.HDMA_FX_2Bytes, x
 +	inx
 	cpx	#448
 	bne	-
 
-	lda	LO8.HDMA_FX_2Bytes+$E0
+	lda	RAM.HDMA_FX_2Bytes+$E0
 	cmp	#$7F
 	bne	@Loop2
 
 	lda	#$80							; turn screen off
 	sta	INIDISP
-	lda	#%00000010						; deactivate HDMA channel 1
+	lda	#kDMA_Channel1						; disable HDMA channel 1
 	trb	<DP2.HDMA_Channels
 	stz	W12SEL							; clear used registers
 	stz	W34SEL
@@ -1357,7 +1410,7 @@ SwitchFromPrevVblank:
 	Accu8
 
 	lda	RDNMI							; clear NMI flag
-	lda	LO8.NMITIMEN						; re-enable interrupts using shadow variable
+	lda	LO8.NMITIMEN						; re-enable interrupts
 	sta	NMITIMEN
 	cli
 

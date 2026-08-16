@@ -41,7 +41,7 @@ ProcessEventLoop:
 	wait	"frames", 1
 
 	lda	<DP2.EventControl					; check if we need to monitor joypad 1
-	and	#%00000001
+	and	#kEventControlMonitorJ1
 	beq	@Joy1Done
 
 	Accu16								; yes, check buttons
@@ -56,7 +56,7 @@ ProcessEventLoop:
 
 	Accu8
 
-	bra	@ProcessEventContinue
+	jmp	@ProcessEventContinue
 
 +	Accu8
 
@@ -131,9 +131,8 @@ ProcessEventLoop:
 	sta	<DP2.Hero1SpriteStatus
 	jsr	UpdateAreaSprites
 
-	ldx	#loword(RAM.SpriteDataArea)				; set WRAM address for area sprite data array
-	stx	WMADDL
-	stz	WMADDH
+	set	"WRAM_port", RAM.SpriteDataArea
+
 	jsr	ConvertSpriteDataToBuffer
 
 	bra	+
@@ -254,14 +253,12 @@ Process_evc_BG3_TEXT:
 
 	Accu16
 
-	lsr	a							; shift right 3 bits for final y value
-	lsr	a
-	lsr	a
+	shr	3							; shift right 3 bits for final y value
 
 	Accu8
 
 	iny
-	ora	[<DP2.EventCodeAddress], y				; OR with x position, this is fine as x is never higher than 31 = $1F, and y (unless zero) can never be lower than (1 lsh 5) = $20
+	ora	[<DP2.EventCodeAddress], y				; OR with x position, this is fine as x is never higher than 31 = $1F, and y (unless zero) can never be lower than (1 << 5) = $20
 
 	Accu16
 
@@ -412,8 +409,6 @@ Process_evc_DMA_ROM2VRAM:						; VRAM target address (16), ROM source address (1
 .ACCU 16
 
 Process_evc_DMA_ROM2WRAM:						; WRAM target address (16), WRAM target bank (8), ROM source address (16), ROM source bank (8), size (16)
-	.ACCU 16
-
 	lda	[<DP2.EventCodeAddress], y				; read WRAM target address
 	sta.l	WMADDL
 	iny
@@ -479,10 +474,18 @@ Process_evc_GSS_COMMAND:
 	sta	<DP2.GSS_command
 	iny
 	iny
-	lda	[<DP2.EventCodeAddress], y				; load parameter
+	cmp	#kGSS_GLOBAL_VOLUME
+	bne	+
+	lda	<DP2.GSS_GlobalVol					; use contents of variable as parameter
+	sta	<DP2.GSS_param
+	bra	@Done
+
++	lda	[<DP2.EventCodeAddress], y				; load parameter
 	sta	<DP2.GSS_param
 	iny
 	iny
+
+@Done:
 	sty	<DP2.EventCodePointer
 
 	Accu8
@@ -505,6 +508,7 @@ Process_evc_GSS_LOAD_TRACK:
 	Accu8
 
 	jsl	LoadTrackGSS
+	jsl	ReenableNMI
 
 	rts
 

@@ -259,10 +259,10 @@ SRC_HDMA_ColMathMainMenu:
 
 SRC_HDMA_FX_1Byte:
 	.DB 112|$80							; 112 scanlines, continuous mode flag set
-	.DW LO8.HDMA_FX_1Byte
+	.DW loword(RAM.HDMA_FX_1Byte)
 
 	.DB 112|$80
-	.DW LO8.HDMA_FX_1Byte+112
+	.DW loword(RAM.HDMA_FX_1Byte+112)
 
 	.DB 0								; end of HDMA table
 
@@ -270,10 +270,10 @@ SRC_HDMA_FX_1Byte:
 
 SRC_HDMA_FX_2Bytes:
 	.DB 112|$80							; 112 scanlines, continuous mode flag set
-	.DW LO8.HDMA_FX_2Bytes
+	.DW loword(RAM.HDMA_FX_2Bytes)
 
 	.DB 112|$80
-	.DW LO8.HDMA_FX_2Bytes+224
+	.DW loword(RAM.HDMA_FX_2Bytes+224)
 
 	.DB 0								; end of HDMA table
 
@@ -340,15 +340,15 @@ SRC_HDMA_Mode5:								; for vertical split-screen test
 
 
 
-SRC_HDMA_ResetBGScroll:
-	.DB 127								; 127 + 49 = 176 scanlines = playfield
-	.DW $0000, $00FF						; horiz. scroll = $0000, vert. scroll = $00FF (all values to be manipulated in WRAM)
+SRC_HDMA_ResetBGScroll:							; to be copied to WRAM for scanline and scrolling value manipulation
+	.DB 127								; 127 + 49 = 176 scanlines for playfield
+	.DW $0000, $00FF						; horiz. scroll = $0000, vert. scroll = $00FF
 
-	.DB 49
+	.DB kPlayfieldHeight-127					; 49
 	.DW $0000, $00FF
 
-	.DB 48
-	.DW $0000, $00CF
+	.DB kTextBoxHeight						; 48
+	.DW $0000, $00FF-(kTextBoxHeight-kTextBoxAnimSpd)		; $00D2 // text box "scrolling" animation starts at scanline 221 so we only scroll for 45 scanlines, not 48
 
 	.DB 0
 
@@ -382,10 +382,10 @@ SRC_HDMA_WorMapLayerControl:
 
 SRC_HDMA_WorMapVScroll:
 	.DB 112|$80							; 112 scanlines, continuous mode flag set
-	.DW LO8.HDMA_WorMapVScroll
+	.DW loword(RAM.HDMA_WorMapVScroll)
 
 	.DB 112|$80
-	.DW LO8.HDMA_WorMapVScroll+(112*2)
+	.DW loword(RAM.HDMA_WorMapVScroll + 224)
 
 	.DB 0								; end of HDMA table
 
@@ -527,13 +527,13 @@ SRC_HDMA_WorMapVScrollDisplacement:
 
 SRC_HDMA_ColorGradient:
 	.DB 127|$80							; 127 + 49 = 176 scanlines for playfield, continuous mode flag set
-	.DW loword(RAM.HDMA_BackgrPlayfield)
+	.DW loword(RAM.HDMA_BG_Playfield)
 
 	.DB 49|$80
-	.DW loword(RAM.HDMA_BackgrPlayfield)+(127*4)
+	.DW loword(RAM.HDMA_BG_Playfield)+(127*4)
 
 	.DB 48|$80							; 48 scanlines for textbox, continuous mode flag set
-	.DW loword(RAM.HDMA_BackgrTextBox)
+	.DW loword(RAM.HDMA_BG_TextBox)
 
 	.DB 0								; end of HDMA table
 
@@ -754,6 +754,7 @@ SRC_TextBoxGradient:
 	.DW SRC_HDMA_TextBoxGradientPink
 	.DW SRC_HDMA_TextBoxGradientEvil
 	.DW SRC_HDMA_TextBoxGradientAlert
+	.DW SRC_HDMA_TextBoxGradientGray
 
 
 
@@ -1017,6 +1018,59 @@ SRC_HDMA_TextBoxGradientAlert:
 
 
 
+SRC_HDMA_TextBoxGradientGray:
+	.DW $0000,$0000
+	.DW $0000,$0000
+	.DW $0000,$0000
+	.DW $0000,$0421
+	.DW $0000,$0842
+	.DW $0000,$0842
+	.DW $0000,$0C63
+	.DW $0000,$0C63
+	.DW $0000,$1084
+	.DW $0000,$1084
+	.DW $0000,$14A5
+	.DW $0000,$14A5
+	.DW $0000,$18C6
+	.DW $0000,$18C6
+	.DW $0000,$1CE7
+	.DW $0000,$1CE7
+	.DW $0000,$2108
+	.DW $0000,$2108
+	.DW $0000,$2529
+	.DW $0000,$2529
+	.DW $0000,$294A
+	.DW $0000,$294A
+	.DW $0000,$2D6B
+	.DW $0000,$2D6B
+	.DW $0000,$318C
+	.DW $0000,$318C
+	.DW $0000,$35AD
+	.DW $0000,$35AD
+;	.DW $0000,$35AD							; this entry removed
+	.DW $0000,$39CE							; this entry doubled up instead (looks weird otherwise)
+	.DW $0000,$39CE
+	.DW $0000,$3DEF
+	.DW $0000,$3DEF
+	.DW $0000,$4210
+	.DW $0000,$4210
+	.DW $0000,$4631
+	.DW $0000,$4631
+	.DW $0000,$4A52
+	.DW $0000,$4A52
+	.DW $0000,$4E73
+	.DW $0000,$4E73
+	.DW $0000,$4E73
+	.DW $0000,$5294
+	.DW $0000,$5294
+	.DW $0000,$5294
+	.DW $0000,$5294
+	.DW $0000,$0000
+	.DW $0000,$0000
+	.DW $0000,$0000
+
+
+
 SRC_HDMA_WorldMapSky:
 	.DW $0000,$7905
 	.DW $0000,$7905
@@ -1057,7 +1111,7 @@ SRC_HDMA_WorldMapSky:
 
 
 
-SRC_HDMA_Diamond1:							; 448 bytes, usable with LO8.HDMA_FX_2Bytes --> $2126, $2127 for a diamond-shaped window // UNUSED
+SRC_HDMA_Diamond1:							; 448 bytes, usable with RAM.HDMA_FX_2Bytes --> $2126, $2127 for a diamond-shaped window // UNUSED
 
 .DEFINE Value2126	$7F
 .DEFINE Value2127	$80

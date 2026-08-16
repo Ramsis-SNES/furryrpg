@@ -12,7 +12,7 @@
 .ACCU 8
 .INDEX 16
 
-InitSNESGSS:
+InitSNESGSS:								; expects: IRQ/NMI disabled
 
 /*	Accu16
 
@@ -26,7 +26,7 @@ InitSNESGSS:
 	sta	<DP2.SPC_DataDestAddr
 	jsl	spc_load_data						; upload driver
 
-	SNESGSS_Command kGSS_INITIALIZE, 0				; initialize sound driver for the first time
+	GSS_cmd	kGSS_INITIALIZE, #0					; initialize sound driver for the first time
 */
 
 /*	ldy	#SPC700_GSS_Driver
@@ -43,14 +43,14 @@ InitSNESGSS:
 	ldy	#SPC700_GSS_Driver
 	jsr	spc_execute
 
-	SNESGSS_Command kGSS_INITIALIZE, 0				; initialize sound driver for the first time
+	GSS_cmd	kGSS_INITIALIZE, #0					; initialize sound driver for the first time
 */
 
 	jsr	FastUploadSoundDriver					; upload driver w/ burst transfer routine
 
 ; no need to execute driver code as it jumps to it after the transfer routine
 
-	SNESGSS_Command kGSS_INITIALIZE, 0				; initialize sound driver
+	GSS_cmd	kGSS_INITIALIZE, #0					; initialize sound driver
 
 	rts
 
@@ -62,13 +62,23 @@ InitSNESGSS:
 .ACCU 8
 .INDEX 16
 
-LoadTrackGSS:								; this routine uploads GSS music data (using track no. in DP2.NextTrack) to the SPC700
+; This routine uploads GSS music data (using track no. in DP2.NextTrack) to the SPC700.
+; The program section calling this routine has to re-enable NMI/interrupts on its own as we have to
+; completely disable them here, including the NMITIMEN mirror variable (otherwise, NMI will
+; potentially get re-enabled with every jsl spc_command_asm, i.e., GSS_cmd).
+
+LoadTrackGSS:
 	jsl	DisableInterrupts
+
+	lda.l	LO8.NMITIMEN						; backup & destroy NMITIMEN mirror variable
+	sta.l	LO8.NMITIMEN2
+	lda	#kNMITIMEN_Disable
+	sta.l	LO8.NMITIMEN
 
 
 
 ; Upload pointers
-/*	SNESGSS_Command kGSS_LOAD, 0
+/*	GSS_cmd	kGSS_LOAD, #0
 
 	Accu16
 
@@ -86,7 +96,7 @@ LoadTrackGSS:								; this routine uploads GSS music data (using track no. in D
 	jsl	spc_load_data						; upload pointers
 */
 
-	SNESGSS_Command kGSS_LOAD, 0
+	GSS_cmd	kGSS_LOAD, #0
 
 	Accu16
 
@@ -115,7 +125,7 @@ LoadTrackGSS:								; this routine uploads GSS music data (using track no. in D
 
 
 ; Upload samples
-	SNESGSS_Command kGSS_LOAD, 0
+	GSS_cmd	kGSS_LOAD, #0
 
 	Accu16
 
@@ -135,7 +145,7 @@ LoadTrackGSS:								; this routine uploads GSS music data (using track no. in D
 
 
 ; Upload notes
-	SNESGSS_Command kGSS_LOAD, 0
+	GSS_cmd	kGSS_LOAD, #0
 
 	Accu16
 
@@ -154,36 +164,16 @@ LoadTrackGSS:								; this routine uploads GSS music data (using track no. in D
 	sta	<DP2.SPC_DataDestAddr
 	jsl	spc_load_data						; upload notes
 
-	SNESGSS_Command kGSS_INITIALIZE, 0				; initialize sound driver again (this is important, or else the song won't play correctly)
+	GSS_cmd	kGSS_INITIALIZE, #0					; initialize sound driver again (this is important, or else the song won't play correctly)
 
 .IFNDEF UseCustomGSSDriver
 
-	SNESGSS_Command kGSS_STEREO, 1					; original SNESGSS sound driver initializes to mono playback, so send stereo command
+	GSS_cmd	kGSS_STEREO, <DP2.GSS_Stereo				; original SNESGSS sound driver initializes to mono playback
 
 .ENDIF
 
-
-
-; Re-enable IRQ/NMI
-	lda.l	RDNMI							; clear NMI flag
-	lda.l	LO8.NMITIMEN						; re-enable interrupts
-	sta.l	NMITIMEN
-	cli
-
-	rtl
-
-
-
-PlayTrackGSS:								; this routine sets the volume and sends the play command to the GSS sound driver
-	jsl	DisableInterrupts					; reminder: this was moved here from the original SNESGSS routines as of build #00203
-
-	SNESGSS_Command kGSS_GLOBAL_VOLUME, $FF7F			; fade speed: 255, global volume: 127)
-	SNESGSS_Command kGSS_MUSIC_PLAY, 0
-
-	lda.l	RDNMI							; clear NMI flag
-	lda.l	LO8.NMITIMEN						; re-enable interrupts
-	sta.l	NMITIMEN
-	cli
+	lda.l	LO8.NMITIMEN2						; restore NMITIMEN mirror variable
+	sta.l	LO8.NMITIMEN
 
 	rtl
 
@@ -423,8 +413,8 @@ spc_load_data:
 
 .ACCU 8
 
-spc_command_asm:							; FIXME, we need to disable NMI/IRQ for this
-;	jsl	DisableInterrupts
+spc_command_asm:
+	jsl	DisableInterrupts
 
 -	SPC700_WaitA
 
@@ -461,10 +451,7 @@ spc_command_asm:							; FIXME, we need to disable NMI/IRQ for this
 
 ;+	Accu8								; LAST ADD 200
 
-;	lda.l	RDNMI							; clear NMI flag
-;	lda.l	LO8.NMITIMEN						; re-enable interrupts
-;	sta.l	NMITIMEN
-;	cli
+	jsl	ReenableNMI
 
 	rtl
 

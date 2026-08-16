@@ -19,23 +19,23 @@ LoadAreaData:
 	jsr	SpriteDataInit						; purge sprite data buffer
 
 	wai
-	jsl	DisableInterrupts
 
 .IFNDEF NOMUSIC
 
-	SNESGSS_Command kGSS_MUSIC_STOP, 0				; stop music in case it's playing
+	GSS_cmd	kGSS_MUSIC_STOP, #0					; stop music in case it's playing
 
 	stz	MSU_CONTROL						; stop MSU1 track in case it's playing
+	stz	MSU_VOLUME
 
 .ENDIF
 
+	jsl	DisableInterrupts
+
 	stz	<DP2.HDMA_Channels					; disable HDMA
 	stz	HDMAEN
-	ldx	#loword(RAM.BG3Tilemap)					; clear BG3 text
-	stx	WMADDL
-	stz	WMADDH
 
-	dma_0	$08, SRC_0000, WMDATA, 2048
+	set	"WRAM_port", RAM.BG3Tilemap				; clear BG3 text
+	dma_0	$08, SRC_0000, WMDATA, _sizeof_RAM.BG3Tilemap
 
 	lda	#$80							; increment VRAM address by 1 after writing to $2119
 	sta	VMAIN
@@ -53,50 +53,50 @@ LoadAreaData:
 	tax
 	lda.l	SRC_AreaProperties, x					; set data offset for selected area
 	tax
-	lda.l	SRC_AreaPropertyTables, x				; read area properties (16 bits of data)
+	lda.l	SRC_AreaPropertyTables, x				; read area properties (16 bits)
 	sta	<DP2.AreaProperties
 	inx
 	inx
-	lda.l	SRC_AreaPropertyTables, x				; read gfx source offset (16 bits of data)
+	lda.l	SRC_AreaPropertyTables, x				; read gfx source offset (16 bits)
 	sta	RAM_DMA_SourceOffset
 	inx
 	inx
 
 	Accu8
 
-	lda.l	SRC_AreaPropertyTables, x				; read gfx source bank (8 bits of data)
+	lda.l	SRC_AreaPropertyTables, x				; read gfx source bank (8 bits)
 	sta	RAM_DMA_SourceBank
 	inx
 
 	Accu16
 
-	lda.l	SRC_AreaPropertyTables, x				; read size of gfx (16 bits of data)
+	lda.l	SRC_AreaPropertyTables, x				; read size of gfx (16 bits)
 	sta	RAM_DMA_TransferLength
 	inx
 	inx
 	lda	#(<VMDATAL << 8) | $01					; set DMA mode & B bus register (VMDATAL)
 	sta	RAM_DMA_ModeBBusReg
-	lda	#VRAM_AreaBG1						; set VRAM address
+	lda	#kVRAM_AreaBG1						; set VRAM address
 	sta	VMADDL
 	jsl	RAM.Routines.DMA
 
 
 
 ; Load area BG1 tilemap data
-	lda.l	SRC_AreaPropertyTables, x				; read tilemap source offset (16 bits of data)
+	lda.l	SRC_AreaPropertyTables, x				; read tilemap source offset (16 bits)
 	sta	RAM_DMA_SourceOffset
 	inx
 	inx
 
 	Accu8
 
-	lda.l	SRC_AreaPropertyTables, x				; read tilemap source bank (8 bits of data)
+	lda.l	SRC_AreaPropertyTables, x				; read tilemap source bank (8 bits)
 	sta	RAM_DMA_SourceBank
 	inx
 
 	Accu16
 
-	lda.l	SRC_AreaPropertyTables, x				; read size of tilemap (16 bits of data)
+	lda.l	SRC_AreaPropertyTables, x				; read tilemap size (16 bits)
 	sta	RAM_DMA_TransferLength
 	inx
 	inx
@@ -105,70 +105,20 @@ LoadAreaData:
 
 	Accu8
 
-	ldy	#loword(RAM.ScratchSpace)				; set WRAM address to scratch space
-	sty	WMADDL
-	stz	WMADDH
+;	phx								; preserve area data pointer
+
+	set	"WRAM_port", RAM.BG1Tilemap1
+
 	jsl	RAM.Routines.DMA
 
-
-
-; Process BG1 tilemap, add tile no. offset // FIXME, add this (and palette no.) when doing GFX conversion
-	phx								; preserve area data pointer
-	ldx	#loword(RAM.ScratchSpace)				; set DP2.DataAddress to scratch space for postindexed long addressing
-	stx	<DP2.DataAddress
-	lda	#$7E
-	sta	<DP2.DataBank
-	ldx	#0
-	ldy	#0
-
--	Accu16
-
-	lda	[<DP2.DataAddress], y					; read original tilemap data (16 bit)
-	iny
-	iny
-	clc								; add offset (font, portrait)
-	adc	#(VRAM_AreaBG1 >> 4)					; 172 tiles
-
-	Accu8
-
-	sta	RAM.BG1Tilemap1, x					; store new data (low byte)
-	inx
-	xba
-	ora	#$08							; set palette #2
-	sta	RAM.BG1Tilemap1, x					; high byte
-	inx
-	cpx	#2048
-	bne	-
-
-	ldx	#0
-
--	Accu16
-
-	lda	[<DP2.DataAddress], y					; read original tilemap data (16 bit)
-	iny
-	iny
-	clc								; add offset (font, portrait)
-	adc	#(VRAM_AreaBG1 >> 4)					; 172 tiles
-
-	Accu8
-
-	sta	RAM.BG1Tilemap2, x					; store new data (low byte)
-	inx
-	xba
-	ora	#$08							; set palette #2
-	sta	RAM.BG1Tilemap2, x					; high byte
-	inx
-	cpx	#2048
-	bne	-
-
-	plx								; restore area data pointer
+;	plx								; restore area data pointer
 
 
 
-; Load area BG2 tilemap data (optional)
+; Load area BG2 tilemap data (if applicable)
 	Accu16
 
-	lda.l	SRC_AreaPropertyTables, x				; read tilemap source offset (16 bits of data)
+	lda.l	SRC_AreaPropertyTables, x				; read tilemap source offset (16 bits)
 	cmp	#$FFFF							; $FFFF = no BG2 tilemap for this area
 	bne	+
 	inx								; skip 5 bytes of unused BG2 tilemap pointers
@@ -184,7 +134,7 @@ LoadAreaData:
 
 	Accu8
 
-	lda.l	SRC_AreaPropertyTables, x				; read tilemap source bank (8 bits of data)
+	lda.l	SRC_AreaPropertyTables, x				; read tilemap source bank (8 bits)
 ;	cmp	#$FF							; never mind checking those again
 ;	beq	@BG2TilemapDone
 	sta	RAM_DMA_SourceBank
@@ -192,7 +142,7 @@ LoadAreaData:
 
 	Accu16
 
-	lda.l	SRC_AreaPropertyTables, x				; read size of tilemap (16 bits of data)
+	lda.l	SRC_AreaPropertyTables, x				; read tilemap size (16 bits)
 ;	cmp	#$FFFF
 ;	beq	@BG2TilemapDone
 	sta	RAM_DMA_TransferLength
@@ -203,63 +153,13 @@ LoadAreaData:
 
 	Accu8
 
-	ldy	#loword(RAM.ScratchSpace)				; set WRAM address to scratch space
-	sty	WMADDL
-	stz	WMADDH
+;	phx								; preserve area data pointer
+
+	set	"WRAM_port", RAM.BG2Tilemap1
+
 	jsl	RAM.Routines.DMA
 
-
-
-; Process BG2 tilemap, add tile no. offset // FIXME as with BG1 stuff
-	phx								; preserve area data pointer
-	ldx	#loword(RAM.ScratchSpace)				; set DP2.DataAddress to scratch space for postindexed long addressing
-	stx	<DP2.DataAddress
-	lda	#$7E
-	sta	<DP2.DataBank
-	ldx	#0
-	ldy	#0
-
--	Accu16
-
-	lda	[<DP2.DataAddress], y					; read original tilemap data (16 bit)
-	iny
-	iny
-	clc								; add offset (font, portrait)
-	adc	#(VRAM_AreaBG1 >> 4)					; 172 tiles
-
-	Accu8
-
-	sta	RAM.BG2Tilemap1, x					; store new data
-	inx
-	xba
-	ora	#$08							; set palette #2
-	sta	RAM.BG2Tilemap1, x
-	inx
-	cpx	#2048
-	bne	-
-
-	ldx	#0
-
--	Accu16
-
-	lda	[<DP2.DataAddress], y					; read original tilemap data (16 bit)
-	iny
-	iny
-	clc								; add offset (font, portrait)
-	adc	#(VRAM_AreaBG1 >> 4)					; 172 tiles
-
-	Accu8
-
-	sta	RAM.BG2Tilemap2, x					; store new data
-	inx
-	xba
-	ora	#$08							; set palette #2
-	sta	RAM.BG2Tilemap2, x
-	inx
-	cpx	#2048
-	bne	-
-
-	plx								; restore area data pointer
+;	plx								; restore area data pointer
 
 @BG2TilemapDone:
 
@@ -268,20 +168,20 @@ LoadAreaData:
 ; Load area palette data
 	Accu16
 
-	lda.l	SRC_AreaPropertyTables, x				; read palette source offset (16 bits of data)
+	lda.l	SRC_AreaPropertyTables, x				; read palette source offset (16 bits)
 	sta	RAM_DMA_SourceOffset
 	inx
 	inx
 
 	Accu8
 
-	lda.l	SRC_AreaPropertyTables, x				; read palette source bank (8 bits of data)
+	lda.l	SRC_AreaPropertyTables, x				; read palette source bank (8 bits)
 	sta	RAM_DMA_SourceBank
 	inx
 
 	Accu16
 
-	lda.l	SRC_AreaPropertyTables, x				; read palette size (16 bits of data)
+	lda.l	SRC_AreaPropertyTables, x				; read palette size (16 bits)
 	sta	RAM_DMA_TransferLength
 	inx
 	inx
@@ -290,7 +190,7 @@ LoadAreaData:
 
 	Accu8
 
-	lda	#CGRAM_Area						; set CGRAM address for BG1 tiles palette
+	lda	#kCGRAM_Area						; set CGRAM address for BG1 tiles palette
 	sta	CGADD
 	jsl	RAM.Routines.DMA
 
@@ -299,14 +199,14 @@ LoadAreaData:
 ; Load & set collision map address
 	Accu16
 
-	lda.l	SRC_AreaPropertyTables, x				; read meta map source offset (16 bits of data)
+	lda.l	SRC_AreaPropertyTables, x				; read meta map source offset (16 bits)
 	sta	<DP2.AreaMetaMapAddr
 	inx
 	inx
 
 	Accu8
 
-	lda.l	SRC_AreaPropertyTables, x				; read meta map source bank (8 bits of data)
+	lda.l	SRC_AreaPropertyTables, x				; read meta map source bank (8 bits)
 	sta	<DP2.AreaMetaMapAddr+2
 	inx
 
@@ -380,9 +280,9 @@ LoadAreaData:
 	sta	DMAP3
 	lda	#<COLDATA
 	sta	BBAD3
-	ldx	#LO8.HDMA_ColorMath
+	ldx	#loword(RAM.HDMA_ColorMath)
 	stx	A1T3L
-	lda	#$7E							; table in WRAM expected
+	lda	#bankbyte(RAM.HDMA_ColorMath)				; table in WRAM expected
 	sta	A1B3
 
 
@@ -434,11 +334,14 @@ LoadAreaData:
 
 
 ; Pre-load GSS music track
+	lda	<DP2.NextTrack+1
+	cmp	#$FF							; DP2.NextTrack = $FFFF --> don't load any music
+	bne	+
 	lda	<DP2.NextTrack
-	cmp	#$FF							; DP2.NextTrack = $FF --> don't load any music
+	cmp	#$FF
 	beq	@GSSLoadTrackDone
 
-	jsl	LoadTrackGSS
++	jsl	LoadTrackGSS
 
 @GSSLoadTrackDone:
 
@@ -455,9 +358,10 @@ LoadAreaData:
 
 	lda	#228		;FIXME readjust				; dot number for interrupt (256 = too late, 204 = too early)
 	sta	HTIMEL
-;	stz	HTIMEL
-	lda	#224							; scanline number for interrupt (last one for now)
+;	stz	HTIMEH
+	lda	#kTextBoxVIRQScanlineMax				; scanline number for interrupt
 	sta	VTIMEL
+;	stz	VTIMEH
 
 	Accu8
 
@@ -465,19 +369,14 @@ LoadAreaData:
 
 	set	"IRQ", VIRQ_Area
 
-	lda	RDNMI							; clear NMI flag
-	lda	#kNMITIMEN_Enable|kAutoJoy				; enable interrupts + auto joypad read
-	sta	LO8.NMITIMEN
-	sta	NMITIMEN						; FIXME, needed for EffectHSplitIn, make LO8.NMITIMEN an actual mirror variable (copied to register within some main game loop, but not on Vblank)
-	cli								; re-enable interrupts
+	jsl	ReenableNMI
 
 	lda	#%00011111						; make sure (all) BG1/2/3 tilemaps get updated
 	tsb	<DP2.DMA_Updates
 	jsr	UpdateAreaSprites					; put characters on initial positions
 
-	ldx	#loword(RAM.SpriteDataArea)				; set WRAM address for area sprite data array
-	stx	WMADDL
-	stz	WMADDH
+	set	"WRAM_port", RAM.SpriteDataArea
+
 	jsr	ConvertSpriteDataToBuffer
 
 	wait	"frames", 4						; give some time for screen refresh
@@ -532,7 +431,7 @@ ShowArea:
 ; CM EFFECT TEST 2: NIGHT W/ SPRITES, XORed palette req.
 	lda	#kForcedBlank
 	sta	INIDISP
-	lda	#CGRAM_Area						; set CGRAM address for BG1 tiles palette
+	lda	#kCGRAM_Area						; set CGRAM address for BG1 tiles palette
 	sta	CGADD
 	ldx	#0
 -	lda.l	SRC_Palette_Area001, x
@@ -600,7 +499,11 @@ ShowArea:
 	cmp	#$FF
 	beq	@GSSPlayTrackDone
 
-+	jsl	PlayTrackGSS
++	lda	#$FF
+	sta	<DP2.GSS_FadeSpeed
+
+	GSS_cmd	kGSS_GLOBAL_VOLUME, <DP2.GSS_GlobalVol
+	GSS_cmd	kGSS_MUSIC_PLAY, #0
 
 @GSSPlayTrackDone:
 
@@ -660,7 +563,7 @@ MainAreaLoop:
 
 ; Screen saver (darken screen every $1000 frames = 70-82 seconds when player is idle)
 	lda	<DP2.PlayerIdleCounter+1
-	rsh	4							; shift highest nibble of DP2.PlayerIdleCounter (16 bit) to lower nibble of Accu
+	shr	4							; shift highest nibble of DP2.PlayerIdleCounter (16 bit) to lower nibble of Accu
 	eor	#$0F							; convert to brightness level value ($00 --> $0F, $01 --> $0E ... $0F --> $00)
 	sta	RAM_INIDISP
 
@@ -988,9 +891,8 @@ MainAreaLoop:
 ; Misc. tasks, end loop
 	jsr	UpdateAreaSprites
 
-	ldx	#loword(RAM.SpriteDataArea)				; set WRAM address for area sprite data array
-	stx	WMADDL
-	stz	WMADDH
+	set	"WRAM_port", RAM.SpriteDataArea
+
 	jsr	ConvertSpriteDataToBuffer
 
 	jmp	MainAreaLoop
@@ -1262,12 +1164,13 @@ AreaJoyButtonStart:
 
 .IFNDEF NOMUSIC
 
-	SNESGSS_Command kGSS_MUSIC_STOP, 0				; stop music
+	GSS_cmd	kGSS_MUSIC_STOP, #0					; stop music
 
 	lda	<DP2.GameConfig
 	and	#kGameConfigMSU1					; check for "MSU1 present" flag
 	beq	+
 	stz	MSU_CONTROL						; stop ambient soundtrack
+	stz	MSU_VOLUME
 +
 
 .ENDIF
@@ -1355,8 +1258,8 @@ PutAreaNameIntoHUD:							; HUD "text box" position (DP2.Temp, DP2.Temp+1) and D
 	lda	#:SRC_AreaNamesENG					; assume English
 	clc								; add language constant to get the correct area name bank
 	adc	<DP2.GameLanguage
-	sta	<DP2.TextStringBank
-	sta	<DP2.DataBank
+	sta	<DP2.TextStringBank					; set bank for area name
+	sta	<DP2.DataBank						; and pointers
 
 	Accu16
 
@@ -1364,35 +1267,38 @@ PutAreaNameIntoHUD:							; HUD "text box" position (DP2.Temp, DP2.Temp+1) and D
 	and	#$00FF							; clear high byte
 	asl	a
 	tax
-	lda.l	SRC_AreaNamePointers, x					; starting address of area name pointers of a given language into DataAddress
+	lda.l	SRC_AreaNamePointers, x					; set start address of area name pointers for given language
 	sta	<DP2.DataAddress
-	lda	<DP2.AreaNamePointerNo					; use area name pointer no. ...
-;	asl	a
+	ldy	<DP2.AreaNamePointerNo					; fetch correct pointer for given language
+	lda	[<DP2.DataAddress], y
 	tay
-	lda	[<DP2.DataAddress], y					; ... to read correct pointer
-	sta	<DP2.TextStringPtr
+	stz	<DP2.TextStringPtr					; cf. PrintSpriteText macro
 
 	Accu8
 
 @PutTextIntoHUD:
-	ldy	#0							; get HUD string length
--	lda	[<DP2.TextStringPtr], y
-	beq	+							; NUL terminator reached?
-	iny								; increment input pointer
-	bra	-
-
-+	tya								; low byte is sufficient
+	lda	[<DP2.TextStringPtr], y					; get HUD string length (see ar_name macro)
 	sta	<DP2.HUD_StrLength					; save value for later scrolling
 	stz	<DP2.SpriteTextPalette					; use palette 0
-	jsr	PrintSpriteText
+	phk								; push return address bank for rtl in ar_name macro
+	pea	@PrintingDone-1						; push 16-bit return address
+	lda	<DP2.TextStringBank
+	pha								; push return address bank for rtl in PrintSpriteText routine
+	phy								; push string start address minus one (still pointing to length byte)
+	jml	PrintSpriteText						; essentially a jsl with a circuitous double rtl
 
+@PrintingDone:
+
+; FIMXE, HUD "text box" decoration is all over the place depending on string length. The proper way
+; to do it would be to write font bitplane data on top of "text box" decoration on the fly anyway
+; instead of using up so many expensive sprite slots just for the HUD.
 	lda	<DP2.HUD_StrLength
 	sta	M7A
 	stz	M7A
 	lda	#6							; HUD_StrLength × 6 (average width of font chars)
 	sta	M7B
 	lda	MPYL
-	rsh	4							; divide result by 16 for loop index as each text box frame tile is 16 px wide
+	shr	4							; divide result by 16 for loop index as each text box frame tile is 16 px wide
 	tay
 	sta	<DP2.HUD_TextBoxSize					; save value (reused later for scrolling)
 	ldx	#0
@@ -1416,6 +1322,8 @@ PutAreaNameIntoHUD:							; HUD "text box" position (DP2.Temp, DP2.Temp+1) and D
 	sta	RAM.SpriteDataArea.HUD_TextBox, x
 	inx
 	dey
+	beq	+	; temp fix for crash when having area names < 6 characters
+	bmi	+	; temp fix
 
 -	lda	<DP2.Temp						; X
 	sta	RAM.SpriteDataArea.HUD_TextBox, x
@@ -1438,7 +1346,7 @@ PutAreaNameIntoHUD:							; HUD "text box" position (DP2.Temp, DP2.Temp+1) and D
 	dey
 	bne	-
 
-	lda	<DP2.Temp						; X
++	lda	<DP2.Temp						; X
 	sta	RAM.SpriteDataArea.HUD_TextBox, x
 	clc
 	adc	#16							; X += 16

@@ -22,6 +22,14 @@ https://github.com/Ramsis-SNES/furryrpg/commits/master
 CHANGES/BUILD HISTORY
 ----------------------------------------------------------------------------------------------------
 
+Build #00576:
+- Improvements to the dialogue/text box engine (text rendering speed/efficiency, RAM character name table, new gray background gradient), more/bigger changes still to come though ...
+- Work on the SNESGSS control panel (stereo mode and volume can now be controlled, track info added)
+- More code reorganization and cleanup
+- More bugfixes
+
+
+
 Build #00558:
 - Simplify IRQ/NMI routine switching
 - Adjust sine/cosine tables, this half-breaks the Mode 7 stuff for now, but who cares (needs rewriting anyway)

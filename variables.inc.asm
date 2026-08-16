@@ -17,17 +17,15 @@
 
 ; Alias label prefixes:
 ; dstr_		= .DSTRUCT
-; k		= parameter (constant/macro argument/etc.)
+; k		= parameter (constant/macro argument/VRAM address/etc.)
 ; struct_	= .STRUCT
 
 ; RAM address label prefixes (prefixes with a dot are INSTANCEOFs):
-; CGRAM_	= CGRAM address
 ; DPx.		= Direct Page variable/array (x=2-9)
 ; LO8.		= non-Direct Page variable/array in the lowest 8K of WRAM (more specifically, within $0A00-$1FFF)
 ; RAM.		= variable/array within $7E2000-$7FFFFF
 ; RAM_		= variable within $7E2000-$7FFFFF
 ; SRAM_		= SRAM variable/array
-; VRAM_		= VRAM address
 
 ; ROM address label prefixes:
 ; SRC_		= binary data (code, data/pointer table, GFX ...)
@@ -270,9 +268,13 @@
 .DEFINE SRTC_READ	$2800						; register for reading the time
 .DEFINE SRTC_WRITE	$2801						; $0D = get time (and set index for read sequence to -1), $0E = send command (+ command byte)
 									; known command bytes: $00 = set time (and set index for write sequence to 0), $04 = reset time (and set index to -1)
+; Ultra16 registers & control bits
 .DEFINE ULTRA16_LOCK	$21C0
 .DEFINE ULTRA16_DATA	$21C1
-.DEFINE ULTRA16_SNUM	$21C2
+.DEFINE ULTRA16_SERIAL	$21C2
+.DEFINE kULTRA16_Lock	%01010101
+.DEFINE kULTRA16_Unlock	%10101010
+
 
 ; SNES joypad buttons
 .DEFINE kAllButtons	$F0F0
@@ -349,6 +351,7 @@
 .DEFINE kHIRQ		%00010000
 .DEFINE kHVIRQ		%00110000
 .DEFINE kVIRQ		%00100000
+.DEFINE kNMITIMEN_Disable	%00000000
 .DEFINE kNMITIMEN_Enable	%10000000
 
 ; SNES register bits - MDMAEN/HDMAEN
@@ -371,18 +374,67 @@
 
 
 
-; ERROR CODES
+; CONTROL CODES ETC.
 ; --------------------------------------------------------------------------------------------------
 
+; DMA updates
+.DEFINE kBG1Tilemap1	%00000001
+.DEFINE kBG1Tilemap2	%00000010
+.DEFINE kBG2Tilemap1	%00000100
+.DEFINE kBG2Tilemap2	%00001000
+.DEFINE kBG3Tilemap	%00010000
+
+; Effect delay values (signed numbers)
+.ENUMID $FF STEP -1							; negative values/decrementing .ENUMID
+.ENUMID kEffectDelay1
+.ENUMID kEffectDelay2
+.ENUMID kEffectDelay3
+.ENUMID kEffectDelay4
+.ENUMID kEffectDelay5
+.ENUMID kEffectDelay6
+.ENUMID kEffectDelay7
+.ENUMID kEffectDelay8
+.ENUMID kEffectDelay9
+.ENUMID kEffectDelay10
+.ENUMID kEffectDelay11
+.ENUMID kEffectDelay12
+
+; Effect speed values (signed numbers)
+.ENUMID 1								; positive values
+.ENUMID kEffectSpeed1
+.ENUMID kEffectSpeed2
+.ENUMID kEffectSpeed3
+.ENUMID kEffectSpeed4
+.ENUMID kEffectSpeed5
+.ENUMID kEffectSpeed6
+.ENUMID kEffectSpeed7
+.ENUMID kEffectSpeed8
+.ENUMID kEffectSpeed9
+.ENUMID kEffectSpeed10
+.ENUMID kEffectSpeed11
+.ENUMID kEffectSpeed12
+
+; Effect types
+.ENUMID 0 STEP 2							; order has to match SRC_EffectTypes table
+.ENUMID kEffectTypeFadeFromBlack
+.ENUMID kEffectTypeFadeToBlack
+.ENUMID kEffectTypeHSplitIn
+.ENUMID kEffectTypeHSplitOut
+.ENUMID kEffectTypeHSplitOut2
+.ENUMID kEffectTypeShutterIn
+.ENUMID kEffectTypeShutterOut
+.ENUMID kEffectTypeDiamondIn
+.ENUMID kEffectTypeDiamondOut
+
+; Error codes
 .ENUMID 0								; 256 possible error codes, order has to match both SRC_ErrorCode and SRC_ErrorCodeInfo tables
 .ENUMID kErrorCorruptROM
 .ENUMID kErrorSPC700
+;.ENUMID kError2
+;.ENUMID kError3
+;.ENUMID kError4
 
-
-
-; EVENT CONTROL CODES
-; --------------------------------------------------------------------------------------------------
-
+; Event control codes
 .ENUM 0									; argument(s) (8/16 bit) / effect(s) (if not self-explanatory)
 	ZERO_END			DB				; none / end event script processing
 	BG3_TEXT			DB				; y position (8), x position (8), string pointer (24) / prints a string on BG3
@@ -424,6 +476,141 @@
 	WRITE_RAM_BYTE			DB				; address (24), value (8) // write a byte to WRAM (for setting register mirror variables etc.)
 .ENDE
 
+; Event control variable bits
+.DEFINE kEventControlMonitorJ1	%00000001
+
+; Game config & state
+.DEFINE kGameConfigMSU1		%00000001
+.DEFINE kGameConfigRTC		%00000010
+.DEFINE kGameConfigU16		%00000100
+.DEFINE kGameConfigVRAM		%00001000
+
+.DEFINE kGameStateGoodROM	%00000001
+;.DEFINE kGameState1		%00000010
+;.DEFINE kGameState2		%00000100
+;.DEFINE kGameState3		%00001000
+
+; Language constants
+; These come in the form of "kLangXXX" where XXX is an ISO 639-3 language code.
+; The order of dialogue banks must be the same as the order of language constants below.
+; Self-reminder: The dialogue routine acknowledges game language differently when loading pointers
+; than do name loading routines like in area or main menu code, maybe FIXME
+.ENUMID 0
+.ENUMID kLangENG
+;.ENUMID kLangENG2							; add these if/when multiple banks per language used
+;.ENUMID kLangENG3
+.ENUMID kLangDEU
+;.ENUMID kLangDEU2
+;.ENUMID kLangDEU3
+;.ENUMID kLangXXX
+;.ENUMID kLangXXX
+;.ENUMID kLangXXX
+
+; Character portrait numbers
+.ENUMID 0 STEP 2							; order has to match SRC_CharPortrait* tables
+.ENUMID kPortrait_NONE
+.ENUMID kPortrait_GENGEN
+.ENUMID kPortrait_KIMAHRI
+
+; Dialogue string special characters, values have to match the high byte of the corresponding
+; two-byte entries in tbl_dialogue.tbl
+.ENUMID $FF STEP -1
+.ENUMID kDiagControlCode
+.ENUMID kDiagSpeakerName
+.ENUMID kDiagInlineName
+
+; SNESGSS commands
+.ENUMID 0
+.ENUMID kGSS_NONE							; no command, means the APU is ready for a new command
+.ENUMID kGSS_INITIALIZE							; initialize DSP
+.ENUMID kGSS_LOAD							; load new music data
+.ENUMID kGSS_STEREO							; change stereo sound mode (mono by default in original SNESGSS sound driver)
+.ENUMID kGSS_GLOBAL_VOLUME						; set global volume
+.ENUMID kGSS_CHANNEL_VOLUME						; set channel volume
+.ENUMID kGSS_MUSIC_PLAY							; start music
+.ENUMID kGSS_MUSIC_STOP							; stop music
+.ENUMID kGSS_MUSIC_PAUSE						; pause music
+.ENUMID kGSS_SFX_PLAY							; play sound effect
+.ENUMID kGSS_STOP_ALL_SOUNDS						; stop all sounds
+.ENUMID kGSS_STREAM_START						; start sound streaming
+.ENUMID kGSS_STREAM_STOP						; stop sound streaming
+.ENUMID kGSS_STREAM_SEND						; send a block of data if needed
+.ENUMID kGSS_FASTLOAD							; WIP
+
+; Text box backgrounds
+.ENUMID 0 STEP 2							; order has to match SRC_TextBoxGradient table
+.ENUMID kBG_Black							; narration etc.
+.ENUMID kBG_Blue							; normal dialogue
+.ENUMID kBG_Red								; "enemy" dialogue
+.ENUMID kBG_Pink							; affectionate dialogue
+.ENUMID kBG_Evil							; "strong enemy" dialogue
+.ENUMID kBG_Alert							; "watch out" type of dialogue
+.ENUMID kBG_Gray							; for flashbacks and the like
+; TODO: backgrounds for "success"/"fail" type of messages
+
+; Text box status bits
+.DEFINE kTextBoxStatusActive	%10000000
+.DEFINE kTextBoxStatusClear	%00000010
+.DEFINE kTextBoxStatusFlush	%00000001
+.DEFINE kTextBoxStatusKill	%00000100
+.DEFINE kTextBoxStatusWait	%01000000
+
+; Text buffer control
+.ENUMID 0 STEP 2							; order has to match FillTextBuffer routine table
+.ENUMID kTextBG3
+.ENUMID kTextMode5
+
+
+
+; MISC. CONSTANTS (LAYOUT AND MORE)
+; --------------------------------------------------------------------------------------------------
+
+.DEFINE kCollMarginLeft		3					; collision margin at left/right/top sprite edges
+.DEFINE kCollMarginRight	3
+.DEFINE kCollMarginTop		1					; the top margin value differs from the other two in that it acts as a protection against getting trapped when moving along upper edges horizontally
+
+.DEFINE kDebugMenu1stLine	78					; Y position of cursor sprite on first debug menu line
+
+.DEFINE kGSS_DriverOffset	$0200					; address/offset of SNESGSS driver code in sound RAM
+.DEFINE kGSS_DriverSize		2340					; size (in bytes) of SNESGSS driver code (used in .INCBINs of music data exported by either the original tracker software or a custom exporter)
+
+.DEFINE kHUD_Xpos		24					; X position (in px) of HUD text box start
+.DEFINE kHUD_Yhidden		240					; Y position of hidden HUD text box
+.DEFINE kHUD_Yvisible		20					; Y position of visible HUD text box
+
+.DEFINE kMode7SkyLines		72					; number of scanlines for sky above Mode 7 landscape
+.DEFINE kPlayfieldHeight	176					; in scanlines
+
+.DEFINE kRingMenuCenterX	128
+.DEFINE kRingMenuCenterY	112
+.DEFINE kRingMenuRadiusMin	0
+.DEFINE kRingMenuRadiusMax	60
+
+.DEFINE kTextBox		$02C0					; tilemap entry for start of whole text box area
+.DEFINE kTextBoxAnimSpd		3					; speed for text box "scrolling " animation, i.e. how many scanlines are scrolled at a time, this must be a divisor of 45 (kTextBoxVIRQScanlineMax-kTextBoxVIRQScanline) // self-reminder: number must match the number of initial black scanlines in SRC_HDMA_TextBoxGradient*, or else TextBoxAnimationClose will leave behind non-black scanlines
+.DEFINE kTextBoxColMath1st	57					; start of first line in a text box selection (actually 127 + 57 = 184, cf. SRC_HDMA_ColMathDialogSel)
+.DEFINE kTextBoxHeight		48					; in scanlines
+;.DEFINE kTextBoxInside		$02E0					; tilemap entry for inside of text box
+.DEFINE kTextBoxLine1		$02E7					; tilemap entry for start of text box line 1
+.DEFINE kTextBoxLine2		$0307					; tilemap entry for start of text box line 2
+.DEFINE kTextBoxLine3		$0327					; tilemap entry for start of text box line 3
+.DEFINE kTextBoxLine4		$0347					; tilemap entry for start of text box line 4
+;.DEFINE kTextBoxLineLength	46					; no. of characters/half-tiles per text box line
+.DEFINE kTextBoxSelLine1	%00000001				; selection on text box line 1
+.DEFINE kTextBoxSelLine2	%00000010				; selection on text box line 2
+.DEFINE kTextBoxSelLine3	%00000100				; selection on text box line 3
+.DEFINE kTextBoxSelLine4	%00001000				; selection on text box line 4
+.DEFINE kTextBoxTileLine1	kVRAM_TextBoxL1 >> 4			; tile no. at start of text box line 1 (VRAM address divided by 16)
+.DEFINE kTextBoxTileLine2	kTextBoxTileLine1 + 23			; tile no. at start of text box line 2
+.DEFINE kTextBoxTileLine3	kTextBoxTileLine2 + 23			; tile no. at start of text box line 3
+.DEFINE kTextBoxTileLine4	kTextBoxTileLine3 + 23			; tile no. at start of text box line 4
+.DEFINE kTextBoxUL		$02C6					; tilemap entry for upper left corner of text box
+.DEFINE kTextBoxVIRQScanline	224-kTextBoxHeight			; V-IRQ scanline for fully visible text box (176)
+.DEFINE kTextBoxVIRQScanlineMax	224-kTextBoxAnimSpd			; last V-IRQ scanline for text box (221)
+.DEFINE kTextBoxWidth		24					; in "full" (i.e., 16×8) hi-res tiles
+
+.DEFINE kWaitSPC700		3000					; max. no. of wait loops when communicating with the SPC700 until an error is triggered (the exact value doesn't really matter, but it sholud be reasonably high enough)
+
 
 
 ; SPRITE CONTROL TABLES
@@ -444,197 +631,48 @@
 
 
 
-; MISC. CONSTANTS
+; (NON-WRAM) MEMORY ADDRESSES
 ; --------------------------------------------------------------------------------------------------
 
-.DEFINE kTextBG3		$0000					; used as index into FillTextBuffer, order (ascending value) has to match
-.DEFINE kTextMode5		$0002					; ditto
+; CGRAM
+.DEFINE kCGRAM_Portrait		$10
+.DEFINE kCGRAM_Area		$20
+.DEFINE kCGRAM_WorldMap		$20
 
-.DEFINE kCollMarginLeft		3					; collision margin at left/right/top sprite edges
-.DEFINE kCollMarginRight	3
-.DEFINE kCollMarginTop		1					; the top margin value differs from the other two in that it acts as a protection against getting trapped when moving along upper edges horizontally
-
-.DEFINE kDebugMenu1stLine	78					; Y position of cursor sprite on first debug menu line
-
-.DEFINE kGSS_DriverOffset	$0200					; address/offset of SNESGSS driver code in sound RAM
-.DEFINE kGSS_DriverSize		2340					; size (in bytes) of SNESGSS driver code (used in .INCBINs of music data exported by either the original tracker software or a custom exporter)
-
-.DEFINE kHUD_Xpos		24					; X position (in px) of HUD text box start
-.DEFINE kHUD_Yhidden		240					; Y position of hidden HUD text box
-.DEFINE kHUD_Yvisible		20					; Y position of visible HUD text box
-
-.DEFINE kMode7SkyLines		72					; number of scanlines for sky above Mode 7 landscape
-
-.DEFINE kRingMenuCenterX	128
-.DEFINE kRingMenuCenterY	112
-.DEFINE kRingMenuRadiusMin	0
-.DEFINE kRingMenuRadiusMax	60
-
-.DEFINE kTextBox		$02C0					; tilemap entry for start of whole text box area
-.DEFINE kTextBoxAnimSpd		3					; scrolling speed for text box animation (must be a divisor of 48) // self-reminder: number must match the number of initial black scanlines in SRC_HDMA_TextBoxGradient*, or else TextBoxAnimationClose will leave behind non-black scanlines
-.DEFINE kTextBoxColMath1st	57					; start of first line in a text box selection
-;.DEFINE kTextBoxInside		$02E0					; tilemap entry for inside of text box
-.DEFINE kTextBoxLine1		$02E7					; tilemap entry for start of text box line 1
-.DEFINE kTextBoxLine2		$0307					; tilemap entry for start of text box line 2
-.DEFINE kTextBoxLine3		$0327					; tilemap entry for start of text box line 3
-.DEFINE kTextBoxLine4		$0347					; tilemap entry for start of text box line 4
-.DEFINE kTextBoxLineLength	46					; no. of characters/half-tiles per text box line
-.DEFINE kTextBoxSelLine1	%00000001				; selection on text box line 1
-.DEFINE kTextBoxSelLine2	%00000010				; selection on text box line 2
-.DEFINE kTextBoxSelLine3	%00000100				; selection on text box line 3
-.DEFINE kTextBoxSelLine4	%00001000				; selection on text box line 4
-.DEFINE kTextBoxTileLine1	0					; tile no. at start of text box line 1
-.DEFINE kTextBoxTileLine2	23					; tile no. at start of text box line 2
-.DEFINE kTextBoxTileLine3	46					; tile no. at start of text box line 3
-.DEFINE kTextBoxTileLine4	69					; tile no. at start of text box line 4
-.DEFINE kTextBoxUL		$02C6					; tilemap entry for upper left corner of text box
-.DEFINE kTextBoxWidth		24					; in "full" (i.e., 16×8) hi-res tiles
-
-.DEFINE kWaitSPC700		3000					; max. no. of wait loops when communicating with the SPC700 until an error is triggered (the exact value doesn't really matter, but it sholud be reasonably high enough)
-
-; Language constants in the form "kLangXXX" where XXX is an ISO 639-3 language code.
-; The order of dialogue banks must be the same as the order of language constants below.
-; Self-reminder: The dialogue routine acknowledges game language differently when loading pointers
-; than do name loading routines like in area or main menu code, maybe FIXME
-.ENUMID 0
-.ENUMID kLangENG
-;.ENUMID kLangENG2							; might need to add these if/when multiple banks per language are used
-;.ENUMID kLangENG3
-.ENUMID kLangDEU
-;.ENUMID kLangDEU2
-;.ENUMID kLangDEU3
-;.ENUMID kLangXXX
-;.ENUMID kLangXXX
-;.ENUMID kLangXXX
-
-; Effect types
-.ENUMID 0 STEP 2							; order has to match SRC_EffectTypes table
-.ENUMID kEffectTypeFadeFromBlack
-.ENUMID kEffectTypeFadeToBlack
-.ENUMID kEffectTypeHSplitIn
-.ENUMID kEffectTypeHSplitOut
-.ENUMID kEffectTypeHSplitOut2
-.ENUMID kEffectTypeShutterIn
-.ENUMID kEffectTypeShutterOut
-.ENUMID kEffectTypeDiamondIn
-.ENUMID kEffectTypeDiamondOut
-
-; Effect speed values (signed numbers)
-.ENUMID 1								; positive values
-.ENUMID kEffectSpeed1
-.ENUMID kEffectSpeed2
-.ENUMID kEffectSpeed3
-.ENUMID kEffectSpeed4
-.ENUMID kEffectSpeed5
-.ENUMID kEffectSpeed6
-.ENUMID kEffectSpeed7
-.ENUMID kEffectSpeed8
-.ENUMID kEffectSpeed9
-.ENUMID kEffectSpeed10
-.ENUMID kEffectSpeed11
-.ENUMID kEffectSpeed12
-
-; Effect delay values (signed numbers)
-.ENUMID $FF STEP -1							; negative values/decrementing .ENUMID
-.ENUMID kEffectDelay1
-.ENUMID kEffectDelay2
-.ENUMID kEffectDelay3
-.ENUMID kEffectDelay4
-.ENUMID kEffectDelay5
-.ENUMID kEffectDelay6
-.ENUMID kEffectDelay7
-.ENUMID kEffectDelay8
-.ENUMID kEffectDelay9
-.ENUMID kEffectDelay10
-.ENUMID kEffectDelay11
-.ENUMID kEffectDelay12
-
-; DMA updates
-.DEFINE kBG1Tilemap1	%00000001
-.DEFINE kBG1Tilemap2	%00000010
-.DEFINE kBG2Tilemap1	%00000100
-.DEFINE kBG2Tilemap2	%00001000
-.DEFINE kBG3Tilemap	%00010000
-
-; Game config & state
-.DEFINE kGameConfigMSU1	%00000001
-.DEFINE kGameConfigRTC	%00000010
-.DEFINE kGameConfigU16	%00000100
-.DEFINE kGameConfigVRAM	%00001000
-
-.DEFINE kGameStateGoodROM	%00000001
-;.DEFINE kGameState1	%00000010
-;.DEFINE kGameState2	%00000100
-;.DEFINE kGameState3	%00001000
-
-; SNESGSS commands
-.ENUMID 0
-.ENUMID kGSS_NONE							; no command, means the APU is ready for a new command
-.ENUMID kGSS_INITIALIZE							; initialize DSP
-.ENUMID kGSS_LOAD							; load new music data
-.ENUMID kGSS_STEREO							; change stereo sound mode (mono by default in original SNESGSS sound driver)
-.ENUMID kGSS_GLOBAL_VOLUME						; set global volume
-.ENUMID kGSS_CHANNEL_VOLUME						; set channel volume
-.ENUMID kGSS_MUSIC_PLAY							; start music
-.ENUMID kGSS_MUSIC_STOP							; stop music
-.ENUMID kGSS_MUSIC_PAUSE						; pause music
-.ENUMID kGSS_SFX_PLAY							; play sound effect
-.ENUMID kGSS_STOP_ALL_SOUNDS						; stop all sounds
-.ENUMID kGSS_STREAM_START						; start sound streaming
-.ENUMID kGSS_STREAM_STOP						; stop sound streaming
-.ENUMID kGSS_STREAM_SEND						; send a block of data if needed
-.ENUMID kGSS_FASTLOAD							; WIP
+; VRAM
+.DEFINE kVRAM_BG1_Tiles		$0000
+.DEFINE kVRAM_BG2_Tiles		$0000
+.DEFINE kVRAM_TextBox		$0000					; text box (BG2)
+.DEFINE kVRAM_TextBoxL1		$0100					; start of line 1 in text box (BG2)
+.DEFINE kVRAM_Portrait		$06C0					; end of text box, start of portrait (BG1, 2 KiB)
+.DEFINE kVRAM_AreaBG1		$0AC0					; area tiles for BG1
+.DEFINE kVRAM_AreaBG2		$3800					; area tiles for BG2 (might need to start at an earlier address)
+.DEFINE kVRAM_BG3_Tiles		$4000
+.DEFINE kVRAM_BG3_Tilemap1	$4800
+.DEFINE kVRAM_BG3_Tilemap2	$4C00
+.DEFINE kVRAM_BG1_Tilemap1	$5000
+.DEFINE kVRAM_BG1_Tilemap2	$5400
+.DEFINE kVRAM_BG2_Tilemap1	$5800
+.DEFINE kVRAM_BG2_Tilemap2	$5C00
+.DEFINE kVRAM_Sprites		$6000					; sprite tiles can go up to $7B5F, and also from $7C00-$7F5F (yikes FIXME, see below)
+.DEFINE kVRAM_BG1_Tilemap3	$7800					; only ((old wrong: $7B60-$7BFF)) $7AC0-$7B7F [VRAM dump: 0xF580-F6FF] used for text box
+.DEFINE kVRAM_BG2_Tilemap3	$7C00					; only ((old wrong: $7F60-$7FFF)) $7EC0-$7F7F [VRAM dump: 0xFD80-FEFF] used for text box
 
 
 
-; MISC. MEMORY ADDRESSES
-; --------------------------------------------------------------------------------------------------
-
-.DEFINE CGRAM_Portrait		$10
-.DEFINE CGRAM_Area		$20
-.DEFINE CGRAM_WorldMap		$20
-
-.DEFINE VRAM_BG1_Tiles		$0000
-.DEFINE VRAM_BG2_Tiles		$0000
-.DEFINE VRAM_TextBox		$0000					; text box (BG2)
-.DEFINE VRAM_TextBoxL1		$0100					; start of line 1 in text box (BG2)
-.DEFINE VRAM_Portrait		$06C0					; end of text box, start of portrait (BG1, 2 KiB)
-.DEFINE VRAM_AreaBG1		$0AC0					; area tiles for BG1
-.DEFINE VRAM_AreaBG2		$3800					; area tiles for BG2 (might need to start at an earlier address)
-
-.DEFINE VRAM_BG3_Tiles		$4000
-.DEFINE VRAM_BG3_Tilemap1	$4800
-.DEFINE VRAM_BG3_Tilemap2	$4C00
-
-.DEFINE VRAM_BG1_Tilemap1	$5000
-.DEFINE VRAM_BG1_Tilemap2	$5400
-.DEFINE VRAM_BG2_Tilemap1	$5800
-.DEFINE VRAM_BG2_Tilemap2	$5C00
-
-.DEFINE VRAM_Sprites		$6000					; sprite tiles can go up to $7B5F, and also from $7C00-$7F5F
-
-.DEFINE VRAM_BG1_Tilemap3	$7800					; only $7B60-$7BFF used for text box
-.DEFINE VRAM_BG2_Tilemap3	$7C00					; only $7F60-$7FFF used for text box
-
-
-
-; WRAM MEMORY MAP
+; WRAM MEMORY MAP PT. 1: DIRECT PAGES
 ; --------------------------------------------------------------------------------------------------
 
 ; $0000-$01FF: Reserved for stack (for now)
-; $0200-$09FF: 8 Direct Pages, only the first one is used as of now
-; $0A00-$1FFF: various variables
-
-; $7E2000-...: various variables
-; $7F0000-...: unused as of now
-
-
-
-; WRAM .STRUCTs (in ascending order)
+; $0200-$09FF: 8 Direct Pages, only the first one is used as of now (CHANGEME, cf. notes)
 
 ; Self-reminder: If/when the Direct Page register is set to something other than $0000, (at least)
 ; 16-bit operand hints must be used when addressing P00/struct_RAM_0000_00FF, or else WLA DX will
 ; default to 8-bit addressing here (Direct Page address space, cf. UnusedCode@Accumulator)!
+
+; Also, for DPs, we *do* need the respective high byte in specific cases (e.g. for the "set" macro
+; or for conveniently setting data source addresses within a DP), so we need to address all DPx
+; variables with an 8-bit operand hint, like "lda <DP2.Temp" or "lda DP2.Temp.#b".
 
 .STRUCT struct_RAM_0000_00FF SIZE 256
 	Test				dsb 4
@@ -671,7 +709,6 @@
 	DiagStringBank			db				; 8-bit bank no. of dialogue string
 	DiagStringPos			dw				; holds current dialogue string position (= index to current character)
 	DiagTextEffect			db				; bsrrrrrr [b = toggle bold font, s = sub-string active, r = reserved]
-	DiagTileCounter			db				; holds no. of current 16×8 dialogue VWF tile (max. 4 * 23 = 92), to be converted to a VRAM address offset during Vblank
 	DMA_Updates			dw				; rrrrrrrrrrr32211 [123 = BG no. that needs to have its tilemap(s) updated on next Vblank, r = reserved. The lower bit of each BG represents the first half of a 64×32/32×64 tilemap, the higher one represents the second half.]
 	EffectSpeed			dw
 	ErrorCode			db
@@ -692,8 +729,9 @@
 	GameTimeDay			db				; or rather dw?
 	GSS_command			dsb 2				; SNESGSS
 	GSS_GlobalVol			db				; GlobalVol (lo) and FadeSpeed (hi) are addressed as a word!
-	GSS_FadeSpeed			db
+	GSS_FadeSpeed			db				; lower values = slower fades (duh)
 	GSS_param			dsb 2				; SNESGSS
+	GSS_Stereo			dw
 	HDMA_Channels			db				; copied to HDMAEN during Vblank
 	HiResPrintLen			db				; holds length of menu hi-res string to print
 	HiResPrintMon			db				; keep track of BG we're printing on: $00 = BG1 (start), $01 = BG2
@@ -745,12 +783,12 @@
 	SpriteTextPalette		db				; holds palette to use when printing sprite-based text
 	SubMenuNext			db				; holds no. of sub menu selected
 	Temp				dsb 8
-	TextBoxBG			db				; bnnnnnnn [b = change text box background, n = no. of color table (0-127)
-	TextBoxCharPortrait		db				; pnnnnnnn [p = change character portrait, n = no. of portrait (0-127)
+	TextBoxBG			db				; bnnnnnnn [b = change text box background (set by macro data), n = no. of color table (word entries, 64 max.)
+	TextBoxPortrait			dw				; pnnnnnnnnnnnnnnn [p = change character portrait (set by macro data), n = no. of portrait (word entries, 16,384 max.)
 	TextBoxSelection		db				; dcba4321 [1-4 = text box contains selection on line no. 1-4, a-d = selection made by player (1-4)
-	TextBoxSelMax			db				; for HDMA selection bar
+	TextBoxSelMax			db				; for moving the HDMA selection bar
 	TextBoxSelMin			db				; ditto
-	TextBoxStatus			db				; awrrrkcb [a = text box active, b = VWF buffer full, c = clear text box, k = kill text box, r = reserved, w = wait for player input]
+	TextBoxStatus			db				; awrrrkcb [a = text box active, b = flush VWF buffer ASAP, c = clear text box, k = kill text box, r = reserved, w = wait for player input]
 	TextBoxVIRQ			db				; scanline no. of text box start (for scrolling animation)
 	TextCursor			dw
 	TextPointerNo			dw
@@ -759,8 +797,13 @@
 	VWF_BitsUsed			dw				; holds no. of bits used up in current VWF tile, also used for calculating bit shifting
 	VWF_BufferIndex			dw				; holds current VWF buffer index position
 	VWF_Loop			db				; loop counter for VWF routine
+	VWF_TileCounter			db				; holds no. of current 16×8 dialogue VWF tile (max. 4 * 23 = 92), to be converted to a VRAM address offset during Vblank
 	WorldMapBG1VScroll		dw
 	WorldMapBG1HScroll		dw
+	zp1				dw				; zp1-zp4 for fast multiplication (unused for now)
+	zp2				dw
+	zp3				dw
+	zp4				dw
 .ENDST
 
 .STRUCT struct_RAM_0300_03FF SIZE 256
@@ -791,16 +834,38 @@
 	dummy_byte			db
 .ENDST
 
+; $7E0000-$7E1FFF addressed with a bank byte of $00 most of the time --> 16-bit .ENUM start value
+
+.ENUM $0000
+	P00				INSTANCEOF struct_RAM_0000_00FF
+	P01				INSTANCEOF struct_RAM_0100_01FF
+	DP2				INSTANCEOF struct_RAM_0200_02FF
+	DP3				INSTANCEOF struct_RAM_0300_03FF
+	DP4				INSTANCEOF struct_RAM_0400_04FF
+	DP5				INSTANCEOF struct_RAM_0500_05FF
+	DP6				INSTANCEOF struct_RAM_0600_06FF
+	DP7				INSTANCEOF struct_RAM_0700_07FF
+	DP8				INSTANCEOF struct_RAM_0800_08FF
+	DP9				INSTANCEOF struct_RAM_0900_09FF
+.ENDE
+
+
+
+; WRAM MEMORY MAP PT. 2: $0A00-$1FFF (VARIOUS VARIABLES)
+; --------------------------------------------------------------------------------------------------
+
+; Variables that need to be accessed fast have priority in this region.
+
 .STRUCT struct_RAM_0A00_1FFF SIZE $1600					; the SIZE here might get relevant later on (e.g., should we decide to convert the WRAM .ENUMs into .RAMSECTIONs)
-	HDMA_ColorMath			dsb 96
+	FastMultTable1			dsb 512
+	FastMultTable2			dsb 512
+	FastMultTable3			dsb 512
+	FastMultTable4			dsb 512
 	HDMA_M7A			dsb 448
 	HDMA_M7B			dsb 448
 	HDMA_M7C			dsb 448
 	HDMA_M7D			dsb 448
-	HDMA_FX_1Byte			dsb 224
-	HDMA_FX_2Bytes			dsb 448
 	HDMA_BG_Scroll			dsb 16
-	HDMA_WorMapVScroll		dsb 448
 	ObjectList			dsb 128				; keeps track of currently active sprites, 1 byte per sprite: hcirrrra [a = object is active, c = object can collide with other objects, h = object can collide with hero(es), i = object is hero sprite, r = reserved]
 	RandomNumbers			dsb 130				; for random numbers
 	ShadowOAM_Lo			dsb 512
@@ -813,14 +878,15 @@
 	DiagStringAddress		dw				; backup for DP variable of the same name (while processing sub-strings etc.)
 	DiagStringBank			db				; ditto
 	DiagStringPos			dw				; ditto
-	DiagSubStrAddress		dw				; holds sub-string address
-	DiagSubStrBank			db				; holds sub-string bank
 	GameDataItemQty			db
 	Hero1TargetScrPosYX		dw				; high byte = Y position, low byte = X position (in px)
 	JumpIRQ				dw				; holds address of current IRQ subroutine
 	JumpNMI				dw				; holds address of current NMI/Vblank subroutine
 	NMITIMEN			db				; mirror of NMITIMEN
+	NMITIMEN2			db				; used as backup
 	Routine_FillTextBuffer		dw				; holds address of routine to be used for printing strings to the screen
+	TextBoxBG_DMA_Dest		dw
+	TextBoxBG_DMA_Len		dw
 	TextBox_TSTM			dw				; mirrors of subscreen (high) & mainscreen (low) designation registers ($212C/212D) for text box area
 	Time_Second			db				; RTC-based time/date variables
 	Time_Minute			db
@@ -831,6 +897,20 @@
 	Time_Century			db
 	TimeoutCounter			dw				; used by SNESGSS routines for SPC700 communication timeout
 .ENDST
+
+; $7E0000-$7E1FFF addressed with a bank byte of $00 most of the time (as with DPs) --> 16-bit
+; .ENUM start value
+
+.ENUM $0A00
+	LO8				INSTANCEOF struct_RAM_0A00_1FFF
+.ENDE
+
+
+
+; WRAM MEMORY MAP PT. 3: $7E2000-$7FFFFF (VARIOUS VARIABLES)
+; --------------------------------------------------------------------------------------------------
+
+; Mostly variables/arrays where fast access isn't a priority.
 
 .STRUCT struct_BG12Tilemap
 	Beginning			dsb 704 * 2
@@ -916,9 +996,14 @@
 	BG2Tilemap1			INSTANCEOF struct_BG12Tilemap
 	BG2Tilemap2			dsb 2048
 	BG3Tilemap			INSTANCEOF struct_BG3Tilemap
+	CharacterNames			dsb 64*10			; NPCs not included lol
 	GameDataInventory		dsb 512				; two-byte array for 256 items. Low byte = item no., high byte = quantity
-	HDMA_BackgrPlayfield		dsb 704				; 16-bit palette index & 16-bit color entry for 176 scanlines
-	HDMA_BackgrTextBox		dsb 192				; ditto for 48 scanlines
+	HDMA_BG_Playfield		dsb 704				; 16-bit palette index & 16-bit color entry for 176 scanlines
+	HDMA_BG_TextBox			dsb 192				; ditto for 48 scanlines
+	HDMA_ColorMath			dsb 96
+	HDMA_FX_1Byte			dsb 224
+	HDMA_FX_2Bytes			dsb 448
+	HDMA_WorMapVScroll		dsb 448
 	ScratchSpace			dsb 16384
 	SpriteDataArea			INSTANCEOF struct_SpriteDataArea	; 128*5 = 640 bytes
 ;	SpriteDataBattle		INSTANCEOF struct_SpriteDataBattle	; ditto
@@ -936,31 +1021,8 @@
 					INSTANCEOF struct_RAM_7F
 .ENDST
 
-
-
-; Variables referencing the above .STRUCTs
-
-; WRAM area $7E0000-$7E1FFF is addressed with a bank byte of $00 most of the time, so the following
-; .ENUM omits that. However, we *do* need the respective high byte in specific cases (e.g. for the
-; "set" macro or for conveniently setting data source addresses within a DP), so we need to address
-; all DPx variables with an 8-bit operand hint, like "lda <DP2.Temp" or "lda DP2.Temp.#b".
-
-.ENUM $0000
-	P00				INSTANCEOF struct_RAM_0000_00FF
-	P01				INSTANCEOF struct_RAM_0100_01FF
-	DP2				INSTANCEOF struct_RAM_0200_02FF
-	DP3				INSTANCEOF struct_RAM_0300_03FF
-	DP4				INSTANCEOF struct_RAM_0400_04FF
-	DP5				INSTANCEOF struct_RAM_0500_05FF
-	DP6				INSTANCEOF struct_RAM_0600_06FF
-	DP7				INSTANCEOF struct_RAM_0700_07FF
-	DP8				INSTANCEOF struct_RAM_0800_08FF
-	DP9				INSTANCEOF struct_RAM_0900_09FF
-	LO8				INSTANCEOF struct_RAM_0A00_1FFF
-.ENDE
-
-; WRAM area $7E2000-$7FFFFF is generally addressed with the corresponding bank byte, so the
-; following .ENUM includes that.
+; $7E2000-$7FFFFF always addressed with the corresponding bank byte and the following .ENUM spans
+; across two banks anyway --> 24-bit start value
 
 .ENUM $7E2000
 	RAM				INSTANCEOF struct_RAM_AllUpper
@@ -1059,10 +1121,6 @@
 	Slot3				INSTANCEOF struct_SRAM_Slot
 	Slot4				INSTANCEOF struct_SRAM_Slot
 .ENDST
-
-
-
-; Variables referencing the above .STRUCTs
 
 .ENUM $B06000
 	SRAM				INSTANCEOF struct_SRAM

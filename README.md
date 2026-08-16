@@ -59,7 +59,8 @@ Note that all graphics is placeholder artwork. Game presentation is subject to c
 
 Basic requirements:
 
-- WLA DX v10.7 cross assembler, available from https://github.com/vhelin/wla-dx
+- GNU Make
+- WLA DX v10.8a cross assembler, available from https://github.com/vhelin/wla-dx
 - superfamiconv, available from https://github.com/Optiroc/SuperFamiconv
 - Python v2
 

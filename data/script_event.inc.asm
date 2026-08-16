@@ -9,7 +9,7 @@
 
 
 
-.REDEFINE COUNT = 0
+;.REDEFINE COUNT = 0
 
 SRC_EventPointer:
 
@@ -54,8 +54,7 @@ Event00000:
 ;		.DW kGSS_STEREO
 ;		.DW 1
 	ev_ctrl GSS_COMMAND
-		.DW kGSS_GLOBAL_VOLUME
-		.DW $FF7F						; high byte = fade speed, low byte = global volume
+		.DW kGSS_GLOBAL_VOLUME					; parameter in event code
 	ev_ctrl GSS_COMMAND
 		.DW kGSS_MUSIC_PLAY
 		.DW 0
@@ -67,11 +66,11 @@ Event00000:
 		.DL SRC_RamsisPal
 		.DW 512
 	ev_ctrl DMA_ROM2VRAM						; VRAM target address (16), ROM source address (24), size (16)
-		.DW $0000
+		.DW kVRAM_BG1_Tiles
 		.DL SRC_RamsisPic
 		.DW _sizeof_SRC_RamsisPic
 	ev_ctrl DMA_ROM2VRAM						; VRAM target address (16), ROM source address (24), size (16)
-		.DW $5000
+		.DW kVRAM_BG1_Tilemap1
 		.DL SRC_RamsisMap
 		.DW _sizeof_SRC_RamsisMap
 	ev_ctrl SCR_EFFECT_TRANSITION
@@ -92,11 +91,11 @@ Event00000:
 		.DL SRC_RamsisPresentsPal
 		.DW 512
 	ev_ctrl DMA_ROM2VRAM						; VRAM target address (16), ROM source address (24), size (16)
-		.DW $0000
+		.DW kVRAM_BG1_Tiles
 		.DL SRC_RamsisPresentsPic
 		.DW _sizeof_SRC_RamsisPresentsPic
 	ev_ctrl DMA_ROM2VRAM						; VRAM target address (16), ROM source address (24), size (16)
-		.DW $5000
+		.DW kVRAM_BG1_Tilemap1
 		.DL SRC_RamsisPresentsMap
 		.DW _sizeof_SRC_RamsisPresentsMap
 	ev_ctrl SCR_EFFECT_TRANSITION
@@ -117,11 +116,11 @@ Event00000:
 		.DL SRC_StartPal
 		.DW 512
 	ev_ctrl DMA_ROM2VRAM						; VRAM target address (16), ROM source address (24), size (16)
-		.DW $0000
+		.DW kVRAM_BG1_Tiles
 		.DL SRC_StartPic
 		.DW _sizeof_SRC_StartPic
 	ev_ctrl DMA_ROM2VRAM						; VRAM target address (16), ROM source address (24), size (16)
-		.DW $5000
+		.DW kVRAM_BG1_Tilemap1
 		.DL SRC_StartMap
 		.DW _sizeof_SRC_StartMap
 	ev_ctrl SCR_EFFECT_TRANSITION
@@ -142,11 +141,11 @@ Event00000:
 		.DL SRC_SoundEnginesPal
 		.DW 512
 	ev_ctrl DMA_ROM2VRAM						; VRAM target address (16), ROM source address (24), size (16)
-		.DW $0000
+		.DW kVRAM_BG1_Tiles
 		.DL SRC_SoundEnginesPic
 		.DW _sizeof_SRC_SoundEnginesPic
 	ev_ctrl DMA_ROM2VRAM						; VRAM target address (16), ROM source address (24), size (16)
-		.DW $5000
+		.DW kVRAM_BG1_Tilemap1
 		.DL SRC_SoundEnginesMap
 		.DW _sizeof_SRC_SoundEnginesMap
 	ev_ctrl SCR_EFFECT_TRANSITION
@@ -185,8 +184,7 @@ Event00001:
 ;		.DW kGSS_STEREO
 ;		.DW 1
 	ev_ctrl GSS_COMMAND
-		.DW kGSS_GLOBAL_VOLUME
-		.DW $FF7F						; high byte = fade speed, low byte = global volume
+		.DW kGSS_GLOBAL_VOLUME					; parameter in event code
 	ev_ctrl GSS_COMMAND
 		.DW kGSS_MUSIC_PLAY
 		.DW 0
@@ -200,7 +198,7 @@ Event00001:
 	ev_ctrl WAIT_FRAMES
 		.DW 50
 	ev_ctrl DIALOGUE
-		.DW 1							; no. of wanted dialogue string (see labels in data/text_dialog_*)
+		.DW 0003						; no. of wanted dialogue string (see ref. numbers in data/text_dialogue_*)
 	ev_ctrl WAIT_FRAMES
 		.DW 150
 	ev_ctrl SIMULATE_INPUT_JOY1
@@ -232,7 +230,7 @@ Event00001:
 	ev_ctrl WAIT_FRAMES
 		.DW 10
 	ev_ctrl DIALOGUE
-		.DW 2							; no. of wanted dialogue string (see labels in data/text_dialog_*)
+		.DW 0004						; no. of wanted dialogue string
 	ev_ctrl WAIT_FRAMES
 		.DW 100
 	ev_ctrl SIMULATE_INPUT_JOY1

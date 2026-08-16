@@ -80,7 +80,7 @@ ReturnAdress\@:
 
 
 
-.MACRO lsh ARGS Parameter
+.MACRO shl ARGS Parameter
 
 .IF NARGS == 0
 
@@ -98,7 +98,7 @@ ReturnAdress\@:
 
 
 
-.MACRO rsh ARGS Parameter
+.MACRO shr ARGS Parameter
 
 .IF NARGS == 0
 
@@ -153,6 +153,46 @@ ReturnAdress\@:
 
 .ENDIF
 
+.ENDM
+
+
+
+; ar_name
+; --------------------------------------------------------------------------------------------------
+;
+; Author: Ramsis
+; Usage: see examples
+; Effect: maps area name string with appropriate string label
+; Implemented Language: see .ENUMID with Language constants
+;
+; Examples:
+;	ar_name kLangENG, "Here<END>"					; create English dialogue string label and map area name
+
+.MACRO ar_name ARGS Language, String
+
+.IF NARGS != 2
+
+.FAIL "The '\.' macro takes exactly two arguments."
+
+.ELIF Language == kLangENG
+
+STR_AreaNameENG{%.3d{COUNT}}:						; create label for current English area name
+	.DB String.length_utf8-5					; write string length, remove "<END>"
+	.STRINGMAP HUD, String
+
+	incr	&COUNT							; increment string number for next label
+
+.ELIF Language == kLangDEU
+
+STR_AreaNameDEU{%.3d{COUNT}}:						; create label for current German area name
+	.DB String.length_utf8-5					; write string length, remove "<END>"
+	.STRINGMAP HUD, String
+
+	incr	&COUNT							; increment string number for next label
+
+.ENDIF
+
+	rtl								; rtl from PrintSpriteText ends up here, return to caller
 .ENDM
 
 
@@ -308,19 +348,58 @@ DrawLowerBorder\@:
 
 
 
+; d_init
+; --------------------------------------------------------------------------------------------------
+;
+; Author: Ramsis
+; Usage: see examples
+; Effect: initializes dialogue string with label
+; Implemented Language: see .ENUMID with Language constants
+;
+; Examples:
+;	d_init kLangENG, kPortrait_NONE, kBG_Blue			; create English dialogue string label, init text box with no portrait and blue background
+
+.MACRO d_init ARGS Language, Portrait, Background ;, Speed
+
+.IF NARGS != 3
+
+.FAIL "The '\.' macro takes exactly three arguments."
+
+.ELIF Language == kLangENG
+
+STR_DialogueENG{%.4d{COUNT}}:						; create label for current English dialogue string
+
+.ELIF Language == kLangDEU
+
+STR_DialogueDEU{%.4d{COUNT}}:						; create label for current German dialogue string
+
+;.ELIF Language == (add more as needed)
+
+.ENDIF
+
+	.STRINGMAP dialogue, "<PORTRAIT>"				; set portrait and background
+	.DW Portrait|$8000						; also set "change portrait" bit
+	.STRINGMAP dialogue, "<BG>"
+	.DB Background|$80						; also set "change background" bit
+
+	incr	&COUNT							; increment string number for next label
+.ENDM
+
+
+
 ; d_string
 ; --------------------------------------------------------------------------------------------------
 ;
 ; Author: Ramsis
 ; Usage: see examples
-; Effect: maps dialogue string, optionally with appropriate string label
-; Implemented Language: see .ENUMID with Language constants
+; Effect: maps dialogue string, optionally with (new) portrait and/or text box background
 ;
 ; Examples:
-;	d_string kLangENG, "Hello!"					; create English dialogue string label and map dialogue string
+;	d_string kPortrait_NONE, kBG_Blue, "Hello!"			; remove portrait, set blue background, map dialogue string
+;	d_string kBG_Blue, "Hello!"					; set blue background and map dialogue string
 ;	d_string "Goodbye!"						; only map dialogue string
 
-.MACRO d_string ARGS Language, String
+.MACRO d_string ARGS Portrait, Background, String
 
 .IF NARGS == 0
 
@@ -328,21 +407,21 @@ DrawLowerBorder\@:
 
 .ELIF \?1 == ARG_STRING
 
-	.STRINGMAP dialogue, \1						; if only string given as argument, map string without a label
+	.STRINGMAP dialogue, \1						; if only string given as argument, map string
 
-.ELIF Language == kLangENG
+.ELIF NARGS == 2
 
-STR_DialogueENG{%.4d{COUNT}}:						; create label for current English dialogue string
+	.STRINGMAP dialogue, "<BG>"					; set background, map string
+	.DB \1|$80							; 1st argument = background (also set "change portrait" bit)
+	.STRINGMAP dialogue, \2						; 2nd argument = string
+
+.ELSE
+
+	.STRINGMAP dialogue, "<PORTRAIT>"				; set portrait and background, map string
+	.DW Portrait|$8000						; also set "change portrait" bit
+	.STRINGMAP dialogue, "<BG>"
+	.DB Background|$80						; also set "change background" bit
 	.STRINGMAP dialogue, String
-
-	incr	&COUNT							; increment string number for next label
-
-.ELIF Language == kLangDEU
-
-STR_DialogueDEU{%.4d{COUNT}}:						; create label for current German dialogue string
-	.STRINGMAP dialogue, String
-
-	incr	&COUNT							; increment string number for next label
 
 .ENDIF
 
@@ -377,14 +456,15 @@ STR_DialogueDEU{%.4d{COUNT}}:						; create label for current German dialogue st
 ;
 ; Author: Ramsis
 ; Usage: see examples
-; Effect: sets specified Target (e.g. a hardware register, but could be anything implemented here) to given Parameter
-; Implemented Target: Data_Bank, Direct_Page
+; Effect: sets specified Target (e.g. a hardware register, but could be anything implemented here) to given parameter
+; Implemented Target(s): see .ELIF statements below
 ;
 ; Examples:
 ;	set	"Data_Bank", $00					; set DBR $00
 ;	set	"Direct_Page", $0200					; set DP $0200
+;	set	"VRAM_Tiles", kAddrBG1, kAddrBG2, kAddrBG3, kAddrBG4	; set RAM mirror registers as desired
 
-.MACRO set ISOLATED ARGS Target, Parameter
+.MACRO set ISOLATED ARGS Target, Param1, Param2, Param3, Param4, Param5, Param6, Param7, Param8
 
 .IF NARGS == 0
 
@@ -392,29 +472,61 @@ STR_DialogueDEU{%.4d{COUNT}}:						; create label for current German dialogue st
 
 .ELIF Target == "Data_Bank"
 
-	lda	#Parameter
+	lda	#Param1
 	pha
 	plb
 
 .ELIF Target == "Direct_Page"
 
-	lda	#Parameter
+	lda	#Param1
 	tcd
 
 .ELIF Target == "IRQ"
 
-	ldx	#Parameter
+	ldx	#Param1
 	stx	LO8.JumpIRQ
 
 .ELIF Target == "NMI"
 
-	ldx	#Parameter
+	ldx	#Param1
 	stx	LO8.JumpNMI
 
 .ELIF Target == "Stack_Pointer"
 
-	lda	#Parameter
+	lda	#Param1
 	tcs
+
+.ELIF Target == "VRAM_tilemaps"
+
+; VRAM addresses in 1K-word steps, screen size: %00=32×32, %01=64×32, %10=32×64, %11=64×64)
+	lda	#hibyte(Param1) | Param2					; VRAM address for BG1 tilemap | screen size
+	sta	RAM_BG1SC
+	lda	#hibyte(Param3) | Param4					; VRAM address for BG2 tilemap | screen size
+	sta	RAM_BG2SC
+	lda	#hibyte(Param5) | Param6					; VRAM address for BG3 tilemap | screen size
+	sta	RAM_BG3SC
+	lda	#hibyte(Param7) | Param8					; VRAM address for BG4 tilemap | screen size
+	sta	RAM_BG4SC
+
+.ELIF Target == "VRAM_tiles"
+
+; VRAM addresses in 4K-word steps
+	lda	#hibyte(Param1)>>4 | hibyte(Param2)				; VRAM address for BG1/BG2 character data
+	sta	RAM_BG12NBA
+	lda	#hibyte(Param3)>>4 | hibyte(Param4)				; VRAM address for BG3/BG4 character data
+	sta	RAM_BG34NBA
+
+.ELIF Target == "WRAM_port"
+
+	lda	#lobyte(Param1)
+	sta	WMADDL
+	lda	#hibyte(Param1)
+	sta	WMADDM
+;	ldx	#loword(Param1)
+;	stx	WMADDL
+	lda	#bankbyte(Param1)
+	and	#%00000001							; only keep bank bit
+	sta	WMADDH
 
 .ELSE
 
@@ -527,23 +639,25 @@ HexNibbleDone\@:
 
 .ACCU 8
 
+	lda	\1
 	ldx	#8							; 8 bits to print
 
 PrintBinLoop\@:
 	phx								; preserve bit counter
-	asl	\1							; put highest bit into carry
+	shl								; put highest bit into carry
+	pha								; preserve value for next iteration
 	bcs	+
 
-	lda	#0							; carry was clear --> print "0"
-	jsr	PrintInt8
+	lda	#0							; carry clear --> print "0"
+	bra	PrintBit\@
 
-	bra	++ ;BitDone\@:
++	lda	#1							; carry set --> print "1"
 
-+	lda	#1							; carry was set --> print "1"
-	jsr	PrintInt8
+PrintBit\@:
+	jsl	PrintInt8
 
-;BitDone\@:
-++	plx								; restore bit counter
+	pla								; restore value to print
+	plx								; restore bit counter
 	dex
 	bne	PrintBinLoop\@
 .ENDM
@@ -552,21 +666,21 @@ PrintBinLoop\@:
 
 .MACRO PrintHexNum
 	lda	\1
-	jsr	PrintHex8
+	jsl	PrintHex8
 .ENDM
 
 
 
 .MACRO PrintNum
 	lda	\1
-	jsr	PrintInt8
+	jsl	PrintInt8
 .ENDM
 
 
 
 .MACRO PrintSpriteHexNum
 	lda	\1
-	jsr	PrintSpriteHex8
+	jsl	PrintSpriteHex8
 .ENDM
 
 
@@ -583,19 +697,15 @@ PrintBinLoop\@:
 	stx	<DP2.TextCursor
 	lda	#\4
 	sta	<DP2.SpriteTextPalette
-	ldx	#STR_SpriteText_Start\@
-	stx	<DP2.TextStringPtr
-	lda	#:STR_SpriteText_Start\@
+	stz	<DP2.TextStringPtr
+	stz	<DP2.TextStringPtr+1
+	lda	#:STR_Sprite_Start\@
 	sta	<DP2.TextStringBank
-	jsr	PrintSpriteText
+	jsl	PrintSpriteText
 
-	bra	STR_SpriteText_End\@
-
-STR_SpriteText_Start\@:
+STR_Sprite_Start\@:							; string start address (minus one) is on the stack
 	.STRINGMAP HUD, \3
-	.DB 0
-
-STR_SpriteText_End\@:
+	.DB $00
 
 .ENDM
 
@@ -613,8 +723,8 @@ STR_SpriteText_End\@:
 	sta	<DP2.TextStringBank
 	jsl	PrintF
 
-STR_Start\@:
-	.DB \4, 0							; instead of a return address (-1), the string address (-1) is on the stack
+STR_Start\@:								; string start address (minus one) is on the stack
+	.DB \4, $00
 .ENDM
 
 
@@ -630,13 +740,23 @@ STR_Start\@:
 ; SNESGSS/SPC700 MACROS
 ; --------------------------------------------------------------------------------------------------
 
-.MACRO SNESGSS_Command ARGS Command, Parameter				; \1 = kGSS_* (16 bit), \2 = parameter(s) (16 bit)
+.MACRO GSS_cmd ARGS Command, Parameter					; Command = kGSS_* (16 bit), Parameter = either #<immediate> or <variable> (16 bit)
 	Accu16
 
 	lda	#Command
 	sta	<DP2.GSS_command
+
+.IF \?2 == ARG_IMMEDIATE
+
 	lda	#Parameter
-	sta	<DP2.GSS_param
+
+.ELIF \?2 == ARG_NUMBER							; "number" here includes variable names as well, ARG_LABEL recognizes code labels only
+
+	lda	Parameter
+
+.ENDIF
+
+  	sta	<DP2.GSS_param
 
 	Accu8
 

@@ -12,22 +12,43 @@
 ; GLOBAL .DEFINES AND .INCLUDES
 ; --------------------------------------------------------------------------------------------------
 
-.DEFINE BuildNumASCII		"00558"
-.DEFINE DEBUG								; boot to debug menu, show verbose on-screen messages
-;.DEFINE NOMUSIC							; uncomment this to disable music
-.DEFINE PrecalcMode7Tables						; if not .DEFINED, 112 304-byte-long tables (>33 KiB) are calculated during runtime (and stored in WRAM), which currently adds ~6 seconds of loading time to the Mode7 map screen
-;.DEFINE UseCustomGSSDriver						; use a custom build of the SNESGSS sound driver (with stereo enabled by default) // incomplete/broken!
-.DEFINE WorkAroundINIDISP						; jump through some hoops to work around the various INIDISP glitches discovered in 2021
+; Always use equal sign for .DEFINEs with numbers here, no need for vertical alignment
 
-.DEFINE IRQNMIRoutines		$8000					; location of IRQ/NMI routines, these must be anywhere in the upper 32K (of bank $40) due to ExHiROM mapping
-.DEFINE ResetVector		$FFA0					; where we have the SNES start executing code, this must also be in the upper 32K (of bank $40) due to ExHiROM mapping
-.DEFINE CartExtHeader		$FFB0					; extended SNES cartridge header ($FFB0..$FFBF)
-;.DEFINE CartHeader		$FFC0					; regular SNES cartridge header ($FFC0..$FFCF)
+; Build number
+.DEFINE BuildNumASCII = "00576"
 
- ; These two need to be .INCLUDEd earliest
-.INCLUDE "variables.inc.asm"						; global variables
-.INCLUDE "macros.inc.asm"						; macros
+; Boot to debug menu, show verbose on-screen messages
+.DEFINE DEBUG								
 
+; Location of IRQ/NMI routines, these must be anywhere in the upper 32K (of bank $40) when using
+; ExHiROM mapping (unless RAM-mapped)
+.DEFINE IRQNMIRoutines = $8000
+
+; Disable music
+;.DEFINE NOMUSIC
+
+; Disable music & sound effects
+;.DEFINE NOSOUND
+
+; Pre-calculate 112 304-byte-long tables (>33 KiB) for Mode 7 flying animation (otherwise, these
+; are calculated during runtime and stored in WRAM, which adds ~6 seconds of loading time)
+.DEFINE PrecalcMode7Tables
+
+; Where the SNES starts executing code, this must also be in the upper 32K (of bank $40) when using
+; ExHiROM mapping ($10 bytes max, extended header starts at $FFB0)
+.DEFINE ResetVector = $FFA0
+
+; Use a custom build of the SNESGSS sound driver (incomplete/broken!)
+;.DEFINE UseCustomGSSDriver
+
+; Jump through some hoops to work around the various INIDISP glitches discovered in 2021
+.DEFINE WorkAroundINIDISP
+
+; Variables and macros need to be .INCLUDEd as early as possible
+.INCLUDE "variables.inc.asm"
+.INCLUDE "macros.inc.asm"
+
+; Text string mapping tables
 .STRINGMAPTABLE dialogue "data/tbl_dialogue.tbl"
 .STRINGMAPTABLE HUD "data/tbl_hud_char.tbl"
 
@@ -46,22 +67,30 @@
 .ROMBANKS		96						; total ROM size = 48 Mbit
 
 .SNESHEADER								; this auto-calculates ROM checksum & complement, too
-;	ID		"A00E"						; should be AxxE, where xx can be [0-9A-Z]. Last letter is then interpreted by bsnes as the country code (E = USA)
-	ID		"SNS!"						; if there are any characters other than [0-9A-Z] in the ID, then bsnes resorts to the country byte at $(40)FFD9 instead
+;	ID		"SNS!"						; see GAMECODE in .SNESEXPANDEDHEADER
 	NAME		"FURRY RPG!           "				; 21 characters
 	EXHIROM								; aka Mode 25
 	FASTROM
 	CARTRIDGETYPE	$55						; ROM, RTC + battery-backed SRAM
-	ROMSIZE		$0D						; 1 SHL n = 8 MiB (reported as a power of 2, even though actual ROM size is 6 MiB for now)
+	ROMSIZE		$0D						; (1 SHL n) KiB = 8 MiB (reported as a power of 2, even though actual ROM size is 6 MiB for now)
 	SRAMSIZE	$03						; 8 KiB for now
-	COUNTRY		$01						; USA
+	COUNTRY		$01						; USA/Canada (implies NTSC) / see notes
 	LICENSEECODE	$33						; $33 = indicator for newer/extended cartridge header
 	VERSION		$00
 .ENDSNES
 
+.SNESEXPANDEDHEADER
+	MAKERCODE		"00"
+	GAMECODE		"SNS!"					; see notes before changing this
+	EXPANSIONFLASHSIZE	$00
+	EXPANSIONRAMSIZE	$00
+	SPECIALVERSION		$00
+	CHIPSETSUBTYPE		$00
+ .ENDSNES
+
 .SNESNATIVEVECTOR							; all in ROM bank $40 (ExHiROM mapping)
-	COP		JumpBRKorCOP
-	BRK		JumpBRKorCOP
+	COP		JumpCOP
+	BRK		JumpBRK
 	ABORT		EmptyHandler
 	NMI		GlobalNMI
 	UNUSED		$0000
@@ -81,17 +110,11 @@
 
 
 
-; HIROM BANKS ($C0-$FF)
+; HIROM BANKS ($C0-$FF) FROM HERE
 ; --------------------------------------------------------------------------------------------------
 
-.BASE $C0
-
-
-
-; BANK $C0
-; --------------------------------------------------------------------------------------------------
-
-.DEFINE CurrentBank = 0
+.BASE $C0								; bank numbers for reference. Regex search:  HIROM_..$ (with preceding space), Insert Nums command: Ctrl+Alt+N, 192:1~02X
+.DEFINE CurrentBank = $00						; HIROM_C0
 
 .BANK CurrentBank SLOT 0
 .ORG $0000
@@ -186,22 +209,29 @@ UnusedCode:
 	lda	P01.Reserved						; AD 00 01
 
 @BitManipulation:
-	lsh
-	rsh
-	lsh	3
-	rsh	3
+	shl
+	shr
+	shl	3
+	shr	3
 
 @ProgramCounter:
-;	bsr	UnusedCode2
-	brl	UnusedCode2						; 82 XX XX
-;	.DB	$82, $XX, $XX
+	bsr	UnusedCode2
+;	brl	UnusedCode2						; 82 XX XX
 	per	DebugMenuLoop@YButtonDone-1
 	rts
 
 ;	per	UnusedCode2						; 62 XX XX
-;	.DB	$62, $XX, $XX
 ;	plx
 ;	jml	DebugMenuLoop@YButtonDone
+
+@ProvokeError:
+	brk	$FF
+	cop	$FF
+
+
+
+UnusedCode2:
+	rts
 
 	.DB "END OF UNUSED/TEST CODE"
 
@@ -254,57 +284,15 @@ UnusedCode:
 
 
 
-;.ORG CartExtHeader							; seems unnecessary (mirrored from bank $40 anyway)
-
-;.SECTION "Maker code" FORCE
-
-;	.DB "00"							; new licensee code (unlicensed)
-
-;.ENDS
-
-
-
-; $FFB2 Extended Header Game Code (automatically filled in by WLA DX)
-
-
-
-;.ORG CartExtHeader + 6							; seems unnecessary (mirrored from bank $40 anyway)
-
-;.SECTION "Extended header 2" FORCE
-
-;	.DSB 10, $00							; reserved/expansion size/special version header bytes (zeroed out in a regular game)
-
-;.ENDS
-
-
-
-.ORG $FF00
-
-.SECTION "Test code 2" FORCE
-
-.ACCU 8
-.INDEX 16
-
-	.DB "UNUSED/TEST CODE"
-
-UnusedCode2:
-	rts
-
-	.DB "END OF UNUSED/TEST CODE"
-
-.ENDS
-
-
-
 ; NEW BANK
 ; --------------------------------------------------------------------------------------------------
 
-	incr	&CurrentBank
+	incr	&CurrentBank						; HIROM_C1
 
 .BANK CurrentBank SLOT 0
 .ORG $0000
 
-.SECTION "Character data 1"
+.SECTION "Character data 1" SEMIFREE
 
 ; Palettes
 
@@ -352,7 +340,7 @@ SRC_FontMode5:
 	.INCBIN "gfx/font_mode5_vwf_nor.pic"				; 2bpp font for BG2 (4096 bytes)
 
 SRC_Font8x8:
-	.INCBIN "gfx/font_8x8.pic"					; 2bpp font for BG3 (2048 bytes)
+	.INCBIN "gfx/font_8x8.pic"					; 2bpp font for BG3 and Mode 5 FWF printing (2048 bytes)
 
 
 
@@ -425,7 +413,7 @@ SRC_TilesBG1_Area002:
 	.INCBIN "gfx/area-002-green.pic"
 
 SRC_Palette_Area002:
-	.INCBIN "gfx/area-002-green.pal" READ 32
+	.INCBIN "gfx/area-002-green.pal"
 
 SRC_TileMapBG1_Area002:
 	.INCBIN "gfx/area-002-green.map"
@@ -435,7 +423,7 @@ SRC_TileMapBG1_Area002:
 ; GFX pointer tables
 
 SRC_CharPortraitGFX:
-	.DW $0000							; dummy pointer (needed for correct table index)
+	.DW $0000							; dummy pointer (used when no portrait wanted)
 	.DW SRC_Portrait_Hero1
 	.DW SRC_Portrait_Hero2
 
@@ -451,12 +439,12 @@ SRC_CharPortraitPalette:
 ; NEW BANK
 ; --------------------------------------------------------------------------------------------------
 
-	incr	&CurrentBank
+	incr	&CurrentBank						; HIROM_C2
 
 .BANK CurrentBank SLOT 0
 .ORG $0000
 
-.SECTION "Character data 2"
+.SECTION "Character data 2" SEMIFREE
 
 SRC_FontMode5Bold:
 	.INCBIN "gfx/font_mode5_vwf_fat.pic"				; 8 KiB
@@ -469,10 +457,74 @@ SRC_StaticItemsENG:
 
 
 
+.SECTION "Text box tilemaps" SEMIFREE
+
+SRC_TextBoxTilemapBG1:
+
+.HEX BLOCK
+	00046C046E0470047204740400040004
+	00040004000400040004000400040004
+	00040004000400040004000400040004
+	00040004000400040004000400040004
+	0004760478047A047C047E0400040004
+	00040004000400040004000400040004
+	00040004000400040004000400040004
+	00040004000400040004000400040004
+	00048004820484048604880400040004
+	00040004000400040004000400040004
+	00040004000400040004000400040004
+	00040004000400040004000400040004
+	00048A048C048E049004920400040004
+	00040004000400040004000400040004
+	00040004000400040004000400040004
+	00040004000400040004000400040004
+	00049404960498049A049C0400040004
+	00040004000400040004000400040004
+	00040004000400040004000400040004
+	00040004000400040004000400040004
+	00049E04A004A204A404A60400040004
+	00040004000400040004000400040004
+	00040004000400040004000400040004
+	00040004000400040004000400040004
+.ENDHEX
+
+SRC_TextBoxTilemapBG2:
+
+.HEX BLOCK
+	1B040000000000000000000010001100
+	11001100110011001100110011001100
+	11001100110011001100110011001100
+	11001100110011001100110012001B04
+	1B040000000000000000000014002000
+	22002400260028002A002C002E003000
+	32003400360038003A003C003E004000
+	42004400460048004A004C0015001B04
+	1B040000000000000000000014004E00
+	500052005400560058005A005C005E00
+	600062006400660068006A006C006E00
+	700072007400760078007A0015001B04
+	1B040000000000000000000014007C00
+	7E00800082008400860088008A008C00
+	8E00900092009400960098009A009C00
+	9E00A000A200A400A600A80015001B04
+	1B04000000000000000000001400AA00
+	AC00AE00B000B200B400B600B800BA00
+	BC00BE00C000C200C400C600C800CA00
+	CC00CE00D000D200D400D60015001B04
+	1B040000000000000000000017001800
+	18001800180018001800180018001800
+	18001800180018001800180018001800
+	18001800180018001800180019001B04
+.ENDHEX
+
+.ENDS
+
+
+
 ; NEW BANK
 ; --------------------------------------------------------------------------------------------------
 
-	incr	&CurrentBank
+	incr	&CurrentBank						; HIROM_C3
 
 .BANK CurrentBank SLOT 0
 .ORG $0000
@@ -498,7 +550,7 @@ SRC_StaticItemsENG:
 ; NEW BANK
 ; --------------------------------------------------------------------------------------------------
 
-	incr	&CurrentBank
+	incr	&CurrentBank						; HIROM_C4
 
 .BANK CurrentBank SLOT 0
 .ORG $0000
@@ -524,12 +576,12 @@ SRC_StaticItemsENG:
 ; NEW BANK
 ; --------------------------------------------------------------------------------------------------
 
-	incr	&CurrentBank
+	incr	&CurrentBank						; HIROM_C5
 
 .BANK CurrentBank SLOT 0
 .ORG $0000
 
-.SECTION "HDMA tables"
+.SECTION "HDMA tables" SEMIFREE
 
 .INCLUDE "data/bin_hdmatables.inc.asm"					; HDMA tables
 
@@ -537,7 +589,7 @@ SRC_StaticItemsENG:
 
 
 
-.SECTION "Random number byte tables"
+.SECTION "Random number byte tables" SEMIFREE
 
 ; The following assembler directives create tables containing random numbers.
 
@@ -578,7 +630,7 @@ SRC_RND_Hex:
 
 
 
-.SECTION "Sine, cosine, and Mode 7 scaling tables"
+.SECTION "Sine, cosine, and Mode 7 scaling tables" SEMIFREE
 
 ;	.DxSIN A, B, C, D, E
 ;	.DxCOS A, B, C, D, E
@@ -638,12 +690,12 @@ SRC_Mode7Scaling:
 ; NEW BANK
 ; --------------------------------------------------------------------------------------------------
 
-	incr	&CurrentBank
+	incr	&CurrentBank						; HIROM_C6
 
 .BANK CurrentBank SLOT 0
 .ORG $0000
 
-.SECTION "Intro GFX"
+.SECTION "Intro GFX" SEMIFREE
 
 SRC_RamsisPresentsMap:
 	.INCBIN "gfx/ramsis-presents-256.map"
@@ -678,12 +730,12 @@ __SoundEnginesPic_END:
 ; NEW BANK
 ; --------------------------------------------------------------------------------------------------
 
-	incr	&CurrentBank
+	incr	&CurrentBank						; HIROM_C7
 
 .BANK CurrentBank SLOT 0
 .ORG $0000
 
-.SECTION "More GFX data"
+.SECTION "More GFX data" SEMIFREE
 
 SRC_SoundEnginesMap:
 	.INCBIN "gfx/sound-engines-256.map"
@@ -703,7 +755,7 @@ __start2_END:
 
 
 
-.SECTION "World map GFX data"
+.SECTION "World map GFX data" SEMIFREE
 
 SRC_WorldMap:
 ;	.INCBIN "thg.zst" SKIP $20C13 READ $8000
@@ -732,12 +784,12 @@ __sky_blur_END:
 ; NEW BANK
 ; --------------------------------------------------------------------------------------------------
 
-	incr	&CurrentBank
+	incr	&CurrentBank						; HIROM_C8
 
 .BANK CurrentBank SLOT 0
 .ORG $0000
 
-.SECTION "Mode 7 GFX"
+.SECTION "Mode 7 GFX" SEMIFREE
 
 SRC_IoTmappal:
 	.INCBIN "gfx/iot.pal" READ 512
@@ -754,7 +806,7 @@ __IoTmap_END:
 ; NEW BANK
 ; --------------------------------------------------------------------------------------------------
 
-	incr	&CurrentBank
+	incr	&CurrentBank						; HIROM_C9
 
 .BANK CurrentBank SLOT 0
 .ORG $0000
@@ -808,7 +860,7 @@ __track_12_END:
 ; NEW BANK
 ; --------------------------------------------------------------------------------------------------
 
-	incr	&CurrentBank
+	incr	&CurrentBank						; HIROM_CA
 
 .BANK CurrentBank SLOT 0
 .ORG $0000
@@ -850,7 +902,7 @@ __track_00_END:
 ; NEW BANK
 ; --------------------------------------------------------------------------------------------------
 
-	incr	&CurrentBank
+	incr	&CurrentBank						; HIROM_CB
 
 .BANK CurrentBank SLOT 0
 .ORG $0000
@@ -892,7 +944,7 @@ __track_03_END:
 ; NEW BANK
 ; --------------------------------------------------------------------------------------------------
 
-	incr	&CurrentBank
+	incr	&CurrentBank						; HIROM_CC
 
 .BANK CurrentBank SLOT 0
 .ORG $0000
@@ -917,7 +969,7 @@ __track_02_END:
 ; NEW BANK
 ; --------------------------------------------------------------------------------------------------
 
-	incr	&CurrentBank
+	incr	&CurrentBank						; HIROM_CD
 
 .BANK CurrentBank SLOT 0
 .ORG $0000
@@ -942,7 +994,7 @@ __track_04_END:
 ; NEW BANK
 ; --------------------------------------------------------------------------------------------------
 
-	incr	&CurrentBank
+	incr	&CurrentBank						; HIROM_CE
 
 .BANK CurrentBank SLOT 0
 .ORG $0000
@@ -967,7 +1019,7 @@ __track_05_END:
 ; NEW BANK
 ; --------------------------------------------------------------------------------------------------
 
-	incr	&CurrentBank
+	incr	&CurrentBank						; HIROM_CF
 
 .BANK CurrentBank SLOT 0
 .ORG $0000
@@ -992,7 +1044,7 @@ __track_06_END:
 ; NEW BANK
 ; --------------------------------------------------------------------------------------------------
 
-	incr	&CurrentBank
+	incr	&CurrentBank						; HIROM_D0
 
 .BANK CurrentBank SLOT 0
 .ORG $0000
@@ -1017,7 +1069,7 @@ __track_07_END:
 ; NEW BANK
 ; --------------------------------------------------------------------------------------------------
 
-	incr	&CurrentBank
+	incr	&CurrentBank						; HIROM_D1
 
 .BANK CurrentBank SLOT 0
 .ORG $0000
@@ -1042,7 +1094,7 @@ __track_08_END:
 ; NEW BANK
 ; --------------------------------------------------------------------------------------------------
 
-	incr	&CurrentBank
+	incr	&CurrentBank						; HIROM_D2
 
 .BANK CurrentBank SLOT 0
 .ORG $0000
@@ -1067,27 +1119,21 @@ __track_09_END:
 ; NEW BANK
 ; --------------------------------------------------------------------------------------------------
 
-;	incr	&CurrentBank
+;	incr	&CurrentBank						; HIROM_D3
 
 ;.BANK CurrentBank SLOT 0
 ;.ORG $0000
 
-;.SECTION ""
+;.SECTION "" SEMIFREE
 ;.ENDS
 
 
 
-; EXHIROM BANKS ($40-$5F)
+; EXHIROM BANKS ($40-$5F) FROM HERE
 ; --------------------------------------------------------------------------------------------------
 
-.BASE $00
-
-
-
-; BANK $40
-; --------------------------------------------------------------------------------------------------
-
-.REDEFINE CurrentBank = $40
+.BASE $00								; bank numbers for reference. Regex search: EXHIROM_..$, Insert Nums command: Ctrl+Alt+N, 64:1~02X
+.REDEFINE CurrentBank = $40						; EXHIROM_40
 
 .BANK CurrentBank SLOT 0
 .ORG $0000
@@ -1098,7 +1144,12 @@ __track_09_END:
 .INDEX 16
 
 PrintTest:
-	PrintString	2, 2, kTextBG3, "Print test bank $40"		; tested working
+	PrintString	2, 2, kTextBG3, "Print test bank $40\\n  "	; tested working
+;	PrintNum	<DP2.GameConfig
+	PrintHexNum	LO8.Time_Second
+
+	PrintSpriteText	2, 24, "Test ", 0
+	PrintSpriteHexNum	LO8.Time_Second
 
 	rtl
 
@@ -1110,7 +1161,7 @@ PrintTest:
 
 .SECTION "IRQ/NMI routines" FORCE
 
-.INCLUDE "furryrpg_irqnmi.inc.asm"					; Vblank NMI & IRQ handlers with subroutines
+.INCLUDE "furryrpg_irqnmi.inc.asm"					; Vblank NMI, IRQ & software interrupt handlers
 
 .ENDS
 
@@ -1118,47 +1169,13 @@ PrintTest:
 
 .ORG ResetVector
 
-.SECTION "ExHiROM Reset/BRK/COP/dummy vector targets" FORCE
+.SECTION "ExHiROM Reset vector target" FORCE
 
 Reset:
 	sei								; disable interrupts
 	clc
 	xce								; switch to 65816 native mode
-	jml	Startup
-
-JumpBRKorCOP:
-;JumpBRK:
-	jml	ErrorHandler
-
-;JumpCOP:
-;	jml	Somewhere
-
-EmptyHandler:
-	rti
-
-.ENDS
-
-
-
-.ORG CartExtHeader
-
-.SECTION "Extended header 1 maker code" FORCE
-
-	.DB "00"							; new licensee code (unlicensed)
-
-.ENDS
-
-
-
-; $FFB2 extended header game code (automatically filled in by WLA DX)
-
-
-
-.ORG CartExtHeader + 6
-
-.SECTION "Extended header 2" FORCE
-
-	.DSB 10, $00							; reserved/expansion size/special version header bytes (zeroed out in official game releases)
+	jml	Startup							; long jump is crucial here for correct Program Counter bank
 
 .ENDS
 
@@ -1167,12 +1184,12 @@ EmptyHandler:
 ; NEW BANK
 ; --------------------------------------------------------------------------------------------------
 
-;	incr	&CurrentBank
+;	incr	&CurrentBank						; EXHIROM_41
 
 ;.BANK CurrentBank SLOT 0
 ;.ORG $0000
 
-;.SECTION ""
+;.SECTION "" SEMIFREE
 ;.ENDS
 
 
