@@ -340,7 +340,7 @@ SRC_HDMA_Mode5:								; for vertical split-screen test
 
 
 
-SRC_HDMA_ResetBGScroll:							; to be copied to WRAM for scanline and scrolling value manipulation
+SRC_HDMA_BG_Scroll:							; to be copied to WRAM for scanline and scrolling value manipulation
 	.DB 127								; 127 + 49 = 176 scanlines for playfield
 	.DW $0000, $00FF						; horiz. scroll = $0000, vert. scroll = $00FF
 
@@ -529,11 +529,12 @@ SRC_HDMA_ColorGradient:
 	.DB 127|$80							; 127 + 49 = 176 scanlines for playfield, continuous mode flag set
 	.DW loword(RAM.HDMA_BG_Playfield)
 
-	.DB 49|$80
+	.DB kPlayfieldHeight-127|$80
 	.DW loword(RAM.HDMA_BG_Playfield)+(127*4)
 
-	.DB 48|$80							; 48 scanlines for textbox, continuous mode flag set
-	.DW loword(RAM.HDMA_BG_TextBox)
+	.DB kTextBoxHeight|$80						; 48 scanlines for textbox, continuous mode flag set
+	.DW loword(RAM.HDMA_BG_Playfield)+(kPlayfieldHeight*4)		; value manipulated in WRAM for text box "scrolling" animation
+;	.DW loword(RAM.HDMA_BG_TextBox)
 
 	.DB 0								; end of HDMA table
 

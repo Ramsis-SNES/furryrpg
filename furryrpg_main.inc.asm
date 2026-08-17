@@ -24,32 +24,39 @@ Startup:
 
 
 
-; copy RAM routines to WRAM
+; Copy RAM routines to WRAM
 	set	"WRAM_port", RAM.Routines
 	dma_0	$00, SRC_RAM_Routines, WMDATA, _sizeof_SRC_RAM_Routines
 
+; Copy HDMA tables to WRAM
+	set	"WRAM_port", LO8.HDMA_BG_Scroll
+	dma_0	$00, SRC_HDMA_BG_Scroll, WMDATA, _sizeof_SRC_HDMA_BG_Scroll
+
+	set	"WRAM_port", LO8.HDMA_ColorGradient
+	dma_0	$00, SRC_HDMA_ColorGradient, WMDATA, _sizeof_SRC_HDMA_ColorGradient
 
 
-; set up HDMA channel 2: main backdrop color
+
+; Set up HDMA channel 2: main backdrop color
 	lda	#%01000011						; transfer mode (4 bytes --> $2121, $2121, $2122, $2122), indirect table mode
 	sta	DMAP2
 	lda	#<CGADD							; PPU register $2121 (color index)
 	sta	BBAD2
-	ldx	#SRC_HDMA_ColorGradient
+	ldx	#LO8.HDMA_ColorGradient
 	stx	A1T2L
-	lda	#:SRC_HDMA_ColorGradient
+	lda	#:LO8.HDMA_ColorGradient
 	sta	A1B2
-	lda	#$7E							; indirect HDMA CPU bus data address bank
+	lda	#bankbyte(RAM.HDMA_BG_Playfield)			; indirect HDMA CPU bus data address bank
 	sta	DASB2
 
 
 
-; load and initialize SNESGSS sound driver
+; Load and initialize SNESGSS sound driver
 	jsr	InitSNESGSS
 
 
 
-; more hardware checks/initialization
+; More hardware checks/initialization
 	jsl	CheckHardware						; check if special hardware and/or enhancement chips like MSU1, RTC etc. are available
 	jsl	CheckSRAM						; check SRAM integrity, clear SRAM if corrupt
 	jsr	SpriteInit						; set up the sprite buffer (LO8.ShadowOAM_Lo)
@@ -57,7 +64,7 @@ Startup:
 
 
 
-; check SRAM for game state (only ROM integrity for now)
+; Check SRAM for game state (only ROM integrity for now)
 	lda	SRAM.GameState
 	and	#kGameStateGoodROM
 	bne	@GameStateGoodROM
@@ -98,7 +105,8 @@ Startup:
 
 
 
-; go to save manager/main game menu <-- possibly enter main game loop here, and use some variable bit to check for current game state?
+; Go to save manager/main game menu <-- possibly enter main game loop here, and use some variable
+; bit to check for current game state?
 
 MainGameLoop:
 	; do stuff before next Vblank here
@@ -302,7 +310,7 @@ InitVariables:								; fill game variables with sane values
 
 InitAllRAM:
 
-; check for 128K VRAM expansion, VMAIN and VMADDL/H are already set up correctly
+; Check for 128K VRAM expansion, VMAIN and VMADDL/H are already set up correctly
 ;	lda	#$80							; increment VRAM address by 1 after writing to $2119
 ;	sta	VMAIN
 ;	stz	VMADDL							; reset VRAM address
@@ -331,7 +339,7 @@ InitAllRAM:
 	lda	2, s
 	sta	UNUSED2
 
-; clear all directly accessible RAM areas (with most parameters/addresses set in InitRegisters routine)
+; Clear all directly accessible RAM areas (with most parameters/addresses set in InitRegisters routine)
 	stz	VMADDL							; reset VRAM address once again
 	stz	VMADDH
 
@@ -362,7 +370,7 @@ InitAllRAM:
 
 
 
-; intro / title screen
+; Intro / title screen
 
 ShowAlphaIntro:
 	GSS_cmd	kGSS_MUSIC_STOP, #0					; stop music in case it's playing
@@ -519,7 +527,7 @@ ShowTitleScreen:
 
 
 
-; check for Start
+; Check for Start
 	lda	<DP2.Joy1+1
 	and	#kButtonStart
 	beq	@StartButtonDone
@@ -537,9 +545,7 @@ ShowTitleScreen:
 
 CheckHardware:
 
-
-
-; check if MSU1 present
+; Check if MSU1 present
 	lda	MSU_ID							; check for "S-MSU1"
 	cmp	#'S'
 	bne	@MSU1Done
@@ -572,7 +578,7 @@ CheckHardware:
 
 
 
-; check if Sharp S-RTC present
+; Check if Sharp S-RTC present
 	lda	#$0D							; probe S-RTC register by sending "get time" command
 	sta	SRTC_WRITE
 
@@ -589,7 +595,7 @@ CheckHardware:
 
 
 
-; check if console is Ultra16
+; Check if console is Ultra16
 	lda	#kULTRA16_Unlock					; attempt to unlock U16 registers
 	sta	ULTRA16_LOCK
 
@@ -643,7 +649,7 @@ CheckROMIntegrity:
 
 
 
-; read bank $C0 (special case as it contains checksum and checksum complement)
+; Read bank $C0 (special case as it contains checksum and checksum complement)
 	lda	#$C0							; set start bank to $C0
 	sta	<DP2.DataBank
 
@@ -687,7 +693,7 @@ CheckROMIntegrity:
 
 
 
-; read banks $C1...$FF
+; Read banks $C1...$FF
 
 @ReadNextBank:
 
@@ -719,13 +725,13 @@ CheckROMIntegrity:
 
 
 
-; read banks $40...$5F twice (see Fullsnes notes on ROM sizes and checksumming)
+; Read banks $40...$5F twice (see Fullsnes notes on ROM sizes and checksumming)
 	jsr	ReadBanks40thru5F
 	jsr	ReadBanks40thru5F
 
 
 
-; compare checksums
+; Compare checksums
 	Accu16
 
 	lda	<DP2.Temp+3
@@ -751,7 +757,7 @@ CheckROMIntegrity:
 
 ReadBanks40thru5F:
 
-; read bank $40 (special case as it contains checksum and checksum complement)
+; Read bank $40 (special case as it contains checksum and checksum complement)
 	lda	#$40							; set start bank to $40
 	sta	<DP2.DataBank
 
@@ -793,7 +799,7 @@ ReadBanks40thru5F:
 
 
 
-; read banks $41...$5F
+; Read banks $41...$5F
 
 @ReadNextBank:
 
@@ -961,7 +967,7 @@ ConvertSpriteDataToBuffer:						; routine expects source data address set in WMA
 
 
 
-; do some bitwise operation magic for 9th bit of X coordinate and sprite size in high OAM
+; Do some bitwise operation magic for 9th bit of X coordinate and sprite size in high OAM
 	lda	<DP2.SprDataObjNo
 	and	#%00000011						; (object no. AND $03) * 2 = amount of (single) ASL operations required for correct bit pair in current high OAM byte
 	asl	a
@@ -1261,7 +1267,7 @@ SRC_RAM_Routines:
 
 
 
-; update registers
+; Update registers
 	lda	#$0F							; + 11
 	sta	<INIDISP
 	lda	#$00							; + 15

@@ -59,14 +59,6 @@ DialogueTest:
 	sta	RAM.HDMA_BG_TextBox, x					; zero flag not affected (nor any other)
 	bne	-
 
-	ldx	#0							; put HDMA table into WRAM
--	lda.l	SRC_HDMA_ResetBGScroll, x
-	sta	LO8.HDMA_BG_Scroll, x
-	inx
-	inx
-	cpx	#_sizeof_SRC_HDMA_ResetBGScroll
-	bne	-
-
 	Accu8
 
 
@@ -945,26 +937,21 @@ Process_CC_BG:
 	iny								; increment string position index
 	sty	<DP2.DiagStringPos
 
-; Pre-calculate DMA data length and destination address (for next Vblank) based on current IRQ
-; scanline (e.g. when text box has fully "scrolled in": 224 - 176 = 48; 48 * 4 = 192 bytes)
-@PrecalcParamsDMA:
+; Pre-calculate displacement for last segment in HDMA color gradient table based on current IRQ
+; scanline, e.g. when text box has fully "scrolled in": 224 - 176 = 48; 48 * 4 = 192 bytes;
+; 192 + RAM.HDMA_BG_Playfield + kPlayfieldHeight * 4 = RAM.HDMA_BG_TextBox
+@CalcGradientDisplacement:
 	lda	#224							; get max. number of scanlines for text box
 	sec
 	sbc	<DP2.TextBoxVIRQ
 
-	Accu16								; text box "height" not zero, continue calculation
+	Accu16
 
 	and	#$00FF							; clear high byte
 	shl	2							; 4 bytes per scanline in table
-	sta	LO8.TextBoxBG_DMA_Len					; save as data length
-
-; Next, calculate destination address (e.g. 176 * 4 = 704 with RAM.HDMA_BG_Playfield as base)
-	lda	<DP2.TextBoxVIRQ
-	and	#$00FF							; clear high byte
-	shl	2
 	clc
-	adc	#loword(RAM.HDMA_BG_Playfield)				; add base offset
-	sta	LO8.TextBoxBG_DMA_Dest
+	adc	#loword(RAM.HDMA_BG_Playfield)+kPlayfieldHeight*4
+	sta	LO8.HDMA_ColorGradient+7
 
 	Accu8
 
@@ -1976,8 +1963,6 @@ VWFShiftBits:
 
 
 
-; FIXME Bug: When opening/closing the text box, the HDMA background is one frame behind gfx data
-; (timing issue, might re-implement scrollable HDMA backgrounds)
 TextBoxAnimationClose:							; closing animation (scroll text box content out vertically below the screen)
 	lda	<DP2.TextBoxVIRQ
 	clc								; increase value to create the illusion that the text box "scrolls out" below the screen
@@ -1986,7 +1971,7 @@ TextBoxAnimationClose:							; closing animation (scroll text box content out ve
 	sta	VTIMEL
 	stz	VTIMEH
 
-	jsr	Process_CC_BG@PrecalcParamsDMA
+	jsr	Process_CC_BG@CalcGradientDisplacement
 
 	Accu16
 
@@ -2021,7 +2006,7 @@ TextBoxAnimationOpen:							; opening animation (scroll text box content in vert
 	sta	VTIMEL
 	stz	VTIMEH
 
-	jsr	Process_CC_BG@PrecalcParamsDMA
+	jsr	Process_CC_BG@CalcGradientDisplacement
 
 	Accu16
 

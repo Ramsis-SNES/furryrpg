@@ -260,21 +260,6 @@ LoadAreaData:
 
 
 
-; HDMA tables --> WRAM
-	Accu16
-
-	ldx	#0
--	lda.l	SRC_HDMA_ResetBGScroll, x
-	sta	LO8.HDMA_BG_Scroll, x
-	inx
-	inx
-	cpx	#16
-	bne	-
-
-	Accu8
-
-
-
 ; HDMA channel 3: color math
 	lda	#$02							; transfer mode (2 bytes --> COLDATA register)
 	sta	DMAP3

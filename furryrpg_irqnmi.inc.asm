@@ -1023,13 +1023,14 @@ FlushVWFTileBuffer:
 
 
 LoadTextBoxBG:
+	set	"WRAM_port", RAM.HDMA_BG_TextBox
+
 	lda	<DP2.TextBoxBG
 	and	#%01111111						; mask off "change background" request bit
 	sta	<DP2.TextBoxBG						; write back value (i.e., clear "change background" request bit)
 	bne	+
 
-	set	"WRAM_port", RAM.HDMA_BG_TextBox			; value zero --> make background black
-	dma_0	$08, SRC_0000, WMDATA, _sizeof_RAM.HDMA_BG_TextBox
+	dma_0	$08, SRC_0000, WMDATA, _sizeof_RAM.HDMA_BG_TextBox	; value zero --> make background black
 
 	rts
 
@@ -1040,22 +1041,15 @@ LoadTextBoxBG:
 	lda.l	SRC_TextBoxGradient, x					; read and set source data offset for upcoming DMA
 	sta	A1T0L
 
-; ---- snip ---- FIXME sort out order
-
-	lda	LO8.TextBoxBG_DMA_Len
-	sta	DAS0L
-	lda	LO8.TextBoxBG_DMA_Dest
-	sta	WMADDL
-
 	Accu8
-
-	stz	WMADDH							; array is in bank $7E
 
  	stz	DMAP0							; DMA mode $00
 	lda	#<WMDATA						; B bus register
 	sta	BBAD0
-	lda	#:SRC_HDMA_TextBoxGradientBlue				; source data bank
+	lda	#bankbyte(SRC_HDMA_TextBoxGradientBlue)			; source data bank
 	sta	A1B0
+	ldx	#_sizeof_RAM.HDMA_BG_TextBox
+	stx	DAS0L
 	lda	#kDMA_Channel0						; initiate DMA transfer
 	sta	MDMAEN
 

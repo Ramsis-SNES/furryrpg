@@ -865,7 +865,8 @@
 	HDMA_M7B			dsb 448
 	HDMA_M7C			dsb 448
 	HDMA_M7D			dsb 448
-	HDMA_BG_Scroll			dsb 16
+	HDMA_BG_Scroll			dsb 16				; _sizeof_SRC_HDMA_ResetBGScroll
+	HDMA_ColorGradient		dsb 10				; _sizeof_SRC_HDMA_ColorGradient
 	ObjectList			dsb 128				; keeps track of currently active sprites, 1 byte per sprite: hcirrrra [a = object is active, c = object can collide with other objects, h = object can collide with hero(es), i = object is hero sprite, r = reserved]
 	RandomNumbers			dsb 130				; for random numbers
 	ShadowOAM_Lo			dsb 512
@@ -998,8 +999,8 @@
 	BG3Tilemap			INSTANCEOF struct_BG3Tilemap
 	CharacterNames			dsb 64*10			; NPCs not included lol
 	GameDataInventory		dsb 512				; two-byte array for 256 items. Low byte = item no., high byte = quantity
-	HDMA_BG_Playfield		dsb 704				; 16-bit palette index & 16-bit color entry for 176 scanlines
-	HDMA_BG_TextBox			dsb 192				; ditto for 48 scanlines
+	HDMA_BG_Playfield		dsb 896				; 16-bit palette index & 16-bit color entry for 224 scanlines
+	HDMA_BG_TextBox			dsb 192				; ditto for 48 extra scanlines (for text box "scrolling" animation)
 	HDMA_ColorMath			dsb 96
 	HDMA_FX_1Byte			dsb 224
 	HDMA_FX_2Bytes			dsb 448
