@@ -15,7 +15,7 @@
 ; Always use equal sign for .DEFINEs with numbers here, no need for vertical alignment
 
 ; Build number
-.DEFINE BuildNumASCII = "00577"
+.DEFINE BuildNumASCII = "00578"
 
 ; Boot to debug menu, show verbose on-screen messages
 .DEFINE DEBUG								
@@ -654,24 +654,27 @@ SRC_RND_Hex:
 ;     A = keep_in_range(A + C)
 ;   }
 
-;SRC_SineTableX:								; Mode 7 flight: lookup table for X (hor. scrolling)
-;	.DWSIN 0, 255, 1.40625, 64, 0
+; Mode 7 "flight" scroll lookup tables, D values affect scrolling speed
+SRC_SineTableScrollX:							; lookup table for X (hor. scroll offset)
+	.DWSIN 0, 255, 1.40625, 32, 0
 
-;SRC_CosineTableY:							; Mode 7 flight: lookup table for Y (vert. scrolling)
-;	.DWCOS 0, 255, 1.40625, 64, 0
+SRC_CosineTableScrollY:							; lookup table for Y (vert. scroll offset)
+	.DWCOS 0, 255, 1.40625, -32, 0					; negative D value needed for correct values aka perspective
 
+; Mode 7 "flight" main HDMA math tables, D values affect altitude (might need to change values
+; depending on source graphics) and shouldn't go over 127 (signed values)
 SRC_SineTable8:								; 256-byte-long sine table
-	.DBSIN 0, 255, 1.40625, 128, 0
+	.DBSIN 0, 255, 1.40625, 127, 0
 
 SRC_CosineTable8:							; 256-byte-long cosine table
-	.DBCOS 0, 255, 1.40625, 128, 0
+	.DBCOS 0, 255, 1.40625, 127, 0
 
+; Tables for ring menu sprite placement, D values affect ring menu radius (256 ensures that
+; kRingMenuRadiusMin/kRingMenuRadiusMax represent actual pixel values)
 SRC_SineTable16:							; 256-word-long sine table
-;	.DWSIN 0, 255, 1.40625, 128, 0
 	.DWSIN 0, 255, 1.40625, 256, 0
 
 SRC_CosineTable16:							; 256-word-long cosine table
-;	.DWCOS 0, 255, 1.40625, 128, 0
 	.DWCOS 0, 255, 1.40625, 256, 0
 
 

@@ -886,8 +886,6 @@
 	NMITIMEN			db				; mirror of NMITIMEN
 	NMITIMEN2			db				; used as backup
 	Routine_FillTextBuffer		dw				; holds address of routine to be used for printing strings to the screen
-	TextBoxBG_DMA_Dest		dw
-	TextBoxBG_DMA_Len		dw
 	TextBox_TSTM			dw				; mirrors of subscreen (high) & mainscreen (low) designation registers ($212C/212D) for text box area
 	Time_Second			db				; RTC-based time/date variables
 	Time_Minute			db

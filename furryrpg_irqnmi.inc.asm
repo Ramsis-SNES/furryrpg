@@ -1034,7 +1034,7 @@ LoadTextBoxBG:
 
 	rts
 
-+	Accu16								; value not zero, calculate DMA parameters for the text box "scrolling" animations to look correctly (obviously not needed with solid black background)
++	Accu16								; value not zero, set DMA parameters for wanted BG gradient
 
 	and	#$00FF							; clear high byte
 	tax								; use as index into offset pointer table
