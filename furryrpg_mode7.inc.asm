@@ -597,15 +597,16 @@ Mode7Loop:
 ; $40 < angle < $C0 --> inc Y
 ; $C0 < angle <= $FF | $00 <= angle < $40 --> dec Y
 ;
-; We use special sine/inverted-cosine lookup tables to determine the scroll offset per angle
-; in order to keep the "camera view" always straight ahead.
+; We use special sine/cosine lookup tables to determine the scroll offset per angle in order
+; to keep the "camera view" always straight ahead.
 
 	Accu16
 
-	lda	<DP2.Mode7_RotAngle
-	shl
+	lda	<DP2.Mode7_RotAngle					; use angle as table index
+	shl								; 16-bit table entries
 	tax
 
+; inc/dec ScrollOffsetX
 	lda	<DP2.Mode7_ScrollOffsetX
 	clc
 	adc.l	SRC_SineTableScrollX, x
@@ -615,9 +616,10 @@ Mode7Loop:
 	adc	#$0400
 	sta	<DP2.Mode7_CenterCoordX
 
+; dec/inc ScrollOffsetY
 	lda	<DP2.Mode7_ScrollOffsetY
-	clc
-	adc.l	SRC_CosineTableScrollY, x
+	sec
+	sbc.l	SRC_CosineTableScrollY, x
 	and	#$1FFF							; max scroll value (CHECKME)
 	sta	<DP2.Mode7_ScrollOffsetY
 	clc

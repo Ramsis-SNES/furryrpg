@@ -659,7 +659,7 @@ SRC_SineTableScrollX:							; lookup table for X (hor. scroll offset)
 	.DWSIN 0, 255, 1.40625, 32, 0
 
 SRC_CosineTableScrollY:							; lookup table for Y (vert. scroll offset)
-	.DWCOS 0, 255, 1.40625, -32, 0					; negative D value needed for correct values aka perspective
+	.DWCOS 0, 255, 1.40625, 32, 0
 
 ; Mode 7 "flight" main HDMA math tables, D values affect altitude (might need to change values
 ; depending on source graphics) and shouldn't go over 127 (signed values)
