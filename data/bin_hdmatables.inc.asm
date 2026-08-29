@@ -11,16 +11,10 @@
 
 SRC_HDMA_BG12CharData:							; for vertical split-screen test
 	.DB 112|$80
-
-.REPEAT 112
-	.DB $40
-.ENDR
+	.DSB 112, $40
 
 	.DB 112|$80
-
-.REPEAT 112
-	.DB $40
-.ENDR
+	.DSB 112, $40
 
 	.DB 0
 
@@ -172,7 +166,7 @@ SRC_HDMA_ColMathDialogSel:
 
 
 
-SRC_HDMA_ColMathMenu:
+SRC_HDMA_ColMathMenu:							; UNUSED as of now
 	.DB 80								; for 80 scanlines (uppermost menu entry, value to be patched in WRAM for anything below it),
 	.DB $E0, $E0							; apply black (i.e., don't affect display)
 
@@ -325,37 +319,35 @@ SRC_HDMA_M7D:
 
 SRC_HDMA_Mode5:								; for vertical split-screen test
 	.DB 112|$80
-
-.REPEAT 112
-	.DB $05
-.ENDR
+	.DSB 112, $05
 
 	.DB 112|$80
-
-.REPEAT 112
-	.DB $05
-.ENDR
+	.DSB 112, $05
 
 	.DB 0
 
 
+SRC_HDMA_BG_Scroll:
 
-SRC_HDMA_BG_Scroll:							; to be copied to WRAM for scanline and scrolling value manipulation
-	.DB 127								; 127 + 49 = 176 scanlines for playfield
-	.DW $0000, $00FF						; horiz. scroll = $0000, vert. scroll = $00FF
+; Filled with initial values; to be copied to WRAM for scanline and scroll value manipulation.
+; Designed in such a way that the two HDMA channels using this table (4 & 5 right now) can remain
+; enabled all the time in area/dialogue test.
 
-	.DB kPlayfieldHeight-127					; 49
-	.DW $0000, $00FF
+	.DB 127								; 127 + X scanlines for playfield
+	.DW $0000, $00FF						; horiz. scroll, vert. scroll
 
-	.DB kTextBoxHeight						; 48
-	.DW $0000, $00FF-(kTextBoxHeight-kTextBoxAnimSpd)		; $00D2 // text box "scrolling" animation starts at scanline 221 so we only scroll for 45 scanlines, not 48
+	.DB 224-127							; 49 (kPlayfieldHeight-127) when text box fully visible
+	.DW $0000, $00FF						; horiz. scroll, vert. scroll
+
+	.DB 0								; 48 (kTextBoxHeight) when text box fully visible
+	.DW $0000, $00FF-kTextBoxHeight					; horiz. scroll, vert. scroll
 
 	.DB 0
 
 
 
 SRC_HDMA_WorMapCurvature:
-	.DB 32								; for 32 scanlines, show everything
+	.DB kWorldMapSkyLines						; for sky, show everything
 	.DB 0, 255
 	.DB 1								; gradually increase window content
 	.DB 104, 151
@@ -372,7 +364,7 @@ SRC_HDMA_WorMapCurvature:
 
 
 SRC_HDMA_WorMapLayerControl:
-	.DB 32								; for 32 scanlines, show sprites only
+	.DB kWorldMapSkyLines						; for sky, show sprites only
 	.DB %00000000, %00010000
 	.DB 1								; for all remaining scanlines, show BG layers 1, 2 and sprites
 	.DB %00000011, %00010000
@@ -393,127 +385,43 @@ SRC_HDMA_WorMapVScroll:
 
 SRC_HDMA_WorMapVScrollDisplacement:
 
-.REPEAT 32								; 32 scanlines = sky
-	.DW 0
-.ENDR
+; The table is unfortunately backwards (last entry corresponds to first scanline). Also, not sure
+; if it's in fact "better" than the old one ...
+;
+;/** Generated using Dr LUT - Free Lookup Table Generator
+;  * https://github.com/ppelikan/drlut
+;  **/
+;// Formula: 0.07*t^4 (amplitude: 0.00000080, offset: 0, samples/array size: 192)
+; int16_t values converted to assembler directives (obviously)
 
-	.DW 64
-	.DW 62
-	.DW 60
-	.DW 58
-	.DW 56
-	.DW 54
-	.DW 52
-	.DW 50
-	.DW 48
-	.DW 46
-	.DW 44
-	.DW 44
-	.DW 42
-	.DW 42
-	.DW 40
-	.DW 40
-	.DW 38
-	.DW 38
-	.DW 36
-	.DW 36
-	.DW 34
-	.DW 34
-	.DW 32
-	.DW 32
-	.DW 30
-	.DW 30
-	.DW 28
-	.DW 28
-	.DW 26
-	.DW 26
-	.DW 24
-	.DW 24
-	.DW 23
-	.DW 23
-	.DW 22
-	.DW 22
-	.DW 21
-	.DW 21
-	.DW 20
-	.DW 20
-	.DW 19
-	.DW 19
-	.DW 18
-	.DW 18
-	.DW 18
-	.DW 17
-	.DW 17
-	.DW 17
-	.DW 16
-	.DW 16
-	.DW 16
-	.DW 15
-	.DW 15
-	.DW 15
-	.DW 14
-	.DW 14
-	.DW 14
-	.DW 13
-	.DW 13
-	.DW 13
-	.DW 12
-	.DW 12
-	.DW 12
-	.DW 12
-	.DW 11
-	.DW 11
-	.DW 11
-	.DW 11
-	.DW 10
-	.DW 10
-	.DW 10
-	.DW 10
-	.DW 9
-	.DW 9
-	.DW 9
-	.DW 9
-	.DW 8
-	.DW 8
-	.DW 8
-	.DW 8
-	.DW 7
-	.DW 7
-	.DW 7
-	.DW 7
-	.DW 6
-	.DW 6
-	.DW 6
-	.DW 6
-	.DW 6
-	.DW 5
-	.DW 5
-	.DW 5
-	.DW 5
-	.DW 5
-	.DW 4
-	.DW 4
-	.DW 4
-	.DW 4
-	.DW 3
-	.DW 3
-	.DW 3
-	.DW 3
-	.DW 3
-	.DW 2
-	.DW 2
-	.DW 2
-	.DW 2
-	.DW 2
-	.DW 1
-	.DW 1
-	.DW 1
-	.DW 1
-	.DW 1
-
-.REPEAT 79
-	.DW 0
-.ENDR
+	.DW $0000, $0000, $0000, $0000, $0000, $0000, $0000
+	.DW $0000, $0000, $0000, $0000, $0000, $0000, $0000
+	.DW $0000, $0000, $0000, $0000, $0000, $0000, $0000
+	.DW $0000, $0000, $0000, $0000, $0000, $0000, $0000
+	.DW $0000, $0000, $0000, $0000, $0000, $0000, $0000
+	.DW $0000, $0000, $0000, $0000, $0000, $0000, $0000
+	.DW $0000, $0000, $0000, $0000, $0000, $0000, $0000
+	.DW $0000, $0000, $0000, $0000, $0000, $0000, $0001
+	.DW $0001, $0001, $0001, $0001, $0001, $0001, $0001
+	.DW $0001, $0001, $0001, $0001, $0001, $0001, $0001
+	.DW $0001, $0001, $0002, $0002, $0002, $0002, $0002
+	.DW $0002, $0002, $0002, $0002, $0002, $0003, $0003
+	.DW $0003, $0003, $0003, $0003, $0003, $0004, $0004
+	.DW $0004, $0004, $0004, $0004, $0005, $0005, $0005
+	.DW $0005, $0005, $0006, $0006, $0006, $0006, $0007
+	.DW $0007, $0007, $0007, $0008, $0008, $0008, $0009
+	.DW $0009, $0009, $0009, $000A, $000A, $000A, $000B
+	.DW $000B, $000C, $000C, $000C, $000D, $000D, $000E
+	.DW $000E, $000F, $000F, $0010, $0010, $0010, $0011
+	.DW $0012, $0012, $0013, $0013, $0014, $0014, $0015
+	.DW $0016, $0016, $0017, $0017, $0018, $0019, $0019
+	.DW $001A, $001B, $001C, $001C, $001D, $001E, $001F
+	.DW $001F, $0020, $0021, $0022, $0023, $0024, $0025
+	.DW $0026, $0027, $0028, $0029, $002A, $002B, $002C
+	.DW $002D, $002E, $002F, $0030, $0031, $0032, $0033
+	.DW $0035, $0036, $0037, $0038, $0039, $003B, $003C
+	.DW $003D, $003F, $0040, $0042, $0043, $0044, $0046
+	.DW $0047, $0049, $004B
 
 
 
@@ -540,7 +448,7 @@ SRC_HDMA_ColorGradient:
 
 
 
-SRC_HDMA_MenuParty:							; color gradient: black --> bright blue
+SRC_HDMA_MenuParty:							; color gradient: black --> bright blue (UNUSED as of now)
 
 .REPEAT 7
 	.dw $0000,$0000

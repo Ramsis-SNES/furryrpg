@@ -461,26 +461,15 @@ Vblank_Area:								; FIXME slowdowns (sprite animation + text)
 ; Misc. tasks
 	jsr	GetInput
 
-; FIXME try leaving ch. 4/5 enabled instead
-	lda	LO8.HDMA_BG_Scroll+1					; BG1 horizontal scroll
-	sta	BG1HOFS
-	lda	LO8.HDMA_BG_Scroll+2
-	sta	BG1HOFS
-	lda	LO8.HDMA_BG_Scroll+1					; BG2 horizontal scroll
-	sta	BG2HOFS
-	lda	LO8.HDMA_BG_Scroll+2
-	sta	BG2HOFS
-	lda	LO8.HDMA_BG_Scroll+3					; BG1 vertical scroll
-	sta	BG1VOFS
-	lda	LO8.HDMA_BG_Scroll+4
-	sta	BG1VOFS
-	lda	LO8.HDMA_BG_Scroll+3					; BG2 vertical scroll
-	sta	BG2VOFS
-	lda	LO8.HDMA_BG_Scroll+4
-	sta	BG2VOFS
-;	lda	#$FF							; never mind, HDMA takes care of BG3 vertical scroll
+
+
+; BG1/BG2 scrolling done via HDMA
+
+; BG3 scrolling: add when needed
+;	lda	#$FF
 ;	sta	BG3VOFS
 ;	stz	BG3VOFS
+
 	lda	<DP2.HDMA_Channels					; initiate HDMA transfers
 	and	#kDMA_All~kDMA_Channel0					; channel 0 reserved for regular DMA
 	sta	HDMAEN
@@ -730,10 +719,10 @@ Vblank_WorldMap:
 
 ; Copy over scroll displacement table to HDMA array
 	ldx	#loword(RAM.ScratchSpace)				; source
-	ldy	#loword(RAM.HDMA_WorMapVScroll)				; destination
-	lda	#hibyte(448-1)						; data length = 447 (i.e., 448 bytes are transferred)
+	ldy	#loword(RAM.HDMA_WorMapVScroll+kWorldMapSkyLines*2)	; destination (with offset added for sky)
+	lda	#hibyte(kWorldMapScrollDispSize-1)			; data length (i.e., #kWorldMapScrollDispSize bytes are transferred)
 	xba
-	lda	#lobyte(448-1)
+	lda	#lobyte(kWorldMapScrollDispSize-1)
 	phb								; preserve DBR (changed to destination by the following block move instruction)
 	mvn	bankbyte(RAM.ScratchSpace), bankbyte(RAM.HDMA_WorMapVScroll)	; $7E (src), $7E (dest) (but reversed in object code)
 	plb								; restore DBR

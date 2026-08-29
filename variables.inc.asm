@@ -606,11 +606,12 @@
 .DEFINE kTextBoxTileLine4	kTextBoxTileLine3 + 23			; tile no. at start of text box line 4
 .DEFINE kTextBoxUL		$02C6					; tilemap entry for upper left corner of text box
 .DEFINE kTextBoxVIRQScanline	224-kTextBoxHeight			; V-IRQ scanline for fully visible text box (176)
-.DEFINE kTextBoxVIRQScanlineMax	224-kTextBoxAnimSpd			; last V-IRQ scanline for text box (221)
+.DEFINE kTextBoxVIRQScanlineMax	224					; last V-IRQ scanline for text box
 .DEFINE kTextBoxWidth		24					; in "full" (i.e., 16×8) hi-res tiles
 
 .DEFINE kWaitSPC700		3000					; max. no. of wait loops when communicating with the SPC700 until an error is triggered (the exact value doesn't really matter, but it sholud be reasonably high enough)
-
+.DEFINE kWorldMapSkyLines	32					; number of scanlines for sky above world map
+.DEFINE kWorldMapScrollDispSize	(224-kWorldMapSkyLines)*2		; size of data for vert. scroll displacement (no. of scanlines, 2 bytes per scanline)
 
 
 ; SPRITE CONTROL TABLES

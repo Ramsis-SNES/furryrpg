@@ -50,16 +50,14 @@ DialogueTest:
 	jsr	MakeTextBoxTilemapBG1
 	jsr	MakeTextBoxTilemapBG2
 
-	Accu16
+; Make text box background black in case it was used in area before (otherwise, the previous BG
+; gradient will be briefly visible)
+	set	"WRAM_port", RAM.HDMA_BG_TextBox
+	dma_0	$08, SRC_0000, WMDATA, _sizeof_RAM.HDMA_BG_TextBox
 
-	lda	#0							; make text box background black in case it was used in area before
-	ldx	#_sizeof_RAM.HDMA_BG_TextBox
--	dex
-	dex
-	sta	RAM.HDMA_BG_TextBox, x					; zero flag not affected (nor any other)
-	bne	-
-
-	Accu8
+; Reload BG scrolling HDMA table (aka restore known values)
+	set	"WRAM_port", LO8.HDMA_BG_Scroll
+	dma_0	$00, SRC_HDMA_BG_Scroll, WMDATA, _sizeof_SRC_HDMA_BG_Scroll
 
 
 
@@ -111,9 +109,13 @@ DialogueTest:
 
 
 ; Misc. settings
-	lda	#kTM_BG3|kTM_OBJ					; turn on BG3 + sprites on mainscreen and subscreen (this only affects the upper, non-text box portion of the screen)
+	lda	#kTM_BG3|kTM_OBJ					; turn on BG3 + sprites on mainscreen only (this only affects the upper, non-text box portion of the screen)
 	sta	RAM_TM
-	sta	RAM_TM
+	lda	#$00
+	sta	RAM_TS
+
+	lda	#%00110000						; enable HDMA ch. 4, 5 (BG1/2 scrolling)
+	sta	<DP2.HDMA_Channels
 
 	set	"NMI", Vblank_Area					; use area NMI handler
 
@@ -446,35 +448,14 @@ InitTextBox:
 	sta	RAM_WH1
 	lda	#%00100000						; color math window 1 area = outside (why does this work??)
 	sta	RAM_WOBJSEL
-
-	Accu16
-
-	lda	#%0000001100000011					; turn on BG1/2 only (i.e., disable BG3 and sprites) for text box
+	lda	#kTM_BG1|kTM_BG2					; turn on BG1/2 only (i.e., disable BG3 and sprites) for text box
 	sta	LO8.TextBox_TSTM
-	lda	LO8.HDMA_BG_Scroll+1					; copy BG scroll reg values to second half of playfield
-	sta	LO8.HDMA_BG_Scroll+6
-	lda	LO8.HDMA_BG_Scroll+3
-	sta	LO8.HDMA_BG_Scroll+8
-;	stz	LO8.HDMA_BG_Scroll+11					; reset scrolling parameters for text box area
-;	lda	#$00FF
-;	sta	LO8.HDMA_BG_Scroll+13
-
-	Accu8
-
-;	lda	#97							; set initial size of playfield BG to fill the whole screen (127 + 97 = 224)
-;	sta	LO8.HDMA_BG_Scroll+5
-;	stz	LO8.HDMA_BG_Scroll+10
-	lda	#224-127-kTextBoxAnimSpd				; 94 // reduce playfield by 3 scanlines when text box is about to appear (127 + 94 + 3 = 224)
-	sta	LO8.HDMA_BG_Scroll+5
-	lda	#kTextBoxAnimSpd					; 3
-	sta	LO8.HDMA_BG_Scroll+10
+	sta	LO8.TextBox_TSTM+1
 
 @NextDialogue:
-;	lda	#%00110100						; (re)activate HDMA ch. 2 (backdrop color), 4, 5 (BG scrolling regs)
-;	tsb	<DP2.HDMA_Channels
 	lda	<DP2.HDMA_Channels
 	and	#%11110111						; disable HDMA channel 3 (color math) in case of previously active selection // FIXME for CM on playfield!!
-	ora	#%00110100						; (re)activate HDMA ch. 2 (backdrop color), 4, 5 (BG scrolling regs)
+	ora	#%00000100						; (re)enable HDMA ch. 2 (backdrop color)
 	sta	<DP2.HDMA_Channels
 	lda	#kHVIRQ							; (re)enable IRQ at H=HTIMEL and V=VTIMEL
 	tsb	LO8.NMITIMEN
@@ -582,24 +563,10 @@ ProcDialogTextBox:							; if the text box is active, then this routine must be 
 
 +	lda	#kHVIRQ							; text box completely removed, clear IRQ enable bits
 	trb	LO8.NMITIMEN
-	lda	#%00110100						; deactivate used HDMA channels
+	lda	#%00000100						; disable used HDMA channel
 	trb	<DP2.HDMA_Channels
 	lda	#kTextBoxStatusClear					; set "clear text box" flag only
 	sta	<DP2.TextBoxStatus
-
-;	Accu16
-
-;	lda	LO8.HDMA_BG_Scroll+1					; restore scrolling parameters // possibly needed on areas with vertical scrolling
-;	sta	LO8.HDMA_BG_Scroll+11
-;	lda	LO8.HDMA_BG_Scroll+3
-;	sta	LO8.HDMA_BG_Scroll+13
-
-;	Accu8
-
-; potential fix for when leaving ch. 4/5 enabled all the time:
-;	lda	#224-127						; reset playfield to fill the whole screen (127 + 97 = 224)
-;	sta	LO8.HDMA_BG_Scroll+5
-;	stz	LO8.HDMA_BG_Scroll+10					; end HDMA table
 
 @TextBoxDone:
 
@@ -1991,9 +1958,6 @@ TextBoxAnimationClose:							; closing animation (scroll text box content out ve
 	sbc	#kTextBoxAnimSpd
 	sta	LO8.HDMA_BG_Scroll+10
 
-	lda	#$80							; set "new text box BG requested" flag, this is required as the flag is cleared during Vblank after a new gradient was loaded
-	tsb	<DP2.TextBoxBG
-
 	rts
 
 
@@ -2025,9 +1989,6 @@ TextBoxAnimationOpen:							; opening animation (scroll text box content in vert
 	clc
 	adc	#kTextBoxAnimSpd
 	sta	LO8.HDMA_BG_Scroll+10
-
-	lda	#$80							; set "new text box BG requested" flag, this is required as the flag is cleared during Vblank after a new gradient was loaded
-	tsb	<DP2.TextBoxBG
 
 	rts
 

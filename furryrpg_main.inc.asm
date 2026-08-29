@@ -29,8 +29,8 @@ Startup:
 	dma_0	$00, SRC_RAM_Routines, WMDATA, _sizeof_SRC_RAM_Routines
 
 ; Copy HDMA tables to WRAM
-	set	"WRAM_port", LO8.HDMA_BG_Scroll
-	dma_0	$00, SRC_HDMA_BG_Scroll, WMDATA, _sizeof_SRC_HDMA_BG_Scroll
+;	set	"WRAM_port", LO8.HDMA_BG_Scroll
+;	dma_0	$00, SRC_HDMA_BG_Scroll, WMDATA, _sizeof_SRC_HDMA_BG_Scroll
 
 	set	"WRAM_port", LO8.HDMA_ColorGradient
 	dma_0	$00, SRC_HDMA_ColorGradient, WMDATA, _sizeof_SRC_HDMA_ColorGradient
@@ -841,7 +841,8 @@ ReadBanks40thru5F:
 
 .ACCU 8
 
-; Self-reminder: In the enable/disable NMI routines, always use 24-bit addressing
+; Self-reminder: In the enable/disable NMI routines, always use 24-bit addressing so they work when
+; called from any bank.
 
 EnableNMI:
 	lda.l	RDNMI							; clear NMI flag
@@ -940,10 +941,11 @@ UpdateGameTime:
 ; SPRITE SUBROUTINES
 ; --------------------------------------------------------------------------------------------------
 
-ConvertSpriteDataToBuffer:						; routine expects source data address set in WMADD<L/M/H>
+ConvertSpriteDataToBuffer:
 
-; RAM.SpriteData* each consist of 128 5-byte-long entries of the
-; following format:
+; Routine expects source data address set in WMADD<L/M/H>.
+;
+; RAM.SpriteData* each consist of 128 5-byte-long entries of the following format:
 ;
 ; Byte 0 - X coordinate: lower 8 of 9 bits
 ; Byte 1 - X coordinate: 9th bit (bit 0), OBJ size (bit 1, bits 2-7 always clear)
@@ -951,9 +953,9 @@ ConvertSpriteDataToBuffer:						; routine expects source data address set in WMA
 ; Byte 3 - Tile number: lower 8 of 9 bits (bit 9 = bit 0 of Attributes)
 ; Byte 4 - Attributes (as in FullSNES)
 ;
-; This routine, which should be called once per frame during active
-; display, converts this data to OAM hi/lo format in LO8.ShadowOAM_Lo
-; and LO8.ShadowOAM_Hi, to be DMAed to actual OAM during Vblank.
+; This routine, which should be called once per frame during active display, converts this data
+; to OAM hi/lo format in LO8.ShadowOAM_Lo and LO8.ShadowOAM_Hi, to be DMAed to actual OAM during
+; Vblank.
 
 	phx								; preserve super-loop indices
 	phy
@@ -1003,7 +1005,7 @@ ConvertSpriteDataToBuffer:						; routine expects source data address set in WMA
 
 
 
-; rest is trivial
+; The rest is trivial
 	lda	WMDATA							; read Y coordinate
 	sta	LO8.ShadowOAM_Lo, x
 	inx
@@ -2123,7 +2125,7 @@ Debug_SNESGSS_Control:
 	stz	BG2VOFS
 	lda	#$00							; clear color math disable bits
 	sta	RAM_CGWSEL
-	lda	#%00100000						; enable color math on backdrop // FIXME investigate (works on real hardware, bsnes, and MAME but not on some FPGA recreations of the SNES)
+	lda	#%00100000						; enable color math on backdrop // FIXME investigate (works on real hardware, bsnes, MAME and Super Nt, but not on some other FPGA recreations of the SNES)
 	sta	RAM_CGADSUB
 	lda	#kTM_BG1|kTM_BG2					; turn on BG1 and 2 only on mainscreen and subscreen
 	sta	RAM_TM

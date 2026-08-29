@@ -15,7 +15,7 @@
 ; Always use equal sign for .DEFINEs with numbers here, no need for vertical alignment
 
 ; Build number
-.DEFINE BuildNumASCII = "00578"
+.DEFINE BuildNumASCII = "00581"
 
 ; Boot to debug menu, show verbose on-screen messages
 .DEFINE DEBUG								

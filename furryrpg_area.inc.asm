@@ -260,6 +260,12 @@ LoadAreaData:
 
 
 
+; Reload BG scrolling HDMA table (aka restore known values)
+	set	"WRAM_port", LO8.HDMA_BG_Scroll
+	dma_0	$00, SRC_HDMA_BG_Scroll, WMDATA, _sizeof_SRC_HDMA_BG_Scroll
+
+
+
 ; HDMA channel 3: color math
 	lda	#$02							; transfer mode (2 bytes --> COLDATA register)
 	sta	DMAP3
@@ -335,7 +341,10 @@ LoadAreaData:
 ; Misc. settings
 	lda	#kTM_BG1|kTM_BG2|kTM_BG3|kTM_OBJ			; turn on BG1, BG2, BG3 + sprites on mainscreen and subscreen
 	sta	RAM_TM
-	sta	RAM_TM
+	sta	RAM_TS
+
+	lda	#%00110000						; enable HDMA ch. 4, 5 (BG1/2 scrolling)
+	sta	<DP2.HDMA_Channels
 
 	set	"NMI", Vblank_Area
 
@@ -997,6 +1006,7 @@ AreaJoyDpadUp:
 	adc	LO8.HDMA_BG_Scroll+3					; scroll area
 	and	#$3FFF
 	sta	LO8.HDMA_BG_Scroll+3
+	sta	LO8.HDMA_BG_Scroll+8					; second half of playfield
 
 ++	Accu8
 
@@ -1037,6 +1047,7 @@ AreaJoyDpadDown:
 	adc	LO8.HDMA_BG_Scroll+3					; scroll area
 	and	#$3FFF
 	sta	LO8.HDMA_BG_Scroll+3
+	sta	LO8.HDMA_BG_Scroll+8
 
 ++	Accu8
 
@@ -1076,6 +1087,7 @@ AreaJoyDpadLeft:
 	sbc	<DP2.Hero1WalkingSpd
 	and	#$3FFF
 	sta	LO8.HDMA_BG_Scroll+1
+	sta	LO8.HDMA_BG_Scroll+6					; second half of playfield
 
 ++	Accu8
 
@@ -1115,6 +1127,7 @@ AreaJoyDpadRight:
 	adc	<DP2.Hero1WalkingSpd
 	and	#$3FFF
 	sta	LO8.HDMA_BG_Scroll+1
+	sta	LO8.HDMA_BG_Scroll+6
 
 ++	Accu8
 

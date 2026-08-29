@@ -57,24 +57,15 @@ LoadWorldMap:
 
 
 ; Load sky gradient
-	Accu16
+	set	"WRAM_port", RAM.HDMA_BG_Playfield
+	dma_0	$00, SRC_HDMA_WorldMapSky, WMDATA, _sizeof_SRC_HDMA_WorldMapSky	; first 144 bytes
+	dma_0	$08, SRC_0000, WMDATA, _sizeof_RAM.HDMA_BG_Playfield-_sizeof_SRC_HDMA_WorldMapSky	; clear rest of array (last 752 bytes)
 
-	ldx	#$0000
--	lda.l	SRC_HDMA_WorldMapSky, x
-	sta	RAM.HDMA_BG_Playfield, x
-	inx
-	inx
-	cpx	#_sizeof_SRC_HDMA_WorldMapSky
-	bne	-
 
-	lda	#$0000
--	sta	RAM.HDMA_BG_Playfield, x				; fill the rest with zeroes
-	inx
-	inx
-	cpx	#896
-	bne	-
 
-	Accu8
+; Clear RAM.HDMA_WorMapVScroll in case it was used for something else
+	set	"WRAM_port", RAM.HDMA_WorMapVScroll
+	dma_0	$08, SRC_0000, WMDATA, _sizeof_RAM.HDMA_WorMapVScroll	; 448 bytes
 
 
 
@@ -476,15 +467,18 @@ CalcVScrollDisplacement:
 	set	"Data_Bank", :SRC_HDMA_WorMapVScrollDisplacement
 	Accu16
 
+	ldx	#kWorldMapScrollDispSize				; read Dr LUT table in reverse
 	ldy	#0
--	lda	<DP2.WorldMapBG1VScroll
+-	dex
+	dex
+	lda	<DP2.WorldMapBG1VScroll
 	sec
-	sbc	SRC_HDMA_WorMapVScrollDisplacement, y			; subtract displacement value for each scanline
-	and	#$3FFF
+	sbc.w	SRC_HDMA_WorMapVScrollDisplacement, x			; subtract displacement value for each scanline
+	and	#$3FFF							; ?? CHECKME
 	sta	[<DP2.DataAddress], y					; save to scratch space
 	iny
 	iny
-	cpy	#448							; 224 scanlines done?
+	cpy	#kWorldMapScrollDispSize				; all scanlines done?
 	bne	-
 
 	Accu8
